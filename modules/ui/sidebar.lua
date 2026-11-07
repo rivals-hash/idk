@@ -45,39 +45,41 @@ function Sidebar.create(parentGui, options)
     stroke.Transparency = 0.5
     stroke.Parent = bgImg
 
-    -- Top Window Controls: Minimize (-) and Close (X) with high ZIndex
+    -- Top Window Controls: Minimize (-) and Close (X) with high ZIndex & large touch hitboxes
     local controlsFrame = Instance.new("Frame")
     controlsFrame.Name = "WindowControls"
-    controlsFrame.Size = UDim2.new(0, 46, 0, 22)
-    controlsFrame.Position = UDim2.new(1, -50, 0, 6)
+    controlsFrame.Size = UDim2.new(0, 68, 0, 28)
+    controlsFrame.Position = UDim2.new(1, -72, 0, 4)
     controlsFrame.BackgroundTransparency = 1
-    controlsFrame.ZIndex = 30
+    controlsFrame.ZIndex = 50
     controlsFrame.Parent = sidebarFrame
 
     local minBtn = Instance.new("TextButton")
     minBtn.Name = "MinimizeButton"
-    minBtn.Size = UDim2.new(0, 20, 0, 20)
-    minBtn.Position = UDim2.new(0, 0, 0, 1)
+    minBtn.Size = UDim2.new(0, 32, 0, 28)
+    minBtn.Position = UDim2.new(0, 0, 0, 0)
     minBtn.BackgroundTransparency = 1
-    minBtn.Text = "—"
+    minBtn.Text = "-"
     minBtn.Font = Enum.Font.GothamBold
-    minBtn.TextSize = 14
+    minBtn.TextSize = 22
     minBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
-    minBtn.ZIndex = 31
+    minBtn.ZIndex = 51
     minBtn.AutoButtonColor = false
+    minBtn.Active = true
     minBtn.Parent = controlsFrame
 
     local closeBtn = Instance.new("TextButton")
     closeBtn.Name = "CloseButton"
-    closeBtn.Size = UDim2.new(0, 20, 0, 20)
-    closeBtn.Position = UDim2.new(1, -20, 0, 1)
+    closeBtn.Size = UDim2.new(0, 32, 0, 28)
+    closeBtn.Position = UDim2.new(1, -32, 0, 0)
     closeBtn.BackgroundTransparency = 1
-    closeBtn.Text = "✕"
+    closeBtn.Text = "X"
     closeBtn.Font = Enum.Font.GothamBold
-    closeBtn.TextSize = 13
-    closeBtn.TextColor3 = Color3.fromRGB(255, 90, 90)
-    closeBtn.ZIndex = 31
+    closeBtn.TextSize = 16
+    closeBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+    closeBtn.ZIndex = 51
     closeBtn.AutoButtonColor = false
+    closeBtn.Active = true
     closeBtn.Parent = controlsFrame
 
     local function setupIconBtn(btn, hoverColor, normColor)
@@ -89,23 +91,33 @@ function Sidebar.create(parentGui, options)
         end)
     end
     setupIconBtn(minBtn, Color3.fromRGB(255, 255, 255), Color3.fromRGB(220, 220, 220))
-    setupIconBtn(closeBtn, Color3.fromRGB(255, 60, 60), Color3.fromRGB(255, 90, 90))
+    setupIconBtn(closeBtn, Color3.fromRGB(255, 40, 40), Color3.fromRGB(255, 80, 80))
 
+    local lastMinTick = 0
     local function handleMin()
+        local now = tick()
+        if now - lastMinTick < 0.35 then return end
+        lastMinTick = now
         pcall(onMinimize)
     end
+
+    local lastCloseTick = 0
     local function handleClose()
+        local now = tick()
+        if now - lastCloseTick < 0.35 then return end
+        lastCloseTick = now
         pcall(onClose)
     end
+
     minBtn.Activated:Connect(handleMin)
     minBtn.MouseButton1Click:Connect(handleMin)
     closeBtn.Activated:Connect(handleClose)
     closeBtn.MouseButton1Click:Connect(handleClose)
 
-    -- Left Navigation Tabs List (Width 96px, cleanly separated from controls)
+    -- Left Navigation Tabs List (Width 82px, completely clear of top controls)
     local tabsListFrame = Instance.new("Frame")
     tabsListFrame.Name = "TabsListFrame"
-    tabsListFrame.Size = UDim2.new(0, 96, 1, -12)
+    tabsListFrame.Size = UDim2.new(0, 82, 1, -12)
     tabsListFrame.Position = UDim2.new(0, 6, 0, 8)
     tabsListFrame.BackgroundTransparency = 1
     tabsListFrame.ZIndex = 5

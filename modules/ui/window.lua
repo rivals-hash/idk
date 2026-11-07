@@ -166,9 +166,13 @@ function Window.create(dependencies)
         end,
         onMinimize = function()
             setWindowVisible(not isVisible)
-            Utils.toast("Monody", "Minimizado. Toca el icono para reabrir.", 2)
+            Utils.toast("Monody", not isVisible and "Minimizado. Toca el icono para reabrir." or "Abierto.", 1.5)
         end,
         onClose = function()
+            pcall(function() mainFrame.Visible = false end)
+            if mobileToggle and mobileToggle.Parent then
+                pcall(function() mobileToggle.Visible = false end)
+            end
             Utils.toast("Monody", "Cerrado por completo.", 1.5)
             task.delay(0.05, function()
                 if mobileToggle and mobileToggle.Parent then
