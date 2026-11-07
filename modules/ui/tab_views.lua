@@ -362,14 +362,16 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
 end
 
 -- Helper: Create interactive Color Palette Selector (Darling X Standard)
+-- Helper: Create interactive Color Palette Selector (Darling X Standard)
 local function createColorPicker(parent, title, desc, colorNames, defaultColorName, onSelectColor, Utils)
     local selected = defaultColorName or "Rainbow"
     colorNames = colorNames or { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple" }
+    local hasDesc = (desc and #desc > 0)
+    local containerHeight = hasDesc and 76 or 58
 
     local container = Instance.new("Frame")
     container.Name = "ColorPicker_" .. title:gsub("%s+", "")
-    container.Size = UDim2.new(1, 0, 0, 0)
-    container.AutomaticSize = Enum.AutomaticSize.Y
+    container.Size = UDim2.new(1, 0, 0, containerHeight)
     container.BackgroundTransparency = 1
     container.Parent = parent
 
@@ -400,7 +402,7 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     valLbl.TextXAlignment = Enum.TextXAlignment.Right
     valLbl.Parent = headerRow
 
-    if desc and #desc > 0 then
+    if hasDesc then
         local descLbl = Instance.new("TextLabel")
         descLbl.Size = UDim2.new(1, 0, 0, 16)
         descLbl.Position = UDim2.new(0, 4, 0, 22)
@@ -414,8 +416,8 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     end
 
     local scroll = Instance.new("ScrollingFrame")
-    scroll.Size = UDim2.new(1, 0, 0, 32)
-    scroll.Position = UDim2.new(0, 0, 0, (desc and #desc > 0) and 40 or 24)
+    scroll.Size = UDim2.new(1, 0, 0, 30)
+    scroll.Position = UDim2.new(0, 0, 0, hasDesc and 42 or 24)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
     scroll.ScrollBarThickness = 0
@@ -477,21 +479,18 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
         pill.MouseButton1Click:Connect(pick)
     end
 
-    local pad = Instance.new("UIPadding")
-    pad.PaddingBottom = UDim.new(0, 6)
-    pad.Parent = container
-
     return container
 end
 
 -- Helper: Create interactive Multi-Chip Grid for Skill Blacklist
 local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Utils)
     local blacklisted = {}
+    local hasDesc = (desc and #desc > 0)
+    local totalHeight = hasDesc and 144 or 126
 
     local container = Instance.new("Frame")
     container.Name = "ChipGrid_" .. title:gsub("%s+", "")
-    container.Size = UDim2.new(1, 0, 0, 0)
-    container.AutomaticSize = Enum.AutomaticSize.Y
+    container.Size = UDim2.new(1, 0, 0, totalHeight)
     container.BackgroundTransparency = 1
     container.Parent = parent
 
@@ -506,7 +505,7 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
     titleLbl.Parent = container
 
-    if desc and #desc > 0 then
+    if hasDesc then
         local descLbl = Instance.new("TextLabel")
         descLbl.Size = UDim2.new(1, 0, 0, 16)
         descLbl.Position = UDim2.new(0, 4, 0, 20)
@@ -521,11 +520,9 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
 
     local gridFrame = Instance.new("Frame")
     gridFrame.Name = "Grid"
-    gridFrame.Size = UDim2.new(1, 0, 0, 0)
-    gridFrame.AutomaticSize = Enum.AutomaticSize.Y
-    gridFrame.Position = UDim2.new(0, 0, 0, (desc and #desc > 0) and 40 or 24)
+    gridFrame.Size = UDim2.new(1, 0, 0, 92)
+    gridFrame.Position = UDim2.new(0, 0, 0, hasDesc and 40 or 24)
     gridFrame.BackgroundTransparency = 1
-    gridFrame.Parent = gridFrame.Parent or container
     gridFrame.Parent = container
 
     local gridLayout = Instance.new("UIGridLayout")
@@ -575,21 +572,17 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
         chip.MouseButton1Click:Connect(toggleChip)
     end
 
-    local pad = Instance.new("UIPadding")
-    pad.PaddingBottom = UDim.new(0, 8)
-    pad.Parent = container
-
     return container
 end
 
--- Helper: Create a styled Feature Card inside a Tab View
-local function createFeatureCard(parent, title, bgAsset)
+-- Helper: Create a styled Feature Card inside a Tab View (Clean solid glass without scale bug)
+local function createFeatureCard(parent, title)
     local card = Instance.new("Frame")
     card.Name = "Card_" .. title:gsub("%s+", "")
-    card.Size = UDim2.new(1, 0, 0, 0)
+    card.Size = UDim2.new(1, -12, 0, 0)
     card.AutomaticSize = Enum.AutomaticSize.Y
-    card.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
-    card.BackgroundTransparency = 0.25
+    card.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
+    card.BackgroundTransparency = 0.2
     card.BorderSizePixel = 0
     card.Parent = parent
 
@@ -598,23 +591,10 @@ local function createFeatureCard(parent, title, bgAsset)
     corner.Parent = card
 
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(65, 65, 80)
+    stroke.Color = Color3.fromRGB(60, 60, 75)
     stroke.Thickness = 1
     stroke.Transparency = 0.4
     stroke.Parent = card
-
-    if bgAsset then
-        local bg = Instance.new("ImageLabel")
-        bg.Size = UDim2.new(1, 0, 1, 0)
-        bg.BackgroundTransparency = 1
-        bg.Image = bgAsset
-        bg.ScaleType = Enum.ScaleType.Stretch
-        bg.Parent = card
-
-        local bgCorner = Instance.new("UICorner")
-        bgCorner.CornerRadius = UDim.new(0, 8)
-        bgCorner.Parent = bg
-    end
 
     local pad = Instance.new("UIPadding")
     pad.PaddingTop = UDim.new(0, 8)
@@ -647,14 +627,13 @@ function TabViews.build(tabName, parentContainer, options)
     options = options or {}
     local Utils = options.Utils
     local AssetManager = options.AssetManager
-    local cardBgAsset = AssetManager and AssetManager.get("card_bg.png", "rbxassetid://139820186687064") or "rbxassetid://139820186687064"
 
     local scroll = Instance.new("ScrollingFrame")
     scroll.Name = "TabView_" .. tabName
     scroll.Size = UDim2.new(1, 0, 1, 0)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
-    scroll.ScrollBarThickness = 2
+    scroll.ScrollBarThickness = 3
     scroll.ScrollBarImageColor3 = Color3.fromRGB(140, 140, 160)
     scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -664,9 +643,9 @@ function TabViews.build(tabName, parentContainer, options)
 
     local pad = Instance.new("UIPadding")
     pad.PaddingTop = UDim.new(0, 4)
-    pad.PaddingBottom = UDim.new(0, 16)
+    pad.PaddingBottom = UDim.new(0, 20)
     pad.PaddingLeft = UDim.new(0, 4)
-    pad.PaddingRight = UDim.new(0, 8)
+    pad.PaddingRight = UDim.new(0, 6)
     pad.Parent = scroll
 
     local listLayout = Instance.new("UIListLayout")
@@ -675,10 +654,15 @@ function TabViews.build(tabName, parentContainer, options)
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Parent = scroll
 
-    -- Top Header Banner Card (Compact 46px)
+    -- Ensure ScrollingFrame CanvasSize dynamically adapts
+    listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        scroll.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 28)
+    end)
+
+    -- Top Header Banner Card (Simple & clean, no AI fluff)
     local banner = Instance.new("Frame")
     banner.Name = "Banner"
-    banner.Size = UDim2.new(1, 0, 0, 46)
+    banner.Size = UDim2.new(1, -12, 0, 46)
     banner.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
     banner.BackgroundTransparency = 0.2
     banner.BorderSizePixel = 0
@@ -690,19 +674,19 @@ function TabViews.build(tabName, parentContainer, options)
     bCorner.Parent = banner
 
     local bStroke = Instance.new("UIStroke")
-    bStroke.Color = Color3.fromRGB(65, 65, 80)
+    bStroke.Color = Color3.fromRGB(60, 60, 75)
     bStroke.Thickness = 1
     bStroke.Transparency = 0.5
     bStroke.Parent = banner
 
     local bTitle = Instance.new("TextLabel")
-    bTitle.Size = UDim2.new(1, -20, 0, 22)
-    bTitle.Position = UDim2.new(0, 12, 0, 4)
+    bTitle.Size = UDim2.new(1, -20, 0, 20)
+    bTitle.Position = UDim2.new(0, 12, 0, 5)
     bTitle.BackgroundTransparency = 1
-    bTitle.Font = Enum.Font.Kalam
-    bTitle.Text = "Monody - " .. tabName
+    bTitle.Font = Enum.Font.GothamBold
+    bTitle.Text = tabName
     bTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    bTitle.TextSize = 20
+    bTitle.TextSize = 16
     bTitle.TextXAlignment = Enum.TextXAlignment.Left
     bTitle.Parent = banner
 
@@ -711,9 +695,9 @@ function TabViews.build(tabName, parentContainer, options)
     bDesc.Position = UDim2.new(0, 12, 0, 26)
     bDesc.BackgroundTransparency = 1
     bDesc.Font = Enum.Font.Gotham
-    bDesc.Text = "Suite oficial móvil | Por Darling"
-    bDesc.TextColor3 = Color3.fromRGB(170, 170, 185)
-    bDesc.TextSize = 10
+    bDesc.Text = tabName:lower()
+    bDesc.TextColor3 = Color3.fromRGB(150, 150, 165)
+    bDesc.TextSize = 11
     bDesc.TextXAlignment = Enum.TextXAlignment.Left
     bDesc.Parent = banner
 
@@ -721,105 +705,105 @@ function TabViews.build(tabName, parentContainer, options)
     if tabName == "Aimbot" then
         local FOVMod = options.FOV
 
-        -- 1. Aimbot Principal (Darling Hub Engine)
-        local c1 = createFeatureCard(scroll, "Aimbot Principal (Darling Hub)", cardBgAsset)
+        -- 1. Aimbot
+        local c1 = createFeatureCard(scroll, "Aimbot")
         c1.LayoutOrder = 2
-        createToggle(c1, "Player Silent Aim", "Redirecciona ataques y habilidades hacia jugadores enemigos", false, function(state)
+        createToggle(c1, "Player Silent Aim", "Redirige ataques hacia jugadores", false, function(state)
             if Utils then Utils.toast("Monody", "Player Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
-        createToggle(c1, "NPC Silent Aim", "Redirecciona ataques hacia mobs y jefes", false, function(state)
+        createToggle(c1, "NPC Silent Aim", "Redirige ataques hacia NPCs", false, function(state)
             if Utils then Utils.toast("Monody", "NPC Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
-        createToggle(c1, "Team Check", "Ignora jugadores aliados o de tu misma tripulación", true, nil, Utils)
-        createToggle(c1, "Aimlock (Lock Player)", "Fija y mantiene al jugador objetivo seleccionado en combate", false, function(state)
-            if Utils then Utils.toast("Monody", "Aimlock: " .. (state and "Bloqueado al objetivo" or "Desactivado"), 1.2) end
+        createToggle(c1, "Team Check", "Ignora jugadores aliados", true, nil, Utils)
+        createToggle(c1, "Aimlock", "Fija al jugador objetivo", false, function(state)
+            if Utils then Utils.toast("Monody", "Aimlock: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
-        createToggle(c1, "Aimlock Floating Widget", "Muestra botón táctil flotante en pantalla para fijar con el pulgar", false, function(state)
+        createToggle(c1, "Aimlock Widget", "Botón táctil flotante", false, function(state)
             if Utils then Utils.toast("Monody", "Aimlock Widget: " .. (state and "Visible" or "Oculto"), 1.2) end
         end, Utils)
-        createDropdown(c1, "Modo de Apuntado", "Ángulo de detección del aimbot", { "360° (Todo alrededor)", "FOV (Círculo)", "180° (Frontal)" }, 1, function(opt)
+        createDropdown(c1, "Modo", "Ángulo de detección", { "360°", "FOV", "180°" }, 1, function(opt)
             if Utils then Utils.toast("Monody", "Modo Aim: " .. opt, 1.2) end
         end, Utils)
-        createDropdown(c1, "Prioridad de Objetivo", "Criterio de selección automática", { "Nearest (Más cercano)", "Low HP (Menos vida)", "Looking At Me" }, 1, function(opt)
+        createDropdown(c1, "Prioridad", "Criterio de selección", { "Nearest", "Low HP", "Looking At Me" }, 1, function(opt)
             if Utils then Utils.toast("Monody", "Prioridad: " .. opt, 1.2) end
         end, Utils)
-        createSlider(c1, "Rango Máximo (Studs)", 100, 3000, 1000, function(val)
+        createSlider(c1, "Rango", 100, 3000, 1000, function(val)
             -- Slider range callback
         end, Utils)
 
-        -- 2. BBG Silent Aim (Legacy)
-        local c2 = createFeatureCard(scroll, "BBG Silent Aim (Legacy)", cardBgAsset)
+        -- 2. Silent Aim BBG
+        local c2 = createFeatureCard(scroll, "Silent Aim BBG")
         c2.LayoutOrder = 3
-        createToggle(c2, "BBG Silent Aim", "Motor clásico alternativo de BBG Panel (Mouse.Hit override)", false, function(state)
+        createToggle(c2, "BBG Silent Aim", "Redirección clásica Mouse.Hit", false, function(state)
             if Utils then Utils.toast("Monody", "BBG Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
-        createToggle(c2, "Soru Silent (BBG)", "Sincroniza redirección silenciosa al teletransportarte con Soru", false, function(state)
+        createToggle(c2, "Soru Silent", "Redirección con flashstep", false, function(state)
             if Utils then Utils.toast("Monody", "Soru Silent: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
 
-        -- 3. FOV Dinámico de Colores (Darling X)
-        local c3 = createFeatureCard(scroll, "FOV Dinámico (Darling X)", cardBgAsset)
+        -- 3. FOV
+        local c3 = createFeatureCard(scroll, "FOV")
         c3.LayoutOrder = 4
-        createToggle(c3, "Mostrar Círculo FOV", "Dibuja el círculo con soporte dual ScreenGui / Drawing", false, function(state)
+        createToggle(c3, "Círculo FOV", "Dibuja el círculo en pantalla", false, function(state)
             if FOVMod and FOVMod.setVisible then FOVMod.setVisible(state) end
             if Utils then Utils.toast("Monody", "Círculo FOV: " .. (state and "Visible" or "Oculto"), 1.2) end
         end, Utils)
         createSlider(c3, "Radio FOV", 20, 500, 120, function(val)
             if FOVMod and FOVMod.setRadius then FOVMod.setRadius(val) end
         end, Utils)
-        createDropdown(c3, "Posición FOV", "Punto de anclaje del círculo en pantalla", { "Centro de Pantalla", "Touch / Cursor" }, 1, function(opt)
+        createDropdown(c3, "Posición", "Punto de anclaje", { "Centro", "Cursor" }, 1, function(opt)
             if FOVMod and FOVMod.setMode then
-                if opt:find("Touch") or opt:find("Cursor") then
+                if opt:find("Cursor") then
                     FOVMod.setMode("Mouse")
                 else
                     FOVMod.setMode("Center")
                 end
             end
         end, Utils)
-        createColorPicker(c3, "Color FOV (Darling X)", "Colores disponibles en la suite Darling X", { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange" }, "Rainbow", function(colorName)
+        createColorPicker(c3, "Color FOV", "Colores Darling X", { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange" }, "Rainbow", function(colorName)
             if FOVMod and FOVMod.setColor then FOVMod.setColor(colorName) end
             if Utils then Utils.toast("Monody", "Color FOV: " .. colorName, 1.2) end
         end, Utils)
 
-        -- 4. Tracers de Combate (Darling Hub)
-        local c4 = createFeatureCard(scroll, "Tracers de Combate (Darling Hub)", cardBgAsset)
+        -- 4. Tracers
+        local c4 = createFeatureCard(scroll, "Tracers")
         c4.LayoutOrder = 5
-        createToggle(c4, "Mostrar Tracers", "Líneas de trazado hacia el enemigo detectado", false, function(state)
+        createToggle(c4, "Mostrar Tracers", "Líneas hacia enemigos", false, function(state)
             if Utils then Utils.toast("Monody", "Tracers: " .. (state and "Activados" or "Desactivados"), 1.2) end
         end, Utils)
-        createDropdown(c4, "Modo Tracer", "Tipo de renderizado de la línea", { "Ambos (3D + 2D)", "3D Hardware Beam", "2D Line" }, 1, function(opt)
+        createDropdown(c4, "Modo", "Tipo de trazado", { "Ambos (3D + 2D)", "3D Beam", "2D Line" }, 1, function(opt)
             if Utils then Utils.toast("Monody", "Modo Tracer: " .. opt, 1.2) end
         end, Utils)
-        createDropdown(c4, "Origen Tracer", "Punto de inicio del trazador", { "Personaje (Player)", "Abajo (Bottom)", "Centro" }, 1, function(opt)
+        createDropdown(c4, "Origen", "Punto de origen", { "Player", "Abajo", "Centro" }, 1, function(opt)
             if Utils then Utils.toast("Monody", "Origen: " .. opt, 1.2) end
         end, Utils)
-        createColorPicker(c4, "Color Tracer", "Color de las líneas trazadoras", { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple" }, "White", function(colorName)
+        createColorPicker(c4, "Color Tracer", "Color de línea", { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple" }, "White", function(colorName)
             if Utils then Utils.toast("Monody", "Color Tracer: " .. colorName, 1.2) end
         end, Utils)
 
-        -- 5. Skill Blacklist (Darling Hub / Nameless Engine)
-        local c5 = createFeatureCard(scroll, "Skill Blacklist (Darling Hub)", cardBgAsset)
+        -- 5. Blacklist
+        local c5 = createFeatureCard(scroll, "Blacklist")
         c5.LayoutOrder = 6
-        createChipGrid(c5, "Excluir Habilidades de Aimbot", "Toca una habilidad para bloquearla y evitar que el aimbot la gaste", {
+        createChipGrid(c5, "Excluir Habilidades", "Toca una para bloquearla del aimbot", {
             "Melee Z", "Melee X", "Melee C",
             "Sword Z", "Sword X",
             "Fruit Z", "Fruit X", "Fruit C", "Fruit V", "Fruit F", "Fruit TAP",
             "Gun Z", "Gun X"
         }, function(chip, isBlacklisted)
             if Utils then
-                Utils.toast("Monody", chip .. ": " .. (isBlacklisted and "Bloqueado (Blacklist)" or "Habilitado"), 1.1)
+                Utils.toast("Monody", chip .. ": " .. (isBlacklisted and "Bloqueado" or "Habilitado"), 1.1)
             end
         end, Utils)
 
     elseif tabName == "Combat" then
-        local c1 = createFeatureCard(scroll, "Combate Automático", cardBgAsset)
+        local c1 = createFeatureCard(scroll, "Combate Automático")
         c1.LayoutOrder = 2
         createToggle(c1, "Fast Attack", "Ataque rápido sin retraso de animación", true, nil, Utils)
         createToggle(c1, "Auto Clicker", "Spam de golpes automático", false, nil, Utils)
         createToggle(c1, "Auto Skills Combo", "Lanza habilidades Z, X, C, V automáticamente", false, nil, Utils)
         createToggle(c1, "Kill Aura", "Daña a todos los enemigos cercanos", false, nil, Utils)
 
-        local c2 = createFeatureCard(scroll, "Rango & Armas", cardBgAsset)
+        local c2 = createFeatureCard(scroll, "Rango & Armas")
         c2.LayoutOrder = 3
         createSlider(c2, "Rango de Ataque", 10, 60, 28, nil, Utils)
         createActionButton(c2, "Equipar Mejor Arma", "Equipa tu mejor espada o fruta", function()
@@ -827,13 +811,13 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
     elseif tabName == "Players" then
-        local c1 = createFeatureCard(scroll, "Visuales (ESP)", cardBgAsset)
+        local c1 = createFeatureCard(scroll, "Visuales (ESP)")
         c1.LayoutOrder = 2
         createToggle(c1, "Player ESP", "Muestra nombres y distancia de jugadores", true, nil, Utils)
         createToggle(c1, "Box ESP", "Caja 2D alrededor de los personajes", false, nil, Utils)
         createToggle(c1, "Tracers", "Líneas rastreadoras hacia jugadores", false, nil, Utils)
 
-        local c2 = createFeatureCard(scroll, "Movilidad del Jugador", cardBgAsset)
+        local c2 = createFeatureCard(scroll, "Movilidad del Jugador")
         c2.LayoutOrder = 3
         createSlider(c2, "Velocidad (WalkSpeed)", 16, 250, 16, function(v)
             pcall(function()
@@ -853,13 +837,13 @@ function TabViews.build(tabName, parentContainer, options)
         createToggle(c2, "Modo Vuelo Móvil (Fly)", "Vuela con joystick táctil", false, nil, Utils)
 
     elseif tabName == "Soru" then
-        local c1 = createFeatureCard(scroll, "Habilidades de Soru", cardBgAsset)
+        local c1 = createFeatureCard(scroll, "Habilidades de Soru")
         c1.LayoutOrder = 2
         createToggle(c1, "Infinite Soru", "Soru sin límite de cargas", true, nil, Utils)
         createToggle(c1, "No Cooldown Soru", "Cero enfriamiento en esquivas", true, nil, Utils)
         createSlider(c1, "Multiplicador de Distancia", 1, 5, 2, nil, Utils)
 
-        local c2 = createFeatureCard(scroll, "Teletransporte Rápido", cardBgAsset)
+        local c2 = createFeatureCard(scroll, "Teletransporte Rápido")
         c2.LayoutOrder = 3
         createActionButton(c2, "Teleport a Enemigo Cercano", "Teletransporta directamente a la espalda", function()
             Utils.toast("Monody", "Soru instantáneo ejecutado", 1.5)
@@ -869,13 +853,13 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
     elseif tabName == "Macro" then
-        local c1 = createFeatureCard(scroll, "Automatización y Farm", cardBgAsset)
+        local c1 = createFeatureCard(scroll, "Automatización y Farm")
         c1.LayoutOrder = 2
         createToggle(c1, "Auto Farm Nivel", "Acepta misiones y farmea automáticamente", false, nil, Utils)
         createToggle(c1, "Auto Farm Enemigo Cercano", "Ataca los monstruos cercanos", false, nil, Utils)
         createToggle(c1, "Auto Recolectar Cofres", "Vuela a cofres y recoge dinero", false, nil, Utils)
 
-        local c2 = createFeatureCard(scroll, "Velocidad de Tween", cardBgAsset)
+        local c2 = createFeatureCard(scroll, "Velocidad de Tween")
         c2.LayoutOrder = 3
         createSlider(c2, "Velocidad de Vuelo (Tween)", 50, 350, 220, nil, Utils)
         createActionButton(c2, "Detener Macro", "Cancela cualquier ruta en curso", function()
@@ -883,7 +867,7 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
     elseif tabName == "VFX" then
-        local c1 = createFeatureCard(scroll, "Optimización y Gráficos", cardBgAsset)
+        local c1 = createFeatureCard(scroll, "Optimización y Gráficos")
         c1.LayoutOrder = 2
         createToggle(c1, "Quitar Niebla (Clear Sky)", "Elimina la niebla ambiental", true, nil, Utils)
         createToggle(c1, "Modo Fullbright", "Iluminación máxima en zonas oscuras", true, nil, Utils)
@@ -891,7 +875,7 @@ function TabViews.build(tabName, parentContainer, options)
         createToggle(c1, "Desactivar Sombras", "Aumenta la estabilidad en dispositivos gama baja", false, nil, Utils)
 
     elseif tabName == "Skins" then
-        local c1 = createFeatureCard(scroll, "Cosméticos y Efectos", cardBgAsset)
+        local c1 = createFeatureCard(scroll, "Cosméticos y Efectos")
         c1.LayoutOrder = 2
         createToggle(c1, "Aura Arcoíris de Arma", "Aura multicolor en espadas y puños", false, nil, Utils)
         createToggle(c1, "Estela de Personaje (Trail)", "Rastro de luz al moverte", false, nil, Utils)
@@ -900,13 +884,13 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
     elseif tabName == "Settings" then
-        local c1 = createFeatureCard(scroll, "Configuración de Interfaz", cardBgAsset)
+        local c1 = createFeatureCard(scroll, "Configuración de Interfaz")
         c1.LayoutOrder = 2
         createSlider(c1, "Escala UI (%)", 50, 120, 80, function(val)
             if options.onScaleChange then pcall(options.onScaleChange, val / 100) end
         end, Utils)
 
-        local c2 = createFeatureCard(scroll, "Utilidades de Servidor", cardBgAsset)
+        local c2 = createFeatureCard(scroll, "Utilidades de Servidor")
         c2.LayoutOrder = 3
         createActionButton(c2, "Reconectar al Servidor", "Reingresa a este mismo servidor", function()
             pcall(function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
