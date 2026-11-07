@@ -899,28 +899,95 @@ function TabViews.build(tabName, parentContainer, options)
     -- Populate content based on Tab
     if tabName == "Aimbot" then
         local FOVMod = options.FOV
+        local AimbotCore = options.AimbotCore
+        local PlayerAimbot = options.PlayerAimbot
+        local NPCAimbot = options.NPCAimbot
+        local BlacklistMod = options.Blacklist
+        local TracersMod = options.Tracers
+        local SilentAimMod = options.SilentAim
 
-        -- 1. Aimbot
+        -- 1. Aimbot (RJR Engine + Nameless Integration)
         local c1 = makeCard("Aimbot")
         c1.LayoutOrder = 2
-        createToggle(c1, "Player Silent Aim", "Redirige ataques hacia jugadores", false, nil, Utils)
-        createToggle(c1, "NPC Silent Aim", "Redirige ataques hacia NPCs", false, nil, Utils)
-        createToggle(c1, "Team Check", "Ignora jugadores aliados", true, nil, Utils)
-        createToggle(c1, "Aimlock", "Fija al jugador objetivo", false, nil, Utils)
-        createToggle(c1, "Aimlock Widget", "Botón táctil flotante", false, nil, Utils)
+        createToggle(c1, "Player Silent Aim", "Redirige ataques hacia jugadores", false, function(state)
+            if PlayerAimbot then
+                if state then PlayerAimbot.enable() else PlayerAimbot.disable() end
+            elseif AimbotCore then
+                AimbotCore.PlayerAimEnabled = state
+                if state then AimbotCore.startLoop() else AimbotCore.stopLoop() end
+            end
+            if Utils then Utils.toast("Monody", "Player Silent Aim: " .. (state and "ON" or "OFF"), 1.2) end
+        end, Utils)
+        createToggle(c1, "NPC Silent Aim", "Redirige ataques hacia NPCs", false, function(state)
+            if NPCAimbot then
+                if state then NPCAimbot.enable() else NPCAimbot.disable() end
+            elseif AimbotCore then
+                AimbotCore.NPCAimEnabled = state
+                if state then AimbotCore.startLoop() else AimbotCore.stopLoop() end
+            end
+            if Utils then Utils.toast("Monody", "NPC Silent Aim: " .. (state and "ON" or "OFF"), 1.2) end
+        end, Utils)
+        createToggle(c1, "Team Check", "Ignora jugadores aliados", true, function(state)
+            if PlayerAimbot and PlayerAimbot.setTeamCheck then
+                PlayerAimbot.setTeamCheck(state)
+            elseif AimbotCore then
+                AimbotCore.TeamCheck = state
+            end
+        end, Utils)
+        createToggle(c1, "Aimlock", "Fija al jugador objetivo", false, function(state)
+            if AimbotCore and AimbotCore.setLockPlayer then
+                AimbotCore.setLockPlayer(state)
+            end
+            if Utils then Utils.toast("Monody", "Aimlock: " .. (state and "ON" or "OFF"), 1.2) end
+        end, Utils)
         createDropdown(c1, "Modo", "Ángulo de detección", { "360°", "FOV", "180°" }, 1, function(opt)
+            local mode = "360"
+            if opt:find("FOV") then mode = "FOV"
+            elseif opt:find("180") then mode = "180" end
+            if PlayerAimbot and PlayerAimbot.setAimMode then
+                PlayerAimbot.setAimMode(mode)
+            elseif AimbotCore then
+                AimbotCore.AimMode = mode
+            end
             if Utils then Utils.toast("Monody", "Modo Aim: " .. opt, 1.2) end
         end, Utils)
         createDropdown(c1, "Prioridad", "Criterio de selección", { "Nearest", "Low HP", "Looking At Me" }, 1, function(opt)
+            if PlayerAimbot and PlayerAimbot.setPriority then
+                PlayerAimbot.setPriority(opt)
+            elseif AimbotCore then
+                AimbotCore.TargetPriority = opt
+            end
             if Utils then Utils.toast("Monody", "Prioridad: " .. opt, 1.2) end
         end, Utils)
-        createSlider(c1, "Rango", 100, 3000, 1000, nil, Utils)
+        createSlider(c1, "Rango", 100, 3000, 1000, function(val)
+            if NPCAimbot and NPCAimbot.setMaxRange then
+                NPCAimbot.setMaxRange(val)
+            end
+            if AimbotCore then
+                AimbotCore.MaxRange = val
+            end
+        end, Utils)
 
-        -- 2. Silent Aim BBG
-        local c2 = makeCard("Silent Aim BBG")
+        -- 2. Silent Aim (BBG Engine)
+        local c2 = makeCard("Silent Aim")
         c2.LayoutOrder = 3
-        createToggle(c2, "BBG Silent Aim", "Redirección clásica Mouse.Hit", false, nil, Utils)
-        createToggle(c2, "Soru Silent", "Redirección con flashstep", false, nil, Utils)
+        createToggle(c2, "Silent Aim", "Redirección clásica Mouse.Hit", false, function(state)
+            if SilentAimMod and SilentAimMod.setEnabled then
+                SilentAimMod.setEnabled(state)
+            end
+            if Utils then Utils.toast("Monody", "Silent Aim: " .. (state and "ON" or "OFF"), 1.2) end
+        end, Utils)
+        createToggle(c2, "Soru Silent", "Redirección con flashstep", false, function(state)
+            if SilentAimMod and SilentAimMod.setSoruSilent then
+                SilentAimMod.setSoruSilent(state)
+            end
+            if Utils then Utils.toast("Monody", "Soru Silent: " .. (state and "ON" or "OFF"), 1.2) end
+        end, Utils)
+        createSlider(c2, "Rango Silent Aim", 100, 3000, 1000, function(val)
+            if SilentAimMod and SilentAimMod.setMaxDistance then
+                SilentAimMod.setMaxDistance(val)
+            end
+        end, Utils)
 
         -- 3. FOV
         local c3 = makeCard("FOV")
@@ -945,21 +1012,55 @@ function TabViews.build(tabName, parentContainer, options)
             if Utils then Utils.toast("Monody", "Color FOV: " .. colorName, 1.2) end
         end, Utils)
 
-        -- 4. Tracers
+        -- 4. Tracers (Hardware 3D Beam + 2D Line)
         local c4 = makeCard("Tracers")
         c4.LayoutOrder = 5
-        createToggle(c4, "Mostrar Tracers", "Líneas hacia enemigos", false, nil, Utils)
+        createToggle(c4, "Mostrar Tracers", "Líneas hacia enemigos", false, function(state)
+            if TracersMod and TracersMod.setVisible then
+                TracersMod.setVisible(state)
+            end
+            if Utils then Utils.toast("Monody", "Tracers: " .. (state and "ON" or "OFF"), 1.2) end
+        end, Utils)
         createDropdown(c4, "Modo", "Tipo de trazado", { "Ambos (3D + 2D)", "3D Beam", "2D Line" }, 1, function(opt)
+            local m = "Both"
+            if opt:find("3D") and not opt:find("2D") then m = "3D Beam"
+            elseif opt:find("2D") and not opt:find("3D") then m = "2D Line" end
+            if TracersMod and TracersMod.setType then
+                TracersMod.setType(m)
+            end
             if Utils then Utils.toast("Monody", "Modo Tracer: " .. opt, 1.2) end
         end, Utils)
         createDropdown(c4, "Origen", "Punto de origen", { "Player", "Abajo", "Centro" }, 1, function(opt)
+            local orig = "Player"
+            if opt:find("Abajo") then orig = "Bottom"
+            elseif opt:find("Centro") then orig = "Center" end
+            if TracersMod and TracersMod.setOrigin then
+                TracersMod.setOrigin(orig)
+            end
             if Utils then Utils.toast("Monody", "Origen: " .. opt, 1.2) end
         end, Utils)
         createColorPicker(c4, "Color Tracer", "Color de línea", { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple" }, "White", function(colorName)
+            if TracersMod then
+                if colorName == "Rainbow" then
+                    if TracersMod.setRainbow then TracersMod.setRainbow(true) end
+                else
+                    local cMap = {
+                        White = Color3.fromRGB(255, 255, 255),
+                        Red = Color3.fromRGB(255, 60, 60),
+                        Green = Color3.fromRGB(60, 255, 120),
+                        Blue = Color3.fromRGB(60, 160, 255),
+                        Yellow = Color3.fromRGB(255, 225, 60),
+                        Purple = Color3.fromRGB(180, 80, 255),
+                    }
+                    if TracersMod.setColor then
+                        TracersMod.setColor(cMap[colorName] or Color3.fromRGB(255, 255, 255))
+                    end
+                end
+            end
             if Utils then Utils.toast("Monody", "Color Tracer: " .. colorName, 1.2) end
         end, Utils)
 
-        -- 5. Blacklist
+        -- 5. Blacklist (Nameless Engine)
         local c5 = makeCard("Blacklist")
         c5.LayoutOrder = 6
         createChipGrid(c5, "Excluir Habilidades", "Toca una para bloquearla del aimbot", {
@@ -968,6 +1069,14 @@ function TabViews.build(tabName, parentContainer, options)
             "Fruit Z", "Fruit X", "Fruit C", "Fruit V", "Fruit F", "Fruit TAP",
             "Gun Z", "Gun X"
         }, function(chip, isBlacklisted)
+            local cat, key = chip:match("^(%a+)%s+(%a+)$")
+            if cat and key then
+                if BlacklistMod and BlacklistMod.set then
+                    BlacklistMod.set(cat, key, isBlacklisted)
+                elseif AimbotCore and AimbotCore.BlacklistedKeys and AimbotCore.BlacklistedKeys[cat] then
+                    AimbotCore.BlacklistedKeys[cat][key] = isBlacklisted
+                end
+            end
             if Utils then
                 Utils.toast("Monody", chip .. ": " .. (isBlacklisted and "Bloqueado" or "Habilitado"), 1.1)
             end
@@ -993,7 +1102,13 @@ function TabViews.build(tabName, parentContainer, options)
         c1.LayoutOrder = 2
         createToggle(c1, "Player ESP", "Muestra nombres y distancia de jugadores", true, nil, Utils)
         createToggle(c1, "Box ESP", "Caja 2D alrededor de los personajes", false, nil, Utils)
-        createToggle(c1, "Tracers", "Líneas rastreadoras hacia jugadores", false, nil, Utils)
+        createToggle(c1, "Tracers", "Líneas rastreadoras hacia jugadores", false, function(state)
+            local TracersMod = options.Tracers
+            if TracersMod and TracersMod.setVisible then
+                TracersMod.setVisible(state)
+            end
+            if Utils then Utils.toast("Monody", "Tracers: " .. (state and "ON" or "OFF"), 1.2) end
+        end, Utils)
 
         local c2 = makeCard("Movilidad del Jugador")
         c2.LayoutOrder = 3

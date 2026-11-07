@@ -163,6 +163,12 @@ local HomeView = BestHub:Require("modules/ui/home_view.lua")
 local TabViews = BestHub:Require("modules/ui/tab_views.lua")
 local MobileToggle = BestHub:Require("modules/ui/mobile_toggle.lua")
 local FOV = BestHub:Require("modules/combat/fov.lua")
+local AimbotCore = BestHub:Require("modules/combat/aimbot_core.lua")
+local PlayerAimbot = BestHub:Require("modules/combat/player_aimbot.lua")
+local NPCAimbot = BestHub:Require("modules/combat/npc_aimbot.lua")
+local Blacklist = BestHub:Require("modules/combat/blacklist.lua")
+local Tracers = BestHub:Require("modules/combat/tracers.lua")
+local SilentAim = BestHub:Require("modules/combat/silent_aim.lua")
 local Window = BestHub:Require("modules/ui/window.lua")
 
 if not Window then
@@ -180,7 +186,13 @@ local WinInstance = Window.create({
     TabViews = TabViews,
     MobileToggle = MobileToggle,
     AssetManager = AssetManager,
-    FOV = FOV
+    FOV = FOV,
+    AimbotCore = AimbotCore,
+    PlayerAimbot = PlayerAimbot,
+    NPCAimbot = NPCAimbot,
+    Blacklist = Blacklist,
+    Tracers = Tracers,
+    SilentAim = SilentAim,
 })
 BestHub.Window = WinInstance
 

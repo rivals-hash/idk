@@ -123,6 +123,12 @@ function Window.create(dependencies)
                     Utils = Utils,
                     AssetManager = AssetManager,
                     FOV = dependencies.FOV,
+                    AimbotCore = dependencies.AimbotCore,
+                    PlayerAimbot = dependencies.PlayerAimbot,
+                    NPCAimbot = dependencies.NPCAimbot,
+                    Blacklist = dependencies.Blacklist,
+                    Tracers = dependencies.Tracers,
+                    SilentAim = dependencies.SilentAim,
                     onClose = function()
                         if sidebar and sidebar.Close then pcall(sidebar.Close) end
                     end,
