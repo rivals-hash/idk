@@ -20,7 +20,7 @@ function Sidebar.create(parentGui, options)
 
     local sidebarFrame = Instance.new("Frame")
     sidebarFrame.Name = "SidebarFrame"
-    sidebarFrame.Size = UDim2.new(0, 220, 0, 584)
+    sidebarFrame.Size = UDim2.new(0, 220, 0, 390)
     sidebarFrame.Position = UDim2.new(1, -220, 0, 0)
     sidebarFrame.BackgroundTransparency = 1
     sidebarFrame.Parent = parentGui
@@ -106,20 +106,20 @@ function Sidebar.create(parentGui, options)
     -- Content layout: Left tabs list (165px wide) + Right utility strip (45px wide)
     local tabsListFrame = Instance.new("Frame")
     tabsListFrame.Name = "TabsListFrame"
-    tabsListFrame.Size = UDim2.new(0, 160, 1, -44)
+    tabsListFrame.Size = UDim2.new(0, 160, 1, -42)
     tabsListFrame.Position = UDim2.new(0, 8, 0, 38)
     tabsListFrame.BackgroundTransparency = 1
     tabsListFrame.Parent = sidebarFrame
 
     local tabsLayout = Instance.new("UIListLayout")
-    tabsLayout.Padding = UDim.new(0, 6)
+    tabsLayout.Padding = UDim.new(0, 4)
     tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
     tabsLayout.Parent = tabsListFrame
 
     -- Right Action Strip
     local actionStrip = Instance.new("Frame")
     actionStrip.Name = "ActionStrip"
-    actionStrip.Size = UDim2.new(0, 42, 1, -44)
+    actionStrip.Size = UDim2.new(0, 42, 1, -42)
     actionStrip.Position = UDim2.new(1, -48, 0, 38)
     actionStrip.BackgroundTransparency = 1
     actionStrip.Parent = sidebarFrame
@@ -134,7 +134,7 @@ function Sidebar.create(parentGui, options)
     stripSeparator.Parent = actionStrip
 
     local actionLayout = Instance.new("UIListLayout")
-    actionLayout.Padding = UDim.new(0, 12)
+    actionLayout.Padding = UDim.new(0, 8)
     actionLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     actionLayout.VerticalAlignment = Enum.VerticalAlignment.Center
     actionLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -187,7 +187,7 @@ function Sidebar.create(parentGui, options)
     for i, tabData in ipairs(tabDefinitions) do
         local tabBtn = Instance.new("TextButton")
         tabBtn.Name = "Tab_" .. tabData.Id
-        tabBtn.Size = UDim2.new(1, 0, 0, 38)
+        tabBtn.Size = UDim2.new(1, 0, 0, 34)
         tabBtn.LayoutOrder = i
         tabBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         tabBtn.BackgroundTransparency = 1
@@ -223,8 +223,8 @@ function Sidebar.create(parentGui, options)
         -- Tab Icon
         local tabIcon = Instance.new("ImageLabel")
         tabIcon.Name = "TabIcon"
-        tabIcon.Size = UDim2.new(0, 22, 0, 22)
-        tabIcon.Position = UDim2.new(0, 14, 0.5, -11)
+        tabIcon.Size = UDim2.new(0, 20, 0, 20)
+        tabIcon.Position = UDim2.new(0, 12, 0.5, -10)
         tabIcon.BackgroundTransparency = 1
         tabIcon.Image = tabData.Icon
         tabIcon.ImageColor3 = Color3.fromRGB(160, 160, 180)
@@ -234,12 +234,12 @@ function Sidebar.create(parentGui, options)
         local tabLabel = Instance.new("TextLabel")
         tabLabel.Name = "TabLabel"
         tabLabel.Size = UDim2.new(1, -44, 1, 0)
-        tabLabel.Position = UDim2.new(0, 42, 0, 0)
+        tabLabel.Position = UDim2.new(0, 38, 0, 0)
         tabLabel.BackgroundTransparency = 1
         tabLabel.Font = Enum.Font.GothamMedium
         tabLabel.Text = tabData.Name
         tabLabel.TextColor3 = Color3.fromRGB(180, 180, 195)
-        tabLabel.TextSize = 13
+        tabLabel.TextSize = 12
         tabLabel.TextXAlignment = Enum.TextXAlignment.Left
         tabLabel.Parent = tabBtn
 
@@ -285,7 +285,7 @@ function Sidebar.create(parentGui, options)
     for i, act in ipairs(actionDefinitions) do
         local actBtn = Instance.new("ImageButton")
         actBtn.Name = "Action_" .. act.Id
-        actBtn.Size = UDim2.new(0, 26, 0, 26)
+        actBtn.Size = UDim2.new(0, 24, 0, 24)
         actBtn.LayoutOrder = i
         actBtn.BackgroundTransparency = 1
         actBtn.Image = act.Icon
@@ -311,7 +311,7 @@ function Sidebar.create(parentGui, options)
                 refreshTabStates()
                 pcall(onTabSelected, "Settings")
             elseif Utils then
-                Utils.toast(act.Action, "Feature shortcut: " .. act.Action, 2, act.Icon)
+                Utils.toast("Monody", act.Action, 2, act.Icon)
             end
         end)
     end

@@ -23,7 +23,7 @@ function Window.create(dependencies)
 
     -- Root ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "BestHub_ScreenGui"
+    ScreenGui.Name = "Monody_ScreenGui"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.IgnoreGuiInset = false
     ScreenGui.DisplayOrder = 10000
@@ -34,7 +34,7 @@ function Window.create(dependencies)
 
     -- Master Window Frame
     local mainFrame = Instance.new("Frame")
-    mainFrame.Name = "BestHub_MainWindow"
+    mainFrame.Name = "Monody_MainWindow"
     mainFrame.Size = UDim2.new(0, 755, 0, 584)
     mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -163,7 +163,7 @@ function Window.create(dependencies)
         bDesc.Position = UDim2.new(0, 16, 0, 42)
         bDesc.BackgroundTransparency = 1
         bDesc.Font = Enum.Font.Gotham
-        bDesc.Text = "BestHub modular features for " .. tabName .. " | Monody Premium"
+        bDesc.Text = "Monody Premium | " .. tabName
         bDesc.TextColor3 = Color3.fromRGB(180, 180, 195)
         bDesc.TextSize = 12
         bDesc.TextXAlignment = Enum.TextXAlignment.Left
@@ -193,11 +193,19 @@ function Window.create(dependencies)
         end,
         onMinimize = function()
             setWindowVisible(not isVisible)
-            Utils.toast("BestHub", "Hub minimized. Tap the floating icon to reopen.", 2.5)
+            Utils.toast("Monody", "Minimizado. Toca el icono para reabrir.", 2.5)
         end,
         onClose = function()
-            setWindowVisible(false)
-            Utils.toast("BestHub", "Hub closed. Tap the floating icon to reopen.", 2.5)
+            Utils.toast("Monody", "Cerrado por completo.", 2)
+            task.delay(0.1, function()
+                if ScreenGui and ScreenGui.Parent then
+                    pcall(function() ScreenGui:Destroy() end)
+                end
+                local env = (getgenv and getgenv()) or _G
+                if env.BestHub and type(env.BestHub.Unload) == "function" then
+                    pcall(function() env.BestHub:Unload() end)
+                end
+            end)
         end
     })
 

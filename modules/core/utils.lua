@@ -89,7 +89,7 @@ local toastContainer = nil
 function Utils.getToastContainer()
     if toastContainer and toastContainer.Parent then return toastContainer end
     local sg = Instance.new("ScreenGui")
-    sg.Name = "BestHub_ToastGui"
+    sg.Name = "Monody_ToastGui"
     sg.ResetOnSpawn = false
     sg.IgnoreGuiInset = true
     sg.DisplayOrder = 999999
@@ -150,7 +150,7 @@ function Utils.toast(title, message, duration, iconId)
     titleLbl.Position = UDim2.new(0, 44, 0, 6)
     titleLbl.BackgroundTransparency = 1
     titleLbl.Font = Enum.Font.GothamBold
-    titleLbl.Text = title or "BestHub"
+    titleLbl.Text = title or "Monody"
     titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
     titleLbl.TextSize = 13
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
