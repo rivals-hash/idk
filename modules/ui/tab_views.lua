@@ -13,20 +13,36 @@ local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Helper: Create interactive Toggle
+local task = task or {
+    defer = function(fn) fn() end,
+    delay = function(sec, fn) if delay then delay(sec, fn) else fn() end end,
+    spawn = function(fn) coroutine.wrap(fn)() end
+}
+
+local clamp = math.clamp or function(val, minVal, maxVal)
+    if val < minVal then return minVal end
+    if val > maxVal then return maxVal end
+    return val
+end
+math.clamp = clamp
+
+-- Helper: Create interactive Toggle with full-row mobile hitbox & debounce
 local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
+    local targetContainer = parent:FindFirstChild("Content") or parent
     local state = defaultState or false
 
     local row = Instance.new("Frame")
     row.Name = "Toggle_" .. title:gsub("%s+", "")
     row.Size = UDim2.new(1, 0, 0, 42)
     row.BackgroundTransparency = 1
-    row.Parent = parent
+    row.ZIndex = 3
+    row.Parent = targetContainer
 
     local textContainer = Instance.new("Frame")
     textContainer.Size = UDim2.new(1, -55, 1, 0)
     textContainer.Position = UDim2.new(0, 4, 0, 0)
     textContainer.BackgroundTransparency = 1
+    textContainer.ZIndex = 3
     textContainer.Parent = row
 
     local titleLbl = Instance.new("TextLabel")
@@ -38,6 +54,7 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     titleLbl.TextColor3 = Color3.fromRGB(240, 240, 245)
     titleLbl.TextSize = 13
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    titleLbl.ZIndex = 4
     titleLbl.Parent = textContainer
 
     local descLbl = Instance.new("TextLabel")
@@ -49,18 +66,17 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     descLbl.TextColor3 = Color3.fromRGB(160, 160, 175)
     descLbl.TextSize = 10
     descLbl.TextXAlignment = Enum.TextXAlignment.Left
+    descLbl.ZIndex = 4
     descLbl.Parent = textContainer
 
-    -- Pill Switch
-    local switchBtn = Instance.new("TextButton")
-    switchBtn.Name = "SwitchBtn"
+    -- Pill Switch Visual
+    local switchBtn = Instance.new("Frame")
+    switchBtn.Name = "SwitchVisual"
     switchBtn.Size = UDim2.new(0, 40, 0, 22)
     switchBtn.Position = UDim2.new(1, -44, 0.5, -11)
     switchBtn.BackgroundColor3 = state and Color3.fromRGB(240, 240, 255) or Color3.fromRGB(40, 40, 52)
     switchBtn.BorderSizePixel = 0
-    switchBtn.Text = ""
-    switchBtn.AutoButtonColor = false
-    switchBtn.Active = true
+    switchBtn.ZIndex = 4
     switchBtn.Parent = row
 
     local swCorner = Instance.new("UICorner")
@@ -78,6 +94,7 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     thumb.Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
     thumb.BackgroundColor3 = state and Color3.fromRGB(20, 20, 26) or Color3.fromRGB(180, 180, 195)
     thumb.BorderSizePixel = 0
+    thumb.ZIndex = 5
     thumb.Parent = switchBtn
 
     local thumbCorner = Instance.new("UICorner")
@@ -100,7 +117,24 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
         end
     end
 
+    -- Full-row Touch / Click Hitbox Button
+    local hitboxBtn = Instance.new("TextButton")
+    hitboxBtn.Name = "HitboxBtn"
+    hitboxBtn.Size = UDim2.new(1, 0, 1, 0)
+    hitboxBtn.Position = UDim2.new(0, 0, 0, 0)
+    hitboxBtn.BackgroundTransparency = 1
+    hitboxBtn.Text = ""
+    hitboxBtn.AutoButtonColor = false
+    hitboxBtn.Active = true
+    hitboxBtn.ZIndex = 10
+    hitboxBtn.Parent = row
+
+    local lastToggleTick = 0
     local function toggle()
+        local now = tick()
+        if now - lastToggleTick < 0.25 then return end
+        lastToggleTick = now
+
         state = not state
         updateVisual(true)
         if Utils then
@@ -109,24 +143,28 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
         if onToggle then pcall(onToggle, state) end
     end
 
-    switchBtn.Activated:Connect(toggle)
-    switchBtn.MouseButton1Click:Connect(toggle)
+    hitboxBtn.Activated:Connect(toggle)
+    hitboxBtn.MouseButton1Click:Connect(toggle)
+
     return row
 end
 
--- Helper: Create interactive Slider
+-- Helper: Create interactive Slider with wide touch hitbox for mobile thumbs
 local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, Utils)
+    local targetContainer = parent:FindFirstChild("Content") or parent
     local curVal = math.clamp(defaultVal or minVal, minVal, maxVal)
 
     local row = Instance.new("Frame")
     row.Name = "Slider_" .. title:gsub("%s+", "")
-    row.Size = UDim2.new(1, 0, 0, 44)
+    row.Size = UDim2.new(1, 0, 0, 46)
     row.BackgroundTransparency = 1
-    row.Parent = parent
+    row.ZIndex = 3
+    row.Parent = targetContainer
 
     local header = Instance.new("Frame")
     header.Size = UDim2.new(1, 0, 0, 18)
     header.BackgroundTransparency = 1
+    header.ZIndex = 3
     header.Parent = row
 
     local titleLbl = Instance.new("TextLabel")
@@ -138,6 +176,7 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     titleLbl.TextColor3 = Color3.fromRGB(240, 240, 245)
     titleLbl.TextSize = 12
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    titleLbl.ZIndex = 4
     titleLbl.Parent = header
 
     local valLbl = Instance.new("TextLabel")
@@ -145,22 +184,21 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     valLbl.Position = UDim2.new(0.7, 0, 0, 0)
     valLbl.BackgroundTransparency = 1
     valLbl.Font = Enum.Font.GothamBold
-    valLbl.Text = tostring(math.floor(curVal))
+    valLbl.Text = tostring(math.floor(curVal + 0.5))
     valLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
     valLbl.TextSize = 12
     valLbl.TextXAlignment = Enum.TextXAlignment.Right
+    valLbl.ZIndex = 4
     valLbl.Parent = header
 
-    -- Slider Bar Track
-    local track = Instance.new("TextButton")
+    -- Slider Track Frame
+    local track = Instance.new("Frame")
     track.Name = "Track"
     track.Size = UDim2.new(1, -8, 0, 6)
-    track.Position = UDim2.new(0, 4, 0, 26)
+    track.Position = UDim2.new(0, 4, 0, 28)
     track.BackgroundColor3 = Color3.fromRGB(45, 45, 58)
     track.BorderSizePixel = 0
-    track.Text = ""
-    track.AutoButtonColor = false
-    track.Active = true
+    track.ZIndex = 4
     track.Parent = row
 
     local trCorner = Instance.new("UICorner")
@@ -173,6 +211,7 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     fill.Size = UDim2.new(math.clamp(initRatio, 0, 1), 0, 1, 0)
     fill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     fill.BorderSizePixel = 0
+    fill.ZIndex = 5
     fill.Parent = track
 
     local fillCorner = Instance.new("UICorner")
@@ -181,18 +220,30 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
 
     local thumb = Instance.new("Frame")
     thumb.Name = "Thumb"
-    thumb.Size = UDim2.new(0, 14, 0, 14)
+    thumb.Size = UDim2.new(0, 16, 0, 16)
     thumb.AnchorPoint = Vector2.new(0.5, 0.5)
     thumb.Position = UDim2.new(math.clamp(initRatio, 0, 1), 0, 0.5, 0)
     thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     thumb.BorderSizePixel = 0
+    thumb.ZIndex = 6
     thumb.Parent = track
 
     local thCorner = Instance.new("UICorner")
     thCorner.CornerRadius = UDim.new(1, 0)
     thCorner.Parent = thumb
 
-    -- Slider interaction
+    -- Generous 36px high touch hitbox covering the slider track for mobile thumbs
+    local sliderHitbox = Instance.new("TextButton")
+    sliderHitbox.Name = "SliderHitbox"
+    sliderHitbox.Size = UDim2.new(1, 0, 0, 36)
+    sliderHitbox.Position = UDim2.new(0, 0, 0, 13)
+    sliderHitbox.BackgroundTransparency = 1
+    sliderHitbox.Text = ""
+    sliderHitbox.AutoButtonColor = false
+    sliderHitbox.Active = true
+    sliderHitbox.ZIndex = 10
+    sliderHitbox.Parent = row
+
     local sliding = false
     local function setRatio(ratio)
         ratio = math.clamp(ratio, 0, 1)
@@ -212,29 +263,37 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
         end
     end
 
-    track.InputBegan:Connect(function(input)
+    sliderHitbox.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             sliding = true
             updateFromInput(input)
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    sliding = false
-                end
-            end)
         end
     end)
 
-    UserInputService.InputChanged:Connect(function(input)
+    local connChanged = UserInputService.InputChanged:Connect(function(input)
         if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             updateFromInput(input)
         end
     end)
 
+    local connEnded = UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            sliding = false
+        end
+    end)
+
+    row.Destroying:Connect(function()
+        pcall(function() connChanged:Disconnect() end)
+        pcall(function() connEnded:Disconnect() end)
+    end)
+
     return row
 end
 
--- Helper: Create interactive Action Button
+-- Helper: Create interactive Action Button with debounce
 local function createActionButton(parent, title, desc, onClick, Utils)
+    local targetContainer = parent:FindFirstChild("Content") or parent
+
     local btn = Instance.new("TextButton")
     btn.Name = "Btn_" .. title:gsub("%s+", "")
     btn.Size = UDim2.new(1, 0, 0, 36)
@@ -244,7 +303,8 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     btn.Text = ""
     btn.AutoButtonColor = false
     btn.Active = true
-    btn.Parent = parent
+    btn.ZIndex = 4
+    btn.Parent = targetContainer
 
     local bCorner = Instance.new("UICorner")
     bCorner.CornerRadius = UDim.new(0, 6)
@@ -265,9 +325,15 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     lbl.TextColor3 = Color3.fromRGB(240, 240, 250)
     lbl.TextSize = 13
     lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.ZIndex = 5
     lbl.Parent = btn
 
+    local lastPress = 0
     local function onPress()
+        local now = tick()
+        if now - lastPress < 0.25 then return end
+        lastPress = now
+
         TweenService:Create(btn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(50, 50, 70) }):Play()
         task.delay(0.1, function()
             TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(28, 28, 38) }):Play()
@@ -282,6 +348,7 @@ end
 
 -- Helper: Create interactive Mobile Dropdown / Option Cycle Pill
 local function createDropdown(parent, title, desc, optionsList, defaultIndex, onSelect, Utils)
+    local targetContainer = parent:FindFirstChild("Content") or parent
     local curIdx = defaultIndex or 1
     optionsList = (optionsList and #optionsList > 0) and optionsList or { "Default" }
 
@@ -289,12 +356,14 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     row.Name = "Dropdown_" .. title:gsub("%s+", "")
     row.Size = UDim2.new(1, 0, 0, 44)
     row.BackgroundTransparency = 1
-    row.Parent = parent
+    row.ZIndex = 3
+    row.Parent = targetContainer
 
     local textContainer = Instance.new("Frame")
     textContainer.Size = UDim2.new(1, -145, 1, 0)
     textContainer.Position = UDim2.new(0, 4, 0, 0)
     textContainer.BackgroundTransparency = 1
+    textContainer.ZIndex = 3
     textContainer.Parent = row
 
     local titleLbl = Instance.new("TextLabel")
@@ -306,6 +375,7 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     titleLbl.TextColor3 = Color3.fromRGB(240, 240, 245)
     titleLbl.TextSize = 13
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    titleLbl.ZIndex = 4
     titleLbl.Parent = textContainer
 
     local descLbl = Instance.new("TextLabel")
@@ -317,20 +387,22 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     descLbl.TextColor3 = Color3.fromRGB(160, 160, 175)
     descLbl.TextSize = 10
     descLbl.TextXAlignment = Enum.TextXAlignment.Left
+    descLbl.ZIndex = 4
     descLbl.Parent = textContainer
 
     local pillBtn = Instance.new("TextButton")
     pillBtn.Name = "PillBtn"
-    pillBtn.Size = UDim2.new(0, 138, 0, 26)
-    pillBtn.Position = UDim2.new(1, -142, 0.5, -13)
+    pillBtn.Size = UDim2.new(0, 138, 0, 28)
+    pillBtn.Position = UDim2.new(1, -142, 0.5, -14)
     pillBtn.BackgroundColor3 = Color3.fromRGB(32, 32, 44)
     pillBtn.BorderSizePixel = 0
     pillBtn.Text = optionsList[curIdx] or ""
     pillBtn.Font = Enum.Font.GothamBold
-    pillBtn.TextSize = 10
+    pillBtn.TextSize = 11
     pillBtn.TextColor3 = Color3.fromRGB(235, 235, 250)
     pillBtn.AutoButtonColor = false
     pillBtn.Active = true
+    pillBtn.ZIndex = 5
     pillBtn.Parent = row
 
     local pillCorner = Instance.new("UICorner")
@@ -342,7 +414,12 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     pillStroke.Thickness = 1
     pillStroke.Parent = pillBtn
 
+    local lastCycle = 0
     local function cycleOption()
+        local now = tick()
+        if now - lastCycle < 0.25 then return end
+        lastCycle = now
+
         curIdx = curIdx + 1
         if curIdx > #optionsList then curIdx = 1 end
         local chosen = optionsList[curIdx]
@@ -358,12 +435,28 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
 
     pillBtn.Activated:Connect(cycleOption)
     pillBtn.MouseButton1Click:Connect(cycleOption)
+
+    -- Full-row touch hitbox so tapping left text also cycles smoothly
+    local rowHitbox = Instance.new("TextButton")
+    rowHitbox.Name = "RowHitbox"
+    rowHitbox.Size = UDim2.new(1, -146, 1, 0)
+    rowHitbox.Position = UDim2.new(0, 0, 0, 0)
+    rowHitbox.BackgroundTransparency = 1
+    rowHitbox.Text = ""
+    rowHitbox.AutoButtonColor = false
+    rowHitbox.Active = true
+    rowHitbox.ZIndex = 6
+    rowHitbox.Parent = row
+
+    rowHitbox.Activated:Connect(cycleOption)
+    rowHitbox.MouseButton1Click:Connect(cycleOption)
+
     return row
 end
 
 -- Helper: Create interactive Color Palette Selector (Darling X Standard)
--- Helper: Create interactive Color Palette Selector (Darling X Standard)
 local function createColorPicker(parent, title, desc, colorNames, defaultColorName, onSelectColor, Utils)
+    local targetContainer = parent:FindFirstChild("Content") or parent
     local selected = defaultColorName or "Rainbow"
     colorNames = colorNames or { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple" }
     local hasDesc = (desc and #desc > 0)
@@ -373,15 +466,17 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     container.Name = "ColorPicker_" .. title:gsub("%s+", "")
     container.Size = UDim2.new(1, 0, 0, containerHeight)
     container.BackgroundTransparency = 1
-    container.Parent = parent
+    container.ZIndex = 3
+    container.Parent = targetContainer
 
     local headerRow = Instance.new("Frame")
     headerRow.Size = UDim2.new(1, 0, 0, 22)
     headerRow.BackgroundTransparency = 1
+    headerRow.ZIndex = 3
     headerRow.Parent = container
 
     local titleLbl = Instance.new("TextLabel")
-    titleLbl.Size = UDim2.new(1, -70, 1, 0)
+    titleLbl.Size = UDim2.new(0.6, 0, 1, 0)
     titleLbl.Position = UDim2.new(0, 4, 0, 0)
     titleLbl.BackgroundTransparency = 1
     titleLbl.Font = Enum.Font.GothamMedium
@@ -389,50 +484,54 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     titleLbl.TextColor3 = Color3.fromRGB(240, 240, 245)
     titleLbl.TextSize = 13
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    titleLbl.ZIndex = 4
     titleLbl.Parent = headerRow
 
     local valLbl = Instance.new("TextLabel")
-    valLbl.Size = UDim2.new(0, 65, 1, 0)
-    valLbl.Position = UDim2.new(1, -69, 0, 0)
+    valLbl.Size = UDim2.new(0.4, -8, 1, 0)
+    valLbl.Position = UDim2.new(0.6, 0, 0, 0)
     valLbl.BackgroundTransparency = 1
     valLbl.Font = Enum.Font.GothamBold
     valLbl.Text = selected
-    valLbl.TextColor3 = Color3.fromRGB(210, 210, 255)
-    valLbl.TextSize = 11
+    valLbl.TextColor3 = Color3.fromRGB(255, 215, 255)
+    valLbl.TextSize = 12
     valLbl.TextXAlignment = Enum.TextXAlignment.Right
+    valLbl.ZIndex = 4
     valLbl.Parent = headerRow
 
     if hasDesc then
         local descLbl = Instance.new("TextLabel")
-        descLbl.Size = UDim2.new(1, 0, 0, 16)
-        descLbl.Position = UDim2.new(0, 4, 0, 22)
+        descLbl.Size = UDim2.new(1, -8, 0, 14)
+        descLbl.Position = UDim2.new(0, 4, 0, 20)
         descLbl.BackgroundTransparency = 1
         descLbl.Font = Enum.Font.Gotham
         descLbl.Text = desc
         descLbl.TextColor3 = Color3.fromRGB(160, 160, 175)
         descLbl.TextSize = 10
         descLbl.TextXAlignment = Enum.TextXAlignment.Left
+        descLbl.ZIndex = 4
         descLbl.Parent = container
     end
 
     local scroll = Instance.new("ScrollingFrame")
-    scroll.Size = UDim2.new(1, 0, 0, 30)
-    scroll.Position = UDim2.new(0, 0, 0, hasDesc and 42 or 24)
+    scroll.Name = "PaletteScroll"
+    scroll.Size = UDim2.new(1, -8, 0, 32)
+    scroll.Position = UDim2.new(0, 4, 0, hasDesc and 38 or 24)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
-    scroll.ScrollBarThickness = 0
-    scroll.CanvasSize = UDim2.new(0, #colorNames * 68, 0, 0)
+    scroll.ScrollBarThickness = 2
+    scroll.CanvasSize = UDim2.new(0, (#colorNames * 68), 0, 0)
     scroll.ScrollingDirection = Enum.ScrollingDirection.X
+    scroll.ZIndex = 5
     scroll.Parent = container
 
-    local layout = Instance.new("UIListLayout")
-    layout.FillDirection = Enum.FillDirection.Horizontal
-    layout.Padding = UDim.new(0, 6)
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Parent = scroll
+    local pLayout = Instance.new("UIListLayout")
+    pLayout.FillDirection = Enum.FillDirection.Horizontal
+    pLayout.Padding = UDim.new(0, 6)
+    pLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    pLayout.Parent = scroll
 
     local colorPills = {}
-
     local function updatePills()
         for cName, pill in pairs(colorPills) do
             local isSel = (cName == selected)
@@ -443,6 +542,7 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
         valLbl.Text = selected
     end
 
+    local lastPickTick = 0
     for idx, cName in ipairs(colorNames) do
         local pill = Instance.new("TextButton")
         pill.Name = "Color_" .. cName
@@ -456,6 +556,7 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
         pill.AutoButtonColor = false
         pill.Active = true
         pill.LayoutOrder = idx
+        pill.ZIndex = 6
         pill.Parent = scroll
 
         local pCorner = Instance.new("UICorner")
@@ -470,6 +571,10 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
         colorPills[cName] = { Frame = pill, Stroke = pStroke }
 
         local function pick()
+            local now = tick()
+            if now - lastPickTick < 0.2 then return end
+            lastPickTick = now
+
             selected = cName
             updatePills()
             if onSelectColor then pcall(onSelectColor, cName) end
@@ -484,6 +589,7 @@ end
 
 -- Helper: Create interactive Multi-Chip Grid for Skill Blacklist
 local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Utils)
+    local targetContainer = parent:FindFirstChild("Content") or parent
     local blacklisted = {}
     local hasDesc = (desc and #desc > 0)
     local totalHeight = hasDesc and 144 or 126
@@ -492,7 +598,8 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     container.Name = "ChipGrid_" .. title:gsub("%s+", "")
     container.Size = UDim2.new(1, 0, 0, totalHeight)
     container.BackgroundTransparency = 1
-    container.Parent = parent
+    container.ZIndex = 3
+    container.Parent = targetContainer
 
     local titleLbl = Instance.new("TextLabel")
     titleLbl.Size = UDim2.new(1, 0, 0, 20)
@@ -503,6 +610,7 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     titleLbl.TextColor3 = Color3.fromRGB(240, 240, 245)
     titleLbl.TextSize = 13
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    titleLbl.ZIndex = 4
     titleLbl.Parent = container
 
     if hasDesc then
@@ -515,35 +623,47 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
         descLbl.TextColor3 = Color3.fromRGB(160, 160, 175)
         descLbl.TextSize = 10
         descLbl.TextXAlignment = Enum.TextXAlignment.Left
+        descLbl.ZIndex = 4
         descLbl.Parent = container
     end
 
-    local gridFrame = Instance.new("Frame")
-    gridFrame.Name = "Grid"
-    gridFrame.Size = UDim2.new(1, 0, 0, 92)
-    gridFrame.Position = UDim2.new(0, 0, 0, hasDesc and 40 or 24)
-    gridFrame.BackgroundTransparency = 1
-    gridFrame.Parent = container
+    local gridScroll = Instance.new("ScrollingFrame")
+    gridScroll.Name = "GridScroll"
+    gridScroll.Size = UDim2.new(1, 0, 0, hasDesc and 100 or 98)
+    gridScroll.Position = UDim2.new(0, 0, 0, hasDesc and 40 or 24)
+    gridScroll.BackgroundTransparency = 1
+    gridScroll.BorderSizePixel = 0
+    gridScroll.ScrollBarThickness = 2
+    gridScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    gridScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    gridScroll.ZIndex = 5
+    gridScroll.Parent = container
 
     local gridLayout = Instance.new("UIGridLayout")
-    gridLayout.CellSize = UDim2.new(0, 64, 0, 26)
-    gridLayout.CellPadding = UDim2.new(0, 5, 0, 5)
+    gridLayout.CellSize = UDim2.new(0, 84, 0, 26)
+    gridLayout.CellPadding = UDim2.new(0, 6, 0, 6)
     gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    gridLayout.Parent = gridFrame
+    gridLayout.Parent = gridScroll
+
+    gridLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        gridScroll.CanvasSize = UDim2.new(0, 0, 0, gridLayout.AbsoluteContentSize.Y + 8)
+    end)
 
     for idx, chipName in ipairs(chipsList) do
         local chip = Instance.new("TextButton")
         chip.Name = "Chip_" .. chipName:gsub("%s+", "")
+        chip.Size = UDim2.new(0, 84, 0, 26)
         chip.BackgroundColor3 = Color3.fromRGB(28, 28, 38)
         chip.BorderSizePixel = 0
         chip.Text = chipName
-        chip.Font = Enum.Font.GothamMedium
+        chip.Font = Enum.Font.Gotham
         chip.TextSize = 10
         chip.TextColor3 = Color3.fromRGB(210, 210, 225)
         chip.AutoButtonColor = false
         chip.Active = true
         chip.LayoutOrder = idx
-        chip.Parent = gridFrame
+        chip.ZIndex = 6
+        chip.Parent = gridScroll
 
         local cCorner = Instance.new("UICorner")
         cCorner.CornerRadius = UDim.new(0, 6)
@@ -554,8 +674,13 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
         cStroke.Thickness = 1
         cStroke.Parent = chip
 
+        local lastChipTick = 0
         local function toggleChip()
-            local isBl = not (blacklisted[chipName] == true)
+            local now = tick()
+            if now - lastChipTick < 0.2 then return end
+            lastChipTick = now
+
+            local isBl = not blacklisted[chipName]
             blacklisted[chipName] = isBl
 
             local targetBg = isBl and Color3.fromRGB(75, 25, 35) or Color3.fromRGB(28, 28, 38)
@@ -575,15 +700,15 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     return container
 end
 
--- Helper: Create a styled Feature Card inside a Tab View (Clean solid glass without scale bug)
-local function createFeatureCard(parent, title)
+-- Helper: Create a styled Feature Card inside a Tab View with dark texture background
+local function createFeatureCard(parent, title, bgAsset)
     local card = Instance.new("Frame")
     card.Name = "Card_" .. title:gsub("%s+", "")
-    card.Size = UDim2.new(1, -12, 0, 0)
-    card.AutomaticSize = Enum.AutomaticSize.Y
-    card.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
-    card.BackgroundTransparency = 0.2
+    card.Size = UDim2.new(1, -12, 0, 40)
+    card.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
+    card.BackgroundTransparency = 0.25
     card.BorderSizePixel = 0
+    card.ClipsDescendants = true
     card.Parent = parent
 
     local corner = Instance.new("UICorner")
@@ -591,24 +716,48 @@ local function createFeatureCard(parent, title)
     corner.Parent = card
 
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(60, 60, 75)
+    stroke.Color = Color3.fromRGB(65, 65, 80)
     stroke.Thickness = 1
     stroke.Transparency = 0.4
     stroke.Parent = card
+
+    -- Dark textured background matching HomeView cards
+    local bg = Instance.new("ImageLabel")
+    bg.Name = "CardBg"
+    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.BackgroundTransparency = 1
+    bg.Image = bgAsset or "rbxassetid://139820186687064"
+    bg.ScaleType = Enum.ScaleType.Stretch
+    bg.ZIndex = 1
+    bg.Active = false
+    bg.Parent = card
+
+    local bgCorner = Instance.new("UICorner")
+    bgCorner.CornerRadius = UDim.new(0, 8)
+    bgCorner.Parent = bg
+
+    -- Content frame hosting the padding, list layout, and all controls
+    local content = Instance.new("Frame")
+    content.Name = "Content"
+    content.Size = UDim2.new(1, 0, 1, 0)
+    content.BackgroundTransparency = 1
+    content.ZIndex = 2
+    content.Parent = card
 
     local pad = Instance.new("UIPadding")
     pad.PaddingTop = UDim.new(0, 8)
     pad.PaddingBottom = UDim.new(0, 10)
     pad.PaddingLeft = UDim.new(0, 10)
     pad.PaddingRight = UDim.new(0, 10)
-    pad.Parent = card
+    pad.Parent = content
 
     local layout = Instance.new("UIListLayout")
     layout.Padding = UDim.new(0, 6)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Parent = card
+    layout.Parent = content
 
     local header = Instance.new("TextLabel")
+    header.Name = "Header"
     header.Size = UDim2.new(1, 0, 0, 20)
     header.BackgroundTransparency = 1
     header.Font = Enum.Font.GothamBold
@@ -617,7 +766,15 @@ local function createFeatureCard(parent, title)
     header.TextSize = 11
     header.TextXAlignment = Enum.TextXAlignment.Left
     header.LayoutOrder = 0
-    header.Parent = card
+    header.ZIndex = 3
+    header.Parent = content
+
+    local function refreshSize()
+        local h = math.max(40, layout.AbsoluteContentSize.Y + 20)
+        card.Size = UDim2.new(1, -12, 0, h)
+    end
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(refreshSize)
+    task.defer(refreshSize)
 
     return card
 end
@@ -627,6 +784,7 @@ function TabViews.build(tabName, parentContainer, options)
     options = options or {}
     local Utils = options.Utils
     local AssetManager = options.AssetManager
+    local cardBg = (AssetManager and AssetManager.get("card_bg.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
 
     local scroll = Instance.new("ScrollingFrame")
     scroll.Name = "TabView_" .. tabName
@@ -636,7 +794,6 @@ function TabViews.build(tabName, parentContainer, options)
     scroll.ScrollBarThickness = 3
     scroll.ScrollBarImageColor3 = Color3.fromRGB(140, 140, 160)
     scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-    scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
     scroll.Visible = false
     scroll.ClipsDescendants = true
     scroll.Parent = parentContainer
@@ -654,19 +811,20 @@ function TabViews.build(tabName, parentContainer, options)
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Parent = scroll
 
-    -- Ensure ScrollingFrame CanvasSize dynamically adapts
+    -- Ensure ScrollingFrame CanvasSize dynamically adapts to cards
     listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         scroll.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 28)
     end)
 
-    -- Top Header Banner Card (Simple & clean, no AI fluff)
+    -- Top Header Banner Card with dark texture background
     local banner = Instance.new("Frame")
     banner.Name = "Banner"
     banner.Size = UDim2.new(1, -12, 0, 46)
-    banner.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+    banner.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
     banner.BackgroundTransparency = 0.2
     banner.BorderSizePixel = 0
     banner.LayoutOrder = 1
+    banner.ClipsDescendants = true
     banner.Parent = scroll
 
     local bCorner = Instance.new("UICorner")
@@ -674,10 +832,24 @@ function TabViews.build(tabName, parentContainer, options)
     bCorner.Parent = banner
 
     local bStroke = Instance.new("UIStroke")
-    bStroke.Color = Color3.fromRGB(60, 60, 75)
+    bStroke.Color = Color3.fromRGB(65, 65, 80)
     bStroke.Thickness = 1
-    bStroke.Transparency = 0.5
+    bStroke.Transparency = 0.4
     bStroke.Parent = banner
+
+    local bannerBg = Instance.new("ImageLabel")
+    bannerBg.Name = "BannerBg"
+    bannerBg.Size = UDim2.new(1, 0, 1, 0)
+    bannerBg.BackgroundTransparency = 1
+    bannerBg.Image = cardBg
+    bannerBg.ScaleType = Enum.ScaleType.Stretch
+    bannerBg.ZIndex = 1
+    bannerBg.Active = false
+    bannerBg.Parent = banner
+
+    local bannerBgCorner = Instance.new("UICorner")
+    bannerBgCorner.CornerRadius = UDim.new(0, 8)
+    bannerBgCorner.Parent = bannerBg
 
     local bTitle = Instance.new("TextLabel")
     bTitle.Size = UDim2.new(1, -20, 0, 20)
@@ -688,6 +860,7 @@ function TabViews.build(tabName, parentContainer, options)
     bTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
     bTitle.TextSize = 16
     bTitle.TextXAlignment = Enum.TextXAlignment.Left
+    bTitle.ZIndex = 2
     bTitle.Parent = banner
 
     local bDesc = Instance.new("TextLabel")
@@ -699,54 +872,44 @@ function TabViews.build(tabName, parentContainer, options)
     bDesc.TextColor3 = Color3.fromRGB(150, 150, 165)
     bDesc.TextSize = 11
     bDesc.TextXAlignment = Enum.TextXAlignment.Left
+    bDesc.ZIndex = 2
     bDesc.Parent = banner
+
+    local function makeCard(title)
+        return createFeatureCard(scroll, title, cardBg)
+    end
 
     -- Populate content based on Tab
     if tabName == "Aimbot" then
         local FOVMod = options.FOV
 
         -- 1. Aimbot
-        local c1 = createFeatureCard(scroll, "Aimbot")
+        local c1 = makeCard("Aimbot")
         c1.LayoutOrder = 2
-        createToggle(c1, "Player Silent Aim", "Redirige ataques hacia jugadores", false, function(state)
-            if Utils then Utils.toast("Monody", "Player Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
-        end, Utils)
-        createToggle(c1, "NPC Silent Aim", "Redirige ataques hacia NPCs", false, function(state)
-            if Utils then Utils.toast("Monody", "NPC Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
-        end, Utils)
+        createToggle(c1, "Player Silent Aim", "Redirige ataques hacia jugadores", false, nil, Utils)
+        createToggle(c1, "NPC Silent Aim", "Redirige ataques hacia NPCs", false, nil, Utils)
         createToggle(c1, "Team Check", "Ignora jugadores aliados", true, nil, Utils)
-        createToggle(c1, "Aimlock", "Fija al jugador objetivo", false, function(state)
-            if Utils then Utils.toast("Monody", "Aimlock: " .. (state and "Activado" or "Desactivado"), 1.2) end
-        end, Utils)
-        createToggle(c1, "Aimlock Widget", "Botón táctil flotante", false, function(state)
-            if Utils then Utils.toast("Monody", "Aimlock Widget: " .. (state and "Visible" or "Oculto"), 1.2) end
-        end, Utils)
+        createToggle(c1, "Aimlock", "Fija al jugador objetivo", false, nil, Utils)
+        createToggle(c1, "Aimlock Widget", "Botón táctil flotante", false, nil, Utils)
         createDropdown(c1, "Modo", "Ángulo de detección", { "360°", "FOV", "180°" }, 1, function(opt)
             if Utils then Utils.toast("Monody", "Modo Aim: " .. opt, 1.2) end
         end, Utils)
         createDropdown(c1, "Prioridad", "Criterio de selección", { "Nearest", "Low HP", "Looking At Me" }, 1, function(opt)
             if Utils then Utils.toast("Monody", "Prioridad: " .. opt, 1.2) end
         end, Utils)
-        createSlider(c1, "Rango", 100, 3000, 1000, function(val)
-            -- Slider range callback
-        end, Utils)
+        createSlider(c1, "Rango", 100, 3000, 1000, nil, Utils)
 
         -- 2. Silent Aim BBG
-        local c2 = createFeatureCard(scroll, "Silent Aim BBG")
+        local c2 = makeCard("Silent Aim BBG")
         c2.LayoutOrder = 3
-        createToggle(c2, "BBG Silent Aim", "Redirección clásica Mouse.Hit", false, function(state)
-            if Utils then Utils.toast("Monody", "BBG Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
-        end, Utils)
-        createToggle(c2, "Soru Silent", "Redirección con flashstep", false, function(state)
-            if Utils then Utils.toast("Monody", "Soru Silent: " .. (state and "Activado" or "Desactivado"), 1.2) end
-        end, Utils)
+        createToggle(c2, "BBG Silent Aim", "Redirección clásica Mouse.Hit", false, nil, Utils)
+        createToggle(c2, "Soru Silent", "Redirección con flashstep", false, nil, Utils)
 
         -- 3. FOV
-        local c3 = createFeatureCard(scroll, "FOV")
+        local c3 = makeCard("FOV")
         c3.LayoutOrder = 4
         createToggle(c3, "Círculo FOV", "Dibuja el círculo en pantalla", false, function(state)
             if FOVMod and FOVMod.setVisible then FOVMod.setVisible(state) end
-            if Utils then Utils.toast("Monody", "Círculo FOV: " .. (state and "Visible" or "Oculto"), 1.2) end
         end, Utils)
         createSlider(c3, "Radio FOV", 20, 500, 120, function(val)
             if FOVMod and FOVMod.setRadius then FOVMod.setRadius(val) end
@@ -766,11 +929,9 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
         -- 4. Tracers
-        local c4 = createFeatureCard(scroll, "Tracers")
+        local c4 = makeCard("Tracers")
         c4.LayoutOrder = 5
-        createToggle(c4, "Mostrar Tracers", "Líneas hacia enemigos", false, function(state)
-            if Utils then Utils.toast("Monody", "Tracers: " .. (state and "Activados" or "Desactivados"), 1.2) end
-        end, Utils)
+        createToggle(c4, "Mostrar Tracers", "Líneas hacia enemigos", false, nil, Utils)
         createDropdown(c4, "Modo", "Tipo de trazado", { "Ambos (3D + 2D)", "3D Beam", "2D Line" }, 1, function(opt)
             if Utils then Utils.toast("Monody", "Modo Tracer: " .. opt, 1.2) end
         end, Utils)
@@ -782,7 +943,7 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
         -- 5. Blacklist
-        local c5 = createFeatureCard(scroll, "Blacklist")
+        local c5 = makeCard("Blacklist")
         c5.LayoutOrder = 6
         createChipGrid(c5, "Excluir Habilidades", "Toca una para bloquearla del aimbot", {
             "Melee Z", "Melee X", "Melee C",
@@ -796,14 +957,14 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
     elseif tabName == "Combat" then
-        local c1 = createFeatureCard(scroll, "Combate Automático")
+        local c1 = makeCard("Combate Automático")
         c1.LayoutOrder = 2
         createToggle(c1, "Fast Attack", "Ataque rápido sin retraso de animación", true, nil, Utils)
         createToggle(c1, "Auto Clicker", "Spam de golpes automático", false, nil, Utils)
         createToggle(c1, "Auto Skills Combo", "Lanza habilidades Z, X, C, V automáticamente", false, nil, Utils)
         createToggle(c1, "Kill Aura", "Daña a todos los enemigos cercanos", false, nil, Utils)
 
-        local c2 = createFeatureCard(scroll, "Rango & Armas")
+        local c2 = makeCard("Rango & Armas")
         c2.LayoutOrder = 3
         createSlider(c2, "Rango de Ataque", 10, 60, 28, nil, Utils)
         createActionButton(c2, "Equipar Mejor Arma", "Equipa tu mejor espada o fruta", function()
@@ -811,13 +972,13 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
     elseif tabName == "Players" then
-        local c1 = createFeatureCard(scroll, "Visuales (ESP)")
+        local c1 = makeCard("Visuales (ESP)")
         c1.LayoutOrder = 2
         createToggle(c1, "Player ESP", "Muestra nombres y distancia de jugadores", true, nil, Utils)
         createToggle(c1, "Box ESP", "Caja 2D alrededor de los personajes", false, nil, Utils)
         createToggle(c1, "Tracers", "Líneas rastreadoras hacia jugadores", false, nil, Utils)
 
-        local c2 = createFeatureCard(scroll, "Movilidad del Jugador")
+        local c2 = makeCard("Movilidad del Jugador")
         c2.LayoutOrder = 3
         createSlider(c2, "Velocidad (WalkSpeed)", 16, 250, 16, function(v)
             pcall(function()
@@ -837,13 +998,13 @@ function TabViews.build(tabName, parentContainer, options)
         createToggle(c2, "Modo Vuelo Móvil (Fly)", "Vuela con joystick táctil", false, nil, Utils)
 
     elseif tabName == "Soru" then
-        local c1 = createFeatureCard(scroll, "Habilidades de Soru")
+        local c1 = makeCard("Habilidades de Soru")
         c1.LayoutOrder = 2
         createToggle(c1, "Infinite Soru", "Soru sin límite de cargas", true, nil, Utils)
         createToggle(c1, "No Cooldown Soru", "Cero enfriamiento en esquivas", true, nil, Utils)
         createSlider(c1, "Multiplicador de Distancia", 1, 5, 2, nil, Utils)
 
-        local c2 = createFeatureCard(scroll, "Teletransporte Rápido")
+        local c2 = makeCard("Teletransporte Rápido")
         c2.LayoutOrder = 3
         createActionButton(c2, "Teleport a Enemigo Cercano", "Teletransporta directamente a la espalda", function()
             Utils.toast("Monody", "Soru instantáneo ejecutado", 1.5)
@@ -853,13 +1014,13 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
     elseif tabName == "Macro" then
-        local c1 = createFeatureCard(scroll, "Automatización y Farm")
+        local c1 = makeCard("Automatización y Farm")
         c1.LayoutOrder = 2
         createToggle(c1, "Auto Farm Nivel", "Acepta misiones y farmea automáticamente", false, nil, Utils)
         createToggle(c1, "Auto Farm Enemigo Cercano", "Ataca los monstruos cercanos", false, nil, Utils)
         createToggle(c1, "Auto Recolectar Cofres", "Vuela a cofres y recoge dinero", false, nil, Utils)
 
-        local c2 = createFeatureCard(scroll, "Velocidad de Tween")
+        local c2 = makeCard("Velocidad de Tween")
         c2.LayoutOrder = 3
         createSlider(c2, "Velocidad de Vuelo (Tween)", 50, 350, 220, nil, Utils)
         createActionButton(c2, "Detener Macro", "Cancela cualquier ruta en curso", function()
@@ -867,7 +1028,7 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
     elseif tabName == "VFX" then
-        local c1 = createFeatureCard(scroll, "Optimización y Gráficos")
+        local c1 = makeCard("Optimización y Gráficos")
         c1.LayoutOrder = 2
         createToggle(c1, "Quitar Niebla (Clear Sky)", "Elimina la niebla ambiental", true, nil, Utils)
         createToggle(c1, "Modo Fullbright", "Iluminación máxima en zonas oscuras", true, nil, Utils)
@@ -875,7 +1036,7 @@ function TabViews.build(tabName, parentContainer, options)
         createToggle(c1, "Desactivar Sombras", "Aumenta la estabilidad en dispositivos gama baja", false, nil, Utils)
 
     elseif tabName == "Skins" then
-        local c1 = createFeatureCard(scroll, "Cosméticos y Efectos")
+        local c1 = makeCard("Cosméticos y Efectos")
         c1.LayoutOrder = 2
         createToggle(c1, "Aura Arcoíris de Arma", "Aura multicolor en espadas y puños", false, nil, Utils)
         createToggle(c1, "Estela de Personaje (Trail)", "Rastro de luz al moverte", false, nil, Utils)
@@ -884,13 +1045,13 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
     elseif tabName == "Settings" then
-        local c1 = createFeatureCard(scroll, "Configuración de Interfaz")
+        local c1 = makeCard("Configuración de Interfaz")
         c1.LayoutOrder = 2
         createSlider(c1, "Escala UI (%)", 50, 120, 80, function(val)
             if options.onScaleChange then pcall(options.onScaleChange, val / 100) end
         end, Utils)
 
-        local c2 = createFeatureCard(scroll, "Utilidades de Servidor")
+        local c2 = makeCard("Utilidades de Servidor")
         c2.LayoutOrder = 3
         createActionButton(c2, "Reconectar al Servidor", "Reingresa a este mismo servidor", function()
             pcall(function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
