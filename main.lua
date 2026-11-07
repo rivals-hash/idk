@@ -192,8 +192,13 @@ function BestHub:Unload()
     if MusicEngine and MusicEngine.stop then
         pcall(MusicEngine.stop)
     end
-    if self.Window and self.Window.ScreenGui then
-        pcall(function() self.Window.ScreenGui:Destroy() end)
+    if self.Window then
+        if self.Window.MobileToggle and self.Window.MobileToggle.Parent then
+            pcall(function() self.Window.MobileToggle:Destroy() end)
+        end
+        if self.Window.ScreenGui and self.Window.ScreenGui.Parent then
+            pcall(function() self.Window.ScreenGui:Destroy() end)
+        end
     end
     self.Modules = {}
 end

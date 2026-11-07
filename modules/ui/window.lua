@@ -35,7 +35,7 @@ function Window.create(dependencies)
     -- Master Window Frame
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "Monody_MainWindow"
-    mainFrame.Size = UDim2.new(0, 755, 0, 584)
+    mainFrame.Size = UDim2.new(0, 568, 0, 400)
     mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     mainFrame.BackgroundTransparency = 1
@@ -63,7 +63,7 @@ function Window.create(dependencies)
     -- Left Content Area (Contains HomeView or Tab Views)
     local contentArea = Instance.new("Frame")
     contentArea.Name = "ContentArea"
-    contentArea.Size = UDim2.new(0, 525, 0, 584)
+    contentArea.Size = UDim2.new(0, 406, 0, 400)
     contentArea.Position = UDim2.new(0, 0, 0, 0)
     contentArea.BackgroundTransparency = 1
     contentArea.BorderSizePixel = 0
@@ -184,6 +184,9 @@ function Window.create(dependencies)
         end
     end
 
+    -- Floating Mobile Toggle Button reference (hoisted so onClose can destroy it)
+    local mobileToggle = nil
+
     -- Create Reworked Sidebar
     local sidebar = SidebarMod.create(mainFrame, {
         Utils = Utils,
@@ -193,11 +196,14 @@ function Window.create(dependencies)
         end,
         onMinimize = function()
             setWindowVisible(not isVisible)
-            Utils.toast("Monody", "Minimizado. Toca el icono para reabrir.", 2.5)
+            Utils.toast("Monody", "Minimizado. Toca el icono para reabrir.", 2)
         end,
         onClose = function()
-            Utils.toast("Monody", "Cerrado por completo.", 2)
-            task.delay(0.1, function()
+            Utils.toast("Monody", "Cerrado por completo.", 1.5)
+            task.delay(0.05, function()
+                if mobileToggle and mobileToggle.Parent then
+                    pcall(function() mobileToggle:Destroy() end)
+                end
                 if ScreenGui and ScreenGui.Parent then
                     pcall(function() ScreenGui:Destroy() end)
                 end
@@ -210,7 +216,7 @@ function Window.create(dependencies)
     })
 
     -- Create Floating Mobile Toggle Button (FAB)
-    local mobileToggle = MobileToggleMod.create(ScreenGui, function()
+    mobileToggle = MobileToggleMod.create(ScreenGui, function()
         setWindowVisible(not isVisible)
     end, Utils)
     if AssetManager then

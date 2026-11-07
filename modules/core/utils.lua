@@ -250,12 +250,12 @@ function Utils.getOptimalScale()
     if not vp or vp.X < 100 then
         vp = Utils.IsTouch and Vector2.new(800, 390) or Vector2.new(1280, 720)
     end
-    -- Target window dimensions: 760 x 590
-    local scaleW = (vp.X - 20) / 780
-    local scaleH = (vp.Y - 20) / 600
-    local fit = math.clamp(math.min(scaleW, scaleH), 0.40, 1.0)
+    -- Target window dimensions: 568 x 400
+    local scaleW = (vp.X - 24) / 580
+    local scaleH = (vp.Y - 24) / 410
+    local fit = math.clamp(math.min(scaleW, scaleH), 0.45, 1.0)
     if Utils.IsTouch or Utils.IsMobile then
-        fit = math.clamp(fit, 0.45, 0.80)
+        fit = math.clamp(fit, 0.50, 0.95)
     end
     return fit
 end
