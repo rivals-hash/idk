@@ -934,7 +934,7 @@ function TabViews.build(tabName, parentContainer, options)
                 AimbotCore.TeamCheck = state
             end
         end, Utils)
-        createToggle(c1, "Aimlock", "Fija al jugador objetivo", false, function(state)
+        createToggle(c1, "Aimlock", "Fija y sigue al jugador objetivo", false, function(state)
             if AimbotCore and AimbotCore.setLockPlayer then
                 AimbotCore.setLockPlayer(state)
             end
@@ -946,16 +946,36 @@ function TabViews.build(tabName, parentContainer, options)
             elseif opt:find("180") then mode = "180" end
             if PlayerAimbot and PlayerAimbot.setAimMode then
                 PlayerAimbot.setAimMode(mode)
-            elseif AimbotCore then
+            end
+            if AimbotCore then
                 AimbotCore.AimMode = mode
             end
-            if Utils then Utils.toast("Monody", "Modo Aim: " .. opt, 1.2) end
+            if _G.MonodyCombatCore then
+                _G.MonodyCombatCore.AimMode = mode
+            end
+            if _G.DarlingCombatCore then
+                _G.DarlingCombatCore.AimMode = mode
+            end
+            if _G.DarlingHub and _G.DarlingHub.Settings and _G.DarlingHub.Settings.Aim then
+                _G.DarlingHub.Settings.Aim.Mode = mode
+            end
+            if Utils then Utils.toast("Monody", "Modo Aim: " .. mode, 1.2) end
         end, Utils)
         createDropdown(c1, "Prioridad", "Criterio de selección", { "Nearest", "Low HP", "Looking At Me" }, 1, function(opt)
             if PlayerAimbot and PlayerAimbot.setPriority then
                 PlayerAimbot.setPriority(opt)
-            elseif AimbotCore then
+            end
+            if AimbotCore then
                 AimbotCore.TargetPriority = opt
+            end
+            if _G.MonodyCombatCore then
+                _G.MonodyCombatCore.TargetPriority = opt
+            end
+            if _G.DarlingCombatCore then
+                _G.DarlingCombatCore.TargetPriority = opt
+            end
+            if _G.DarlingHub and _G.DarlingHub.Settings and _G.DarlingHub.Settings.Aim then
+                _G.DarlingHub.Settings.Aim.Priority = opt
             end
             if Utils then Utils.toast("Monody", "Prioridad: " .. opt, 1.2) end
         end, Utils)
@@ -963,25 +983,23 @@ function TabViews.build(tabName, parentContainer, options)
             if NPCAimbot and NPCAimbot.setMaxRange then
                 NPCAimbot.setMaxRange(val)
             end
+            if PlayerAimbot and PlayerAimbot.setMaxRange then
+                PlayerAimbot.setMaxRange(val)
+            end
             if AimbotCore then
                 AimbotCore.MaxRange = val
             end
         end, Utils)
 
-        -- 2. Silent Aim (BBG Engine)
+        -- 2. Silent Aim (Classic Mouse.Hit Engine)
         local c2 = makeCard("Silent Aim")
         c2.LayoutOrder = 3
-        createToggle(c2, "Silent Aim", "Redirección clásica Mouse.Hit", false, function(state)
+        createToggle(c2, "Silent Aim", "Redirección clásica Mouse.Hit hacia enemigos", false, function(state)
             if SilentAimMod and SilentAimMod.setEnabled then
                 SilentAimMod.setEnabled(state)
             end
+            _G.G_SilentAim = state
             if Utils then Utils.toast("Monody", "Silent Aim: " .. (state and "ON" or "OFF"), 1.2) end
-        end, Utils)
-        createToggle(c2, "Soru Silent", "Redirección con flashstep", false, function(state)
-            if SilentAimMod and SilentAimMod.setSoruSilent then
-                SilentAimMod.setSoruSilent(state)
-            end
-            if Utils then Utils.toast("Monody", "Soru Silent: " .. (state and "ON" or "OFF"), 1.2) end
         end, Utils)
         createSlider(c2, "Rango Silent Aim", 100, 3000, 1000, function(val)
             if SilentAimMod and SilentAimMod.setMaxDistance then
@@ -989,22 +1007,29 @@ function TabViews.build(tabName, parentContainer, options)
             end
         end, Utils)
 
-        -- 3. FOV
+        -- 3. FOV (Darling X Standard)
         local c3 = makeCard("FOV")
         c3.LayoutOrder = 4
         createToggle(c3, "Círculo FOV", "Dibuja el círculo en pantalla", false, function(state)
             if FOVMod and FOVMod.setVisible then FOVMod.setVisible(state) end
         end, Utils)
-        createSlider(c3, "Radio FOV", 20, 500, 120, function(val)
+        createSlider(c3, "Radio FOV", 20, 600, 120, function(val)
             if FOVMod and FOVMod.setRadius then FOVMod.setRadius(val) end
+            if AimbotCore and AimbotCore.FOV then AimbotCore.FOV.Radius = val end
+            if _G.MonodyCombatCore and _G.MonodyCombatCore.FOV then _G.MonodyCombatCore.FOV.Radius = val end
+            if _G.DarlingCombatCore and _G.DarlingCombatCore.FOV then _G.DarlingCombatCore.FOV.Radius = val end
+            if _G.DarlingHub and _G.DarlingHub.Settings and _G.DarlingHub.Settings.FOV then
+                _G.DarlingHub.Settings.FOV.Radius = val
+            end
         end, Utils)
         createDropdown(c3, "Posición", "Punto de anclaje", { "Centro", "Cursor" }, 1, function(opt)
-            if FOVMod and FOVMod.setMode then
-                if opt:find("Cursor") then
-                    FOVMod.setMode("Mouse")
-                else
-                    FOVMod.setMode("Center")
-                end
+            local mode = opt:find("Cursor") and "Mouse" or "Center"
+            if FOVMod and FOVMod.setMode then FOVMod.setMode(mode) end
+            if AimbotCore and AimbotCore.FOV then AimbotCore.FOV.Mode = mode end
+            if _G.MonodyCombatCore and _G.MonodyCombatCore.FOV then _G.MonodyCombatCore.FOV.Mode = mode end
+            if _G.DarlingCombatCore and _G.DarlingCombatCore.FOV then _G.DarlingCombatCore.FOV.Mode = mode end
+            if _G.DarlingHub and _G.DarlingHub.Settings and _G.DarlingHub.Settings.FOV then
+                _G.DarlingHub.Settings.FOV.Mode = mode
             end
         end, Utils)
         createColorPicker(c3, "Color FOV", "Colores Darling X", { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange" }, "Rainbow", function(colorName)
@@ -1130,19 +1155,69 @@ function TabViews.build(tabName, parentContainer, options)
         createToggle(c2, "Modo Vuelo Móvil (Fly)", "Vuela con joystick táctil", false, nil, Utils)
 
     elseif tabName == "Soru" then
-        local c1 = makeCard("Habilidades de Soru")
-        c1.LayoutOrder = 2
-        createToggle(c1, "Infinite Soru", "Soru sin límite de cargas", true, nil, Utils)
-        createToggle(c1, "No Cooldown Soru", "Cero enfriamiento en esquivas", true, nil, Utils)
-        createSlider(c1, "Multiplicador de Distancia", 1, 5, 2, nil, Utils)
+        local SoruEngine = options.SoruEngine or _G.MonodySoruEngine
 
-        local c2 = makeCard("Teletransporte Rápido")
-        c2.LayoutOrder = 3
-        createActionButton(c2, "Teleport a Enemigo Cercano", "Teletransporta directamente a la espalda", function()
-            Utils.toast("Monody", "Soru instantáneo ejecutado", 1.5)
+        -- 1. Flashstep & Soru Mastery
+        local c1 = makeCard("Flashstep & Soru")
+        c1.LayoutOrder = 2
+        createToggle(c1, "Toggle Soru Cooldown (1s)", "Mantiene enfriamiento de 1 segundo de Flashstep", false, function(state)
+            if SoruEngine and SoruEngine.setCooldown1s then
+                SoruEngine.setCooldown1s(state)
+            else
+                local player = Players.LocalPlayer
+                local function apply(c)
+                    if c and state then pcall(function() c:SetAttribute("FlashstepCooldown", 1) end) end
+                end
+                if player and player.Character then apply(player.Character) end
+            end
+            if Utils then Utils.toast("Monody", "Soru Cooldown (1s): " .. (state and "ON" or "OFF"), 1.2) end
         end, Utils)
-        createActionButton(c2, "Teleport a Zona Segura", "Teletransporta a una zona neutral", function()
-            Utils.toast("Monody", "Teletransportado a Zona Segura", 1.5)
+
+        createActionButton(c1, "Instant Soru Cooldown (1s)", "Aplica inmediatamente enfriamiento de 1s al personaje actual", function()
+            local player = Players.LocalPlayer
+            if player and player.Character then
+                pcall(function() player.Character:SetAttribute("FlashstepCooldown", 1) end)
+            end
+            if Utils then Utils.toast("Monody", "Flashstep cooldown 1s aplicado", 1.5) end
+        end, Utils)
+
+        createToggle(c1, "Infinite Soru", "Flashstep continuo sin límite de enfriamiento", false, function(state)
+            if SoruEngine and SoruEngine.setInfinite then
+                SoruEngine.setInfinite(state)
+            end
+            if Utils then Utils.toast("Monody", "Infinite Soru: " .. (state and "ON" or "OFF"), 1.2) end
+        end, Utils)
+
+        createSlider(c1, "Distancia Máxima", 100, 3000, 1000, function(val)
+            if SoruEngine and SoruEngine.setMaxDistance then
+                SoruEngine.setMaxDistance(val)
+            end
+        end, Utils)
+
+        -- 2. Soru Combate & Aimbot
+        local c2 = makeCard("Soru Combate")
+        c2.LayoutOrder = 3
+        createToggle(c2, "Soru Aimbot", "Te teletransporta al objetivo al usar Flashstep [R]", false, function(state)
+            if SoruEngine and SoruEngine.setAimbot then
+                SoruEngine.setAimbot(state)
+            end
+            if Utils then Utils.toast("Monody", "Soru Aimbot: " .. (state and "ON" or "OFF"), 1.2) end
+        end, Utils)
+
+        createDropdown(c2, "Modo Objetivo", "Criterio de teleportación", { "Nearest Player", "Selected Player" }, 1, function(opt)
+            if SoruEngine then
+                SoruEngine.TargetMode = opt
+            end
+            if Utils then Utils.toast("Monody", "Soru Target: " .. opt, 1.2) end
+        end, Utils)
+
+        createActionButton(c2, "Ejecutar Soru Ahora", "Ejecuta Flashstep inmediatamente hacia el objetivo o cursor", function()
+            if SoruEngine and SoruEngine.executeSoru then
+                local ok = SoruEngine.executeSoru()
+                if ok and Utils then
+                    Utils.toast("Monody", "Soru ejecutado con éxito", 1.2)
+                end
+            end
         end, Utils)
 
     elseif tabName == "Macro" then

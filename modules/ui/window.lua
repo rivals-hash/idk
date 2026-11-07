@@ -129,6 +129,7 @@ function Window.create(dependencies)
                     Blacklist = dependencies.Blacklist,
                     Tracers = dependencies.Tracers,
                     SilentAim = dependencies.SilentAim,
+                    SoruEngine = dependencies.SoruEngine,
                     onClose = function()
                         if sidebar and sidebar.Close then pcall(sidebar.Close) end
                     end,

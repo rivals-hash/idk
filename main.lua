@@ -169,6 +169,7 @@ local NPCAimbot = BestHub:Require("modules/combat/npc_aimbot.lua")
 local Blacklist = BestHub:Require("modules/combat/blacklist.lua")
 local Tracers = BestHub:Require("modules/combat/tracers.lua")
 local SilentAim = BestHub:Require("modules/combat/silent_aim.lua")
+local SoruEngine = BestHub:Require("modules/combat/soru_engine.lua")
 local Window = BestHub:Require("modules/ui/window.lua")
 
 if not Window then
@@ -193,6 +194,7 @@ local WinInstance = Window.create({
     Blacklist = Blacklist,
     Tracers = Tracers,
     SilentAim = SilentAim,
+    SoruEngine = SoruEngine,
 })
 BestHub.Window = WinInstance
 

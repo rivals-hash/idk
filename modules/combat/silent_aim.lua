@@ -127,6 +127,14 @@ function SilentAim.installHook()
                     if tp and typeof(tp) == "Vector3" then
                         if key == "Hit" then
                             inHook = false
+                            local cam = Workspace.CurrentCamera
+                            local cp = cam and cam.CFrame.Position
+                            if cp then
+                                local look = (tp - cp)
+                                if look.Magnitude > 0.001 then
+                                    return CFrame.lookAt(tp, tp + look.Unit)
+                                end
+                            end
                             return CFrame.new(tp)
                         elseif key == "Target" then
                             inHook = false

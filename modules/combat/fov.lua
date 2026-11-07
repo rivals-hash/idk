@@ -232,6 +232,14 @@ function FOV.setThickness(thickness)
     currentThickness = tonumber(thickness) or 1.5
 end
 
+function FOV.getRadius()
+    return currentRadius
+end
+
+function FOV.getMode()
+    return currentMode
+end
+
 function FOV.getState()
     return {
         enabled = isEnabled,
@@ -257,6 +265,11 @@ function FOV.destroy()
         pcall(function() overlayGui:Destroy() end)
         overlayGui = nil
     end
+end
+
+_G.MonodyFOV = FOV
+if getgenv then
+    pcall(function() getgenv().MonodyFOV = FOV end)
 end
 
 return FOV

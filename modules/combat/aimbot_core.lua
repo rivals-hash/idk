@@ -196,17 +196,31 @@ end
 -- ============================================================================
 function Core.getFOVCenter()
     Camera = Workspace.CurrentCamera or Camera
-    local hubSettings = (_G.DarlingHub and _G.DarlingHub.Settings and _G.DarlingHub.Settings.FOV) or Core.FOV
-    if hubSettings.Mode == "Mouse" then
+    local mode = "Center"
+    local fovMod = _G.MonodyFOV
+    if fovMod and fovMod.getMode then
+        mode = fovMod.getMode()
+    else
+        local hubSettings = (_G.DarlingHub and _G.DarlingHub.Settings and _G.DarlingHub.Settings.FOV) or Core.FOV
+        mode = hubSettings.Mode or Core.FOV.Mode or "Center"
+    end
+    if mode == "Mouse" then
         local p = UserInputService:GetMouseLocation()
         if p.X > 0 and p.Y > 0 then return p end
     end
-    return Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    if Camera and Camera.ViewportSize then
+        return Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    end
+    return Vector2.new(400, 300)
 end
 
 function Core.getFOVRadius()
+    local fovMod = _G.MonodyFOV
+    if fovMod and fovMod.getRadius then
+        return fovMod.getRadius()
+    end
     local hubSettings = (_G.DarlingHub and _G.DarlingHub.Settings and _G.DarlingHub.Settings.FOV) or Core.FOV
-    return hubSettings.Radius or Core.FOV.Radius or 100
+    return hubSettings.Radius or Core.FOV.Radius or 120
 end
 
 -- ============================================================================
@@ -604,6 +618,12 @@ function Core.installHooks()
                     local cp = cam and cam.CFrame.Position
 
                     if key == "Hit" then
+                        if cp then
+                            local look = (tp - cp)
+                            if look.Magnitude > 0.001 then
+                                return CFrame.lookAt(tp, tp + look.Unit)
+                            end
+                        end
                         return CFrame.new(tp)
                     elseif key == "Target" then
                         return target
@@ -659,6 +679,34 @@ local function isCurrentTargetValid(targetPart, targetChar, lpHRP, maxRange)
     if dist > (maxRange + 50) then
         return false
     end
+
+    -- AIM MODE VALIDATION (360°, FOV, 180°)
+    local hubSettings = (_G.DarlingHub and _G.DarlingHub.Settings and _G.DarlingHub.Settings.Aim) or Core
+    local aimMode = hubSettings.Mode or Core.AimMode or "360"
+    if aimMode == "FOV" then
+        Camera = Workspace.CurrentCamera or Camera
+        if Camera then
+            local screenPos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
+            if not onScreen or screenPos.Z <= 0 then
+                return false
+            end
+            local fovCenter = Core.getFOVCenter()
+            local fovRadius = Core.getFOVRadius()
+            local screenDist = (Vector2.new(screenPos.X, screenPos.Y) - fovCenter).Magnitude
+            if screenDist > fovRadius then
+                return false
+            end
+        end
+    elseif aimMode == "180" then
+        local myPos = lpHRP.Position
+        local dir = (targetPart.Position - myPos)
+        if dir.Magnitude > 0.001 then
+            if lpHRP.CFrame.LookVector:Dot(dir.Unit) < 0 then
+                return false
+            end
+        end
+    end
+
     return true
 end
 
