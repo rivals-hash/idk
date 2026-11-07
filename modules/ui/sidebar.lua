@@ -29,8 +29,9 @@ function Sidebar.create(parentGui, options)
     local bgImg = Instance.new("ImageLabel")
     bgImg.Name = "SidebarBackground"
     bgImg.Size = UDim2.new(1, 0, 1, 0)
-    bgImg.BackgroundTransparency = 1
-    bgImg.Image = "rbxassetid://139820186687064"
+    bgImg.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
+    bgImg.BackgroundTransparency = 0.1
+    bgImg.Image = (options.AssetManager and options.AssetManager.get("sidebar_bg.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
     bgImg.ScaleType = Enum.ScaleType.Stretch
     bgImg.Parent = sidebarFrame
 

@@ -154,6 +154,7 @@ end
 
 -- 7. Initialize UI Components
 local Utils = BestHub:Require("modules/core/utils.lua")
+local AssetManager = BestHub:Require("modules/core/asset_manager.lua")
 local StatsService = BestHub:Require("modules/core/stats_service.lua")
 local MusicEngine = BestHub:Require("modules/utility/music_engine.lua")
 local MusicVisualizer = BestHub:Require("modules/ui/music_visualizer.lua")
@@ -174,7 +175,8 @@ local WinInstance = Window.create({
     MusicVisualizer = MusicVisualizer,
     Sidebar = Sidebar,
     HomeView = HomeView,
-    MobileToggle = MobileToggle
+    MobileToggle = MobileToggle,
+    AssetManager = AssetManager
 })
 BestHub.Window = WinInstance
 
@@ -197,6 +199,6 @@ function BestHub:Unload()
 end
 
 -- 9. Welcome Toast
-Utils.toast("Monody - Premium", "UI loaded successfully! Created by Darling", 3.5, "rbxassetid://93891873418133")
+Utils.toast("Monody - Premium", "UI loaded successfully! Created by Darling", 3.5, AssetManager and AssetManager.get("avatar.png", "rbxassetid://93891873418133"))
 
 return BestHub

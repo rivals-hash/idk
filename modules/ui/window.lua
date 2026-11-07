@@ -18,6 +18,8 @@ function Window.create(dependencies)
     local MusicEngine = dependencies.MusicEngine
     local MusicVisualizer = dependencies.MusicVisualizer
     local MobileToggleMod = dependencies.MobileToggle
+    local AssetManager = dependencies.AssetManager
+    local cardBgAsset = AssetManager and AssetManager.get("card_bg.png", "rbxassetid://139820186687064") or "rbxassetid://139820186687064"
 
     -- Root ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
@@ -101,7 +103,8 @@ function Window.create(dependencies)
         Utils = Utils,
         StatsService = StatsService,
         MusicEngine = MusicEngine,
-        MusicVisualizer = MusicVisualizer
+        MusicVisualizer = MusicVisualizer,
+        AssetManager = AssetManager
     })
     tabViews["Home"] = homeView.ScrollFrame
 
@@ -136,7 +139,7 @@ function Window.create(dependencies)
         local bannerBg = Instance.new("ImageLabel")
         bannerBg.Size = UDim2.new(1, 0, 1, 0)
         bannerBg.BackgroundTransparency = 1
-        bannerBg.Image = "rbxassetid://139820186687064"
+        bannerBg.Image = cardBgAsset
         bannerBg.ScaleType = Enum.ScaleType.Stretch
         bannerBg.Parent = banner
 
@@ -184,6 +187,7 @@ function Window.create(dependencies)
     -- Create Reworked Sidebar
     local sidebar = SidebarMod.create(mainFrame, {
         Utils = Utils,
+        AssetManager = AssetManager,
         onTabSelected = function(tabId)
             switchTab(tabId)
         end,
@@ -201,6 +205,9 @@ function Window.create(dependencies)
     local mobileToggle = MobileToggleMod.create(ScreenGui, function()
         setWindowVisible(not isVisible)
     end, Utils)
+    if AssetManager then
+        pcall(function() mobileToggle.Image = AssetManager.get("avatar.png", mobileToggle.Image) end)
+    end
 
     -- Toggle Hotkey for PC (Key F)
     UserInputService.InputBegan:Connect(function(input, gpe)

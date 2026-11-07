@@ -4,6 +4,7 @@
     - Card 1 (Top): Monody - Premium / By Darling / Avatar / Discord & TikTok / Key Time
     - Card 2 (Center): Avatar circle with live real stats (Level, Bounty, FPS, Ping, Time)
     - Card 3 (Bottom): White vertical music visualizer bars & player
+    Uses AssetManager with getcustomasset for 100% reliable image loading.
 ]]
 
 local HomeView = {}
@@ -18,6 +19,12 @@ function HomeView.create(parentContainer, dependencies)
     local StatsService = dependencies.StatsService
     local MusicEngine = dependencies.MusicEngine
     local MusicVisualizer = dependencies.MusicVisualizer
+    local AssetManager = dependencies.AssetManager
+
+    local bgAsset = AssetManager.get("card_bg.png", "rbxassetid://139820186687064")
+    local avatarAsset = AssetManager.get("avatar.png", "rbxassetid://93891873418133")
+    local discordAsset = "rbxassetid://16584754883"
+    local tiktokAsset = "rbxassetid://84157643184125"
 
     local homeScroll = Instance.new("ScrollingFrame")
     homeScroll.Name = "HomeView"
@@ -35,33 +42,38 @@ function HomeView.create(parentContainer, dependencies)
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Parent = homeScroll
 
-    -- Helper to create card frame with texture
+    -- Helper to create card frame with texture and solid fallback
     local function createCard(name, height, layoutOrder)
         local frame = Instance.new("Frame")
         frame.Name = name
         frame.Size = UDim2.new(0, 520, 0, height)
         frame.LayoutOrder = layoutOrder
-        frame.BackgroundTransparency = 1
+        frame.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
+        frame.BackgroundTransparency = 0.25
         frame.BorderSizePixel = 0
         frame.Parent = homeScroll
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 8)
+        corner.Parent = frame
 
         local bg = Instance.new("ImageLabel")
         bg.Name = "Bg"
         bg.Size = UDim2.new(1, 0, 1, 0)
         bg.BackgroundTransparency = 1
-        bg.Image = "rbxassetid://139820186687064"
+        bg.Image = bgAsset
         bg.ScaleType = Enum.ScaleType.Stretch
         bg.Parent = frame
 
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 8)
-        corner.Parent = bg
+        local bgCorner = Instance.new("UICorner")
+        bgCorner.CornerRadius = UDim.new(0, 8)
+        bgCorner.Parent = bg
 
         local stroke = Instance.new("UIStroke")
-        stroke.Color = Color3.fromRGB(60, 60, 75)
+        stroke.Color = Color3.fromRGB(65, 65, 80)
         stroke.Thickness = 1
-        stroke.Transparency = 0.6
-        stroke.Parent = bg
+        stroke.Transparency = 0.4
+        stroke.Parent = frame
 
         return frame, bg
     end
@@ -76,7 +88,7 @@ function HomeView.create(parentContainer, dependencies)
     avatarFrame.Name = "AvatarBox"
     avatarFrame.Size = UDim2.new(0, 124, 0, 121)
     avatarFrame.Position = UDim2.new(0.048, 0, 0.11, 0)
-    avatarFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    avatarFrame.BackgroundColor3 = Color3.fromRGB(24, 24, 32)
     avatarFrame.BackgroundTransparency = 0
     avatarFrame.BorderSizePixel = 0
     avatarFrame.Parent = card1
@@ -85,17 +97,23 @@ function HomeView.create(parentContainer, dependencies)
     avatarCorner.CornerRadius = UDim.new(0, 8)
     avatarCorner.Parent = avatarFrame
 
+    local avatarStroke = Instance.new("UIStroke")
+    avatarStroke.Color = Color3.fromRGB(255, 255, 255)
+    avatarStroke.Thickness = 1.2
+    avatarStroke.Transparency = 0.3
+    avatarStroke.Parent = avatarFrame
+
     local avatarImg = Instance.new("ImageLabel")
     avatarImg.Name = "AvatarImage"
-    avatarImg.Size = UDim2.new(0, 110, 0, 108)
-    avatarImg.Position = UDim2.new(0.056, 0, 0.05, 0)
-    avatarImg.BackgroundTransparency = 0
-    avatarImg.Image = "rbxassetid://93891873418133"
-    avatarImg.ScaleType = Enum.ScaleType.Stretch
+    avatarImg.Size = UDim2.new(0, 114, 0, 111)
+    avatarImg.Position = UDim2.new(0.5, -57, 0.5, -55)
+    avatarImg.BackgroundTransparency = 1
+    avatarImg.Image = avatarAsset
+    avatarImg.ScaleType = Enum.ScaleType.Crop
     avatarImg.Parent = avatarFrame
 
     local imgCorner = Instance.new("UICorner")
-    imgCorner.CornerRadius = UDim.new(0, 8)
+    imgCorner.CornerRadius = UDim.new(0, 7)
     imgCorner.Parent = avatarImg
 
     -- Socials Buttons under Avatar
@@ -104,8 +122,9 @@ function HomeView.create(parentContainer, dependencies)
     discordBtn.Name = "DiscordButton"
     discordBtn.Size = UDim2.new(0, 39, 0, 37)
     discordBtn.Position = UDim2.new(0.04, 0, 1.12, 0)
-    discordBtn.BackgroundTransparency = 1
-    discordBtn.Image = "rbxassetid://16584754883"
+    discordBtn.BackgroundColor3 = Color3.fromRGB(24, 24, 32)
+    discordBtn.BackgroundTransparency = 0.3
+    discordBtn.Image = discordAsset
     discordBtn.AutoButtonColor = false
     discordBtn.Parent = avatarFrame
 
@@ -116,7 +135,7 @@ function HomeView.create(parentContainer, dependencies)
     discordBtn.MouseButton1Click:Connect(function()
         local discordLink = "https://discord.gg/besthub"
         Utils.setClipboard(discordLink)
-        Utils.toast("Discord Copied", "Invite link copied to clipboard!", 2.5, "rbxassetid://16584754883")
+        Utils.toast("Discord Copied", "Invite link copied to clipboard!", 2.5, discordAsset)
     end)
 
     -- TikTok Button
@@ -124,8 +143,9 @@ function HomeView.create(parentContainer, dependencies)
     tiktokBtn.Name = "TikTokButton"
     tiktokBtn.Size = UDim2.new(0, 39, 0, 37)
     tiktokBtn.Position = UDim2.new(0.5, 0, 1.12, 0)
-    tiktokBtn.BackgroundTransparency = 1
-    tiktokBtn.Image = "rbxassetid://84157643184125"
+    tiktokBtn.BackgroundColor3 = Color3.fromRGB(24, 24, 32)
+    tiktokBtn.BackgroundTransparency = 0.3
+    tiktokBtn.Image = tiktokAsset
     tiktokBtn.AutoButtonColor = false
     tiktokBtn.Parent = avatarFrame
 
@@ -136,7 +156,7 @@ function HomeView.create(parentContainer, dependencies)
     tiktokBtn.MouseButton1Click:Connect(function()
         local tiktokLink = "https://www.tiktok.com/@besthub"
         Utils.setClipboard(tiktokLink)
-        Utils.toast("TikTok Copied", "Profile link copied to clipboard!", 2.5, "rbxassetid://84157643184125")
+        Utils.toast("TikTok Copied", "Profile link copied to clipboard!", 2.5, tiktokAsset)
     end)
 
     -- Hover animations for socials
@@ -283,7 +303,7 @@ function HomeView.create(parentContainer, dependencies)
     -- 3. CARD 3: BOTTOM MUSIC VISUALIZER CARD (IN WHITE)
     ----------------------------------------------------------------------------
     local card3, bg3 = createCard("BottomMusicCard", 117, 3)
-    MusicVisualizer.create(card3, MusicEngine, Utils)
+    MusicVisualizer.create(card3, MusicEngine, Utils, AssetManager)
 
     return {
         ScrollFrame = homeScroll,
