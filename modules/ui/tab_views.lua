@@ -25,7 +25,6 @@ local clamp = math.clamp or function(val, minVal, maxVal)
     if val > maxVal then return maxVal end
     return val
 end
-math.clamp = clamp
 
 -- Track exact card heights deterministically (Zero AutomaticSize dependency cycles)
 local cardHeights = {}
@@ -170,7 +169,7 @@ end
 -- Helper: Create interactive Slider with wide touch hitbox for mobile thumbs
 local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, Utils)
     local targetContainer = parent:FindFirstChild("Content") or parent
-    local curVal = math.clamp(defaultVal or minVal, minVal, maxVal)
+    local curVal = clamp(defaultVal or minVal, minVal, maxVal)
 
     local row = Instance.new("Frame")
     row.Name = "Slider_" .. title:gsub("%s+", "")
@@ -228,7 +227,7 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     local fill = Instance.new("Frame")
     fill.Name = "Fill"
     local initRatio = (curVal - minVal) / math.max(1, (maxVal - minVal))
-    fill.Size = UDim2.new(math.clamp(initRatio, 0, 1), 0, 1, 0)
+    fill.Size = UDim2.new(clamp(initRatio, 0, 1), 0, 1, 0)
     fill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     fill.BorderSizePixel = 0
     fill.ZIndex = 5
@@ -242,7 +241,7 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     thumb.Name = "Thumb"
     thumb.Size = UDim2.new(0, 16, 0, 16)
     thumb.AnchorPoint = Vector2.new(0.5, 0.5)
-    thumb.Position = UDim2.new(math.clamp(initRatio, 0, 1), 0, 0.5, 0)
+    thumb.Position = UDim2.new(clamp(initRatio, 0, 1), 0, 0.5, 0)
     thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     thumb.BorderSizePixel = 0
     thumb.ZIndex = 6
@@ -266,7 +265,7 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
 
     local sliding = false
     local function setRatio(ratio)
-        ratio = math.clamp(ratio, 0, 1)
+        ratio = clamp(ratio, 0, 1)
         curVal = minVal + (ratio * (maxVal - minVal))
         valLbl.Text = tostring(math.floor(curVal + 0.5))
         fill.Size = UDim2.new(ratio, 0, 1, 0)

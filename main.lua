@@ -106,17 +106,17 @@ function BestHub:Require(relPath)
         return self.Modules[relPath]
     end
 
-    -- 1. Check local files
-    local code = readLocalDevModule(relPath)
+    -- 1. Fetch fresh code from GitHub with cache-busting
+    local url = self.RepoBase .. relPath .. "?v=" .. tostring(os.time())
+    local code = universalHttpGet(url) or universalHttpGet(self.RepoBase .. relPath)
+    if code and exWriteFile then
+        local diskPath = CACHE_SUBDIR .. "/" .. relPath:gsub("/", "_")
+        pcall(exWriteFile, diskPath, code)
+    end
 
-    -- 2. Fetch fresh code from GitHub
+    -- 2. Fallback to local files if offline
     if not code then
-        local url = self.RepoBase .. relPath .. "?v=" .. tostring(os.time())
-        code = universalHttpGet(url) or universalHttpGet(self.RepoBase .. relPath)
-        if code and exWriteFile then
-            local diskPath = CACHE_SUBDIR .. "/" .. relPath:gsub("/", "_")
-            pcall(exWriteFile, diskPath, code)
-        end
+        code = readLocalDevModule(relPath)
     end
 
     -- 3. Fallback to cached disk file

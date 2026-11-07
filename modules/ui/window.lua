@@ -118,17 +118,32 @@ function Window.create(dependencies)
 
         local tabScroll = nil
         if TabViewsMod and TabViewsMod.build then
-            tabScroll = TabViewsMod.build(tabName, contentArea, {
-                Utils = Utils,
-                AssetManager = AssetManager,
-                FOV = dependencies.FOV,
-                onClose = function()
-                    if sidebar and sidebar.Close then pcall(sidebar.Close) end
-                end,
-                onScaleChange = function(scale)
-                    uiScale.Scale = math.clamp(scale, 0.45, 1.2)
+            local ok, res = pcall(function()
+                return TabViewsMod.build(tabName, contentArea, {
+                    Utils = Utils,
+                    AssetManager = AssetManager,
+                    FOV = dependencies.FOV,
+                    onClose = function()
+                        if sidebar and sidebar.Close then pcall(sidebar.Close) end
+                    end,
+                    onScaleChange = function(scale)
+                        uiScale.Scale = math.clamp(scale, 0.45, 1.2)
+                    end
+                })
+            end)
+            if ok and res then
+                tabScroll = res
+            else
+                warn("[Monody] Error building tab " .. tostring(tabName) .. ": " .. tostring(res))
+                if Utils and Utils.toast then
+                    Utils.toast("Monody Error", "Error: " .. tostring(res):sub(1, 50), 4)
                 end
-            })
+            end
+        else
+            warn("[Monody] TabViewsMod is nil or missing build function!")
+            if Utils and Utils.toast then
+                Utils.toast("Monody Error", "TabViews no disponible", 4)
+            end
         end
 
         if not tabScroll then

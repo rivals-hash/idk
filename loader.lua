@@ -11,13 +11,11 @@ local remoteUrl = "https://raw.githubusercontent.com/rivals-hash/idk/main/main.l
 local localPath = "idk/main.lua"
 
 local function fetchScript()
-    if isfile and isfile(localPath) then
-        return readfile(localPath)
-    end
+    local url = remoteUrl .. "?t=" .. tostring(os.time())
     local requestFn = (syn and syn.request) or http_request or request or (fluxus and fluxus.request)
     if requestFn then
         local ok, res = pcall(requestFn, {
-            Url = remoteUrl .. "?t=" .. tostring(os.time()),
+            Url = url,
             Method = "GET",
             Headers = { ["User-Agent"] = "Roblox/BestHub" }
         })
@@ -25,9 +23,12 @@ local function fetchScript()
             return res.Body
         end
     end
-    local okG, body = pcall(function() return game:HttpGet(remoteUrl, true) end)
+    local okG, body = pcall(function() return game:HttpGet(url, true) end)
     if okG and type(body) == "string" and #body > 50 then
         return body
+    end
+    if isfile and isfile(localPath) then
+        return readfile(localPath)
     end
     return nil
 end
