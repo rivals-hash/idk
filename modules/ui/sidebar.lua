@@ -45,49 +45,70 @@ function Sidebar.create(parentGui, options)
     stroke.Transparency = 0.5
     stroke.Parent = bgImg
 
-    -- Top Window Controls: Minimize (-) and Close (X)
-    local minBtn = Instance.new("ImageButton")
-    minBtn.Name = "MinimizeButton"
-    minBtn.Size = UDim2.new(0, 18, 0, 18)
-    minBtn.Position = UDim2.new(1, -44, 0, 7)
-    minBtn.BackgroundTransparency = 1
-    minBtn.Image = "rbxthumb://type=Asset&id=118026365011536&w=420&h=420"
-    minBtn.ImageColor3 = Color3.fromRGB(210, 210, 210)
-    minBtn.Parent = sidebarFrame
+    -- Top Window Controls: Minimize (-) and Close (X) with high ZIndex
+    local controlsFrame = Instance.new("Frame")
+    controlsFrame.Name = "WindowControls"
+    controlsFrame.Size = UDim2.new(0, 46, 0, 22)
+    controlsFrame.Position = UDim2.new(1, -50, 0, 6)
+    controlsFrame.BackgroundTransparency = 1
+    controlsFrame.ZIndex = 30
+    controlsFrame.Parent = sidebarFrame
 
-    local closeBtn = Instance.new("ImageButton")
+    local minBtn = Instance.new("TextButton")
+    minBtn.Name = "MinimizeButton"
+    minBtn.Size = UDim2.new(0, 20, 0, 20)
+    minBtn.Position = UDim2.new(0, 0, 0, 1)
+    minBtn.BackgroundTransparency = 1
+    minBtn.Text = "—"
+    minBtn.Font = Enum.Font.GothamBold
+    minBtn.TextSize = 14
+    minBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
+    minBtn.ZIndex = 31
+    minBtn.AutoButtonColor = false
+    minBtn.Parent = controlsFrame
+
+    local closeBtn = Instance.new("TextButton")
     closeBtn.Name = "CloseButton"
-    closeBtn.Size = UDim2.new(0, 18, 0, 18)
-    closeBtn.Position = UDim2.new(1, -22, 0, 7)
+    closeBtn.Size = UDim2.new(0, 20, 0, 20)
+    closeBtn.Position = UDim2.new(1, -20, 0, 1)
     closeBtn.BackgroundTransparency = 1
-    closeBtn.Image = "rbxthumb://type=Asset&id=110786993356448&w=420&h=420"
-    closeBtn.ImageColor3 = Color3.fromRGB(255, 110, 110)
-    closeBtn.Parent = sidebarFrame
+    closeBtn.Text = "✕"
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.TextSize = 13
+    closeBtn.TextColor3 = Color3.fromRGB(255, 90, 90)
+    closeBtn.ZIndex = 31
+    closeBtn.AutoButtonColor = false
+    closeBtn.Parent = controlsFrame
 
     local function setupIconBtn(btn, hoverColor, normColor)
         btn.MouseEnter:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.12), { ImageColor3 = hoverColor }):Play()
+            TweenService:Create(btn, TweenInfo.new(0.12), { TextColor3 = hoverColor }):Play()
         end)
         btn.MouseLeave:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.12), { ImageColor3 = normColor }):Play()
+            TweenService:Create(btn, TweenInfo.new(0.12), { TextColor3 = normColor }):Play()
         end)
     end
-    setupIconBtn(minBtn, Color3.fromRGB(255, 255, 255), Color3.fromRGB(210, 210, 210))
-    setupIconBtn(closeBtn, Color3.fromRGB(255, 60, 60), Color3.fromRGB(255, 110, 110))
+    setupIconBtn(minBtn, Color3.fromRGB(255, 255, 255), Color3.fromRGB(220, 220, 220))
+    setupIconBtn(closeBtn, Color3.fromRGB(255, 60, 60), Color3.fromRGB(255, 90, 90))
 
-    minBtn.MouseButton1Click:Connect(function()
+    local function handleMin()
         pcall(onMinimize)
-    end)
-    closeBtn.MouseButton1Click:Connect(function()
+    end
+    local function handleClose()
         pcall(onClose)
-    end)
+    end
+    minBtn.Activated:Connect(handleMin)
+    minBtn.MouseButton1Click:Connect(handleMin)
+    closeBtn.Activated:Connect(handleClose)
+    closeBtn.MouseButton1Click:Connect(handleClose)
 
-    -- Left Navigation Tabs List (Width 112px)
+    -- Left Navigation Tabs List (Width 96px, cleanly separated from controls)
     local tabsListFrame = Instance.new("Frame")
     tabsListFrame.Name = "TabsListFrame"
-    tabsListFrame.Size = UDim2.new(0, 112, 1, -12)
+    tabsListFrame.Size = UDim2.new(0, 96, 1, -12)
     tabsListFrame.Position = UDim2.new(0, 6, 0, 8)
     tabsListFrame.BackgroundTransparency = 1
+    tabsListFrame.ZIndex = 5
     tabsListFrame.Parent = sidebarFrame
 
     local tabsLayout = Instance.new("UIListLayout")
@@ -144,6 +165,8 @@ function Sidebar.create(parentGui, options)
         tabBtn.BorderSizePixel = 0
         tabBtn.Text = ""
         tabBtn.AutoButtonColor = false
+        tabBtn.Active = true
+        tabBtn.ZIndex = 6
         tabBtn.Parent = tabsListFrame
 
         local tabCorner = Instance.new("UICorner")
@@ -160,23 +183,27 @@ function Sidebar.create(parentGui, options)
         local tabIcon = Instance.new("ImageLabel")
         tabIcon.Name = "TabIcon"
         tabIcon.Size = UDim2.new(0, 18, 0, 18)
-        tabIcon.Position = UDim2.new(0, 8, 0.5, -9)
+        tabIcon.Position = UDim2.new(0, 6, 0.5, -9)
         tabIcon.BackgroundTransparency = 1
         tabIcon.Image = tabData.Icon
         tabIcon.ImageColor3 = Color3.fromRGB(180, 180, 195)
+        tabIcon.Active = false
+        tabIcon.ZIndex = 7
         tabIcon.Parent = tabBtn
 
         -- Tab Label in Kalam font
         local tabLabel = Instance.new("TextLabel")
         tabLabel.Name = "TabLabel"
-        tabLabel.Size = UDim2.new(1, -34, 1, 0)
-        tabLabel.Position = UDim2.new(0, 32, 0, 0)
+        tabLabel.Size = UDim2.new(1, -28, 1, 0)
+        tabLabel.Position = UDim2.new(0, 28, 0, 0)
         tabLabel.BackgroundTransparency = 1
         tabLabel.Font = Enum.Font.Kalam
         tabLabel.Text = tabData.Name
         tabLabel.TextColor3 = Color3.fromRGB(195, 195, 210)
         tabLabel.TextSize = 17
         tabLabel.TextXAlignment = Enum.TextXAlignment.Left
+        tabLabel.Active = false
+        tabLabel.ZIndex = 7
         tabLabel.Parent = tabBtn
 
         tabButtons[tabData.Id] = {
@@ -202,11 +229,13 @@ function Sidebar.create(parentGui, options)
             end
         end)
 
-        tabBtn.MouseButton1Click:Connect(function()
+        local function onActivate()
             activeTabId = tabData.Id
             refreshTabStates()
             pcall(onTabSelected, tabData.Id)
-        end)
+        end
+        tabBtn.Activated:Connect(onActivate)
+        tabBtn.MouseButton1Click:Connect(onActivate)
     end
 
     -- Right Action Strip (Aligned with reference screenshot)
@@ -253,7 +282,7 @@ function Sidebar.create(parentGui, options)
             }):Play()
         end)
 
-        actBtn.MouseButton1Click:Connect(function()
+        local function onAct()
             if act.Id == "Settings" then
                 activeTabId = "Settings"
                 refreshTabStates()
@@ -261,7 +290,9 @@ function Sidebar.create(parentGui, options)
             elseif Utils then
                 Utils.toast("Monody", act.Action, 2, act.Icon)
             end
-        end)
+        end
+        actBtn.Activated:Connect(onAct)
+        actBtn.MouseButton1Click:Connect(onAct)
     end
 
     -- Initial state

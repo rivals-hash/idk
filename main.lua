@@ -160,6 +160,7 @@ local MusicEngine = BestHub:Require("modules/utility/music_engine.lua")
 local MusicVisualizer = BestHub:Require("modules/ui/music_visualizer.lua")
 local Sidebar = BestHub:Require("modules/ui/sidebar.lua")
 local HomeView = BestHub:Require("modules/ui/home_view.lua")
+local TabViews = BestHub:Require("modules/ui/tab_views.lua")
 local MobileToggle = BestHub:Require("modules/ui/mobile_toggle.lua")
 local Window = BestHub:Require("modules/ui/window.lua")
 
@@ -175,6 +176,7 @@ local WinInstance = Window.create({
     MusicVisualizer = MusicVisualizer,
     Sidebar = Sidebar,
     HomeView = HomeView,
+    TabViews = TabViews,
     MobileToggle = MobileToggle,
     AssetManager = AssetManager
 })

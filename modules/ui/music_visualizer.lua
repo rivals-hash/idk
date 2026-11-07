@@ -107,7 +107,7 @@ function MusicVisualizer.create(parentFrame, MusicEngine, Utils, AssetManager)
     -- Progress Bar Track
     local progressTrack = Instance.new("Frame")
     progressTrack.Name = "ProgressTrack"
-    progressTrack.Size = UDim2.new(1, -115, 0, 4)
+    progressTrack.Size = UDim2.new(1, -100, 0, 4)
     progressTrack.Position = UDim2.new(0, 0, 0.5, -2)
     progressTrack.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
     progressTrack.BorderSizePixel = 0
@@ -131,8 +131,8 @@ function MusicVisualizer.create(parentFrame, MusicEngine, Utils, AssetManager)
     -- Buttons Container on right
     local btnContainer = Instance.new("Frame")
     btnContainer.Name = "ButtonsContainer"
-    btnContainer.Size = UDim2.new(0, 105, 1, 0)
-    btnContainer.Position = UDim2.new(1, -105, 0, 0)
+    btnContainer.Size = UDim2.new(0, 90, 1, 0)
+    btnContainer.Position = UDim2.new(1, -90, 0, 0)
     btnContainer.BackgroundTransparency = 1
     btnContainer.Parent = controlsFrame
 
@@ -181,28 +181,34 @@ function MusicVisualizer.create(parentFrame, MusicEngine, Utils, AssetManager)
         return btn
     end
 
-    local prevBtn = createBtn("PrevBtn", "⏮", UDim2.new(0, 26, 0, 26))
-    local playBtn = createBtn("PlayBtn", "▶", UDim2.new(0, 28, 0, 28))
-    local nextBtn = createBtn("NextBtn", "⏭", UDim2.new(0, 26, 0, 26))
+    local prevBtn = createBtn("PrevBtn", "<<", UDim2.new(0, 20, 0, 20))
+    local playBtn = createBtn("PlayBtn", "▶", UDim2.new(0, 22, 0, 22))
+    local nextBtn = createBtn("NextBtn", ">>", UDim2.new(0, 20, 0, 20))
 
     -- Wire Music Engine Events
     MusicEngine.onStateChange(function(state)
         trackTitle.Text = state.Track.Title
-        playBtn.Text = state.IsPlaying and "⏸" or "▶"
+        playBtn.Text = state.IsPlaying and "||" or "▶"
     end)
 
-    playBtn.MouseButton1Click:Connect(function()
+    local function handleTogglePlay()
         local isPlaying = MusicEngine.togglePlay()
-        playBtn.Text = isPlaying and "⏸" or "▶"
-    end)
+        playBtn.Text = isPlaying and "||" or "▶"
+    end
+    playBtn.Activated:Connect(handleTogglePlay)
+    playBtn.MouseButton1Click:Connect(handleTogglePlay)
 
-    nextBtn.MouseButton1Click:Connect(function()
+    local function handleNext()
         MusicEngine.nextTrack()
-    end)
+    end
+    nextBtn.Activated:Connect(handleNext)
+    nextBtn.MouseButton1Click:Connect(handleNext)
 
-    prevBtn.MouseButton1Click:Connect(function()
+    local function handlePrev()
         MusicEngine.prevTrack()
-    end)
+    end
+    prevBtn.Activated:Connect(handlePrev)
+    prevBtn.MouseButton1Click:Connect(handlePrev)
 
     -- Visualizer Render Loop
     local wavePhase = 0

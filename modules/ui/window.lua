@@ -60,6 +60,8 @@ function Window.create(dependencies)
         cam:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
     end
 
+    local TabViewsMod = dependencies.TabViews
+
     -- Left Content Area (Contains HomeView or Tab Views)
     local contentArea = Instance.new("Frame")
     contentArea.Name = "ContentArea"
@@ -69,9 +71,6 @@ function Window.create(dependencies)
     contentArea.BorderSizePixel = 0
     contentArea.ClipsDescendants = true
     contentArea.Parent = mainFrame
-
-    -- Make entire window draggable via content area background or sidebar header
-    Utils.makeDraggable(mainFrame, contentArea)
 
     -- Toggle Hub Visibility Function
     local isVisible = true
@@ -108,66 +107,37 @@ function Window.create(dependencies)
     })
     tabViews["Home"] = homeView.ScrollFrame
 
-    -- Generic Tab View Generator for features (Aimbot, Combat, Soru, etc.)
+    -- Make window draggable via HomeView TopCard (safe drag handle that doesn't block touch)
+    if homeView and homeView.TopCard then
+        Utils.makeDraggable(mainFrame, homeView.TopCard)
+    end
+
+    -- Feature Tab View Generator using TabViews module
     local function getOrCreateTabView(tabName)
         if tabViews[tabName] then return tabViews[tabName] end
 
-        local tabScroll = Instance.new("ScrollingFrame")
-        tabScroll.Name = "TabView_" .. tabName
-        tabScroll.Size = UDim2.new(1, 0, 1, 0)
-        tabScroll.BackgroundTransparency = 1
-        tabScroll.BorderSizePixel = 0
-        tabScroll.ScrollBarThickness = 3
-        tabScroll.ScrollBarImageColor3 = Color3.fromRGB(120, 120, 140)
-        tabScroll.CanvasSize = UDim2.new(0, 0, 0, 480)
-        tabScroll.Visible = false
-        tabScroll.Parent = contentArea
+        local tabScroll = nil
+        if TabViewsMod and TabViewsMod.build then
+            tabScroll = TabViewsMod.build(tabName, contentArea, {
+                Utils = Utils,
+                AssetManager = AssetManager,
+                onClose = function()
+                    if sidebar and sidebar.Close then pcall(sidebar.Close) end
+                end,
+                onScaleChange = function(scale)
+                    uiScale.Scale = math.clamp(scale, 0.45, 1.2)
+                end
+            })
+        end
 
-        local layout = Instance.new("UIListLayout")
-        layout.Padding = UDim.new(0, 8)
-        layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-        layout.SortOrder = Enum.SortOrder.LayoutOrder
-        layout.Parent = tabScroll
-
-        -- Tab Header Banner
-        local banner = Instance.new("Frame")
-        banner.Name = "TabBanner"
-        banner.Size = UDim2.new(0, 520, 0, 75)
-        banner.BackgroundTransparency = 1
-        banner.Parent = tabScroll
-
-        local bannerBg = Instance.new("ImageLabel")
-        bannerBg.Size = UDim2.new(1, 0, 1, 0)
-        bannerBg.BackgroundTransparency = 1
-        bannerBg.Image = cardBgAsset
-        bannerBg.ScaleType = Enum.ScaleType.Stretch
-        bannerBg.Parent = banner
-
-        local bCorner = Instance.new("UICorner")
-        bCorner.CornerRadius = UDim.new(0, 8)
-        bCorner.Parent = bannerBg
-
-        local bTitle = Instance.new("TextLabel")
-        bTitle.Size = UDim2.new(1, -20, 0, 30)
-        bTitle.Position = UDim2.new(0, 16, 0, 10)
-        bTitle.BackgroundTransparency = 1
-        bTitle.Font = Enum.Font.GothamBold
-        bTitle.Text = tabName:upper() .. " SUITE"
-        bTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-        bTitle.TextSize = 18
-        bTitle.TextXAlignment = Enum.TextXAlignment.Left
-        bTitle.Parent = banner
-
-        local bDesc = Instance.new("TextLabel")
-        bDesc.Size = UDim2.new(1, -20, 0, 20)
-        bDesc.Position = UDim2.new(0, 16, 0, 42)
-        bDesc.BackgroundTransparency = 1
-        bDesc.Font = Enum.Font.Gotham
-        bDesc.Text = "Monody Premium | " .. tabName
-        bDesc.TextColor3 = Color3.fromRGB(180, 180, 195)
-        bDesc.TextSize = 12
-        bDesc.TextXAlignment = Enum.TextXAlignment.Left
-        bDesc.Parent = banner
+        if not tabScroll then
+            tabScroll = Instance.new("ScrollingFrame")
+            tabScroll.Name = "TabView_" .. tabName
+            tabScroll.Size = UDim2.new(1, 0, 1, 0)
+            tabScroll.BackgroundTransparency = 1
+            tabScroll.BorderSizePixel = 0
+            tabScroll.Parent = contentArea
+        end
 
         tabViews[tabName] = tabScroll
         return tabScroll
