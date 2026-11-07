@@ -2,7 +2,8 @@
     BestHub - modules/ui/tab_views.lua
     Interactive feature suites for all Monody categories:
     Aimbot, Combat, Players, Soru, Macro, VFX, Skins, and Settings.
-    Provides responsive touch-friendly Toggles, Sliders, and Action Buttons.
+    Features exact pixel-perfect card sizing, textured card_bg.png backgrounds,
+    full-row touch hitboxes, and debounced mobile controls.
 ]]
 
 local TabViews = {}
@@ -26,6 +27,21 @@ local clamp = math.clamp or function(val, minVal, maxVal)
 end
 math.clamp = clamp
 
+-- Track exact card heights deterministically (Zero AutomaticSize dependency cycles)
+local cardHeights = {}
+
+local function addCardHeight(parent, h)
+    local card = parent
+    if card and card.Name == "Content" and card.Parent then
+        card = card.Parent
+    end
+    if not card or not cardHeights[card] then return end
+    local cur = cardHeights[card]
+    local newH = cur + h + 6
+    cardHeights[card] = newH
+    card.Size = UDim2.new(0, 396, 0, newH)
+end
+
 -- Helper: Create interactive Toggle with full-row mobile hitbox & debounce
 local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     local targetContainer = parent:FindFirstChild("Content") or parent
@@ -37,6 +53,8 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     row.BackgroundTransparency = 1
     row.ZIndex = 3
     row.Parent = targetContainer
+
+    addCardHeight(parent, 42)
 
     local textContainer = Instance.new("Frame")
     textContainer.Size = UDim2.new(1, -55, 1, 0)
@@ -160,6 +178,8 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     row.BackgroundTransparency = 1
     row.ZIndex = 3
     row.Parent = targetContainer
+
+    addCardHeight(parent, 46)
 
     local header = Instance.new("Frame")
     header.Size = UDim2.new(1, 0, 0, 18)
@@ -306,6 +326,8 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     btn.ZIndex = 4
     btn.Parent = targetContainer
 
+    addCardHeight(parent, 36)
+
     local bCorner = Instance.new("UICorner")
     bCorner.CornerRadius = UDim.new(0, 6)
     bCorner.Parent = btn
@@ -358,6 +380,8 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     row.BackgroundTransparency = 1
     row.ZIndex = 3
     row.Parent = targetContainer
+
+    addCardHeight(parent, 44)
 
     local textContainer = Instance.new("Frame")
     textContainer.Size = UDim2.new(1, -145, 1, 0)
@@ -468,6 +492,8 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     container.BackgroundTransparency = 1
     container.ZIndex = 3
     container.Parent = targetContainer
+
+    addCardHeight(parent, containerHeight)
 
     local headerRow = Instance.new("Frame")
     headerRow.Size = UDim2.new(1, 0, 0, 22)
@@ -601,6 +627,8 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     container.ZIndex = 3
     container.Parent = targetContainer
 
+    addCardHeight(parent, totalHeight)
+
     local titleLbl = Instance.new("TextLabel")
     titleLbl.Size = UDim2.new(1, 0, 0, 20)
     titleLbl.Position = UDim2.new(0, 4, 0, 0)
@@ -700,16 +728,17 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     return container
 end
 
--- Helper: Create a styled Feature Card inside a Tab View with dark texture background
+-- Helper: Create a styled Feature Card inside a Tab View with exact height & dark texture background
 local function createFeatureCard(parent, title, bgAsset)
     local card = Instance.new("Frame")
     card.Name = "Card_" .. title:gsub("%s+", "")
-    card.Size = UDim2.new(1, -12, 0, 40)
+    card.Size = UDim2.new(0, 396, 0, 38)
     card.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
     card.BackgroundTransparency = 0.25
     card.BorderSizePixel = 0
-    card.ClipsDescendants = true
     card.Parent = parent
+
+    cardHeights[card] = 38
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 8)
@@ -736,7 +765,7 @@ local function createFeatureCard(parent, title, bgAsset)
     bgCorner.CornerRadius = UDim.new(0, 8)
     bgCorner.Parent = bg
 
-    -- Content frame hosting the padding, list layout, and all controls
+    -- Content frame hosting padding, list layout, and all controls
     local content = Instance.new("Frame")
     content.Name = "Content"
     content.Size = UDim2.new(1, 0, 1, 0)
@@ -769,13 +798,6 @@ local function createFeatureCard(parent, title, bgAsset)
     header.ZIndex = 3
     header.Parent = content
 
-    local function refreshSize()
-        local h = math.max(40, layout.AbsoluteContentSize.Y + 20)
-        card.Size = UDim2.new(1, -12, 0, h)
-    end
-    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(refreshSize)
-    task.defer(refreshSize)
-
     return card
 end
 
@@ -789,20 +811,22 @@ function TabViews.build(tabName, parentContainer, options)
     local scroll = Instance.new("ScrollingFrame")
     scroll.Name = "TabView_" .. tabName
     scroll.Size = UDim2.new(1, 0, 1, 0)
+    scroll.Position = UDim2.new(0, 0, 0, 0)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
     scroll.ScrollBarThickness = 3
     scroll.ScrollBarImageColor3 = Color3.fromRGB(140, 140, 160)
-    scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scroll.ScrollBarImageTransparency = 0.2
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 800)
     scroll.Visible = false
     scroll.ClipsDescendants = true
     scroll.Parent = parentContainer
 
     local pad = Instance.new("UIPadding")
-    pad.PaddingTop = UDim.new(0, 4)
+    pad.PaddingTop = UDim.new(0, 6)
     pad.PaddingBottom = UDim.new(0, 20)
     pad.PaddingLeft = UDim.new(0, 4)
-    pad.PaddingRight = UDim.new(0, 6)
+    pad.PaddingRight = UDim.new(0, 4)
     pad.Parent = scroll
 
     local listLayout = Instance.new("UIListLayout")
@@ -811,20 +835,14 @@ function TabViews.build(tabName, parentContainer, options)
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Parent = scroll
 
-    -- Ensure ScrollingFrame CanvasSize dynamically adapts to cards
-    listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        scroll.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 28)
-    end)
-
     -- Top Header Banner Card with dark texture background
     local banner = Instance.new("Frame")
     banner.Name = "Banner"
-    banner.Size = UDim2.new(1, -12, 0, 46)
+    banner.Size = UDim2.new(0, 396, 0, 46)
     banner.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
-    banner.BackgroundTransparency = 0.2
+    banner.BackgroundTransparency = 0.25
     banner.BorderSizePixel = 0
     banner.LayoutOrder = 1
-    banner.ClipsDescendants = true
     banner.Parent = scroll
 
     local bCorner = Instance.new("UICorner")
@@ -1064,6 +1082,26 @@ function TabViews.build(tabName, parentContainer, options)
             if options.onClose then pcall(options.onClose) end
         end, Utils)
     end
+
+    -- Calculate total CanvasSize accurately
+    local function updateCanvasSize()
+        local total = 46 + 14 -- banner (46) + top padding (14)
+        for _, child in ipairs(scroll:GetChildren()) do
+            if child:IsA("GuiObject") and child.Name:find("^Card_") then
+                total = total + child.Size.Y.Offset + 8
+            end
+        end
+        scroll.CanvasSize = UDim2.new(0, 0, 0, total + 30)
+    end
+    updateCanvasSize()
+    scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+    scroll:GetPropertyChangedSignal("Visible"):Connect(function()
+        if scroll.Visible then
+            updateCanvasSize()
+            pcall(function() scroll.CanvasPosition = Vector2.new(0, 0) end)
+        end
+    end)
 
     return scroll
 end
