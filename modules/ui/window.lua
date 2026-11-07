@@ -121,6 +121,7 @@ function Window.create(dependencies)
             tabScroll = TabViewsMod.build(tabName, contentArea, {
                 Utils = Utils,
                 AssetManager = AssetManager,
+                FOV = dependencies.FOV,
                 onClose = function()
                     if sidebar and sidebar.Close then pcall(sidebar.Close) end
                 end,

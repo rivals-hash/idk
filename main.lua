@@ -162,6 +162,7 @@ local Sidebar = BestHub:Require("modules/ui/sidebar.lua")
 local HomeView = BestHub:Require("modules/ui/home_view.lua")
 local TabViews = BestHub:Require("modules/ui/tab_views.lua")
 local MobileToggle = BestHub:Require("modules/ui/mobile_toggle.lua")
+local FOV = BestHub:Require("modules/combat/fov.lua")
 local Window = BestHub:Require("modules/ui/window.lua")
 
 if not Window then
@@ -178,7 +179,8 @@ local WinInstance = Window.create({
     HomeView = HomeView,
     TabViews = TabViews,
     MobileToggle = MobileToggle,
-    AssetManager = AssetManager
+    AssetManager = AssetManager,
+    FOV = FOV
 })
 BestHub.Window = WinInstance
 

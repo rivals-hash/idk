@@ -280,6 +280,308 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     return btn
 end
 
+-- Helper: Create interactive Mobile Dropdown / Option Cycle Pill
+local function createDropdown(parent, title, desc, optionsList, defaultIndex, onSelect, Utils)
+    local curIdx = defaultIndex or 1
+    optionsList = (optionsList and #optionsList > 0) and optionsList or { "Default" }
+
+    local row = Instance.new("Frame")
+    row.Name = "Dropdown_" .. title:gsub("%s+", "")
+    row.Size = UDim2.new(1, 0, 0, 44)
+    row.BackgroundTransparency = 1
+    row.Parent = parent
+
+    local textContainer = Instance.new("Frame")
+    textContainer.Size = UDim2.new(1, -145, 1, 0)
+    textContainer.Position = UDim2.new(0, 4, 0, 0)
+    textContainer.BackgroundTransparency = 1
+    textContainer.Parent = row
+
+    local titleLbl = Instance.new("TextLabel")
+    titleLbl.Size = UDim2.new(1, 0, 0, 20)
+    titleLbl.Position = UDim2.new(0, 0, 0, 2)
+    titleLbl.BackgroundTransparency = 1
+    titleLbl.Font = Enum.Font.GothamMedium
+    titleLbl.Text = title
+    titleLbl.TextColor3 = Color3.fromRGB(240, 240, 245)
+    titleLbl.TextSize = 13
+    titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    titleLbl.Parent = textContainer
+
+    local descLbl = Instance.new("TextLabel")
+    descLbl.Size = UDim2.new(1, 0, 0, 16)
+    descLbl.Position = UDim2.new(0, 0, 0, 22)
+    descLbl.BackgroundTransparency = 1
+    descLbl.Font = Enum.Font.Gotham
+    descLbl.Text = desc or ""
+    descLbl.TextColor3 = Color3.fromRGB(160, 160, 175)
+    descLbl.TextSize = 10
+    descLbl.TextXAlignment = Enum.TextXAlignment.Left
+    descLbl.Parent = textContainer
+
+    local pillBtn = Instance.new("TextButton")
+    pillBtn.Name = "PillBtn"
+    pillBtn.Size = UDim2.new(0, 138, 0, 26)
+    pillBtn.Position = UDim2.new(1, -142, 0.5, -13)
+    pillBtn.BackgroundColor3 = Color3.fromRGB(32, 32, 44)
+    pillBtn.BorderSizePixel = 0
+    pillBtn.Text = optionsList[curIdx] or ""
+    pillBtn.Font = Enum.Font.GothamBold
+    pillBtn.TextSize = 10
+    pillBtn.TextColor3 = Color3.fromRGB(235, 235, 250)
+    pillBtn.AutoButtonColor = false
+    pillBtn.Active = true
+    pillBtn.Parent = row
+
+    local pillCorner = Instance.new("UICorner")
+    pillCorner.CornerRadius = UDim.new(0, 6)
+    pillCorner.Parent = pillBtn
+
+    local pillStroke = Instance.new("UIStroke")
+    pillStroke.Color = Color3.fromRGB(70, 70, 90)
+    pillStroke.Thickness = 1
+    pillStroke.Parent = pillBtn
+
+    local function cycleOption()
+        curIdx = curIdx + 1
+        if curIdx > #optionsList then curIdx = 1 end
+        local chosen = optionsList[curIdx]
+        pillBtn.Text = chosen
+
+        TweenService:Create(pillBtn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(55, 55, 80) }):Play()
+        task.delay(0.1, function()
+            TweenService:Create(pillBtn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(32, 32, 44) }):Play()
+        end)
+
+        if onSelect then pcall(onSelect, chosen, curIdx) end
+    end
+
+    pillBtn.Activated:Connect(cycleOption)
+    pillBtn.MouseButton1Click:Connect(cycleOption)
+    return row
+end
+
+-- Helper: Create interactive Color Palette Selector (Darling X Standard)
+local function createColorPicker(parent, title, desc, colorNames, defaultColorName, onSelectColor, Utils)
+    local selected = defaultColorName or "Rainbow"
+    colorNames = colorNames or { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple" }
+
+    local container = Instance.new("Frame")
+    container.Name = "ColorPicker_" .. title:gsub("%s+", "")
+    container.Size = UDim2.new(1, 0, 0, 0)
+    container.AutomaticSize = Enum.AutomaticSize.Y
+    container.BackgroundTransparency = 1
+    container.Parent = parent
+
+    local headerRow = Instance.new("Frame")
+    headerRow.Size = UDim2.new(1, 0, 0, 22)
+    headerRow.BackgroundTransparency = 1
+    headerRow.Parent = container
+
+    local titleLbl = Instance.new("TextLabel")
+    titleLbl.Size = UDim2.new(1, -70, 1, 0)
+    titleLbl.Position = UDim2.new(0, 4, 0, 0)
+    titleLbl.BackgroundTransparency = 1
+    titleLbl.Font = Enum.Font.GothamMedium
+    titleLbl.Text = title
+    titleLbl.TextColor3 = Color3.fromRGB(240, 240, 245)
+    titleLbl.TextSize = 13
+    titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    titleLbl.Parent = headerRow
+
+    local valLbl = Instance.new("TextLabel")
+    valLbl.Size = UDim2.new(0, 65, 1, 0)
+    valLbl.Position = UDim2.new(1, -69, 0, 0)
+    valLbl.BackgroundTransparency = 1
+    valLbl.Font = Enum.Font.GothamBold
+    valLbl.Text = selected
+    valLbl.TextColor3 = Color3.fromRGB(210, 210, 255)
+    valLbl.TextSize = 11
+    valLbl.TextXAlignment = Enum.TextXAlignment.Right
+    valLbl.Parent = headerRow
+
+    if desc and #desc > 0 then
+        local descLbl = Instance.new("TextLabel")
+        descLbl.Size = UDim2.new(1, 0, 0, 16)
+        descLbl.Position = UDim2.new(0, 4, 0, 22)
+        descLbl.BackgroundTransparency = 1
+        descLbl.Font = Enum.Font.Gotham
+        descLbl.Text = desc
+        descLbl.TextColor3 = Color3.fromRGB(160, 160, 175)
+        descLbl.TextSize = 10
+        descLbl.TextXAlignment = Enum.TextXAlignment.Left
+        descLbl.Parent = container
+    end
+
+    local scroll = Instance.new("ScrollingFrame")
+    scroll.Size = UDim2.new(1, 0, 0, 32)
+    scroll.Position = UDim2.new(0, 0, 0, (desc and #desc > 0) and 40 or 24)
+    scroll.BackgroundTransparency = 1
+    scroll.BorderSizePixel = 0
+    scroll.ScrollBarThickness = 0
+    scroll.CanvasSize = UDim2.new(0, #colorNames * 68, 0, 0)
+    scroll.ScrollingDirection = Enum.ScrollingDirection.X
+    scroll.Parent = container
+
+    local layout = Instance.new("UIListLayout")
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.Padding = UDim.new(0, 6)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Parent = scroll
+
+    local colorPills = {}
+
+    local function updatePills()
+        for cName, pill in pairs(colorPills) do
+            local isSel = (cName == selected)
+            pill.Stroke.Color = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(60, 60, 75)
+            pill.Stroke.Thickness = isSel and 1.5 or 1
+            pill.Frame.BackgroundColor3 = isSel and Color3.fromRGB(55, 55, 75) or Color3.fromRGB(26, 26, 36)
+        end
+        valLbl.Text = selected
+    end
+
+    for idx, cName in ipairs(colorNames) do
+        local pill = Instance.new("TextButton")
+        pill.Name = "Color_" .. cName
+        pill.Size = UDim2.new(0, 62, 0, 26)
+        pill.BackgroundColor3 = (cName == selected) and Color3.fromRGB(55, 55, 75) or Color3.fromRGB(26, 26, 36)
+        pill.BorderSizePixel = 0
+        pill.Text = cName
+        pill.Font = Enum.Font.GothamMedium
+        pill.TextSize = 10
+        pill.TextColor3 = (cName == "Rainbow") and Color3.fromRGB(255, 210, 255) or Color3.fromRGB(230, 230, 240)
+        pill.AutoButtonColor = false
+        pill.Active = true
+        pill.LayoutOrder = idx
+        pill.Parent = scroll
+
+        local pCorner = Instance.new("UICorner")
+        pCorner.CornerRadius = UDim.new(0, 6)
+        pCorner.Parent = pill
+
+        local pStroke = Instance.new("UIStroke")
+        pStroke.Color = (cName == selected) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(60, 60, 75)
+        pStroke.Thickness = (cName == selected) and 1.5 or 1
+        pStroke.Parent = pill
+
+        colorPills[cName] = { Frame = pill, Stroke = pStroke }
+
+        local function pick()
+            selected = cName
+            updatePills()
+            if onSelectColor then pcall(onSelectColor, cName) end
+        end
+
+        pill.Activated:Connect(pick)
+        pill.MouseButton1Click:Connect(pick)
+    end
+
+    local pad = Instance.new("UIPadding")
+    pad.PaddingBottom = UDim.new(0, 6)
+    pad.Parent = container
+
+    return container
+end
+
+-- Helper: Create interactive Multi-Chip Grid for Skill Blacklist
+local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Utils)
+    local blacklisted = {}
+
+    local container = Instance.new("Frame")
+    container.Name = "ChipGrid_" .. title:gsub("%s+", "")
+    container.Size = UDim2.new(1, 0, 0, 0)
+    container.AutomaticSize = Enum.AutomaticSize.Y
+    container.BackgroundTransparency = 1
+    container.Parent = parent
+
+    local titleLbl = Instance.new("TextLabel")
+    titleLbl.Size = UDim2.new(1, 0, 0, 20)
+    titleLbl.Position = UDim2.new(0, 4, 0, 0)
+    titleLbl.BackgroundTransparency = 1
+    titleLbl.Font = Enum.Font.GothamMedium
+    titleLbl.Text = title
+    titleLbl.TextColor3 = Color3.fromRGB(240, 240, 245)
+    titleLbl.TextSize = 13
+    titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    titleLbl.Parent = container
+
+    if desc and #desc > 0 then
+        local descLbl = Instance.new("TextLabel")
+        descLbl.Size = UDim2.new(1, 0, 0, 16)
+        descLbl.Position = UDim2.new(0, 4, 0, 20)
+        descLbl.BackgroundTransparency = 1
+        descLbl.Font = Enum.Font.Gotham
+        descLbl.Text = desc
+        descLbl.TextColor3 = Color3.fromRGB(160, 160, 175)
+        descLbl.TextSize = 10
+        descLbl.TextXAlignment = Enum.TextXAlignment.Left
+        descLbl.Parent = container
+    end
+
+    local gridFrame = Instance.new("Frame")
+    gridFrame.Name = "Grid"
+    gridFrame.Size = UDim2.new(1, 0, 0, 0)
+    gridFrame.AutomaticSize = Enum.AutomaticSize.Y
+    gridFrame.Position = UDim2.new(0, 0, 0, (desc and #desc > 0) and 40 or 24)
+    gridFrame.BackgroundTransparency = 1
+    gridFrame.Parent = gridFrame.Parent or container
+    gridFrame.Parent = container
+
+    local gridLayout = Instance.new("UIGridLayout")
+    gridLayout.CellSize = UDim2.new(0, 64, 0, 26)
+    gridLayout.CellPadding = UDim2.new(0, 5, 0, 5)
+    gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    gridLayout.Parent = gridFrame
+
+    for idx, chipName in ipairs(chipsList) do
+        local chip = Instance.new("TextButton")
+        chip.Name = "Chip_" .. chipName:gsub("%s+", "")
+        chip.BackgroundColor3 = Color3.fromRGB(28, 28, 38)
+        chip.BorderSizePixel = 0
+        chip.Text = chipName
+        chip.Font = Enum.Font.GothamMedium
+        chip.TextSize = 10
+        chip.TextColor3 = Color3.fromRGB(210, 210, 225)
+        chip.AutoButtonColor = false
+        chip.Active = true
+        chip.LayoutOrder = idx
+        chip.Parent = gridFrame
+
+        local cCorner = Instance.new("UICorner")
+        cCorner.CornerRadius = UDim.new(0, 6)
+        cCorner.Parent = chip
+
+        local cStroke = Instance.new("UIStroke")
+        cStroke.Color = Color3.fromRGB(60, 60, 75)
+        cStroke.Thickness = 1
+        cStroke.Parent = chip
+
+        local function toggleChip()
+            local isBl = not (blacklisted[chipName] == true)
+            blacklisted[chipName] = isBl
+
+            local targetBg = isBl and Color3.fromRGB(75, 25, 35) or Color3.fromRGB(28, 28, 38)
+            local targetStroke = isBl and Color3.fromRGB(255, 80, 100) or Color3.fromRGB(60, 60, 75)
+            local targetText = isBl and Color3.fromRGB(255, 170, 180) or Color3.fromRGB(210, 210, 225)
+
+            TweenService:Create(chip, TweenInfo.new(0.12), { BackgroundColor3 = targetBg, TextColor3 = targetText }):Play()
+            cStroke.Color = targetStroke
+
+            if onToggleChip then pcall(onToggleChip, chipName, isBl) end
+        end
+
+        chip.Activated:Connect(toggleChip)
+        chip.MouseButton1Click:Connect(toggleChip)
+    end
+
+    local pad = Instance.new("UIPadding")
+    pad.PaddingBottom = UDim.new(0, 8)
+    pad.Parent = container
+
+    return container
+end
+
 -- Helper: Create a styled Feature Card inside a Tab View
 local function createFeatureCard(parent, title, bgAsset)
     local card = Instance.new("Frame")
@@ -417,19 +719,96 @@ function TabViews.build(tabName, parentContainer, options)
 
     -- Populate content based on Tab
     if tabName == "Aimbot" then
-        local c1 = createFeatureCard(scroll, "Configuración de Apuntado", cardBgAsset)
-        c1.LayoutOrder = 2
-        createToggle(c1, "Silent Aim", "Redirecciona disparos al objetivo", true, nil, Utils)
-        createToggle(c1, "Auto Lock-On", "Fija la cámara al enemigo más cercano", false, nil, Utils)
-        createToggle(c1, "Team Check", "Ignora a jugadores del mismo bando", true, nil, Utils)
-        createToggle(c1, "Mostrar Círculo FOV", "Dibuja el radio de apuntado en pantalla", true, nil, Utils)
+        local FOVMod = options.FOV
 
-        local c2 = createFeatureCard(scroll, "Ajustes de Aimbot", cardBgAsset)
+        -- 1. Aimbot Principal (Darling Hub Engine)
+        local c1 = createFeatureCard(scroll, "Aimbot Principal (Darling Hub)", cardBgAsset)
+        c1.LayoutOrder = 2
+        createToggle(c1, "Player Silent Aim", "Redirecciona ataques y habilidades hacia jugadores enemigos", false, function(state)
+            if Utils then Utils.toast("Monody", "Player Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
+        end, Utils)
+        createToggle(c1, "NPC Silent Aim", "Redirecciona ataques hacia mobs y jefes", false, function(state)
+            if Utils then Utils.toast("Monody", "NPC Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
+        end, Utils)
+        createToggle(c1, "Team Check", "Ignora jugadores aliados o de tu misma tripulación", true, nil, Utils)
+        createToggle(c1, "Aimlock (Lock Player)", "Fija y mantiene al jugador objetivo seleccionado en combate", false, function(state)
+            if Utils then Utils.toast("Monody", "Aimlock: " .. (state and "Bloqueado al objetivo" or "Desactivado"), 1.2) end
+        end, Utils)
+        createToggle(c1, "Aimlock Floating Widget", "Muestra botón táctil flotante en pantalla para fijar con el pulgar", false, function(state)
+            if Utils then Utils.toast("Monody", "Aimlock Widget: " .. (state and "Visible" or "Oculto"), 1.2) end
+        end, Utils)
+        createDropdown(c1, "Modo de Apuntado", "Ángulo de detección del aimbot", { "360° (Todo alrededor)", "FOV (Círculo)", "180° (Frontal)" }, 1, function(opt)
+            if Utils then Utils.toast("Monody", "Modo Aim: " .. opt, 1.2) end
+        end, Utils)
+        createDropdown(c1, "Prioridad de Objetivo", "Criterio de selección automática", { "Nearest (Más cercano)", "Low HP (Menos vida)", "Looking At Me" }, 1, function(opt)
+            if Utils then Utils.toast("Monody", "Prioridad: " .. opt, 1.2) end
+        end, Utils)
+        createSlider(c1, "Rango Máximo (Studs)", 100, 3000, 1000, function(val)
+            -- Slider range callback
+        end, Utils)
+
+        -- 2. BBG Silent Aim (Legacy)
+        local c2 = createFeatureCard(scroll, "BBG Silent Aim (Legacy)", cardBgAsset)
         c2.LayoutOrder = 3
-        createSlider(c2, "Radio FOV", 30, 300, 120, nil, Utils)
-        createSlider(c2, "Suavizado (Smooth)", 1, 10, 5, nil, Utils)
-        createActionButton(c2, "Parte Objetivo: Cabeza", "Cambiar parte objetivo", function()
-            Utils.toast("Monody", "Parte objetivo cambiada a Cabeza", 1.5)
+        createToggle(c2, "BBG Silent Aim", "Motor clásico alternativo de BBG Panel (Mouse.Hit override)", false, function(state)
+            if Utils then Utils.toast("Monody", "BBG Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
+        end, Utils)
+        createToggle(c2, "Soru Silent (BBG)", "Sincroniza redirección silenciosa al teletransportarte con Soru", false, function(state)
+            if Utils then Utils.toast("Monody", "Soru Silent: " .. (state and "Activado" or "Desactivado"), 1.2) end
+        end, Utils)
+
+        -- 3. FOV Dinámico de Colores (Darling X)
+        local c3 = createFeatureCard(scroll, "FOV Dinámico (Darling X)", cardBgAsset)
+        c3.LayoutOrder = 4
+        createToggle(c3, "Mostrar Círculo FOV", "Dibuja el círculo con soporte dual ScreenGui / Drawing", false, function(state)
+            if FOVMod and FOVMod.setVisible then FOVMod.setVisible(state) end
+            if Utils then Utils.toast("Monody", "Círculo FOV: " .. (state and "Visible" or "Oculto"), 1.2) end
+        end, Utils)
+        createSlider(c3, "Radio FOV", 20, 500, 120, function(val)
+            if FOVMod and FOVMod.setRadius then FOVMod.setRadius(val) end
+        end, Utils)
+        createDropdown(c3, "Posición FOV", "Punto de anclaje del círculo en pantalla", { "Centro de Pantalla", "Touch / Cursor" }, 1, function(opt)
+            if FOVMod and FOVMod.setMode then
+                if opt:find("Touch") or opt:find("Cursor") then
+                    FOVMod.setMode("Mouse")
+                else
+                    FOVMod.setMode("Center")
+                end
+            end
+        end, Utils)
+        createColorPicker(c3, "Color FOV (Darling X)", "Colores disponibles en la suite Darling X", { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange" }, "Rainbow", function(colorName)
+            if FOVMod and FOVMod.setColor then FOVMod.setColor(colorName) end
+            if Utils then Utils.toast("Monody", "Color FOV: " .. colorName, 1.2) end
+        end, Utils)
+
+        -- 4. Tracers de Combate (Darling Hub)
+        local c4 = createFeatureCard(scroll, "Tracers de Combate (Darling Hub)", cardBgAsset)
+        c4.LayoutOrder = 5
+        createToggle(c4, "Mostrar Tracers", "Líneas de trazado hacia el enemigo detectado", false, function(state)
+            if Utils then Utils.toast("Monody", "Tracers: " .. (state and "Activados" or "Desactivados"), 1.2) end
+        end, Utils)
+        createDropdown(c4, "Modo Tracer", "Tipo de renderizado de la línea", { "Ambos (3D + 2D)", "3D Hardware Beam", "2D Line" }, 1, function(opt)
+            if Utils then Utils.toast("Monody", "Modo Tracer: " .. opt, 1.2) end
+        end, Utils)
+        createDropdown(c4, "Origen Tracer", "Punto de inicio del trazador", { "Personaje (Player)", "Abajo (Bottom)", "Centro" }, 1, function(opt)
+            if Utils then Utils.toast("Monody", "Origen: " .. opt, 1.2) end
+        end, Utils)
+        createColorPicker(c4, "Color Tracer", "Color de las líneas trazadoras", { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple" }, "White", function(colorName)
+            if Utils then Utils.toast("Monody", "Color Tracer: " .. colorName, 1.2) end
+        end, Utils)
+
+        -- 5. Skill Blacklist (Darling Hub / Nameless Engine)
+        local c5 = createFeatureCard(scroll, "Skill Blacklist (Darling Hub)", cardBgAsset)
+        c5.LayoutOrder = 6
+        createChipGrid(c5, "Excluir Habilidades de Aimbot", "Toca una habilidad para bloquearla y evitar que el aimbot la gaste", {
+            "Melee Z", "Melee X", "Melee C",
+            "Sword Z", "Sword X",
+            "Fruit Z", "Fruit X", "Fruit C", "Fruit V", "Fruit F", "Fruit TAP",
+            "Gun Z", "Gun X"
+        }, function(chip, isBlacklisted)
+            if Utils then
+                Utils.toast("Monody", chip .. ": " .. (isBlacklisted and "Bloqueado (Blacklist)" or "Habilitado"), 1.1)
+            end
         end, Utils)
 
     elseif tabName == "Combat" then

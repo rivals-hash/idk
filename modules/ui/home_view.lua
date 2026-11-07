@@ -167,31 +167,18 @@ function HomeView.create(parentContainer, dependencies)
     setupHoverSocial(discordBtn)
     setupHoverSocial(tiktokBtn)
 
-    -- Title: "Monody - "
-    local titlePrefix = Instance.new("TextLabel")
-    titlePrefix.Name = "TitlePrefix"
-    titlePrefix.Size = UDim2.new(0, 100, 0, 32)
-    titlePrefix.Position = UDim2.new(0, 112, 0, 14)
-    titlePrefix.BackgroundTransparency = 1
-    titlePrefix.Font = Enum.Font.Kalam
-    titlePrefix.Text = "Monody - "
-    titlePrefix.TextSize = 28
-    titlePrefix.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titlePrefix.TextXAlignment = Enum.TextXAlignment.Left
-    titlePrefix.Parent = card1
-
-    -- Title: "Premium"
-    local titleSuffix = Instance.new("TextLabel")
-    titleSuffix.Name = "TitleSuffix"
-    titleSuffix.Size = UDim2.new(0, 110, 0, 32)
-    titleSuffix.Position = UDim2.new(0, 214, 0, 14)
-    titleSuffix.BackgroundTransparency = 1
-    titleSuffix.Font = Enum.Font.Kalam
-    titleSuffix.Text = "Premium"
-    titleSuffix.TextSize = 28
-    titleSuffix.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleSuffix.TextXAlignment = Enum.TextXAlignment.Left
-    titleSuffix.Parent = card1
+    -- Title: "Monody - Premium" (Unificado para que quede pegado correctamente)
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "TitleLabel"
+    titleLabel.Size = UDim2.new(1, -125, 0, 32)
+    titleLabel.Position = UDim2.new(0, 112, 0, 14)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Font = Enum.Font.Kalam
+    titleLabel.Text = "Monody - Premium"
+    titleLabel.TextSize = 28
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = card1
 
     -- Subtitle: "By Darling"
     local authorLabel = Instance.new("TextLabel")
