@@ -135,17 +135,23 @@ local function createBeamTracer()
             parentFolder.Parent = Workspace
         end
 
-        local model = Instance.new("Model")
-        model.Name = "SilentAimTracer"
-        model.Parent = parentFolder
+        local part = Instance.new("Part")
+        part.Name = "TracerAnchor"
+        part.Size = Vector3.zero
+        part.Transparency = 1
+        part.CanCollide = false
+        part.CanTouch = false
+        part.CanQuery = false
+        part.Anchored = true
+        part.Parent = parentFolder
 
         local att0 = Instance.new("Attachment")
         att0.Name = "SourceAttachment"
-        att0.Parent = model
+        att0.Parent = part
 
         local att1 = Instance.new("Attachment")
         att1.Name = "TargetAttachment"
-        att1.Parent = model
+        att1.Parent = part
 
         local beam = Instance.new("Beam")
         beam.Name = "TracerBeam"
@@ -160,9 +166,9 @@ local function createBeamTracer()
         beam.Color = ColorSequence.new(currentColor)
         beam.Transparency = NumberSequence.new(0)
         beam.Enabled = false
-        beam.Parent = model
+        beam.Parent = part
 
-        tracerModel = model
+        tracerModel = part
         tracerAttachment0 = att0
         tracerAttachment1 = att1
         tracerBeam = beam

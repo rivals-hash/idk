@@ -559,140 +559,77 @@ local function isValidHookTarget(target)
     return true
 end
 
--- metatable hooks
+-- Metatable hook: 100% crash-proof Mouse.__index with recursion guard
+local inHook = false
 function Core.installHooks()
     if Core.IsHooked then return end
     Core.IsHooked = true
 
-    -- Hook 1: Mouse.__index (Hit, Target, UnitRay, Origin, Direction)
     local mouse = LocalPlayer and LocalPlayer:GetMouse()
-    if mouse then
-        local okHook, _ = pcall(function()
-            local oldIndex
-            oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, key)
-                local target = Core.CurrentTargetPart or _G.currentSilentAimTarget or _G.DarlingSilentAimTarget
-                if not checkcaller() and isValidHookTarget(target) and self == mouse then
+    if not mouse then return end
+
+    if hookmetamethod then
+        local oldIndex = nil
+        oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, key)
+            if inHook then
+                return oldIndex(self, key)
+            end
+
+            if (checkcaller and checkcaller()) then
+                return oldIndex(self, key)
+            end
+
+            if self == mouse and (key == "Hit" or key == "Target" or key == "UnitRay" or key == "Origin" or key == "Direction") then
+                inHook = true
+                local ok, res = pcall(function()
+                    local target = Core.CurrentTargetPart or _G.currentSilentAimTarget or _G.DarlingSilentAimTarget
+                    if not target or not target.Parent then return nil end
+
+                    -- Blacklist check
                     local activeKey = Core.CurrentSkillKey
                     if activeKey and Core.isKeyBlacklisted(Core.CurrentToolCategory, activeKey) then
-                        return oldIndex(self, key)
+                        return nil
                     end
-                    local isSword = (Core.CurrentToolCategory == "Sword") or (Core.CurrentTool and (string.find(Core.CurrentTool.Name, "Sword") or string.find(Core.CurrentTool.Name, "Buddy")))
-                    local tp = (isSword and Core.CurrentTargetRawPosition) or (target and target.Position) or Core.CurrentTargetPosition or Core.CurrentTargetRawPosition
-                    if tp then
-                        local cp = Camera.CFrame.Position
-                        if key == "Hit" then
-                            return CFrame.new(tp)
-                        elseif key == "Target" then
-                            return target
-                        elseif key == "UnitRay" then
-                            return Ray.new(cp, (tp - cp).Unit)
-                        elseif key == "Origin" then
-                            return cp
-                        elseif key == "Direction" then
-                            return (tp - cp).Unit
-                        end
-                    end
-                end
-                return oldIndex(self, key)
-            end))
-        end)
 
-        if not okHook then
-            local rawMt = getrawmetatable(game)
-            if rawMt then
-                local oldIndex = rawMt.__index
-                pcall(setreadonly, rawMt, false)
-                rawMt.__index = newcclosure(function(t, k)
-                    local target = Core.CurrentTargetPart or _G.currentSilentAimTarget or _G.DarlingSilentAimTarget
-                    if isValidHookTarget(target) and t == mouse then
-                        local activeKey = Core.CurrentSkillKey
-                        if activeKey and Core.isKeyBlacklisted(Core.CurrentToolCategory, activeKey) then
-                            return oldIndex(t, k)
+                    local isAllowed = (Core.LockPlayer or Core.PlayerAimEnabled or Core.NPCAimEnabled)
+                    if not isAllowed and _G.MonodySilentAim and _G.MonodySilentAim.Enabled then
+                        isAllowed = true
+                    end
+                    if not isAllowed then return nil end
+
+                    local tp = Core.CurrentTargetPosition or target.Position or Core.CurrentTargetRawPosition
+                    if not tp or typeof(tp) ~= "Vector3" then return nil end
+
+                    local cam = Workspace.CurrentCamera
+                    local cp = cam and cam.CFrame.Position
+
+                    if key == "Hit" then
+                        return CFrame.new(tp)
+                    elseif key == "Target" then
+                        return target
+                    elseif key == "UnitRay" and cp then
+                        local dir = (tp - cp)
+                        if dir.Magnitude > 0.001 then
+                            return Ray.new(cp, dir.Unit)
                         end
-                        local isSword = (Core.CurrentToolCategory == "Sword") or (Core.CurrentTool and (string.find(Core.CurrentTool.Name, "Sword") or string.find(Core.CurrentTool.Name, "Buddy")))
-                        local tp = (isSword and Core.CurrentTargetRawPosition) or (target and target.Position) or Core.CurrentTargetPosition or Core.CurrentTargetRawPosition
-                        if tp then
-                            local cp = Camera.CFrame.Position
-                            if k == "Hit" then
-                                return CFrame.new(tp)
-                            elseif k == "Target" then
-                                return target
-                            elseif k == "UnitRay" then
-                                return Ray.new(cp, (tp - cp).Unit)
-                            elseif k == "Origin" then
-                                return cp
-                            elseif k == "Direction" then
-                                return (tp - cp).Unit
-                            end
+                    elseif key == "Origin" and cp then
+                        return cp
+                    elseif key == "Direction" and cp then
+                        local dir = (tp - cp)
+                        if dir.Magnitude > 0.001 then
+                            return dir.Unit
                         end
                     end
-                    return oldIndex(t, k)
+                    return nil
                 end)
-                pcall(setreadonly, rawMt, true)
-            end
-        end
-    end
+                inHook = false
 
-    -- Hook 2: Remote interception (__namecall for FireServer & InvokeServer)
-    if hookmetamethod then
-        local oldNamecall = nil
-        oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
-            if checkcaller and checkcaller() then
-                return oldNamecall(self, ...)
-            end
-
-            local method = getnamecallmethod()
-            local args = { ... }
-
-            if args[1] == "TAP" then
-                return oldNamecall(self, ...)
-            end
-
-            local skillKey = getSkillKeyFromArgs(args)
-            if skillKey then
-                Core.setCurrentSkillKey(skillKey)
-            end
-
-            -- Blox Fruits Soru / Dodge / Bypass packet safeguard
-            local sName = tostring(self)
-            if sName == "CommE" or sName == "CommF_" or sName:find("Soru") or sName:find("Dodge") then
-                for i = 1, math.min(#args, 4) do
-                    local a = args[i]
-                    if a == "Soru" or a == "BypassSoru" or a == "Dodge" then
-                        return oldNamecall(self, ...)
-                    end
+                if ok and res ~= nil then
+                    return res
                 end
             end
 
-            local activeKey = skillKey or Core.CurrentSkillKey
-            local isBlacklisted = false
-            if activeKey and Core.isKeyBlacklisted(Core.CurrentToolCategory, activeKey) then
-                isBlacklisted = true
-            end
-
-            if not isBlacklisted and (Core.LockPlayer or Core.PlayerAimEnabled or Core.NPCAimEnabled) and Core.CurrentTargetPart then
-                local isSword = (Core.CurrentToolCategory == "Sword") or (Core.CurrentTool and (string.find(Core.CurrentTool.Name, "Sword") or string.find(Core.CurrentTool.Name, "Buddy")))
-                local targetPos = (isSword and Core.CurrentTargetRawPosition) or Core.CurrentTargetPosition or Core.CurrentTargetRawPosition
-                if targetPos then
-                    if method == "FireServer" or method == "InvokeServer" then
-                        if sName == "RemoteEvent" or sName == "CommE" or sName == "RemoteFunction" or sName == "CommF_" then
-                            for i, v in ipairs(args) do
-                                if typeof(v) == "Vector3" then
-                                    args[i] = targetPos
-                                end
-                            end
-
-                            -- sword invokeserver redirection
-                            if method == "InvokeServer" and (type(args[1]) == "string" and table.find(SKILL_KEYS, args[1])) then
-                                args[2] = targetPos
-                            end
-                            return oldNamecall(self, unpack(args))
-                        end
-                    end
-                end
-            end
-
-            return oldNamecall(self, ...)
+            return oldIndex(self, key)
         end))
     end
 end
@@ -789,7 +726,10 @@ local function updateTargetCycle()
                 if Workspace.CurrentCamera then
                     local cam = Workspace.CurrentCamera
                     local aimPos = tPart.Position + Vector3.new(0, 1.5, 0)
-                    cam.CFrame = CFrame.lookAt(cam.CFrame.Position, aimPos)
+                    local delta = (aimPos - cam.CFrame.Position)
+                    if delta.Magnitude > 0.1 then
+                        cam.CFrame = CFrame.lookAt(cam.CFrame.Position, aimPos)
+                    end
                 end
                 local mouseMod = getMouseModule()
                 if mouseMod then

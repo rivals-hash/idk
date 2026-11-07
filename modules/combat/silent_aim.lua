@@ -97,55 +97,47 @@ local function updateTarget()
     end
 end
 
--- Metamethod Hook for Mouse.Hit and Mouse.Target
+-- Metamethod Hook for Mouse.Hit and Mouse.Target (Unified with Core)
+local inHook = false
 function SilentAim.installHook()
     if SilentAim.IsHooked then return end
     SilentAim.IsHooked = true
 
+    -- If AimbotCore is active, let it handle the single unified hook
+    local core = _G.MonodyCombatCore or _G.DarlingCombatCore
+    if core and core.installHooks then
+        pcall(core.installHooks)
+        return
+    end
+
     local mouse = LocalPlayer and LocalPlayer:GetMouse()
     if not mouse then return end
 
-    local hooked = false
     if hookmetamethod then
-        local ok, _ = pcall(function()
-            local oldIndex
-            oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, key)
-                if not checkcaller() and self == mouse then
-                    if (SilentAim.Enabled or SilentAim.SoruSilent) and SilentAim.CurrentTargetPart then
-                        local tp = SilentAim.CurrentTargetPosition or SilentAim.CurrentTargetPart.Position
+        local oldIndex = nil
+        oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, key)
+            if inHook then return oldIndex(self, key) end
+            if (checkcaller and checkcaller()) then return oldIndex(self, key) end
+
+            if self == mouse and (key == "Hit" or key == "Target") then
+                inHook = true
+                local target = SilentAim.CurrentTargetPart or _G.currentSilentAimTarget
+                if (SilentAim.Enabled or SilentAim.SoruSilent) and target and target.Parent then
+                    local tp = SilentAim.CurrentTargetPosition or target.Position
+                    if tp and typeof(tp) == "Vector3" then
                         if key == "Hit" then
+                            inHook = false
                             return CFrame.new(tp)
                         elseif key == "Target" then
-                            return SilentAim.CurrentTargetPart
+                            inHook = false
+                            return target
                         end
                     end
                 end
-                return oldIndex(self, key)
-            end))
-        end)
-        hooked = ok
-    end
-
-    if not hooked and getrawmetatable then
-        pcall(function()
-            local rawMt = getrawmetatable(game)
-            if rawMt then
-                local oldIndex = rawMt.__index
-                pcall(setreadonly, rawMt, false)
-                rawMt.__index = newcclosure(function(self, key)
-                    if self == mouse and (SilentAim.Enabled or SilentAim.SoruSilent) and SilentAim.CurrentTargetPart then
-                        local tp = SilentAim.CurrentTargetPosition or SilentAim.CurrentTargetPart.Position
-                        if key == "Hit" then
-                            return CFrame.new(tp)
-                        elseif key == "Target" then
-                            return SilentAim.CurrentTargetPart
-                        end
-                    end
-                    return oldIndex(self, key)
-                end)
-                pcall(setreadonly, rawMt, true)
+                inHook = false
             end
-        end)
+            return oldIndex(self, key)
+        end))
     end
 end
 
