@@ -149,7 +149,7 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     local lastToggleTick = 0
     local function toggle()
         local now = tick()
-        if now - lastToggleTick < 0.25 then return end
+        if lastToggleTick > 0 and (now - lastToggleTick < 0.25) then return end
         lastToggleTick = now
 
         state = not state
@@ -352,7 +352,7 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     local lastPress = 0
     local function onPress()
         local now = tick()
-        if now - lastPress < 0.25 then return end
+        if lastPress > 0 and (now - lastPress < 0.25) then return end
         lastPress = now
 
         TweenService:Create(btn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(50, 50, 70) }):Play()
@@ -440,7 +440,7 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     local lastCycle = 0
     local function cycleOption()
         local now = tick()
-        if now - lastCycle < 0.25 then return end
+        if lastCycle > 0 and (now - lastCycle < 0.25) then return end
         lastCycle = now
 
         curIdx = curIdx + 1
@@ -597,7 +597,7 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
 
         local function pick()
             local now = tick()
-            if now - lastPickTick < 0.2 then return end
+            if lastPickTick > 0 and (now - lastPickTick < 0.2) then return end
             lastPickTick = now
 
             selected = cName
@@ -704,7 +704,7 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
         local lastChipTick = 0
         local function toggleChip()
             local now = tick()
-            if now - lastChipTick < 0.2 then return end
+            if lastChipTick > 0 and (now - lastChipTick < 0.2) then return end
             lastChipTick = now
 
             local isBl = not blacklisted[chipName]
@@ -906,39 +906,50 @@ function TabViews.build(tabName, parentContainer, options)
         local TracersMod = options.Tracers
         local SilentAimMod = options.SilentAim
 
-        -- 1. Aimbot (RJR Engine + Nameless Integration)
+        -- 1. Aimbot (CamLock + Aim Tracking)
         local c1 = makeCard("Aimbot")
         c1.LayoutOrder = 2
-        createToggle(c1, "Player Silent Aim", "Redirige ataques hacia jugadores", false, function(state)
+        createToggle(c1, "Aimbot", "Fija y apunta la cámara y ataques automáticamente", false, function(state)
+            if AimbotCore and AimbotCore.setAimbot then
+                AimbotCore.setAimbot(state)
+            end
+            if AimbotCore and AimbotCore.setLockPlayer then
+                AimbotCore.setLockPlayer(state)
+            end
             if PlayerAimbot then
                 if state then PlayerAimbot.enable() else PlayerAimbot.disable() end
             elseif AimbotCore then
                 AimbotCore.PlayerAimEnabled = state
                 if state then AimbotCore.startLoop() else AimbotCore.stopLoop() end
             end
-            if Utils then Utils.toast("Monody", "Player Silent Aim: " .. (state and "ON" or "OFF"), 1.2) end
+            _G.G_Aimbot = state
+            _G.G_PlayerAim = state
+            if Utils then Utils.toast("Monody", "Aimbot: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
-        createToggle(c1, "NPC Silent Aim", "Redirige ataques hacia NPCs", false, function(state)
+        createToggle(c1, "NPC Aimbot", "Fija y apunta hacia mobs y jefes", false, function(state)
             if NPCAimbot then
                 if state then NPCAimbot.enable() else NPCAimbot.disable() end
             elseif AimbotCore then
                 AimbotCore.NPCAimEnabled = state
                 if state then AimbotCore.startLoop() else AimbotCore.stopLoop() end
             end
-            if Utils then Utils.toast("Monody", "NPC Silent Aim: " .. (state and "ON" or "OFF"), 1.2) end
+            _G.G_NPCAimbot = state
+            if Utils then Utils.toast("Monody", "NPC Aimbot: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
-        createToggle(c1, "Team Check", "Ignora jugadores aliados", true, function(state)
+        createToggle(c1, "Aimlock", "Fija y mantiene el objetivo durante el combate", false, function(state)
+            if AimbotCore and AimbotCore.setLockPlayer then
+                AimbotCore.setLockPlayer(state)
+            end
+            if Utils then Utils.toast("Monody", "Aimlock: " .. (state and "Activado" or "Desactivado"), 1.2) end
+        end, Utils)
+        createToggle(c1, "Team Check", "Ignora jugadores aliados", false, function(state)
             if PlayerAimbot and PlayerAimbot.setTeamCheck then
                 PlayerAimbot.setTeamCheck(state)
             elseif AimbotCore then
                 AimbotCore.TeamCheck = state
             end
-        end, Utils)
-        createToggle(c1, "Aimlock", "Fija y sigue al jugador objetivo", false, function(state)
-            if AimbotCore and AimbotCore.setLockPlayer then
-                AimbotCore.setLockPlayer(state)
-            end
-            if Utils then Utils.toast("Monody", "Aimlock: " .. (state and "ON" or "OFF"), 1.2) end
+            if _G.MonodyCombatCore then _G.MonodyCombatCore.TeamCheck = state end
+            if _G.DarlingCombatCore then _G.DarlingCombatCore.TeamCheck = state end
         end, Utils)
         createDropdown(c1, "Modo", "Ángulo de detección", { "360°", "FOV", "180°" }, 1, function(opt)
             local mode = "360"
@@ -991,19 +1002,42 @@ function TabViews.build(tabName, parentContainer, options)
             end
         end, Utils)
 
-        -- 2. Silent Aim (Classic Mouse.Hit Engine)
+        -- 2. Silent Aim (Silent Skill & Mouse.Hit Redirection)
         local c2 = makeCard("Silent Aim")
         c2.LayoutOrder = 3
-        createToggle(c2, "Silent Aim", "Redirección clásica Mouse.Hit hacia enemigos", false, function(state)
+        createToggle(c2, "Player Silent Aim", "Redirige ataques hacia jugadores sin mover la cámara", false, function(state)
+            if PlayerAimbot then
+                if state then PlayerAimbot.enable() else PlayerAimbot.disable() end
+            elseif AimbotCore then
+                AimbotCore.PlayerAimEnabled = state
+                if state then AimbotCore.startLoop() else AimbotCore.stopLoop() end
+            end
             if SilentAimMod and SilentAimMod.setEnabled then
                 SilentAimMod.setEnabled(state)
             end
+            if AimbotCore and not _G.G_Aimbot then
+                AimbotCore.AimbotEnabled = false
+            end
+            _G.G_PlayerSilentAim = state
             _G.G_SilentAim = state
-            if Utils then Utils.toast("Monody", "Silent Aim: " .. (state and "ON" or "OFF"), 1.2) end
+            if Utils then Utils.toast("Monody", "Player Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
+        end, Utils)
+        createToggle(c2, "NPC Silent Aim", "Redirige ataques hacia mobs y jefes sin mover la cámara", false, function(state)
+            if NPCAimbot then
+                if state then NPCAimbot.enable() else NPCAimbot.disable() end
+            elseif AimbotCore then
+                AimbotCore.NPCAimEnabled = state
+                if state then AimbotCore.startLoop() else AimbotCore.stopLoop() end
+            end
+            _G.G_NPCSilentAim = state
+            if Utils then Utils.toast("Monody", "NPC Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
         createSlider(c2, "Rango Silent Aim", 100, 3000, 1000, function(val)
             if SilentAimMod and SilentAimMod.setMaxDistance then
                 SilentAimMod.setMaxDistance(val)
+            end
+            if AimbotCore then
+                AimbotCore.MaxRange = val
             end
         end, Utils)
 

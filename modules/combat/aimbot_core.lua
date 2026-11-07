@@ -13,6 +13,8 @@ local Mouse = LocalPlayer and LocalPlayer:GetMouse()
 
 local Core = {
     -- Master Toggles
+    AimbotEnabled = false,
+    CamLock = false,
     PlayerAimEnabled = false,
     NPCAimEnabled = false,
     TeamCheck = false,
@@ -178,15 +180,15 @@ end
 local function isEnemy(targetPlayer)
     if not targetPlayer or targetPlayer == LocalPlayer then return false end
     if Core.isPlayerBlacklisted(targetPlayer) then return false end
-    if isSilentAimAlly(targetPlayer) then return false end
 
-    local myTeam = LocalPlayer and LocalPlayer.Team
-    local targetTeam = targetPlayer.Team
-    if Core.TeamCheck and myTeam and targetTeam and myTeam == targetTeam then
-        return false
-    end
-    if myTeam and targetTeam and myTeam.Name == "Marines" and targetTeam.Name == "Marines" then
-        return false
+    if Core.TeamCheck then
+        if isSilentAimAlly(targetPlayer) then return false end
+        local myTeam = LocalPlayer and LocalPlayer.Team
+        local targetTeam = targetPlayer.Team
+        if myTeam and targetTeam then
+            if myTeam == targetTeam then return false end
+            if myTeam.Name == "Marines" and targetTeam.Name == "Marines" then return false end
+        end
     end
     return true
 end
@@ -303,7 +305,7 @@ local function resolvePlayerTarget(lpHRP)
     end
 
     -- 2. Lock Player feature: keep target locked onto the acquired player
-    if Core.LockPlayer and Core.LockedTargetPlayer and Core.LockedTargetPlayer ~= LocalPlayer and Core.LockedTargetPlayer.Character and isAlive(Core.LockedTargetPlayer.Character) and not Core.isPlayerBlacklisted(Core.LockedTargetPlayer) then
+    if (Core.LockPlayer or Core.AimbotEnabled) and Core.LockedTargetPlayer and Core.LockedTargetPlayer ~= LocalPlayer and Core.LockedTargetPlayer.Character and isAlive(Core.LockedTargetPlayer.Character) and not Core.isPlayerBlacklisted(Core.LockedTargetPlayer) then
         local part = getEntityPart(Core.LockedTargetPlayer.Character)
         if part and (part.Position - myPos).Magnitude <= maxRange then
             local predPos = Core.predictPosition(part)
@@ -374,7 +376,7 @@ local function resolvePlayerTarget(lpHRP)
     end
 
     if bestPart then
-        if Core.LockPlayer and not Core.LockedTargetPlayer then
+        if (Core.LockPlayer or Core.AimbotEnabled) and not Core.LockedTargetPlayer then
             Core.LockedTargetPlayer = bestPlayer
         end
         local predPos = Core.predictPosition(bestPart)
@@ -715,7 +717,7 @@ local function updateTargetCycle()
     local char = LocalPlayer and LocalPlayer.Character
     local lpHRP = char and getHRP(char)
 
-    if not lpHRP or (not Core.LockPlayer and not Core.PlayerAimEnabled and not Core.NPCAimEnabled) then
+    if not lpHRP or (not Core.LockPlayer and not Core.AimbotEnabled and not Core.PlayerAimEnabled and not Core.NPCAimEnabled) then
         Core.CurrentTargetPart = nil
         Core.CurrentTargetRawPosition = nil
         Core.CurrentTargetPosition = nil
@@ -730,7 +732,7 @@ local function updateTargetCycle()
     local now = os.clock()
 
     -- 0. Lock Player & Real-time CamLock Mode
-    if Core.LockPlayer then
+    if Core.LockPlayer or Core.AimbotEnabled then
         if not Core.LockedTargetPlayer or not isAlive(Core.LockedTargetPlayer.Character) then
             local myPos = lpHRP.Position
             local closestPlayer = nil
@@ -773,12 +775,14 @@ local function updateTargetCycle()
                 -- Real-time CamLock directly tracking target part
                 if Workspace.CurrentCamera then
                     local cam = Workspace.CurrentCamera
-                    local aimPos = tPart.Position + Vector3.new(0, 1.5, 0)
+                    local aimPos = tPart.Position + Vector3.new(0, 1.2, 0)
                     local delta = (aimPos - cam.CFrame.Position)
                     if delta.Magnitude > 0.1 then
                         cam.CFrame = CFrame.lookAt(cam.CFrame.Position, aimPos)
                     end
                 end
+                Core.faceTarget(Core.CurrentTargetPosition or tPart.Position)
+
                 local mouseMod = getMouseModule()
                 if mouseMod then
                     pcall(function()
@@ -806,6 +810,18 @@ local function updateTargetCycle()
                         mouseMod.Target = Core.CurrentTargetPart
                     end)
                 end
+
+                if (Core.AimbotEnabled or Core.LockPlayer) and Core.CurrentTargetPart then
+                    if Workspace.CurrentCamera then
+                        local cam = Workspace.CurrentCamera
+                        local aimPos = (Core.CurrentTargetPosition or Core.CurrentTargetPart.Position) + Vector3.new(0, 1.2, 0)
+                        local delta = (aimPos - cam.CFrame.Position)
+                        if delta.Magnitude > 0.1 then
+                            cam.CFrame = CFrame.lookAt(cam.CFrame.Position, aimPos)
+                        end
+                    end
+                    Core.faceTarget(Core.CurrentTargetPosition or Core.CurrentTargetPart.Position)
+                end
                 return
             end
         end
@@ -815,7 +831,7 @@ local function updateTargetCycle()
     lastTargetScanTick = now
     local targetPart, predictedPos, targetChar = nil, nil, nil
 
-    if Core.PlayerAimEnabled then
+    if Core.PlayerAimEnabled or Core.AimbotEnabled then
         targetPart, predictedPos, targetChar = resolvePlayerTarget(lpHRP)
         if targetPart then Core.CurrentTargetIsPlayer = true end
     end
@@ -846,6 +862,18 @@ local function updateTargetCycle()
             end)
         end
     end
+
+    if (Core.AimbotEnabled or Core.LockPlayer) and targetPart then
+        if Workspace.CurrentCamera then
+            local cam = Workspace.CurrentCamera
+            local aimPos = (predictedPos or targetPart.Position) + Vector3.new(0, 1.2, 0)
+            local delta = (aimPos - cam.CFrame.Position)
+            if delta.Magnitude > 0.1 then
+                cam.CFrame = CFrame.lookAt(cam.CFrame.Position, aimPos)
+            end
+        end
+        Core.faceTarget(predictedPos or targetPart.Position)
+    end
 end
 
 function Core.startLoop()
@@ -856,7 +884,7 @@ function Core.startLoop()
 end
 
 function Core.stopLoop()
-    if Core.PlayerAimEnabled or Core.NPCAimEnabled or Core.LockPlayer then return end
+    if Core.PlayerAimEnabled or Core.NPCAimEnabled or Core.LockPlayer or Core.AimbotEnabled then return end
     if Core.RenderConnection then
         pcall(function() Core.RenderConnection:Disconnect() end)
         Core.RenderConnection = nil
@@ -971,7 +999,7 @@ function Core.setLockPlayer(state)
         Core.startLoop()
     else
         Core.LockedTargetPlayer = nil
-        if not Core.PlayerAimEnabled and not Core.NPCAimEnabled then
+        if not Core.PlayerAimEnabled and not Core.NPCAimEnabled and not Core.AimbotEnabled then
             Core.stopLoop()
         end
     end
@@ -987,6 +1015,20 @@ function Core.setLockPlayer(state)
             end
         end
     end)
+end
+
+function Core.setAimbot(state)
+    Core.AimbotEnabled = (state == true)
+    if not state then
+        Core.LockedTargetPlayer = nil
+    end
+    if state then
+        Core.startLoop()
+    else
+        if not Core.PlayerAimEnabled and not Core.NPCAimEnabled and not Core.LockPlayer then
+            Core.stopLoop()
+        end
+    end
 end
 
 function Core.toggleLockPlayer()

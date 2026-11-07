@@ -218,17 +218,18 @@ local function resolveTargetPart()
         end
     end
 
-    -- 3. Fallback: Find closest enemy player on screen/world
+    -- 3. Fallback: Find closest player on screen/world
     local lp = Players.LocalPlayer or LocalPlayer
     local lpChar = lp and lp.Character
     local lpHRP = lpChar and lpChar:FindFirstChild("HumanoidRootPart")
     if lpHRP then
         local nearest = nil
         local minDist = math.huge
+        local teamCheck = (core and core.TeamCheck == true)
         for _, pl in ipairs(Players:GetPlayers()) do
             if pl ~= lp and pl.Character and isAlive(pl.Character) then
                 local isEnemy = true
-                if pl.Team and lp.Team and pl.Team == lp.Team then
+                if teamCheck and pl.Team and lp.Team and pl.Team == lp.Team then
                     isEnemy = false
                 end
                 if isEnemy then
@@ -238,6 +239,29 @@ local function resolveTargetPart()
                         if d < minDist then
                             minDist = d
                             nearest = hrp
+                        end
+                    end
+                end
+            end
+        end
+        if nearest then return nearest end
+
+        -- 4. Fallback: Check nearest NPC in Workspace
+        local folders = {
+            Workspace:FindFirstChild("Enemies"),
+            Workspace:FindFirstChild("Characters"),
+        }
+        for _, f in ipairs(folders) do
+            if f then
+                for _, ent in ipairs(f:GetChildren()) do
+                    if ent:IsA("Model") and isAlive(ent) and not Players:GetPlayerFromCharacter(ent) then
+                        local hrp = ent:FindFirstChild("HumanoidRootPart") or ent:FindFirstChild("Head")
+                        if hrp then
+                            local d = (hrp.Position - lpHRP.Position).Magnitude
+                            if d < minDist and d <= 1200 then
+                                minDist = d
+                                nearest = hrp
+                            end
                         end
                     end
                 end

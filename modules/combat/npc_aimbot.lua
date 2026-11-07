@@ -55,7 +55,7 @@ function NPCAimbot.disable()
     if not core then return end
     core.NPCAimEnabled = false
     _G.G_NPCSilentAim = false
-    if not core.PlayerAimEnabled and not core.LockPlayer then
+    if not core.PlayerAimEnabled and not core.LockPlayer and not core.AimbotEnabled then
         _G.currentSilentAimTarget = nil
         _G.DarlingSilentAimTarget = nil
     end
