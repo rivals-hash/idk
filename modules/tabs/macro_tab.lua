@@ -30,7 +30,7 @@ return function(context)
     -- MACRO TAB
     local MacroTab = Window:Tab({
         Title = "Macro",
-        Icon = "terminal"
+        Icon = "cpu"
     })
     enhanceTabScrolling(MacroTab)
 

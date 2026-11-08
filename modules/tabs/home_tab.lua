@@ -55,7 +55,7 @@ return function(context)
 -- ========================================================================
 local HomeTab = Window:Tab({
     Title = "Home",
-    Icon = "house"
+    Icon = "layout-dashboard"
 })
 enhanceTabScrolling(HomeTab)
 

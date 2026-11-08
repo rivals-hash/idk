@@ -55,7 +55,7 @@ return function(context)
 -- ========================================================================
 local SkinsTab = Window:Tab({
     Title = "Skins",
-    Icon = "shirt"
+    Icon = "sparkles"
 })
 enhanceTabScrolling(SkinsTab)
 

@@ -55,7 +55,7 @@ return function(context)
 -- ========================================================================
 local PlayersTab = Window:Tab({
     Title = "Players",
-    Icon = "users"
+    Icon = "user-search"
 })
 enhanceTabScrolling(PlayersTab)
 

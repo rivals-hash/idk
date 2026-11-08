@@ -55,7 +55,7 @@ return function(context)
 -- ========================================================================
 local MusicTab = Window:Tab({
     Title = "Music",
-    Icon = "music"
+    Icon = "disc-3"
 })
 enhanceTabScrolling(MusicTab)
 

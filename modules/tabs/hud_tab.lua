@@ -26,7 +26,7 @@ return function(context)
 
     local HudTab = Window:Tab({
         Title = "HUD",
-        Icon = "layout"
+        Icon = "monitor"
     })
     enhanceTabScrolling(HudTab)
 

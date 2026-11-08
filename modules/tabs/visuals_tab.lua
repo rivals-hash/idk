@@ -55,7 +55,7 @@ return function(context)
 -- ========================================================================
 local VisualsTab = Window:Tab({
     Title = "Visuals",
-    Icon = "eye"
+    Icon = "scan-eye"
 })
 enhanceTabScrolling(VisualsTab)
 

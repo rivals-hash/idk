@@ -55,7 +55,7 @@ return function(context)
 -- ========================================================================
 local AimbotTab = Window:Tab({
     Title = "Aimbot",
-    Icon = "crosshair"
+    Icon = "target"
 })
 enhanceTabScrolling(AimbotTab)
 

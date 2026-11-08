@@ -39,7 +39,7 @@ return function(context)
 -- ========================================================================
 local SoruTab = Window:Tab({
     Title = "Soru",
-    Icon = "zap"
+    Icon = "wind"
 })
 enhanceTabScrolling(SoruTab)
 

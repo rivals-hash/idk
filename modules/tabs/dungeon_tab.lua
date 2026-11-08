@@ -23,7 +23,7 @@ return function(context)
 -- ========================================================================
 local DungeonTab = Window:Tab({
     Title = "Dungeon",
-    Icon = "flame"
+    Icon = "skull"
 })
 enhanceTabScrolling(DungeonTab)
 

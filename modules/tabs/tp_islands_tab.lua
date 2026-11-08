@@ -37,7 +37,7 @@ return function(context)
 
     local TeleportTab = Window:Tab({
         Title = "Teleport",
-        Icon = "map-pin"
+        Icon = "map"
     })
     enhanceTabScrolling(TeleportTab)
 

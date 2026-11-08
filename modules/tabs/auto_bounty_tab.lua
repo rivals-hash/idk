@@ -36,7 +36,7 @@ return function(context)
     -- ========================================================================
     local AutoBountyTab = Window:Tab({
         Title = "Auto Bounty",
-        Icon = "crosshair"
+        Icon = "trophy"
     })
     enhanceTabScrolling(AutoBountyTab)
 

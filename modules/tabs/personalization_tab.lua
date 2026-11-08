@@ -67,7 +67,7 @@ return function(context)
 -- ========================================================================
 local PersonalizationTab = Window:Tab({
     Title = "Personalization",
-    Icon = "palette"
+    Icon = "brush"
 })
 enhanceTabScrolling(PersonalizationTab)
 

@@ -55,7 +55,7 @@ return function(context)
 -- ========================================================================
 local SummonDragonTab = Window:Tab({
     Title = "Animations",
-    Icon = "sparkles"
+    Icon = "activity"
 })
 enhanceTabScrolling(SummonDragonTab)
 

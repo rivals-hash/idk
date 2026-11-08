@@ -444,7 +444,7 @@ end
 
 local SettingsTab = Window:Tab({
     Title = "Settings",
-    Icon = "settings"
+    Icon = "sliders"
 })
 enhanceTabScrolling(SettingsTab)
 
