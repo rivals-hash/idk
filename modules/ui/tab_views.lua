@@ -31,7 +31,9 @@ local clamp = math.clamp or function(val, minVal, maxVal)
 end
 
 -- Default Icon mapping for settings rows
+-- Default Icon mapping for settings rows
 local ICON_MAP = {
+    -- Aimbot & Combat
     Aimbot = "rbxassetid://134242818164054",
     ["NPC Aimbot"] = "rbxassetid://10734887900",
     Aimlock = "rbxassetid://10734950309",
@@ -44,27 +46,199 @@ local ICON_MAP = {
     ["Player Silent Aim"] = "rbxassetid://134242818164054",
     ["NPC Silent Aim"] = "rbxassetid://10734887900",
     ["Silent Aim Range"] = "rbxassetid://10734951847",
+    ["Target Part"] = "rbxassetid://10734898144",
+    ["Hit Chance (%)"] = "rbxassetid://10734898144",
     ["FOV Circle"] = "rbxassetid://10734898144",
     ["FOV Radius"] = "rbxassetid://10734898144",
+    ["Position"] = "rbxassetid://10734951847",
+    ["FOV Color"] = "rbxassetid://106579555405966",
     ["Show Tracers"] = "rbxassetid://134242818164054",
     Mode = "rbxassetid://10734898144",
     Origin = "rbxassetid://10734898144",
+    Color = "rbxassetid://106579555405966",
+    ["Sticky Target Tracker"] = "rbxassetid://134242818164054",
+    ["Tracker Distance"] = "rbxassetid://10734951847",
+    ["Tracker Widget"] = "rbxassetid://10734898144",
+
+    -- Combat & Movement
+    ["Dragon Gun M1 (Gun Aura)"] = "rbxassetid://134242818164054",
+    ["Hitbox Expander"] = "rbxassetid://10734898144",
+    ["Hitbox Multiplier"] = "rbxassetid://10734898144",
+    ["Lock Player"] = "rbxassetid://10734950309",
+    ["Lock Player Floating Widget"] = "rbxassetid://10734898144",
     ["Fast Attack"] = "rbxassetid://81872698913435",
-    ["Auto Clicker"] = "rbxassetid://81872698913435",
-    ["Auto Skills Combo"] = "rbxassetid://81872698913435",
-    ["Kill Aura"] = "rbxassetid://81872698913435",
-    ["Player ESP"] = "rbxassetid://115398113982385",
-    ["Box ESP"] = "rbxassetid://10734898144",
-    Tracers = "rbxassetid://134242818164054",
+    ["Attack Delay (s)"] = "rbxassetid://10734898144",
+    ["Fruit Fast Attack"] = "rbxassetid://81872698913435",
+    ["One Shot Kitsune"] = "rbxassetid://130551565616516",
+    ["Auto Buso Haki"] = "rbxassetid://10734951847",
+    ["Auto Race V3"] = "rbxassetid://10734951847",
+    ["Race V3 Health Threshold"] = "rbxassetid://10734898144",
+    ["Auto Race V4"] = "rbxassetid://130551565616516",
+    ["Anti Stun Hitbox"] = "rbxassetid://10734951847",
+    ["Sanguine Boost (Z)"] = "rbxassetid://130551565616516",
+    ["Sanguine Velocity Power"] = "rbxassetid://10734898144",
+    ["Ninja Dash"] = "rbxassetid://130551565616516",
+    ["Ninja Dash Speed"] = "rbxassetid://10734898144",
+    ["Fly (Flight)"] = "rbxassetid://10734951847",
+    ["Flight Speed"] = "rbxassetid://10734898144",
     WalkSpeed = "rbxassetid://10734951847",
-    JumpPower = "rbxassetid://10734951847",
+    ["Dash Distance"] = "rbxassetid://10734951847",
+    ["Super Jump"] = "rbxassetid://130551565616516",
+    ["Infinite Air Jump"] = "rbxassetid://130551565616516",
+    ["Walk On Water"] = "rbxassetid://10734951847",
+    Noclip = "rbxassetid://10734951847",
+    ["FFlags 1 (FPS Booster)"] = "rbxassetid://80451686744860",
+    ["No Animations"] = "rbxassetid://80451686744860",
+    ["Anti Lava"] = "rbxassetid://10734951847",
+    ["Camera Skew (Rare View)"] = "rbxassetid://100033680381365",
+    ["Skew Resolution"] = "rbxassetid://10734898144",
+    ["Show Floating Widgets"] = "rbxassetid://10734898144",
+    ["Lock Widgets Position"] = "rbxassetid://10734950309",
+
+    -- Auto Bounty
+    ["Auto Bounty Mode (Fast Hop)"] = "rbxassetid://134242818164054",
+    ["Auto Join Team"] = "rbxassetid://115398113982385",
+    ["Skip Target Player"] = "rbxassetid://134242818164054",
+    ["Near Tween Speed"] = "rbxassetid://10734898144",
+    ["Far Tween Speed"] = "rbxassetid://10734898144",
+    ["Tween Threshold (Studs)"] = "rbxassetid://10734898144",
+    ["Orbit Target"] = "rbxassetid://10734898144",
+    ["Orbit Distance"] = "rbxassetid://10734898144",
+    ["Combat Distance"] = "rbxassetid://10734898144",
+    ["Orbit Speed"] = "rbxassetid://10734898144",
+    ["Auto Soru Movement"] = "rbxassetid://130551565616516",
+    ["Auto Attack"] = "rbxassetid://81872698913435",
+    ["Fast Attack Speed"] = "rbxassetid://81872698913435",
+    ["Auto Skills Rotation"] = "rbxassetid://81872698913435",
+    ["Excluded Skills"] = "rbxassetid://10734898144",
+    ["Weapon Loadouts (Melee)"] = "rbxassetid://81872698913435",
+    ["Weapon Loadouts (Sword)"] = "rbxassetid://81872698913435",
+    ["Weapon Loadouts (Fruit)"] = "rbxassetid://81872698913435",
+    ["Weapon Loadouts (Gun)"] = "rbxassetid://134242818164054",
+    ["Aimbot Lock"] = "rbxassetid://10734950309",
+    ["Auto Buso / Ken Haki"] = "rbxassetid://10734951847",
+    ["Auto Enable PvP"] = "rbxassetid://81872698913435",
+    ["Auto Flee Low HP"] = "rbxassetid://10734951847",
+    ["Cancel Flee Now"] = "rbxassetid://10734951847",
+    ["Flee HP %"] = "rbxassetid://10734898144",
+    ["Return HP %"] = "rbxassetid://10734898144",
+    ["Auto Server Hop"] = "rbxassetid://10734951847",
+    ["Hop If Empty Server"] = "rbxassetid://10734951847",
+    ["Target Player Count"] = "rbxassetid://115398113982385",
+
+    -- Soru
     ["Toggle Soru Cooldown (1s)"] = "rbxassetid://130551565616516",
     ["Instant Soru Cooldown (1s)"] = "rbxassetid://130551565616516",
     ["Infinite Soru"] = "rbxassetid://130551565616516",
     ["Soru Aimbot"] = "rbxassetid://130551565616516",
-    ["Auto Farm Level"] = "rbxassetid://80451686744860",
+    ["Soru Mode"] = "rbxassetid://10734898144",
+    ["Soru Distance"] = "rbxassetid://10734951847",
+    ["Instant Soru Dash"] = "rbxassetid://130551565616516",
+    ["Soru Keybind"] = "rbxassetid://10734898144",
+    ["Soru Notification"] = "rbxassetid://10734951847",
+
+    -- Dungeon
+    ["Auto Dungeon"] = "rbxassetid://10734887900",
+    ["Dungeon Status"] = "rbxassetid://80451686744860",
+    ["Selected Weapon"] = "rbxassetid://81872698913435",
+    ["Attack Height"] = "rbxassetid://10734951847",
+    ["Pass Room Now"] = "rbxassetid://130551565616516",
+
+    -- Teleport
+    ["Select Sea"] = "rbxassetid://10734951847",
+    ["Select Island"] = "rbxassetid://10734951847",
+    ["Teleport To Island"] = "rbxassetid://130551565616516",
+    ["Stop Teleport"] = "rbxassetid://10734951847",
+    ["Tween Speed"] = "rbxassetid://10734898144",
+    ["Anti-Fall Float"] = "rbxassetid://10734951847",
+
+    -- Visuals
+    ["2D Quad Boxes"] = "rbxassetid://10734898144",
+    ["Player Names"] = "rbxassetid://115398113982385",
+    ["Health Bars"] = "rbxassetid://10734951847",
+    ["Distance Indicator"] = "rbxassetid://10734951847",
+    ["Equipped Tool / Weapon"] = "rbxassetid://81872698913435",
+    ["Chams / Highlights"] = "rbxassetid://100033680381365",
+    ["Multi-Tracers (All Players)"] = "rbxassetid://134242818164054",
+    ["Tracer Line Color"] = "rbxassetid://106579555405966",
+    ["Detect Player Ship"] = "rbxassetid://10734951847",
+    ["Ship Color"] = "rbxassetid://106579555405966",
+    ["Rainbow Ship Mode"] = "rbxassetid://106579555405966",
+    ["Reset Original Ship Colors"] = "rbxassetid://10734898144",
+    ["Ship Scale Multiplier"] = "rbxassetid://10734898144",
+    ["Reset Ship Size (1x)"] = "rbxassetid://10734898144",
+    ["RTX Shaders"] = "rbxassetid://100033680381365",
+    ["RTX Preset"] = "rbxassetid://106579555405966",
+    ["Skybox Preset"] = "rbxassetid://100033680381365",
+    ["Custom Skybox URL"] = "rbxassetid://10734951847",
     ["Clear Sky (No Fog)"] = "rbxassetid://100033680381365",
     ["Fullbright Mode"] = "rbxassetid://100033680381365",
+    ["Remove Atmosphere Fog"] = "rbxassetid://100033680381365",
+    ["Hide Map Debris"] = "rbxassetid://80451686744860",
+
+    -- Players
+    ["Refresh Player List"] = "rbxassetid://115398113982385",
+    Spectate = "rbxassetid://100033680381365",
+    ["Tween To Player"] = "rbxassetid://130551565616516",
+    ["Aimbot Blacklist"] = "rbxassetid://10734950309",
+
+    -- HUD
+    ["HUD Editor"] = "rbxassetid://10734898144",
+    ["Show Health Bar"] = "rbxassetid://10734951847",
+    ["Show Stats Counter"] = "rbxassetid://80451686744860",
+    ["Show FPS & Ping"] = "rbxassetid://80451686744860",
+    ["Show Coordinates"] = "rbxassetid://10734951847",
+    Watermark = "rbxassetid://100033680381365",
+    ["Reset HUD Layout"] = "rbxassetid://10734898144",
+
+    -- Macro
+    ["Macro Enabled"] = "rbxassetid://80451686744860",
+    ["Macro Slot"] = "rbxassetid://80451686744860",
+    ["Active Macro Slot"] = "rbxassetid://80451686744860",
+    ["Combo Delay (s)"] = "rbxassetid://10734898144",
+    ["Auto Cast Skills"] = "rbxassetid://81872698913435",
+    ["Skill Cooldown Tracker HUD"] = "rbxassetid://80451686744860",
+    ["Floating Macro Button"] = "rbxassetid://10734898144",
+    ["Reset Macro Slots"] = "rbxassetid://10734898144",
+
+    -- Music
+    ["Phonk & Soundtracks"] = "rbxassetid://10734898144",
+    ["Play Soundtrack"] = "rbxassetid://10734898144",
+    ["Stop Music"] = "rbxassetid://10734898144",
+    ["Select Track"] = "rbxassetid://10734898144",
+    ["Volume (%)"] = "rbxassetid://10734898144",
+    ["Custom Sound ID"] = "rbxassetid://10734951847",
+    ["Loop Song"] = "rbxassetid://10734898144",
+    ["Audio Library"] = "rbxassetid://10734898144",
+
+    -- Skins
+    ["Darling VFX Engine"] = "rbxassetid://106579555405966",
+    ["VFX Color Preset"] = "rbxassetid://106579555405966",
+    ["Sword Slash Recolor"] = "rbxassetid://81872698913435",
+    ["Fruit Particles Recolor"] = "rbxassetid://106579555405966",
+    ["Aura Glow Recolor"] = "rbxassetid://100033680381365",
+
+    -- Themes
+    ["Darling X Wallpapers"] = "rbxassetid://100033680381365",
+    ["Wallpaper Preset"] = "rbxassetid://100033680381365",
+    ["Wallpaper Opacity (%)"] = "rbxassetid://10734898144",
+    ["Glass Frosted Tint (%)"] = "rbxassetid://10734898144",
+    ["Atmospheric Blur"] = "rbxassetid://10734898144",
+    ["Dim 3D World (Cinematic)"] = "rbxassetid://100033680381365",
+    ["Accent Preset"] = "rbxassetid://106579555405966",
+    ["Custom Wallpaper URL"] = "rbxassetid://10734951847",
+    ["Apply Custom Wallpaper"] = "rbxassetid://106579555405966",
+    ["Clear Wallpaper (Pure Glass)"] = "rbxassetid://100033680381365",
+
+    -- Settings
+    ["UI Scale (%)"] = "rbxassetid://10734898144",
+    ["Hub Toggle Keybind"] = "rbxassetid://10734898144",
+    ["Rejoin Current Server"] = "rbxassetid://10734951847",
+    ["Server Hop (Random)"] = "rbxassetid://10734951847",
+    ["Save Configuration"] = "rbxassetid://10734951847",
+    ["Load Configuration"] = "rbxassetid://10734951847",
+    ["Reset Defaults"] = "rbxassetid://10734898144",
+    ["Unload BestHub"] = "rbxassetid://10734951847",
 }
 
 -- Track exact card heights deterministically
@@ -82,21 +256,91 @@ local function addCardHeight(parent, h)
     card.Size = UDim2.new(0, 396, 0, newH)
 end
 
+-- Universal helper to render a sleek 26x26 rounded square icon badge on the left of any row
+local function renderRowIcon(row, title, customIcon, controlType)
+    local iconAsset = customIcon or ICON_MAP[title]
+    if not iconAsset or #iconAsset == 0 then
+        local lowerTitle = title:lower()
+        if lowerTitle:find("aim") or lowerTitle:find("target") or lowerTitle:find("lock") then
+            iconAsset = "rbxassetid://134242818164054"
+        elseif lowerTitle:find("speed") or lowerTitle:find("tween") or lowerTitle:find("dash") or lowerTitle:find("jump") or lowerTitle:find("fly") or lowerTitle:find("soru") then
+            iconAsset = "rbxassetid://130551565616516"
+        elseif lowerTitle:find("attack") or lowerTitle:find("damage") or lowerTitle:find("hitbox") or lowerTitle:find("sword") or lowerTitle:find("combat") or lowerTitle:find("bounty") then
+            iconAsset = "rbxassetid://81872698913435"
+        elseif lowerTitle:find("esp") or lowerTitle:find("box") or lowerTitle:find("chams") or lowerTitle:find("visual") or lowerTitle:find("shader") or lowerTitle:find("skybox") then
+            iconAsset = "rbxassetid://100033680381365"
+        elseif lowerTitle:find("player") or lowerTitle:find("team") or lowerTitle:find("bounty") then
+            iconAsset = "rbxassetid://115398113982385"
+        elseif lowerTitle:find("color") or lowerTitle:find("theme") or lowerTitle:find("wallpaper") or lowerTitle:find("vfx") or lowerTitle:find("paint") then
+            iconAsset = "rbxassetid://106579555405966"
+        elseif lowerTitle:find("music") or lowerTitle:find("sound") or lowerTitle:find("audio") then
+            iconAsset = "rbxassetid://10734898144"
+        elseif lowerTitle:find("macro") or lowerTitle:find("skill") or lowerTitle:find("combo") then
+            iconAsset = "rbxassetid://80451686744860"
+        elseif controlType == "Toggle" then
+            iconAsset = "rbxassetid://10734950309"
+        elseif controlType == "Slider" then
+            iconAsset = "rbxassetid://10734898144"
+        elseif controlType == "Dropdown" then
+            iconAsset = "rbxassetid://10734898144"
+        elseif controlType == "Button" then
+            iconAsset = "rbxassetid://134242818164054"
+        elseif controlType == "Input" then
+            iconAsset = "rbxassetid://10734951847"
+        else
+            iconAsset = "rbxassetid://10734950309"
+        end
+    end
+
+    local iconContainer = Instance.new("Frame")
+    iconContainer.Name = "RowIconBadge"
+    iconContainer.Size = UDim2.new(0, 26, 0, 26)
+    iconContainer.Position = UDim2.new(0, 8, 0.5, -13)
+    iconContainer.BackgroundColor3 = Color3.fromRGB(36, 20, 28)
+    iconContainer.BackgroundTransparency = 0.35
+    iconContainer.BorderSizePixel = 0
+    iconContainer.ZIndex = 4
+    iconContainer.Parent = row
+
+    local icCorner = Instance.new("UICorner")
+    icCorner.CornerRadius = UDim.new(0, 6)
+    icCorner.Parent = iconContainer
+
+    local icStroke = Instance.new("UIStroke")
+    icStroke.Color = Color3.fromRGB(255, 255, 255)
+    icStroke.Transparency = 0.94
+    icStroke.Thickness = 1
+    icStroke.Parent = iconContainer
+
+    local iconImg = Instance.new("ImageLabel")
+    iconImg.Name = "Icon"
+    iconImg.Size = UDim2.new(0, 16, 0, 16)
+    iconImg.Position = UDim2.new(0.5, -8, 0.5, -8)
+    iconImg.BackgroundTransparency = 1
+    iconImg.Image = iconAsset
+    iconImg.ImageColor3 = Color3.fromRGB(255, 225, 235)
+    iconImg.ScaleType = Enum.ScaleType.Fit
+    iconImg.ZIndex = 5
+    iconImg.Parent = iconContainer
+
+    return iconContainer
+end
+
 -- Helper: Create interactive Toggle (Glassmorphic Darling X Style)
-local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
+local function createToggle(parent, title, desc, defaultState, onToggle, Utils, customIcon)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local state = defaultState or false
 
     local row = Instance.new("Frame")
     row.Name = "Toggle_" .. title:gsub("%s+", "")
-    row.Size = UDim2.new(1, 0, 0, 42)
+    row.Size = UDim2.new(1, 0, 0, 44)
     row.BackgroundColor3 = Color3.fromRGB(24, 16, 22)
     row.BackgroundTransparency = 0.55
     row.BorderSizePixel = 0
     row.ZIndex = 3
     row.Parent = targetContainer
 
-    addCardHeight(parent, 42)
+    addCardHeight(parent, 44)
 
     local rowCorner = Instance.new("UICorner")
     rowCorner.CornerRadius = UDim.new(0, 8)
@@ -109,10 +353,12 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     rowStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     rowStroke.Parent = row
 
+    renderRowIcon(row, title, customIcon, "Toggle")
+
     -- Left Text (Title + Short Desc)
     local textContainer = Instance.new("Frame")
-    textContainer.Size = UDim2.new(1, -60, 1, 0)
-    textContainer.Position = UDim2.new(0, 10, 0, 0)
+    textContainer.Size = UDim2.new(1, -96, 1, 0)
+    textContainer.Position = UDim2.new(0, 42, 0, 0)
     textContainer.BackgroundTransparency = 1
     textContainer.ZIndex = 3
     textContainer.Parent = row
@@ -121,7 +367,7 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
 
     local titleLbl = Instance.new("TextLabel")
     titleLbl.Size = UDim2.new(1, 0, 0, hasDesc and 19 or 24)
-    titleLbl.Position = UDim2.new(0, 0, 0, hasDesc and 3 or 9)
+    titleLbl.Position = UDim2.new(0, 0, 0, hasDesc and 3 or 10)
     titleLbl.BackgroundTransparency = 1
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.Text = title
@@ -227,7 +473,7 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
 end
 
 -- Helper: Create interactive Dropdown with chevron pill (Glassmorphic Darling X Style)
-local function createDropdown(parent, title, desc, optionsList, defaultIndex, onSelect, Utils)
+local function createDropdown(parent, title, desc, optionsList, defaultIndex, onSelect, Utils, customIcon)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local curIdx = defaultIndex or 1
     optionsList = (optionsList and #optionsList > 0) and optionsList or { "Default" }
@@ -254,10 +500,12 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     rowStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     rowStroke.Parent = row
 
+    renderRowIcon(row, title, customIcon, "Dropdown")
+
     -- Left Text
     local textContainer = Instance.new("Frame")
-    textContainer.Size = UDim2.new(1, -125, 1, 0)
-    textContainer.Position = UDim2.new(0, 10, 0, 0)
+    textContainer.Size = UDim2.new(1, -156, 1, 0)
+    textContainer.Position = UDim2.new(0, 42, 0, 0)
     textContainer.BackgroundTransparency = 1
     textContainer.ZIndex = 3
     textContainer.Parent = row
@@ -376,7 +624,7 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
 end
 
 -- Helper: Create interactive Text Input (Glassmorphic Darling X Style)
-local function createTextInput(parent, title, desc, placeholder, defaultVal, onSubmit, Utils)
+local function createTextInput(parent, title, desc, placeholder, defaultVal, onSubmit, Utils, customIcon)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local val = defaultVal or ""
 
@@ -402,9 +650,11 @@ local function createTextInput(parent, title, desc, placeholder, defaultVal, onS
     rowStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     rowStroke.Parent = row
 
+    renderRowIcon(row, title, customIcon, "Input")
+
     local textContainer = Instance.new("Frame")
-    textContainer.Size = UDim2.new(1, -140, 1, 0)
-    textContainer.Position = UDim2.new(0, 10, 0, 0)
+    textContainer.Size = UDim2.new(1, -170, 1, 0)
+    textContainer.Position = UDim2.new(0, 42, 0, 0)
     textContainer.BackgroundTransparency = 1
     textContainer.ZIndex = 3
     textContainer.Parent = row
@@ -478,21 +728,21 @@ local function createTextInput(parent, title, desc, placeholder, defaultVal, onS
     return row
 end
 
--- Helper: Create interactive Slider with Cyber HUD Badge & Glowing Neon Fill (Glassmorphic Darling X Style)
+-- Helper: Create interactive Slider with Cyber HUD Badge & Glowing Ruby Fill (Glassmorphic Darling X Style)
 local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, Utils, customIcon)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local curVal = clamp(defaultVal or minVal, minVal, maxVal)
 
     local row = Instance.new("Frame")
     row.Name = "Slider_" .. title:gsub("%s+", "")
-    row.Size = UDim2.new(1, 0, 0, 50)
+    row.Size = UDim2.new(1, 0, 0, 52)
     row.BackgroundColor3 = Color3.fromRGB(24, 16, 22)
     row.BackgroundTransparency = 0.55
     row.BorderSizePixel = 0
     row.ZIndex = 3
     row.Parent = targetContainer
 
-    addCardHeight(parent, 50)
+    addCardHeight(parent, 52)
 
     local rowCorner = Instance.new("UICorner")
     rowCorner.CornerRadius = UDim.new(0, 8)
@@ -506,14 +756,19 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     rowStroke.Parent = row
 
     local header = Instance.new("Frame")
-    header.Size = UDim2.new(1, 0, 0, 20)
+    header.Size = UDim2.new(1, 0, 0, 24)
+    header.Position = UDim2.new(0, 0, 0, 3)
     header.BackgroundTransparency = 1
     header.ZIndex = 3
     header.Parent = row
 
+    local iconBadge = renderRowIcon(header, title, customIcon, "Slider")
+    iconBadge.Size = UDim2.new(0, 22, 0, 22)
+    iconBadge.Position = UDim2.new(0, 8, 0, 1)
+
     local titleLbl = Instance.new("TextLabel")
-    titleLbl.Size = UDim2.new(1, -70, 1, 0)
-    titleLbl.Position = UDim2.new(0, 10, 0, 2)
+    titleLbl.Size = UDim2.new(1, -106, 1, 0)
+    titleLbl.Position = UDim2.new(0, 36, 0, 0)
     titleLbl.BackgroundTransparency = 1
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.Text = title
@@ -523,12 +778,12 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     titleLbl.ZIndex = 4
     titleLbl.Parent = header
 
-    -- Value Badge [ 120 ]
+    -- Value Badge [ 120 ] with glowing ruby border
     local valBadge = Instance.new("Frame")
     valBadge.Name = "ValBadge"
-    valBadge.Size = UDim2.new(0, 52, 0, 18)
-    valBadge.Position = UDim2.new(1, -60, 0, 3)
-    valBadge.BackgroundColor3 = Color3.fromRGB(40, 20, 30)
+    valBadge.Size = UDim2.new(0, 56, 0, 20)
+    valBadge.Position = UDim2.new(1, -66, 0, 2)
+    valBadge.BackgroundColor3 = Color3.fromRGB(44, 20, 30)
     valBadge.BackgroundTransparency = 0.35
     valBadge.BorderSizePixel = 0
     valBadge.ZIndex = 4
@@ -539,8 +794,8 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     vbCorner.Parent = valBadge
 
     local vbStroke = Instance.new("UIStroke")
-    vbStroke.Color = Color3.fromRGB(255, 255, 255)
-    vbStroke.Transparency = 0.94
+    vbStroke.Color = Color3.fromRGB(220, 35, 60)
+    vbStroke.Transparency = 0.65
     vbStroke.Thickness = 1
     vbStroke.Parent = valBadge
 
@@ -549,7 +804,7 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     valLbl.BackgroundTransparency = 1
     valLbl.Font = Enum.Font.GothamBold
     valLbl.Text = tostring(math.floor(curVal + 0.5))
-    valLbl.TextColor3 = Color3.fromRGB(255, 215, 225)
+    valLbl.TextColor3 = Color3.fromRGB(255, 220, 230)
     valLbl.TextSize = 11
     valLbl.ZIndex = 5
     valLbl.Parent = valBadge
@@ -558,7 +813,7 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     local track = Instance.new("Frame")
     track.Name = "Track"
     track.Size = UDim2.new(1, -20, 0, 6)
-    track.Position = UDim2.new(0, 10, 0, 32)
+    track.Position = UDim2.new(0, 10, 0, 34)
     track.BackgroundColor3 = Color3.fromRGB(16, 10, 16)
     track.BackgroundTransparency = 0.2
     track.BorderSizePixel = 0
@@ -590,7 +845,7 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
         end
     end)
 
-    -- Clean Pure White Circular Thumb Knob
+    -- Sleek Circular Thumb Knob with subtle ruby border
     local thumb = Instance.new("Frame")
     thumb.Name = "Thumb"
     thumb.Size = UDim2.new(0, 14, 0, 14)
@@ -605,10 +860,16 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     thCorner.CornerRadius = UDim.new(1, 0)
     thCorner.Parent = thumb
 
+    local thStroke = Instance.new("UIStroke")
+    thStroke.Color = Color3.fromRGB(220, 35, 60)
+    thStroke.Thickness = 1.5
+    thStroke.Transparency = 0.3
+    thStroke.Parent = thumb
+
     local sliderHitbox = Instance.new("TextButton")
     sliderHitbox.Name = "SliderHitbox"
     sliderHitbox.Size = UDim2.new(1, 0, 0, 32)
-    sliderHitbox.Position = UDim2.new(0, 0, 0, 16)
+    sliderHitbox.Position = UDim2.new(0, 0, 0, 18)
     sliderHitbox.BackgroundTransparency = 1
     sliderHitbox.Text = ""
     sliderHitbox.AutoButtonColor = false
@@ -649,6 +910,8 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     sliderHitbox.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             sliding = true
+            TweenService:Create(thumb, TweenInfo.new(0.08), { Size = UDim2.new(0, 16, 0, 16) }):Play()
+            TweenService:Create(valBadge, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(68, 26, 42) }):Play()
             updateFromInput(input)
         end
     end)
@@ -662,6 +925,8 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     local connEnded = UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             sliding = false
+            TweenService:Create(thumb, TweenInfo.new(0.12), { Size = UDim2.new(0, 14, 0, 14) }):Play()
+            TweenService:Create(valBadge, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(44, 20, 30) }):Play()
         end
     end)
 
@@ -673,13 +938,13 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     return row
 end
 
--- Helper: Create Action Button with red accent hover (Glassmorphic Darling X Style)
-local function createActionButton(parent, title, desc, onClick, Utils)
+-- Helper: Create Action Button with left icon badge, right chevron, and tactile bounce
+local function createActionButton(parent, title, desc, onClick, Utils, customIcon)
     local targetContainer = parent:FindFirstChild("Content") or parent
 
     local btn = Instance.new("TextButton")
     btn.Name = "Btn_" .. title:gsub("%s+", "")
-    btn.Size = UDim2.new(1, 0, 0, 38)
+    btn.Size = UDim2.new(1, 0, 0, 40)
     btn.BackgroundColor3 = Color3.fromRGB(30, 18, 24)
     btn.BackgroundTransparency = 0.5
     btn.BorderSizePixel = 0
@@ -689,7 +954,7 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     btn.ZIndex = 4
     btn.Parent = targetContainer
 
-    addCardHeight(parent, 38)
+    addCardHeight(parent, 40)
 
     local bCorner = Instance.new("UICorner")
     bCorner.CornerRadius = UDim.new(0, 8)
@@ -702,18 +967,20 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     bStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     bStroke.Parent = btn
 
-    btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(56, 24, 34), BackgroundTransparency = 0.35 }):Play()
-        TweenService:Create(bStroke, TweenInfo.new(0.12), { Transparency = 0.8 }):Play()
-    end)
-    btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(30, 18, 24), BackgroundTransparency = 0.5 }):Play()
-        TweenService:Create(bStroke, TweenInfo.new(0.12), { Transparency = 0.92 }):Play()
-    end)
+    renderRowIcon(btn, title, customIcon, "Button")
+
+    local textContainer = Instance.new("Frame")
+    textContainer.Size = UDim2.new(1, -70, 1, 0)
+    textContainer.Position = UDim2.new(0, 42, 0, 0)
+    textContainer.BackgroundTransparency = 1
+    textContainer.ZIndex = 5
+    textContainer.Parent = btn
+
+    local hasDesc = (desc and #desc > 0)
 
     local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, -20, 1, 0)
-    lbl.Position = UDim2.new(0, 12, 0, 0)
+    lbl.Size = UDim2.new(1, 0, 0, hasDesc and 19 or 24)
+    lbl.Position = UDim2.new(0, 0, 0, hasDesc and 3 or 8)
     lbl.BackgroundTransparency = 1
     lbl.Font = Enum.Font.GothamBold
     lbl.Text = title
@@ -721,7 +988,44 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     lbl.TextSize = 12
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.ZIndex = 5
-    lbl.Parent = btn
+    lbl.Parent = textContainer
+
+    if hasDesc then
+        local descLbl = Instance.new("TextLabel")
+        descLbl.Size = UDim2.new(1, 0, 0, 15)
+        descLbl.Position = UDim2.new(0, 0, 0, 20)
+        descLbl.BackgroundTransparency = 1
+        descLbl.Font = Enum.Font.GothamMedium
+        descLbl.Text = desc
+        descLbl.TextColor3 = Color3.fromRGB(180, 170, 185)
+        descLbl.TextSize = 9.5
+        descLbl.TextXAlignment = Enum.TextXAlignment.Left
+        descLbl.ZIndex = 5
+        descLbl.Parent = textContainer
+    end
+
+    local arrow = Instance.new("TextLabel")
+    arrow.Name = "ChevronArrow"
+    arrow.Size = UDim2.new(0, 20, 1, 0)
+    arrow.Position = UDim2.new(1, -26, 0, 0)
+    arrow.BackgroundTransparency = 1
+    arrow.Font = Enum.Font.GothamBold
+    arrow.Text = ">"
+    arrow.TextColor3 = Color3.fromRGB(255, 85, 110)
+    arrow.TextSize = 13
+    arrow.ZIndex = 5
+    arrow.Parent = btn
+
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(56, 24, 34), BackgroundTransparency = 0.35 }):Play()
+        TweenService:Create(bStroke, TweenInfo.new(0.12), { Transparency = 0.8 }):Play()
+        TweenService:Create(arrow, TweenInfo.new(0.12), { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(30, 18, 24), BackgroundTransparency = 0.5 }):Play()
+        TweenService:Create(bStroke, TweenInfo.new(0.12), { Transparency = 0.92 }):Play()
+        TweenService:Create(arrow, TweenInfo.new(0.12), { TextColor3 = Color3.fromRGB(255, 85, 110) }):Play()
+    end)
 
     local lastPress = 0
     local function onPress()
@@ -729,8 +1033,8 @@ local function createActionButton(parent, title, desc, onClick, Utils)
         if lastPress > 0 and (now - lastPress < 0.25) then return end
         lastPress = now
 
-        TweenService:Create(btn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(205, 30, 55) }):Play()
-        task.delay(0.1, function()
+        TweenService:Create(btn, TweenInfo.new(0.06), { BackgroundColor3 = Color3.fromRGB(205, 30, 55) }):Play()
+        task.delay(0.08, function()
             TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(30, 18, 24) }):Play()
         end)
         if onClick then pcall(onClick) end
@@ -742,7 +1046,7 @@ local function createActionButton(parent, title, desc, onClick, Utils)
 end
 
 -- Helper: Create Color Picker Palette (Glassmorphic Darling X Style)
-local function createColorPicker(parent, title, desc, colorNames, defaultColorName, onSelectColor, Utils)
+local function createColorPicker(parent, title, desc, colorNames, defaultColorName, onSelectColor, Utils, customIcon)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local selected = defaultColorName or "Rainbow"
     colorNames = colorNames or { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple" }
@@ -771,14 +1075,19 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     cStroke.Parent = container
 
     local headerRow = Instance.new("Frame")
-    headerRow.Size = UDim2.new(1, 0, 0, 20)
+    headerRow.Size = UDim2.new(1, 0, 0, 22)
+    headerRow.Position = UDim2.new(0, 0, 0, 3)
     headerRow.BackgroundTransparency = 1
     headerRow.ZIndex = 3
     headerRow.Parent = container
 
+    local iconBadge = renderRowIcon(headerRow, title, customIcon, "ColorPicker")
+    iconBadge.Size = UDim2.new(0, 20, 0, 20)
+    iconBadge.Position = UDim2.new(0, 8, 0, 1)
+
     local titleLbl = Instance.new("TextLabel")
-    titleLbl.Size = UDim2.new(0.6, 0, 1, 0)
-    titleLbl.Position = UDim2.new(0, 10, 0, 4)
+    titleLbl.Size = UDim2.new(0.5, -34, 1, 0)
+    titleLbl.Position = UDim2.new(0, 34, 0, 1)
     titleLbl.BackgroundTransparency = 1
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.Text = title
@@ -789,8 +1098,8 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     titleLbl.Parent = headerRow
 
     local valLbl = Instance.new("TextLabel")
-    valLbl.Size = UDim2.new(0.4, -12, 1, 0)
-    valLbl.Position = UDim2.new(0.6, 0, 0, 4)
+    valLbl.Size = UDim2.new(0.5, -12, 1, 0)
+    valLbl.Position = UDim2.new(0.5, 0, 0, 1)
     valLbl.BackgroundTransparency = 1
     valLbl.Font = Enum.Font.GothamMedium
     valLbl.Text = selected
@@ -2196,71 +2505,113 @@ function TabViews.build(tabName, parentContainer, options)
     elseif tabName == "Themes" then
         local onThemeChange = options.onThemeChange
 
-        -- 1. Darling X Wallpapers Gallery
-        local c1 = makeCard("Darling X Wallpapers")
-        c1.LayoutOrder = 2
-
         local wallpapers = {
-            {
-                Name = "Darling Red (Torii & Moon)",
-                Desc = "Authentic crimson anime Torii with glowing moon.",
-                Asset = (AssetManager and AssetManager.get("sidebar_bg_red.png")) or "rbxassetid://16428787723"
-            },
-            {
-                Name = "Darling Purple (Night Shrine)",
-                Desc = "Classic purple Torii shrine under violet night sky.",
-                Asset = (AssetManager and (AssetManager.get("sidebar_bg_v2.png") or AssetManager.get("sidebar_bg.png"))) or "rbxassetid://14917571120"
-            },
-            {
-                Name = "Darling Noir (Carbon Silk)",
-                Desc = "Sleek dark carbon silk smoke with frosted shading.",
-                Asset = (AssetManager and AssetManager.get("card_bg.png")) or "rbxassetid://11401839801"
-            },
-            {
-                Name = "Darling Cyber (Neon Red)",
-                Desc = "Futuristic crimson cybernetic horizon lattice.",
-                Asset = "rbxassetid://15340058564"
-            },
-            {
-                Name = "Darling Galaxy (Midnight Stars)",
-                Desc = "Deep cosmic violet starfield nebula.",
-                Asset = "rbxassetid://11401839801"
-            },
-            {
-                Name = "Darling Acrylic (Pure Glass)",
-                Desc = "Clean translucent acrylic frosted glass (no image).",
-                Asset = ""
-            }
+            { Name = "Cyberpunk Megalopolis", File = "cyberpunk_megalopolis.jpg", Desc = "Neon futuristic skyscrapers under crimson rain." },
+            { Name = "Rainy Tokyo", File = "rainy_tokyo.jpg", Desc = "Reflective wet streets of Shibuya nightscape." },
+            { Name = "Frieren Beyond Journey", File = "frieren.jpg", Desc = "Peaceful dusk landscape with Frieren." },
+            { Name = "2000s Hacker Room", File = "hacker_room.jpg", Desc = "Retro CRT monitors & cyber deck aesthetic." },
+            { Name = "Lycoris Monochrome", File = "lycoris_monochrome.jpg", Desc = "Stylized dark monochrome anime aesthetic." },
+            { Name = "Cyan Neko", File = "cyan_neko.jpg", Desc = "Vibrant electric cyan feline illustration." },
+            { Name = "Green Night Driving", File = "green_night_driving.jpg", Desc = "Moody midnight highway cruise in the rain." },
+            { Name = "Monika Lonely", File = "monika_lonely.jpg", Desc = "Melancholic classroom sunset horizon." },
+            { Name = "Neon Purple Midnight", File = "purple_midnight.jpg", Desc = "Deep cosmic violet starfield & glowing grid." },
+            { Name = "Persona 5 Rainy Tokyo", File = "persona_5_rainy.jpg", Desc = "High-contrast stylized red & noir cityscape." },
+            { Name = "Shorekeeper Blue Sea", File = "shorekeeper.jpg", Desc = "Ethereal crystal azure coastal fantasy." },
+            { Name = "Skirk Neko Genshin", File = "skirk_neko.jpg", Desc = "Void stellar warrior in mystical twilight." },
+            { Name = "Snowy Cozy Bedroom", File = "snowy_bedroom.jpg", Desc = "Warm indoor firelight overlooking winter snow." },
+            { Name = "Snowy Forest", File = "snowy_forest.jpg", Desc = "Silent pine trees under moonlight frost." },
+            { Name = "Dark River Forest", File = "dark_river_forest.jpg", Desc = "Atmospheric mist over deep winding river." },
+            { Name = "Witch Cauldron Halloween", File = "witch_cauldron.jpg", Desc = "Glowing mystic potion brewing in cauldron." },
+            { Name = "Deepseek Chan", File = "deepseek_chan.jpg", Desc = "Futuristic AI anime assistant avatar." },
+            { Name = "Yuta Cursed Blade", File = "yuta_blade.jpg", Desc = "Dynamic cursed energy katana clash." },
+            { Name = "Zankou Neverness", File = "zankou_nte.jpg", Desc = "Neverness to Everness anime city vista." },
+            { Name = "Darling Red Torii", File = "sidebar_bg_red.png", Desc = "Authentic crimson anime Torii with glowing moon." },
+            { Name = "Darling Purple Shrine", File = "sidebar_bg_v2.png", Desc = "Classic purple Torii shrine under night sky." },
+            { Name = "Pure Translucent Glass", File = "", Desc = "Minimalist frosted glass acrylic (no image)." }
         }
 
+        local function resolveWpAsset(wpFile)
+            if not wpFile or #wpFile == 0 then return "" end
+            if AssetManager then
+                if AssetManager.getBackground then
+                    return AssetManager.getBackground(wpFile)
+                else
+                    return AssetManager.get(wpFile)
+                end
+            end
+            return ""
+        end
+
+        local wpNames = {}
         for _, wp in ipairs(wallpapers) do
+            table.insert(wpNames, wp.Name)
+        end
+
+        -- 1. Darling X Authentic Wallpapers
+        local c1 = makeCard("Darling X Authentic Themes")
+        c1.LayoutOrder = 2
+
+        createDropdown(c1, "Wallpaper Preset", "Instant selector for all 22 Darling X themes.", wpNames, 1, function(chosenName, idx)
+            local wp = wallpapers[idx] or wallpapers[1]
+            local asset = resolveWpAsset(wp.File)
+            if onThemeChange then
+                onThemeChange({ Background = asset })
+            end
+            if Utils then
+                Utils.toast("Darling X Themes", "Applied: " .. wp.Name, 1.5)
+            end
+        end, Utils)
+
+        -- Quick Access Popular Presets
+        local popularPresets = {
+            wallpapers[20], -- Darling Red
+            wallpapers[1],  -- Cyberpunk
+            wallpapers[2],  -- Rainy Tokyo
+            wallpapers[3],  -- Frieren
+            wallpapers[4],  -- Hacker Room
+            wallpapers[22], -- Pure Glass
+        }
+
+        for _, wp in ipairs(popularPresets) do
             createActionButton(c1, wp.Name, wp.Desc, function()
+                local asset = resolveWpAsset(wp.File)
                 if onThemeChange then
-                    onThemeChange({ Background = wp.Asset })
+                    onThemeChange({ Background = asset })
                 end
                 if Utils then
-                    Utils.toast("Darling X Themes", "Applied " .. wp.Name, 1.5)
+                    Utils.toast("Themes", "Applied " .. wp.Name, 1.5)
                 end
             end, Utils)
         end
 
+        -- 2. Custom Wallpaper URL & Controls
+        local cCustom = makeCard("Custom Wallpaper")
+        cCustom.LayoutOrder = 3
+
         local customWpUrl = ""
-        createTextInput(c1, "Custom Wallpaper URL", "Direct image link (.png / .jpg) or asset ID.", "https://... or rbxassetid://...", "", function(text)
+        createTextInput(cCustom, "Custom Wallpaper URL", "Direct image link (.png / .jpg) or asset ID.", "https://... or rbxassetid://...", "", function(text)
             customWpUrl = text
         end, Utils)
 
-        createActionButton(c1, "Apply Custom Wallpaper", "Sets background to custom image.", function()
+        createActionButton(cCustom, "Apply Custom Wallpaper", "Sets background across the entire UI.", function()
             if #customWpUrl > 0 and onThemeChange then
                 onThemeChange({ Background = customWpUrl })
                 if Utils then Utils.toast("Themes", "Custom wallpaper applied", 1.5) end
             end
         end, Utils)
 
-        -- 2. Glassmorphism & Opacity
-        local c2 = makeCard("Glassmorphism & Opacity")
-        c2.LayoutOrder = 3
+        createActionButton(cCustom, "Clear Wallpaper (Pure Glass)", "Removes background image and keeps glass acrylic.", function()
+            if onThemeChange then
+                onThemeChange({ Background = "" })
+                if Utils then Utils.toast("Themes", "Pure acrylic glass applied", 1.5) end
+            end
+        end, Utils)
 
-        createSlider(c2, "Wallpaper Opacity (%)", 10, 100, 65, function(val)
+        -- 3. Glassmorphism & Opacity
+        local c2 = makeCard("Glassmorphism & Opacity")
+        c2.LayoutOrder = 4
+
+        createSlider(c2, "Wallpaper Opacity (%)", 0, 100, 75, function(val)
             if onThemeChange then
                 onThemeChange({ ImageTransparency = 1 - (val / 100) })
             end
@@ -2284,9 +2635,9 @@ function TabViews.build(tabName, parentContainer, options)
             end
         end, Utils)
 
-        -- 3. Accent Color Presets
+        -- 4. Accent Color Presets
         local c3 = makeCard("Accent Colors")
-        c3.LayoutOrder = 4
+        c3.LayoutOrder = 5
 
         createColorPicker(c3, "Accent Preset", "Select interface accent color", {
             "Crimson", "Ruby", "Purple", "Cyan", "Jade", "White"

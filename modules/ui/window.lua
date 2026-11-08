@@ -128,6 +128,35 @@ function Window.create(dependencies)
 
     local TabViewsMod = dependencies.TabViews
 
+    -- Master Background Image (Spans seamlessly behind the entire UI: ContentArea + Sidebar)
+    local masterBg = Instance.new("ImageLabel")
+    masterBg.Name = "MasterBackground"
+    masterBg.Size = UDim2.new(1, 0, 1, 0)
+    masterBg.Position = UDim2.new(0, 0, 0, 0)
+    masterBg.BackgroundColor3 = Color3.fromRGB(16, 11, 20)
+    masterBg.BackgroundTransparency = 0.15
+    masterBg.BorderSizePixel = 0
+    masterBg.Image = (AssetManager and (AssetManager.get("sidebar_bg_red.png") or AssetManager.get("sidebar_bg_v2.png"))) or ""
+    masterBg.ImageTransparency = 0.25
+    masterBg.ScaleType = Enum.ScaleType.Crop
+    masterBg.ZIndex = 0
+    masterBg.Visible = true
+    masterBg.Parent = mainFrame
+
+    if AssetManager and AssetManager.bindImage then
+        AssetManager.bindImage(masterBg, "sidebar_bg_red.png", "sidebar_bg_v2.png")
+    end
+
+    local mbCorner = Instance.new("UICorner")
+    mbCorner.CornerRadius = UDim.new(0, 10)
+    mbCorner.Parent = masterBg
+
+    local mbStroke = Instance.new("UIStroke")
+    mbStroke.Color = Color3.fromRGB(220, 35, 60)
+    mbStroke.Transparency = 0.8
+    mbStroke.Thickness = 1
+    mbStroke.Parent = masterBg
+
     -- Left Content Area (Contains HomeView or Tab Views - tight 356px height)
     local contentArea = Instance.new("Frame")
     contentArea.Name = "ContentArea"
@@ -136,36 +165,24 @@ function Window.create(dependencies)
     contentArea.BackgroundTransparency = 1
     contentArea.BorderSizePixel = 0
     contentArea.ClipsDescendants = true
+    contentArea.ZIndex = 2
     contentArea.Parent = mainFrame
 
-    -- Glassmorphic Background for Feature Tabs (Spans behind non-Home tabs)
-    local tabContentBg = Instance.new("ImageLabel")
-    tabContentBg.Name = "TabContentBackground"
+    -- Acrylic Glass Overlay for Feature Tabs (Semi-transparent tint for crystal-clear readability)
+    local tabContentBg = Instance.new("Frame")
+    tabContentBg.Name = "TabContentAcrylic"
     tabContentBg.Size = UDim2.new(1, 0, 1, 0)
     tabContentBg.Position = UDim2.new(0, 0, 0, 0)
     tabContentBg.BackgroundColor3 = Color3.fromRGB(14, 10, 16)
-    tabContentBg.BackgroundTransparency = 0.2
+    tabContentBg.BackgroundTransparency = 0.45
     tabContentBg.BorderSizePixel = 0
-    tabContentBg.Image = (AssetManager and (AssetManager.get("sidebar_bg_red.png") or AssetManager.get("sidebar_bg_v2.png"))) or ""
-    tabContentBg.ImageTransparency = 0.35
-    tabContentBg.ScaleType = Enum.ScaleType.Crop
     tabContentBg.ZIndex = 1
     tabContentBg.Visible = false
     tabContentBg.Parent = contentArea
 
-    if AssetManager and AssetManager.bindImage then
-        AssetManager.bindImage(tabContentBg, "sidebar_bg_red.png", "sidebar_bg_v2.png")
-    end
-
     local tcCorner = Instance.new("UICorner")
     tcCorner.CornerRadius = UDim.new(0, 10)
     tcCorner.Parent = tabContentBg
-
-    local tcStroke = Instance.new("UIStroke")
-    tcStroke.Color = Color3.fromRGB(220, 35, 60)
-    tcStroke.Transparency = 0.8
-    tcStroke.Thickness = 1
-    tcStroke.Parent = tabContentBg
 
     -- Toggle Hub Visibility Function with smooth scale and lighting transitions
     local isVisible = true
@@ -267,20 +284,22 @@ function Window.create(dependencies)
                         uiScale.Scale = math.clamp(scale, 0.45, 1.2)
                     end,
                     onThemeChange = function(themeData)
-                        if themeData.Background then
-                            tabContentBg.Image = themeData.Background
+                        if themeData.Background ~= nil then
+                            masterBg.Image = themeData.Background
+                            masterBg.Visible = (#themeData.Background > 0)
                             if sidebar and sidebar.SetBackground then
                                 sidebar.SetBackground(themeData.Background)
                             end
                         end
-                        if themeData.ImageTransparency then
-                            tabContentBg.ImageTransparency = themeData.ImageTransparency
+                        if themeData.ImageTransparency ~= nil then
+                            masterBg.ImageTransparency = themeData.ImageTransparency
                             if sidebar and sidebar.SetImageTransparency then
                                 sidebar.SetImageTransparency(themeData.ImageTransparency)
                             end
                         end
-                        if themeData.BackgroundTransparency then
-                            tabContentBg.BackgroundTransparency = themeData.BackgroundTransparency
+                        if themeData.BackgroundTransparency ~= nil then
+                            masterBg.BackgroundTransparency = themeData.BackgroundTransparency
+                            tabContentBg.BackgroundTransparency = math.clamp(themeData.BackgroundTransparency + 0.1, 0.15, 0.9)
                         end
                         if themeData.BlurSize and blurEffect then
                             blurEffect.Size = themeData.BlurSize

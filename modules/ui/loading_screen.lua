@@ -53,23 +53,22 @@ function LoadingScreen.show(logoAsset)
         pcall(syn.protect_gui, gui)
     end
 
-    -- Dark sleek backdrop (Zero borders)
+    -- Dark sleek backdrop (Zero borders, smooth full-screen vignette)
     local backdrop = Instance.new("Frame")
     backdrop.Name = "Backdrop"
     backdrop.Size = UDim2.new(1, 0, 1, 0)
     backdrop.BackgroundColor3 = Color3.fromRGB(6, 6, 9)
-    backdrop.BackgroundTransparency = 0.45
+    backdrop.BackgroundTransparency = 0.4
     backdrop.BorderSizePixel = 0
     backdrop.Parent = gui
 
-    -- Central Container (Zero borders)
+    -- Central Container (Completely borderless, transparent container)
     local card = Instance.new("CanvasGroup")
     card.Name = "Card"
     card.Size = UDim2.new(0, 360, 0, 220)
     card.AnchorPoint = Vector2.new(0.5, 0.5)
     card.Position = UDim2.new(0.5, 0, 0.5, 0)
-    card.BackgroundColor3 = Color3.fromRGB(14, 13, 18)
-    card.BackgroundTransparency = 0.04
+    card.BackgroundTransparency = 1
     card.BorderSizePixel = 0
     card.GroupTransparency = 1
     card.Parent = gui
@@ -78,13 +77,13 @@ function LoadingScreen.show(logoAsset)
     cardCorner.CornerRadius = UDim.new(0, 18)
     cardCorner.Parent = card
 
-    -- Logo Frame (Zero borders)
+    -- Logo Frame (Zero borders, fully transparent container)
     local logoContainer = Instance.new("Frame")
     logoContainer.Name = "LogoContainer"
     logoContainer.Size = UDim2.new(0, 72, 0, 72)
     logoContainer.AnchorPoint = Vector2.new(0.5, 0)
-    logoContainer.Position = UDim2.new(0.5, 0, 0, 22)
-    logoContainer.BackgroundColor3 = Color3.fromRGB(22, 20, 28)
+    logoContainer.Position = UDim2.new(0.5, 0, 0, 15)
+    logoContainer.BackgroundTransparency = 1
     logoContainer.BorderSizePixel = 0
     logoContainer.Parent = card
 
@@ -112,7 +111,7 @@ function LoadingScreen.show(logoAsset)
     title.Name = "Title"
     title.Size = UDim2.new(1, -40, 0, 24)
     title.AnchorPoint = Vector2.new(0.5, 0)
-    title.Position = UDim2.new(0.5, 0, 0, 102)
+    title.Position = UDim2.new(0.5, 0, 0, 96)
     title.BackgroundTransparency = 1
     title.BorderSizePixel = 0
     title.Font = Enum.Font.GothamBold
@@ -126,7 +125,7 @@ function LoadingScreen.show(logoAsset)
     status.Name = "Status"
     status.Size = UDim2.new(1, -40, 0, 16)
     status.AnchorPoint = Vector2.new(0.5, 0)
-    status.Position = UDim2.new(0.5, 0, 0, 128)
+    status.Position = UDim2.new(0.5, 0, 0, 122)
     status.BackgroundTransparency = 1
     status.BorderSizePixel = 0
     status.Font = Enum.Font.GothamMedium
@@ -135,12 +134,12 @@ function LoadingScreen.show(logoAsset)
     status.TextSize = 12
     status.Parent = card
 
-    -- Progress Track (Minimalist 5px height, Zero borders)
+    -- Progress Track (Minimalist 4px height, Zero borders)
     local track = Instance.new("Frame")
     track.Name = "Track"
-    track.Size = UDim2.new(1, -70, 0, 5)
+    track.Size = UDim2.new(0, 240, 0, 4)
     track.AnchorPoint = Vector2.new(0.5, 0)
-    track.Position = UDim2.new(0.5, 0, 0, 154)
+    track.Position = UDim2.new(0.5, 0, 0, 146)
     track.BackgroundColor3 = Color3.fromRGB(26, 24, 32)
     track.BorderSizePixel = 0
     track.Parent = card
@@ -173,7 +172,7 @@ function LoadingScreen.show(logoAsset)
     percent.Name = "Percent"
     percent.Size = UDim2.new(1, -40, 0, 16)
     percent.AnchorPoint = Vector2.new(0.5, 0)
-    percent.Position = UDim2.new(0.5, 0, 0, 168)
+    percent.Position = UDim2.new(0.5, 0, 0, 158)
     percent.BackgroundTransparency = 1
     percent.BorderSizePixel = 0
     percent.Font = Enum.Font.GothamBold

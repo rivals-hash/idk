@@ -29,24 +29,24 @@ function Sidebar.create(parentGui, options)
     sidebarFrame.BorderSizePixel = 0
     sidebarFrame.Parent = parentGui
 
-    -- Background Image with Anime Torii Night Sky (Height 316 matching original navigation_panel.png)
-    local bgImg = Instance.new("ImageLabel")
-    bgImg.Name = "SidebarBackground"
+    -- Acrylic Glass Overlay with rounded corners (Master background shines seamlessly from mainFrame)
+    local bgImg = Instance.new("Frame")
+    bgImg.Name = "SidebarAcrylic"
     bgImg.Size = UDim2.new(1, 0, 1, 0)
     bgImg.BackgroundColor3 = Color3.fromRGB(16, 11, 20)
-    bgImg.BackgroundTransparency = 1
-    bgImg.ImageTransparency = 0
-    bgImg.Image = (AssetManager and (AssetManager.get("sidebar_bg_red.png") or AssetManager.get("sidebar_bg_v2.png"))) or ""
-    bgImg.ScaleType = Enum.ScaleType.Stretch
+    bgImg.BackgroundTransparency = 0.55
+    bgImg.BorderSizePixel = 0
     bgImg.Parent = sidebarFrame
-
-    if AssetManager and AssetManager.bindImage then
-        AssetManager.bindImage(bgImg, "sidebar_bg_red.png", "sidebar_bg_v2.png")
-    end
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 10)
     corner.Parent = bgImg
+
+    local sStroke = Instance.new("UIStroke")
+    sStroke.Color = Color3.fromRGB(220, 35, 60)
+    sStroke.Transparency = 0.88
+    sStroke.Thickness = 1
+    sStroke.Parent = bgImg
 
     -- Top Window Controls: Minimize (-) and Close (X)
     local controlsFrame = Instance.new("Frame")
@@ -349,16 +349,15 @@ function Sidebar.create(parentGui, options)
             return activeTabId
         end,
         SetBackground = function(img)
-            pcall(function()
-                if bgImg then
-                    bgImg.Image = img
-                end
-            end)
+            -- Handled seamlessly by MasterBackground on MainFrame
         end,
         SetImageTransparency = function(trans)
+            -- Handled seamlessly by MasterBackground on MainFrame
+        end,
+        SetBackgroundTransparency = function(trans)
             pcall(function()
                 if bgImg then
-                    bgImg.ImageTransparency = trans
+                    bgImg.BackgroundTransparency = trans
                 end
             end)
         end

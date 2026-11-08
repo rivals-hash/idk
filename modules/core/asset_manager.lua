@@ -20,6 +20,16 @@ local CACHE_FOLDER = "Monody_Assets_v9"
 -- Candidate folders to look for already cached files
 local CANDIDATE_FOLDERS = {
     CACHE_FOLDER,
+    CACHE_FOLDER .. "/backgrounds",
+    "assets/backgrounds",
+    "assets",
+    "idk/assets/backgrounds",
+    "idk/assets",
+    "DarlingHub/cache",
+    "Darling-hub/assets/backgrounds",
+    "Darling-hub/assets",
+    "BestHub/assets",
+    "Monody_Assets_v9",
     "Monody_Assets_v8",
     "Monody_Assets_v7",
     "Monody_Assets_v6",
@@ -27,17 +37,17 @@ local CANDIDATE_FOLDERS = {
     "Monody_Assets_v4",
     "Monody_Assets_v3",
     "Monody_Assets_v2",
-    "Monody_Assets",
-    "assets",
-    "idk/assets",
-    "BestHub/assets",
-    "darling-hub/assets"
+    "Monody_Assets"
 }
 
 pcall(function()
     if exMakeFolder and exIsFolder then
         if not exIsFolder(CACHE_FOLDER) then
             exMakeFolder(CACHE_FOLDER)
+        end
+        local bgFolder = CACHE_FOLDER .. "/backgrounds"
+        if not exIsFolder(bgFolder) then
+            exMakeFolder(bgFolder)
         end
     end
 end)
@@ -47,13 +57,19 @@ local resolvedCache = {}
 -- Try to resolve from disk immediately (0 latency, 0 freeze)
 local function resolveFromDisk(filename)
     if not (exIsFile and exGetCustomAsset) then return nil end
+    local candidates = {
+        filename,
+        "backgrounds/" .. filename,
+    }
     for _, folder in ipairs(CANDIDATE_FOLDERS) do
-        local path = folder .. "/" .. filename
-        local ok, exists = pcall(exIsFile, path)
-        if ok and exists then
-            local okA, custom = pcall(exGetCustomAsset, path)
-            if okA and type(custom) == "string" and #custom > 0 then
-                return custom
+        for _, rel in ipairs(candidates) do
+            local path = folder .. "/" .. rel
+            local ok, exists = pcall(exIsFile, path)
+            if ok and exists then
+                local okA, custom = pcall(exGetCustomAsset, path)
+                if okA and type(custom) == "string" and #custom > 0 then
+                    return custom
+                end
             end
         end
     end
@@ -63,6 +79,9 @@ end
 -- Synchronous download from GitHub raw with writefile and getcustomasset
 local function downloadSync(filename)
     local rawUrl = BASE_URL .. filename
+    if filename:match("%.jpg$") and not filename:find("^backgrounds/") then
+        rawUrl = "https://raw.githubusercontent.com/rivals-hash/idk/main/assets/backgrounds/" .. filename
+    end
     local data = nil
 
     pcall(function()
@@ -79,7 +98,8 @@ local function downloadSync(filename)
 
     local resolved = nil
     if data and #data > 50 and exWriteFile and exGetCustomAsset then
-        local targetPath = CACHE_FOLDER .. "/" .. filename
+        local safeName = filename:gsub("/", "_")
+        local targetPath = CACHE_FOLDER .. "/" .. safeName
         pcall(function()
             if exMakeFolder and exIsFolder and not exIsFolder(CACHE_FOLDER) then
                 exMakeFolder(CACHE_FOLDER)
@@ -98,9 +118,40 @@ local function downloadSync(filename)
     return resolved
 end
 
+-- Get background asset with guaranteed resolution
+function AssetManager.getBackground(filename, fallbackId)
+    if not filename or #filename == 0 then return "" end
+    if filename:find("^rbxassetid://") or filename:find("^http://") or filename:find("^https://") then
+        return filename
+    end
+    local cleanName = filename:gsub("^assets/backgrounds/", ""):gsub("^backgrounds/", "")
+    local cacheKey = "bg_" .. cleanName
+    if resolvedCache[cacheKey] then
+        return resolvedCache[cacheKey]
+    end
+
+    local disk = resolveFromDisk(cleanName)
+    if disk then
+        resolvedCache[cacheKey] = disk
+        return disk
+    end
+
+    local downloaded = downloadSync(cleanName)
+    if downloaded then
+        resolvedCache[cacheKey] = downloaded
+        return downloaded
+    end
+
+    return fallbackId or ""
+end
+
 -- Get asset with guaranteed resolution
 function AssetManager.get(filename, fallbackId)
     if not filename or #filename == 0 then return "" end
+
+    if filename:match("%.jpg$") or filename:find("backgrounds") then
+        return AssetManager.getBackground(filename, fallbackId)
+    end
 
     if resolvedCache[filename] then
         return resolvedCache[filename]
