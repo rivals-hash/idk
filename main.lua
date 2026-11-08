@@ -159,6 +159,7 @@ local ThemeStrokes = {}
 local ThemeTexts = {}
 local ThemeButtons = {}
 local ThemeFills = {}
+local ThemeImages = {}
 local ActiveToggles = {}
 local ToggleControls = {}
 
@@ -183,6 +184,9 @@ local function UpdateThemeColors()
     for _, frame in ipairs(ThemeFills) do
         if frame and frame.Parent then frame.BackgroundColor3 = CurrentAccent end
     end
+    for _, img in ipairs(ThemeImages) do
+        if img and img.Parent then img.ImageColor3 = CurrentAccent end
+    end
     for toggle, _ in pairs(ActiveToggles) do
         if toggle and toggle.Parent then toggle.BackgroundColor3 = CurrentAccent end
     end
@@ -201,6 +205,12 @@ end
 local function RegisterThemeFill(frame)
     table.insert(ThemeFills, frame)
     frame.BackgroundColor3 = CurrentAccent
+end
+
+local function RegisterThemeImage(img)
+    if not img then return end
+    table.insert(ThemeImages, img)
+    pcall(function() img.ImageColor3 = CurrentAccent end)
 end
 
 local function ApplyFont(name)
@@ -523,6 +533,20 @@ task.spawn(function()
         local iconSrc = SafeHttpGet("https://raw.githubusercontent.com/Footagesus/Icons/main/Main-v2.lua")
         if iconSrc and #iconSrc > 50 then
             WindUIIcons = loadstring(iconSrc)()
+            task.defer(function()
+                if DockButtons and TABS_MANIFEST then
+                    for tabId, dbtn in pairs(DockButtons) do
+                        if dbtn and dbtn.icon then
+                            for _, m in ipairs(TABS_MANIFEST) do
+                                if m.id == tabId then
+                                    ApplyTabIcon(dbtn.icon, tabId, m.icon)
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
         end
     end)
 end)
@@ -795,7 +819,7 @@ function InlineLoader.show(logoAsset)
     status.TextTransparency = 1
     status.BorderSizePixel = 0
     status.Font = Enum.Font.GothamMedium
-    status.Text = "Iniciando " .. APP_TITLE .. "..."
+    status.Text = "Starting " .. APP_TITLE .. "..."
     status.TextColor3 = Color3.fromRGB(165, 160, 175)
     status.TextSize = 12
     status.Parent = card
@@ -888,7 +912,7 @@ function InlineLoader.finish(callback)
         return
     end
 
-    InlineLoader.update(1.0, "Listo")
+    InlineLoader.update(1.0, "Ready")
     task.wait(0.2)
 
     local exitInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
@@ -1009,7 +1033,7 @@ local function showKeyModal(AuroraX, onSuccess)
     sub.Position = UDim2.new(0, 15, 0, 90)
     sub.BackgroundTransparency = 1
     sub.Font = Enum.Font.GothamMedium
-    sub.Text = "Introduce tu clave de licencia para continuar"
+    sub.Text = "Enter your license key to continue"
     sub.TextColor3 = Color3.fromRGB(160, 155, 170)
     sub.TextSize = 11
     sub.Parent = modal
@@ -1037,7 +1061,7 @@ local function showKeyModal(AuroraX, onSuccess)
     keyBox.BackgroundTransparency = 1
     keyBox.Font = Enum.Font.GothamMedium
     keyBox.Text = (AuroraX and AuroraX.GetSavedKey and AuroraX.GetSavedKey()) or ""
-    keyBox.PlaceholderText = "Pega tu clave aquí (script_key)..."
+    keyBox.PlaceholderText = "Paste your key here (script_key)..."
     keyBox.PlaceholderColor3 = Color3.fromRGB(120, 115, 130)
     keyBox.TextColor3 = Color3.fromRGB(240, 240, 250)
     keyBox.TextSize = 12
@@ -1068,7 +1092,7 @@ local function showKeyModal(AuroraX, onSuccess)
     getKeyBtn.Position = UDim2.new(0, 0, 0, 0)
     getKeyBtn.BackgroundColor3 = Color3.fromRGB(32, 28, 40)
     getKeyBtn.Font = Enum.Font.GothamBold
-    getKeyBtn.Text = "Obtener Key"
+    getKeyBtn.Text = "Get Key"
     getKeyBtn.TextColor3 = Color3.fromRGB(220, 215, 235)
     getKeyBtn.TextSize = 12
     getKeyBtn.AutoButtonColor = false
@@ -1093,7 +1117,7 @@ local function showKeyModal(AuroraX, onSuccess)
             end
         end)
         feedback.TextColor3 = Color3.fromRGB(100, 230, 150)
-        feedback.Text = "Enlace copiado al portapapeles! Complétalo en tu navegador."
+        feedback.Text = "Link copied to clipboard! Complete it in your browser."
     end)
 
     -- 2. Verify Key Button
@@ -1102,7 +1126,7 @@ local function showKeyModal(AuroraX, onSuccess)
     verifyBtn.Position = UDim2.new(0.52, 0, 0, 0)
     verifyBtn.BackgroundColor3 = Color3.fromRGB(50, 42, 68)
     verifyBtn.Font = Enum.Font.GothamBold
-    verifyBtn.Text = "Verificar"
+    verifyBtn.Text = "Verify"
     verifyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     verifyBtn.TextSize = 12
     verifyBtn.AutoButtonColor = false
@@ -1124,13 +1148,13 @@ local function showKeyModal(AuroraX, onSuccess)
         local entered = keyBox.Text:gsub("^%s+", ""):gsub("%s+$", "")
         if #entered < 4 then
             feedback.TextColor3 = Color3.fromRGB(255, 120, 120)
-            feedback.Text = "Introduce una clave válida."
+            feedback.Text = "Enter a valid key."
             isChecking = false
             return
         end
 
         feedback.TextColor3 = Color3.fromRGB(200, 200, 220)
-        feedback.Text = "Verificando con Aurora X..."
+        feedback.Text = "Verifying with Aurora X..."
 
         task.spawn(function()
             local valid = false
@@ -1143,7 +1167,7 @@ local function showKeyModal(AuroraX, onSuccess)
 
             if valid then
                 feedback.TextColor3 = Color3.fromRGB(100, 230, 150)
-                feedback.Text = "Key verificada! Iniciando " .. APP_TITLE .. "..."
+                feedback.Text = "Key verified! Starting " .. APP_TITLE .. "..."
                 task.wait(0.5)
                 TweenService:Create(modal, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
                     Size = UDim2.new(0, 0, 0, 0)
@@ -1153,7 +1177,7 @@ local function showKeyModal(AuroraX, onSuccess)
                 if onSuccess then onSuccess() end
             else
                 feedback.TextColor3 = Color3.fromRGB(255, 110, 110)
-                feedback.Text = (info and info.message) or "Clave inválida o expirada."
+                feedback.Text = (info and info.message) or "Invalid or expired key."
                 isChecking = false
             end
         end)
@@ -1177,25 +1201,25 @@ local function triggerUIOpen()
             Main.Visible = true
         end
         if Notify then
-            Notify(APP_TITLE, "Version " .. APP_VERSION .. " cargada y lista.")
+            Notify(APP_TITLE, "Version " .. APP_VERSION .. " loaded and ready.")
         end
-        print("[" .. APP_TITLE .. "] Version " .. APP_VERSION .. " inicializada con éxito.")
+        print("[" .. APP_TITLE .. "] Version " .. APP_VERSION .. " initialized successfully.")
     end
 end
 
 local function startMonodyBoot()
     InlineLoader.show(GetLogoAsset())
-    InlineLoader.update(0.15, "Verificando módulos...")
+    InlineLoader.update(0.15, "Checking modules...")
 
     task.spawn(function()
         local elapsed = 0
         while not uiReadyToOpen and elapsed < 4 do
             task.wait(0.1)
             elapsed = elapsed + 0.1
-            InlineLoader.update(0.15 + math.min(elapsed / 4 * 0.75, 0.75), "Cargando componentes...")
+            InlineLoader.update(0.15 + math.min(elapsed / 4 * 0.75, 0.75), "Loading components...")
         end
 
-        InlineLoader.update(1.0, "Listo")
+        InlineLoader.update(1.0, "Ready")
         task.wait(0.22)
         InlineLoader.finish(function()
             introCompleted = true
@@ -5718,28 +5742,514 @@ end
 -- MODULAR TAB REGISTRATION
 -- ============================================================
 
--- 1. HOME TAB (LUXURY GLASS DASHBOARD WITH SLEEK HEALTH & ENERGY CAPSULES)
--- New Darling Hub Modular Tabs (Structure ready for step-by-step feature addition)
-local placeholderTabs = {
-    { id = "AutoBounty",    title = "Auto Bounty",    desc = "Módulo de caza automática de recompensas." },
-    { id = "ControlPeople", title = "Control People", desc = "Módulo de control e interacción con otros jugadores." },
-    { id = "StealFruits",   title = "Steal Fruits",   desc = "Módulo de detección y recolección rápida de frutas." },
-}
+-- ============================================================
+-- AUTO BOUNTY TAB (ADVANCED TARGETING & ENGAGEMENT ENGINE)
+-- ============================================================
+do
+    pcall(function()
+        local BountyPage = RegisterTab("AutoBounty", "AutoBounty", "skull")
+        local isHunting = false
+        local targetMode = "Nearest"
+        local engageDist = 15
+        local autoV4 = false
+        local autoKen = true
+        local autoBuso = true
+        local escapeLowHp = true
+        local selectedWeapon = "Melee"
+        local currentTarget = nil
 
-for _, t in ipairs(placeholderTabs) do
-    local page = RegisterTab(t.id, t.id)
-    if page then
-        local card = CreateCard(page, t.title)
-        local desc = Instance.new("TextLabel", card)
-        desc.Size = UDim2.new(1, 0, 0, 20)
-        desc.BackgroundTransparency = 1
-        desc.Font = Enum.Font.GothamMedium
-        desc.TextSize = 10
-        desc.TextColor3 = Color3.fromRGB(160, 155, 175)
-        desc.TextXAlignment = Enum.TextXAlignment.Left
-        desc.Text = t.desc
-        desc.ZIndex = 12
-    end
+        local function GetBountyTargets()
+            local targets = {}
+            local myChar = lp.Character
+            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+            if not myRoot then return targets end
+
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= lp and p.Character then
+                    local hum = p.Character:FindFirstChildOfClass("Humanoid")
+                    local root = p.Character:FindFirstChild("HumanoidRootPart")
+                    local isBl = _G.DarlingBlacklistedPlayers and _G.DarlingBlacklistedPlayers[p.UserId]
+                    if hum and hum.Health > 0 and root and not isBl then
+                        local dist = (root.Position - myRoot.Position).Magnitude
+                        table.insert(targets, { player = p, humanoid = hum, root = root, distance = dist, health = hum.Health })
+                    end
+                end
+            end
+            return targets
+        end
+
+        local function SelectBestTarget()
+            local list = GetBountyTargets()
+            if #list == 0 then return nil end
+            if targetMode == "Lowest Health" then
+                table.sort(list, function(a, b) return a.health < b.health end)
+            elseif targetMode == "Highest Bounty" then
+                table.sort(list, function(a, b)
+                    local bA = (a.player:FindFirstChild("leaderstats") and a.player.leaderstats:FindFirstChild("Bounty/Honor") and a.player.leaderstats["Bounty/Honor"].Value) or 0
+                    local bB = (b.player:FindFirstChild("leaderstats") and b.player.leaderstats:FindFirstChild("Bounty/Honor") and b.player.leaderstats["Bounty/Honor"].Value) or 0
+                    return bA > bB
+                end)
+            else
+                table.sort(list, function(a, b) return a.distance < b.distance end)
+            end
+            return list[1]
+        end
+
+        local bCard1 = CreateCard(BountyPage, "Auto Bounty Engine")
+        AddToggle(bCard1, "Enable Auto Bounty", "Locks on to target players and executes combat routine", false, function(v)
+            isHunting = v
+            if v then
+                task.spawn(function()
+                    while isHunting do
+                        pcall(function()
+                            local myChar = lp.Character
+                            local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
+                            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+                            if not myRoot or not myHum or myHum.Health <= 0 then return end
+
+                            if escapeLowHp and (myHum.Health / myHum.MaxHealth) < 0.25 then
+                                myRoot.CFrame = myRoot.CFrame * CFrame.new(0, 150, 0)
+                                Notify("Auto Bounty", "Safe Escape: Low Health triggered.")
+                                task.wait(3)
+                                return
+                            end
+
+                            local t = SelectBestTarget()
+                            currentTarget = t and t.player
+                            if t and t.root and t.humanoid.Health > 0 then
+                                if autoBuso then
+                                    local rem = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
+                                    local commF = rem and rem:FindFirstChild("CommF_")
+                                    if commF then commF:InvokeServer("Buso") end
+                                end
+                                if autoV4 then
+                                    local vim = game:GetService("VirtualInputManager")
+                                    if vim then
+                                        vim:SendKeyEvent(true, Enum.KeyCode.Y, false, game)
+                                        task.wait(0.04)
+                                        vim:SendKeyEvent(false, Enum.KeyCode.Y, false, game)
+                                    end
+                                end
+                                myRoot.CFrame = t.root.CFrame * CFrame.new(0, engageDist, 0)
+                                local net = game:GetService("ReplicatedStorage"):FindFirstChild("Modules")
+                                net = net and net:FindFirstChild("Net")
+                                local regAtk = net and net:FindFirstChild("RE/RegisterAttack")
+                                local regHit = net and net:FindFirstChild("RE/RegisterHit")
+                                if regAtk then regAtk:FireServer(0.1) end
+                                if regHit then regHit:FireServer(t.root, { { t.humanoid, t.root } }) end
+                            end
+                        end)
+                        task.wait(0.1)
+                    end
+                end)
+            end
+        end)
+        AddChoice(bCard1, "Target Priority", {"Nearest", "Lowest Health", "Highest Bounty"}, 1, function(v)
+            targetMode = v
+        end)
+        AddSlider(bCard1, "Combat Distance", 5, 40, 15, 1, function(v)
+            engageDist = v
+        end)
+        AddToggle(bCard1, "Auto V4 Awakening", "Automatically activates Race V4 during bounty hunting", false, function(v)
+            autoV4 = v
+        end)
+        AddToggle(bCard1, "Auto Buso Haki", "Maintains active Buso Haki during combat", true, function(v)
+            autoBuso = v
+        end)
+        AddToggle(bCard1, "Safe Escape at 25% HP", "Teleports to high sky when health drops below critical threshold", true, function(v)
+            escapeLowHp = v
+        end)
+
+        local bCard2 = CreateCard(BountyPage, "Bounty Combat Settings")
+        AddChoice(bCard2, "Primary Combat Style", {"Melee", "Sword", "Blox Fruit", "Gun"}, 1, function(v)
+            selectedWeapon = v
+        end)
+        AddButton(bCard2, "Skip Current Target", function()
+            if currentTarget then
+                _G.DarlingBlacklistedPlayers = _G.DarlingBlacklistedPlayers or {}
+                _G.DarlingBlacklistedPlayers[currentTarget.UserId] = true
+                Notify("Auto Bounty", "Skipped & blacklisted: " .. currentTarget.Name)
+            end
+        end)
+    end)
+end
+
+-- ============================================================
+-- CONTROL PEOPLE TAB (PLAYER INTERACTION & ORBIT TOOLS)
+-- ============================================================
+do
+    pcall(function()
+        local ControlPage = RegisterTab("ControlPeople", "Control People", "gamepad-2")
+        local selectedTarget = nil
+        local loopTpActive = false
+        local orbitActive = false
+        local orbitRadius = 12
+        local orbitSpeed = 6
+        local orbitAngle = 0
+        local isFlinging = false
+
+        local function GetTargetPlayersList()
+            local names = {}
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= lp then table.insert(names, p.Name) end
+            end
+            if #names == 0 then table.insert(names, "None") end
+            return names
+        end
+
+        local cCard1 = CreateCard(ControlPage, "Target Player Controls")
+        local targetChoice = AddChoice(cCard1, "Target Player", GetTargetPlayersList(), 1, function(name)
+            selectedTarget = Players:FindFirstChild(name)
+        end)
+        AddButton(cCard1, "Refresh Players List", function()
+            if targetChoice and targetChoice.Refresh then
+                targetChoice.Refresh(GetTargetPlayersList())
+            end
+            Notify("Control People", "Player list refreshed.")
+        end)
+        AddButton(cCard1, "Teleport to Target", function()
+            local t = selectedTarget
+            local tChar = t and t.Character
+            local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+            local myChar = lp.Character
+            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+            if tRoot and myRoot then
+                myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 3, 3)
+                Notify("Control People", "Teleported to " .. t.Name)
+            else
+                Notify("Control People", "Target player character not found.")
+            end
+        end)
+        AddButton(cCard1, "Spectate Target", function()
+            local t = selectedTarget
+            local tChar = t and t.Character
+            local tHum = tChar and tChar:FindFirstChildOfClass("Humanoid")
+            if tHum then
+                Workspace.CurrentCamera.CameraSubject = tHum
+                Notify("Control People", "Spectating " .. t.Name)
+            else
+                Notify("Control People", "Cannot spectate target.")
+            end
+        end)
+        AddButton(cCard1, "Stop Spectating", function()
+            local myChar = lp.Character
+            local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
+            if myHum then
+                Workspace.CurrentCamera.CameraSubject = myHum
+                Notify("Control People", "Camera restored to LocalPlayer.")
+            end
+        end)
+        AddButton(cCard1, "Fling Target", function()
+            if isFlinging then return end
+            local t = selectedTarget
+            local tChar = t and t.Character
+            local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+            local myChar = lp.Character
+            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+            if not tRoot or not myRoot then
+                Notify("Control People", "Target not available.")
+                return
+            end
+            isFlinging = true
+            Notify("Control People", "Flinging " .. t.Name .. "...")
+            task.spawn(function()
+                local oldPos = myRoot.CFrame
+                local bav = Instance.new("BodyAngularVelocity")
+                bav.MaxTorque = Vector3.new(1e8, 1e8, 1e8)
+                bav.AngularVelocity = Vector3.new(0, 100000, 0)
+                bav.Parent = myRoot
+                local startT = tick()
+                while tick() - startT < 1.5 and tRoot and tRoot.Parent do
+                    myRoot.CFrame = tRoot.CFrame
+                    task.wait(0.03)
+                end
+                bav:Destroy()
+                myRoot.CFrame = oldPos
+                isFlinging = false
+            end)
+        end)
+
+        local cCard2 = CreateCard(ControlPage, "Orbit & Stalker Engine")
+        AddToggle(cCard2, "Loop Teleport Behind", "Locks your position directly behind target's back", false, function(v)
+            loopTpActive = v
+            if v then
+                task.spawn(function()
+                    while loopTpActive do
+                        pcall(function()
+                            local t = selectedTarget
+                            local tChar = t and t.Character
+                            local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+                            local myChar = lp.Character
+                            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+                            if tRoot and myRoot then
+                                myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 2, 4)
+                            end
+                        end)
+                        task.wait(0.04)
+                    end
+                end)
+            end
+        end)
+        AddToggle(cCard2, "Orbit Target", "Smoothly circles around the selected player in 3D space", false, function(v)
+            orbitActive = v
+        end)
+        AddSlider(cCard2, "Orbit Radius", 5, 40, 12, 1, function(v)
+            orbitRadius = v
+        end)
+        AddSlider(cCard2, "Orbit Speed", 1, 20, 6, 1, function(v)
+            orbitSpeed = v
+        end)
+
+        trackConn(RunService.Heartbeat:Connect(function(dt)
+            if orbitActive and selectedTarget then
+                pcall(function()
+                    local tChar = selectedTarget.Character
+                    local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+                    local myChar = lp.Character
+                    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+                    if tRoot and myRoot then
+                        orbitAngle = orbitAngle + dt * orbitSpeed
+                        local offset = Vector3.new(math.cos(orbitAngle) * orbitRadius, 2, math.sin(orbitAngle) * orbitRadius)
+                        myRoot.CFrame = CFrame.new(tRoot.Position + offset, tRoot.Position)
+                    end
+                end)
+            end
+        end))
+
+        local cCard3 = CreateCard(ControlPage, "Global Player Utilities")
+        AddButton(cCard3, "Teleport to Random Player", function()
+            local players = {}
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= lp and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    table.insert(players, p)
+                end
+            end
+            if #players > 0 then
+                local pick = players[math.random(1, #players)]
+                local myChar = lp.Character
+                local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+                if myRoot and pick.Character and pick.Character:FindFirstChild("HumanoidRootPart") then
+                    myRoot.CFrame = pick.Character.HumanoidRootPart.CFrame * CFrame.new(0, 3, 3)
+                    Notify("Control People", "Teleported to " .. pick.Name)
+                end
+            else
+                Notify("Control People", "No other players found.")
+            end
+        end)
+        AddButton(cCard3, "Clear All Player Blacklists", function()
+            _G.DarlingBlacklistedPlayers = {}
+            Notify("Blacklist", "All player blacklists cleared.")
+        end)
+    end)
+end
+
+-- ============================================================
+-- STEAL FRUITS TAB (FRUIT SNIPER, ESP & AUTO COLLECTOR)
+-- ============================================================
+do
+    pcall(function()
+        local FruitPage = RegisterTab("StealFruits", "Steal Fruits", "apple")
+        local autoSnipe = false
+        local autoStore = true
+        local bringFruits = false
+        local fruitEspActive = false
+        local fruitAlert = true
+        local activeBillboards = {}
+
+        local function FindFruitsInWorld()
+            local fruits = {}
+            for _, obj in ipairs(Workspace:GetChildren()) do
+                if (obj:IsA("Tool") or obj:IsA("Model")) and obj.Name:lower():find("fruit") then
+                    local handle = obj:FindFirstChild("Handle") or obj:FindFirstChildWhichIsA("BasePart")
+                    if handle then
+                        table.insert(fruits, { object = obj, part = handle, name = obj.Name })
+                    end
+                end
+            end
+            return fruits
+        end
+
+        local function ClearFruitEsp()
+            for _, bb in ipairs(activeBillboards) do
+                pcall(function() bb:Destroy() end)
+            end
+            activeBillboards = {}
+        end
+
+        local function UpdateFruitEsp()
+            ClearFruitEsp()
+            if not fruitEspActive then return end
+            local fruits = FindFruitsInWorld()
+            for _, f in ipairs(fruits) do
+                pcall(function()
+                    local bb = Instance.new("BillboardGui")
+                    bb.Name = "FruitBillboard"
+                    bb.Size = UDim2.new(0, 120, 0, 40)
+                    bb.AlwaysOnTop = true
+                    bb.Adornee = f.part
+                    bb.Parent = f.part
+
+                    local lbl = Instance.new("TextLabel", bb)
+                    lbl.Size = UDim2.new(1, 0, 1, 0)
+                    lbl.BackgroundTransparency = 1
+                    lbl.Font = Enum.Font.GothamBold
+                    lbl.TextSize = 10
+                    lbl.TextColor3 = Color3.fromRGB(255, 120, 180)
+                    lbl.TextStrokeTransparency = 0.3
+                    lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                    lbl.Text = "🍎 " .. f.name
+                    table.insert(activeBillboards, bb)
+                end)
+            end
+        end
+
+        local function StoreCurrentFruits()
+            pcall(function()
+                local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
+                local commF = remotes and remotes:FindFirstChild("CommF_")
+                if not commF then return end
+                local char = lp.Character
+                local backpack = lp:FindFirstChild("Backpack")
+                local items = {}
+                if backpack then
+                    for _, tool in ipairs(backpack:GetChildren()) do
+                        if tool:IsA("Tool") and tool.Name:lower():find("fruit") then table.insert(items, tool) end
+                    end
+                end
+                if char then
+                    for _, tool in ipairs(char:GetChildren()) do
+                        if tool:IsA("Tool") and tool.Name:lower():find("fruit") then table.insert(items, tool) end
+                    end
+                end
+                for _, f in ipairs(items) do
+                    commF:InvokeServer("StoreFruit", f.Name, f)
+                    Notify("Steal Fruits", "Stored: " .. f.Name)
+                end
+            end)
+        end
+
+        local fCard1 = CreateCard(FruitPage, "Fruit Sniper Engine")
+        AddToggle(fCard1, "Auto Snipe Fruits", "Teleports to any spawned fruit in the map instantly", false, function(v)
+            autoSnipe = v
+            if v then
+                task.spawn(function()
+                    while autoSnipe do
+                        pcall(function()
+                            local fruits = FindFruitsInWorld()
+                            if #fruits > 0 then
+                                local myChar = lp.Character
+                                local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+                                if myRoot then
+                                    for _, f in ipairs(fruits) do
+                                        if f.part and f.part.Parent then
+                                            myRoot.CFrame = f.part.CFrame * CFrame.new(0, 2, 0)
+                                            Notify("Steal Fruits", "Sniped: " .. f.name)
+                                            task.wait(0.5)
+                                            if autoStore then StoreCurrentFruits() end
+                                        end
+                                    end
+                                end
+                            end
+                        end)
+                        task.wait(1.5)
+                    end
+                end)
+            end
+        end)
+        AddToggle(fCard1, "Auto Store Collected Fruit", "Automatically deposits held fruits into storage", true, function(v)
+            autoStore = v
+        end)
+        AddToggle(fCard1, "Bring Fruits to Player", "Tweens physical fruit models in workspace to your location", false, function(v)
+            bringFruits = v
+            if v then
+                task.spawn(function()
+                    while bringFruits do
+                        pcall(function()
+                            local fruits = FindFruitsInWorld()
+                            local myChar = lp.Character
+                            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+                            if myRoot then
+                                for _, f in ipairs(fruits) do
+                                    if f.part and not f.part.Anchored then
+                                        f.part.CFrame = myRoot.CFrame
+                                    end
+                                end
+                            end
+                        end)
+                        task.wait(0.5)
+                    end
+                end)
+            end
+        end)
+        AddToggle(fCard1, "Fruit ESP & Tracker", "Shows holographic markers above spawned fruits across map", false, function(v)
+            fruitEspActive = v
+            if v then
+                UpdateFruitEsp()
+                task.spawn(function()
+                    while fruitEspActive do
+                        task.wait(3)
+                        UpdateFruitEsp()
+                    end
+                    ClearFruitEsp()
+                end)
+            else
+                ClearFruitEsp()
+            end
+        end)
+        AddToggle(fCard1, "Fruit Spawn Alerts", "Displays instant notifications whenever a fruit appears in server", true, function(v)
+            fruitAlert = v
+        end)
+
+        Workspace.ChildAdded:Connect(function(ch)
+            if fruitAlert and (ch:IsA("Tool") or ch:IsA("Model")) and ch.Name:lower():find("fruit") then
+                Notify("Fruit Alert", "A wild fruit has spawned: " .. ch.Name .. "!")
+                if fruitEspActive then task.defer(UpdateFruitEsp) end
+            end
+        end)
+
+        local fCard2 = CreateCard(FruitPage, "Fruit Radar & Server Actions")
+        local fruitStatus = Instance.new("TextLabel", fCard2)
+        fruitStatus.Size = UDim2.new(1, 0, 0, 18)
+        fruitStatus.BackgroundTransparency = 1
+        fruitStatus.Font = Enum.Font.GothamMedium
+        fruitStatus.TextSize = 9.5
+        fruitStatus.TextColor3 = Color3.fromRGB(200, 195, 220)
+        fruitStatus.TextXAlignment = Enum.TextXAlignment.Left
+        fruitStatus.Text = "Active Fruits: Scanning..."
+        fruitStatus.LayoutOrder = 10
+
+        local function RefreshFruitRadar()
+            local list = FindFruitsInWorld()
+            if #list == 0 then
+                fruitStatus.Text = "Active Fruits: No fruits in server."
+            else
+                local names = {}
+                for _, f in ipairs(list) do table.insert(names, f.name) end
+                fruitStatus.Text = "Active Fruits (" .. #list .. "): " .. table.concat(names, ", ")
+            end
+            UpdateCardGeometry(fCard2)
+            UpdatePageCanvas(FruitPage)
+        end
+
+        AddButton(fCard2, "Scan Server for Fruits", function()
+            RefreshFruitRadar()
+            Notify("Fruit Radar", "Scan complete.")
+        end)
+
+        AddButton(fCard2, "Store Inventory Fruits", function()
+            StoreCurrentFruits()
+        end)
+
+        AddButton(fCard2, "Server Hop for Fruits", function()
+            Notify("Server Hop", "Searching for server with fruit spawns...")
+            pcall(function()
+                local TeleportService = game:GetService("TeleportService")
+                TeleportService:Teleport(game.PlaceId, lp)
+            end)
+        end)
+
+        task.defer(RefreshFruitRadar)
+    end)
 end
 
 local HomePage = RegisterTab("Home", "Home", "house")
@@ -7195,7 +7705,7 @@ do
             VoidOnlyBossRoom = true,
             Interval = 0.08
         }
-        local AutoLoad = true
+        local AutoLoad = false
         local voidRunning = false
         local BOSS_ROOMS = { [5] = true, [10] = true, [15] = true, [20] = true }
 
@@ -7375,7 +7885,7 @@ do
         end)
 
         local dCard3 = CreateCard(DungeonPage, "Dungeon Status & Utilities")
-        AddToggle(dCard3, "Auto Load Dungeon", "Automatically begins dungeon on script load", true, function(v)
+        AddToggle(dCard3, "Auto Load Dungeon", "Automatically begins dungeon on script load", false, function(v)
             AutoLoad = v
         end)
 
@@ -8052,6 +8562,7 @@ do
 end
 
 -- 6. CONFIG TAB
+do
 local ConfigPage = RegisterTab("Config", "Config", "sliders-horizontal")
 local MiscPage = ConfigPage
 Pages["Misc"] = ConfigPage
@@ -8246,7 +8757,9 @@ end)
 if not okMisc then
     warn("[Monody] Failed to initialize MiscPage: " .. tostring(errMisc))
 end
+end
 -- 7. THEMES & CUSTOMIZATION STUDIO (FULL LUXURY ENGINE)
+do
 local ThemesPage = RegisterTab("Themes", "Themes", "palette")
 local SettingsPage = ThemesPage
 local okThemes, errThemes = pcall(function()
@@ -8567,6 +9080,7 @@ local okThemes, errThemes = pcall(function()
 end)
 if not okThemes then
     warn("[Monody] Failed to initialize ThemesPage: " .. tostring(errThemes))
+end
 end
 
 -- ============================================================
