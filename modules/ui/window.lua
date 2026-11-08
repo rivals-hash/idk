@@ -96,7 +96,7 @@ function Window.create(dependencies)
     -- Master Window Frame
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "Monody_MainWindow"
-    mainFrame.Size = UDim2.new(0, 646, 0, 410)
+    mainFrame.Size = UDim2.new(0, 568, 0, 400)
     mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     mainFrame.Position = UDim2.new(0.53, 0, 0.48, 0)
     mainFrame.BackgroundTransparency = 1
@@ -127,7 +127,7 @@ function Window.create(dependencies)
     -- Left Content Area (Contains HomeView or Tab Views)
     local contentArea = Instance.new("Frame")
     contentArea.Name = "ContentArea"
-    contentArea.Size = UDim2.new(0, 474, 0, 410)
+    contentArea.Size = UDim2.new(0, 406, 0, 400)
     contentArea.Position = UDim2.new(0, 0, 0, 0)
     contentArea.BackgroundTransparency = 1
     contentArea.BorderSizePixel = 0

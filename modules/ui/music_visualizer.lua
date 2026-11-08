@@ -80,15 +80,15 @@ function MusicVisualizer.create(parentFrame, MusicEngine, Utils, AssetManager)
     barListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     barListLayout.Parent = barsContainer
 
-    -- Create 36 vertical frequency bars with radiant sleek styling (matching media_1794158198928.jpg)
-    local numBars = 36
+    -- Create 28 vertical frequency bars with radiant crimson gradient
+    local numBars = 28
     local bars = {}
     for i = 1, numBars do
         local bar = Instance.new("Frame")
         bar.Name = "Bar_" .. i
         bar.LayoutOrder = i
-        bar.Size = UDim2.new(0, 3, 0, 5)
-        bar.BackgroundColor3 = Color3.fromRGB(240, 245, 255)
+        bar.Size = UDim2.new(0, 3, 0, 6)
+        bar.BackgroundColor3 = Color3.fromRGB(220, 35, 60)
         bar.BorderSizePixel = 0
         bar.Parent = barsContainer
 
