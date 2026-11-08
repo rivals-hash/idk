@@ -275,11 +275,6 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     pillCorner.CornerRadius = UDim.new(0, 6)
     pillCorner.Parent = pillBtn
 
-    local pillStroke = Instance.new("UIStroke")
-    pillStroke.Color = Color3.fromRGB(165, 95, 245)
-    pillStroke.Thickness = 1.2
-    pillStroke.Parent = pillBtn
-
     local pillText = Instance.new("TextLabel")
     pillText.Name = "PillText"
     pillText.Size = UDim2.new(1, -22, 1, 0)
@@ -376,11 +371,6 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     vbCorner.CornerRadius = UDim.new(0, 5)
     vbCorner.Parent = valBadge
 
-    local vbStroke = Instance.new("UIStroke")
-    vbStroke.Color = Color3.fromRGB(175, 100, 245)
-    vbStroke.Thickness = 1.2
-    vbStroke.Parent = valBadge
-
     local valLbl = Instance.new("TextLabel")
     valLbl.Size = UDim2.new(1, 0, 1, 0)
     valLbl.BackgroundTransparency = 1
@@ -405,11 +395,6 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     trCorner.CornerRadius = UDim.new(1, 0)
     trCorner.Parent = track
 
-    local trStroke = Instance.new("UIStroke")
-    trStroke.Color = Color3.fromRGB(62, 50, 82)
-    trStroke.Thickness = 1
-    trStroke.Parent = track
-
     local fill = Instance.new("Frame")
     fill.Name = "Fill"
     local initRatio = (curVal - minVal) / math.max(1, (maxVal - minVal))
@@ -431,10 +416,10 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
         end
     end)
 
-    -- Custom Neon Thumb Knob with White Outer Ring & Purple Inner Dot
+    -- Clean Pure White Circular Thumb Knob (No purple border)
     local thumb = Instance.new("Frame")
     thumb.Name = "Thumb"
-    thumb.Size = UDim2.new(0, 16, 0, 16)
+    thumb.Size = UDim2.new(0, 14, 0, 14)
     thumb.AnchorPoint = Vector2.new(0.5, 0.5)
     thumb.Position = UDim2.new(clamp(initRatio, 0, 1), 0, 0.5, 0)
     thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -445,25 +430,6 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     local thCorner = Instance.new("UICorner")
     thCorner.CornerRadius = UDim.new(1, 0)
     thCorner.Parent = thumb
-
-    local thStroke = Instance.new("UIStroke")
-    thStroke.Color = Color3.fromRGB(210, 140, 255)
-    thStroke.Thickness = 2.0
-    thStroke.Parent = thumb
-
-    local innerDot = Instance.new("Frame")
-    innerDot.Name = "InnerDot"
-    innerDot.Size = UDim2.new(0, 6, 0, 6)
-    innerDot.AnchorPoint = Vector2.new(0.5, 0.5)
-    innerDot.Position = UDim2.new(0.5, 0, 0.5, 0)
-    innerDot.BackgroundColor3 = Color3.fromRGB(145, 60, 230)
-    innerDot.BorderSizePixel = 0
-    innerDot.ZIndex = 7
-    innerDot.Parent = thumb
-
-    local idCorner = Instance.new("UICorner")
-    idCorner.CornerRadius = UDim.new(1, 0)
-    idCorner.Parent = innerDot
 
     local sliderHitbox = Instance.new("TextButton")
     sliderHitbox.Name = "SliderHitbox"
@@ -544,18 +510,10 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     bCorner.CornerRadius = UDim.new(0, 8)
     bCorner.Parent = btn
 
-    local bStroke = Instance.new("UIStroke")
-    bStroke.Color = Color3.fromRGB(185, 115, 255)
-    bStroke.Thickness = 1.4
-    bStroke.Transparency = 0.15
-    bStroke.Parent = btn
-
     btn.MouseEnter:Connect(function()
-        TweenService:Create(bStroke, TweenInfo.new(0.12), { Color = Color3.fromRGB(245, 195, 255), Thickness = 1.8 }):Play()
         TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(42, 30, 65) }):Play()
     end)
     btn.MouseLeave:Connect(function()
-        TweenService:Create(bStroke, TweenInfo.new(0.12), { Color = Color3.fromRGB(185, 115, 255), Thickness = 1.4 }):Play()
         TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(28, 22, 42) }):Play()
     end)
 
@@ -656,7 +614,7 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     local function updatePills()
         for cName, pill in pairs(colorPills) do
             local isSel = (cName == selected)
-            pill.Stroke.Color = isSel and Color3.fromRGB(220, 170, 255) or Color3.fromRGB(70, 55, 95)
+            pill.Stroke.Color = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(48, 44, 58)
             pill.Stroke.Thickness = isSel and 1.5 or 1
             pill.Frame.BackgroundColor3 = isSel and Color3.fromRGB(115, 55, 185) or Color3.fromRGB(26, 20, 38)
         end
@@ -684,7 +642,7 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
         pCorner.Parent = pill
 
         local pStroke = Instance.new("UIStroke")
-        pStroke.Color = (cName == selected) and Color3.fromRGB(220, 170, 255) or Color3.fromRGB(70, 55, 95)
+        pStroke.Color = (cName == selected) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(48, 44, 58)
         pStroke.Thickness = (cName == selected) and 1.5 or 1
         pStroke.Parent = pill
 
@@ -766,7 +724,7 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
         cCorner.Parent = chip
 
         local cStroke = Instance.new("UIStroke")
-        cStroke.Color = Color3.fromRGB(70, 55, 95)
+        cStroke.Color = Color3.fromRGB(48, 44, 58)
         cStroke.Thickness = 1
         cStroke.Parent = chip
 
@@ -775,7 +733,7 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
             isBl = not isBl
             blacklisted[chipName] = isBl
             local targetBg = isBl and Color3.fromRGB(95, 25, 45) or Color3.fromRGB(26, 20, 38)
-            local targetStroke = isBl and Color3.fromRGB(255, 75, 95) or Color3.fromRGB(70, 55, 95)
+            local targetStroke = isBl and Color3.fromRGB(255, 75, 95) or Color3.fromRGB(48, 44, 58)
             local targetText = isBl and Color3.fromRGB(255, 180, 190) or Color3.fromRGB(215, 210, 230)
 
             TweenService:Create(chip, TweenInfo.new(0.12), { BackgroundColor3 = targetBg, TextColor3 = targetText }):Play()
@@ -822,12 +780,6 @@ local function createFeatureCard(parent, title, AssetManager)
     local bgCorner = Instance.new("UICorner")
     bgCorner.CornerRadius = UDim.new(0, 10)
     bgCorner.Parent = bgImg
-
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(195, 125, 255)
-    stroke.Thickness = 1.6
-    stroke.Transparency = 0.15
-    stroke.Parent = card
 
     local content = Instance.new("Frame")
     content.Name = "Content"
@@ -945,12 +897,6 @@ function TabViews.build(tabName, parentContainer, options)
     local bBgCorner = Instance.new("UICorner")
     bBgCorner.CornerRadius = UDim.new(0, 10)
     bBgCorner.Parent = bBg
-
-    local bStroke = Instance.new("UIStroke")
-    bStroke.Color = Color3.fromRGB(195, 125, 255)
-    bStroke.Thickness = 1.6
-    bStroke.Transparency = 0.15
-    bStroke.Parent = banner
 
     local bTitle = Instance.new("TextLabel")
     bTitle.Size = UDim2.new(1, -28, 0, 20)
@@ -1239,11 +1185,6 @@ function TabViews.build(tabName, parentContainer, options)
                     prCorner.CornerRadius = UDim.new(0, 8)
                     prCorner.Parent = pRow
 
-                    local prStroke = Instance.new("UIStroke")
-                    prStroke.Color = Color3.fromRGB(90, 60, 140)
-                    prStroke.Thickness = 1
-                    prStroke.Parent = pRow
-
                     -- Avatar Headshot
                     local headshot = Instance.new("ImageLabel")
                     headshot.Name = "Headshot"
@@ -1257,11 +1198,6 @@ function TabViews.build(tabName, parentContainer, options)
                     local hsCorner = Instance.new("UICorner")
                     hsCorner.CornerRadius = UDim.new(1, 0)
                     hsCorner.Parent = headshot
-
-                    local hsStroke = Instance.new("UIStroke")
-                    hsStroke.Color = Color3.fromRGB(175, 110, 255)
-                    hsStroke.Thickness = 1.4
-                    hsStroke.Parent = headshot
 
                     -- Name + User
                     local nameLbl = Instance.new("TextLabel")

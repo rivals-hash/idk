@@ -71,12 +71,6 @@ function HomeView.create(parentContainer, dependencies)
         bgCorner.CornerRadius = UDim.new(0, 10)
         bgCorner.Parent = bg
 
-        local stroke = Instance.new("UIStroke")
-        stroke.Color = Color3.fromRGB(195, 125, 255)
-        stroke.Thickness = 1.6
-        stroke.Transparency = 0.15
-        stroke.Parent = frame
-
         return frame, bg
     end
 

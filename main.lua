@@ -161,6 +161,7 @@ if AssetManager and AssetManager.preload then
             "header_profile_panel.png",
             "stats_panel_v2.png",
             "music_player.png",
+            "sidebar_bg_v2.png",
             "sidebar_bg.png",
             "floating_avatar.png"
         })

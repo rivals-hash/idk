@@ -40,21 +40,7 @@ function MobileToggle.create(parentScreenGui, onToggleCallback, Utils)
     corner.CornerRadius = UDim.new(1, 0)
     corner.Parent = toggleBtn
 
-    -- Vibrant Neon Violet Luminous Rim Stroke
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(195, 125, 255)
-    stroke.Thickness = 2.2
-    stroke.Transparency = 0.05
-    stroke.Parent = toggleBtn
-
-    -- Subtle Neon Pulse Animation
-    pcall(function()
-        local pulseInfo = TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
-        TweenService:Create(stroke, pulseInfo, {
-            Color = Color3.fromRGB(245, 190, 255),
-            Thickness = 2.6
-        }):Play()
-    end)
+    -- Clean borderless avatar circle (no purple borders)
 
     -- Subtle Live Status Dot (Online / Active Indicator in Neon Emerald)
     local statusDot = Instance.new("Frame")
