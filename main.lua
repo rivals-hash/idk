@@ -155,6 +155,17 @@ end
 -- 7. Initialize UI Components
 local Utils = BestHub:Require("modules/core/utils.lua")
 local AssetManager = BestHub:Require("modules/core/asset_manager.lua")
+if AssetManager and AssetManager.preload then
+    pcall(function()
+        AssetManager.preload({
+            "header_profile_panel.png",
+            "stats_panel_v2.png",
+            "music_player.png",
+            "sidebar_bg.png",
+            "floating_avatar.png"
+        })
+    end)
+end
 local StatsService = BestHub:Require("modules/core/stats_service.lua")
 local MusicEngine = BestHub:Require("modules/utility/music_engine.lua")
 local MusicVisualizer = BestHub:Require("modules/ui/music_visualizer.lua")

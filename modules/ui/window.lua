@@ -303,7 +303,12 @@ function Window.create(dependencies)
     if AssetManager and mobileToggle then
         local imgBtn = mobileToggle:IsA("ImageButton") and mobileToggle or mobileToggle:FindFirstChild("ToggleBtn")
         if imgBtn then
-            pcall(function() imgBtn.Image = AssetManager.get("floating_avatar.png", AssetManager.get("avatar.png", imgBtn.Image)) end)
+            imgBtn.BackgroundTransparency = 1
+            if AssetManager.bindImage then
+                AssetManager.bindImage(imgBtn, "floating_avatar.png")
+            else
+                pcall(function() imgBtn.Image = AssetManager.get("floating_avatar.png") end)
+            end
         end
     end
 

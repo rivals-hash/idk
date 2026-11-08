@@ -17,9 +17,19 @@ local exRequest = request or http_request or (syn and syn.request) or (http and 
 local BASE_URL = "https://raw.githubusercontent.com/rivals-hash/idk/main/assets/"
 local CACHE_FOLDER = "Monody_Assets_v7"
 
--- Only search in current clean cache folder to prevent stale or corrupted legacy assets
+-- Candidate folders to look for already cached files
 local CANDIDATE_FOLDERS = {
-    CACHE_FOLDER
+    CACHE_FOLDER,
+    "Monody_Assets_v6",
+    "Monody_Assets_v5",
+    "Monody_Assets_v4",
+    "Monody_Assets_v3",
+    "Monody_Assets_v2",
+    "Monody_Assets",
+    "assets",
+    "idk/assets",
+    "BestHub/assets",
+    "darling-hub/assets"
 }
 
 pcall(function()
@@ -31,8 +41,6 @@ pcall(function()
 end)
 
 local resolvedCache = {}
-local downloadCallbacks = {}
-local isDownloading = {}
 
 -- Try to resolve from disk immediately (0 latency, 0 freeze)
 local function resolveFromDisk(filename)
@@ -50,94 +58,97 @@ local function resolveFromDisk(filename)
     return nil
 end
 
--- Asynchronous non-blocking download via task.spawn
-local function triggerAsyncDownload(filename, onComplete)
-    if onComplete then
-        downloadCallbacks[filename] = downloadCallbacks[filename] or {}
-        table.insert(downloadCallbacks[filename], onComplete)
-    end
+-- Synchronous download from GitHub raw with writefile and getcustomasset
+local function downloadSync(filename)
+    local rawUrl = BASE_URL .. filename
+    local data = nil
 
-    if isDownloading[filename] then return end
-    isDownloading[filename] = true
-
-    task.spawn(function()
-        local rawUrl = BASE_URL .. filename
-        local data = nil
-
-        pcall(function()
-            if exRequest then
-                local res = exRequest({ Url = rawUrl, Method = "GET" })
-                if res and (res.StatusCode == 200 or res.Status == 200) and res.Body and #res.Body > 50 then
-                    data = res.Body
-                end
-            end
-            if not data and game and game.HttpGet then
-                data = game:HttpGet(rawUrl, true)
-            end
-        end)
-
-        local resolved = nil
-        if data and #data > 50 and exWriteFile and exGetCustomAsset then
-            local targetPath = CACHE_FOLDER .. "/" .. filename
-            pcall(function()
-                if exMakeFolder and exIsFolder and not exIsFolder(CACHE_FOLDER) then
-                    exMakeFolder(CACHE_FOLDER)
-                end
-                exWriteFile(targetPath, data)
-            end)
-            local okA, custom = pcall(exGetCustomAsset, targetPath)
-            if okA and type(custom) == "string" and #custom > 0 then
-                resolved = custom
+    pcall(function()
+        if exRequest then
+            local res = exRequest({ Url = rawUrl, Method = "GET" })
+            if res and (res.StatusCode == 200 or res.Status == 200) and res.Body and #res.Body > 50 then
+                data = res.Body
             end
         end
-
-        isDownloading[filename] = false
-        if resolved then
-            resolvedCache[filename] = resolved
-            local cbs = downloadCallbacks[filename]
-            downloadCallbacks[filename] = nil
-            if cbs then
-                for _, cb in ipairs(cbs) do
-                    pcall(cb, resolved)
-                end
-            end
+        if not data and game and game.HttpGet then
+            data = game:HttpGet(rawUrl, true)
         end
     end)
+
+    local resolved = nil
+    if data and #data > 50 and exWriteFile and exGetCustomAsset then
+        local targetPath = CACHE_FOLDER .. "/" .. filename
+        pcall(function()
+            if exMakeFolder and exIsFolder and not exIsFolder(CACHE_FOLDER) then
+                exMakeFolder(CACHE_FOLDER)
+            end
+            exWriteFile(targetPath, data)
+        end)
+        local okA, custom = pcall(exGetCustomAsset, targetPath)
+        if okA and type(custom) == "string" and #custom > 0 then
+            resolved = custom
+        end
+    end
+
+    if resolved then
+        resolvedCache[filename] = resolved
+    end
+    return resolved
 end
 
-function AssetManager.get(filename, fallbackId, onReady)
+-- Get asset with guaranteed resolution
+function AssetManager.get(filename, fallbackId)
+    if not filename or #filename == 0 then return "" end
+
     if resolvedCache[filename] then
-        if onReady then pcall(onReady, resolvedCache[filename]) end
         return resolvedCache[filename]
     end
 
-    -- 1. Check local disk cache (instant)
+    -- 1. Check local disk cache (instant 0 ms)
     local diskAsset = resolveFromDisk(filename)
     if diskAsset then
         resolvedCache[filename] = diskAsset
-        if onReady then pcall(onReady, diskAsset) end
         return diskAsset
     end
 
-    -- 2. Trigger async background download without freezing frame
-    triggerAsyncDownload(filename, onReady)
+    -- 2. Download from GitHub raw repository
+    local downloaded = downloadSync(filename)
+    if downloaded then
+        return downloaded
+    end
 
-    -- Return fallback immediately so UI loads with 0 lag
-    return fallbackId or ""
+    -- 3. If download failed, NEVER return a dead asset ID!
+    if fallbackId and not fallbackId:find("139820186687064") and not fallbackId:find("10039618734") and not fallbackId:find("93891873418133") then
+        return fallbackId
+    end
+    return ""
 end
 
+-- Helper: Bind asset to ImageLabel safely
 function AssetManager.bindImage(imageObject, filename, fallbackId)
     if not imageObject then return end
-    local asset = AssetManager.get(filename, fallbackId, function(newUri)
-        if imageObject and imageObject.Parent then
-            pcall(function()
-                imageObject.Image = newUri
-            end)
-        end
-    end)
+    imageObject.BackgroundTransparency = 1
+
+    local asset = AssetManager.get(filename, fallbackId)
     if asset and #asset > 0 then
         pcall(function()
             imageObject.Image = asset
+        end)
+    end
+end
+
+-- Preload all core images
+function AssetManager.preload(list)
+    list = list or {
+        "header_profile_panel.png",
+        "stats_panel_v2.png",
+        "music_player.png",
+        "sidebar_bg.png",
+        "floating_avatar.png"
+    }
+    for _, fname in ipairs(list) do
+        pcall(function()
+            AssetManager.get(fname)
         end)
     end
 end

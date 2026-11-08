@@ -33,9 +33,13 @@ function Sidebar.create(parentGui, options)
     bgImg.Size = UDim2.new(1, 0, 1, 0)
     bgImg.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
     bgImg.BackgroundTransparency = 0.05
-    bgImg.Image = (AssetManager and AssetManager.get("sidebar_bg.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
+    bgImg.Image = (AssetManager and AssetManager.get("sidebar_bg.png")) or ""
     bgImg.ScaleType = Enum.ScaleType.Stretch
     bgImg.Parent = sidebarFrame
+
+    if AssetManager and AssetManager.bindImage then
+        AssetManager.bindImage(bgImg, "sidebar_bg.png")
+    end
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 10)

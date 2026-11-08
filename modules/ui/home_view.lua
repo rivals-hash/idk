@@ -21,10 +21,10 @@ function HomeView.create(parentContainer, dependencies)
     local MusicVisualizer = dependencies.MusicVisualizer
     local AssetManager = dependencies.AssetManager
 
-    local headerBgAsset = (AssetManager and AssetManager.get("header_profile_panel.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
-    local statsBgAsset = (AssetManager and AssetManager.get("stats_panel_v2.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
-    local headerAvatarAsset = (AssetManager and AssetManager.get("header_avatar.png", "rbxassetid://93891873418133")) or "rbxassetid://93891873418133"
-    local statsAvatarAsset = (AssetManager and AssetManager.get("stats_center_avatar.png", "rbxassetid://10039618734")) or "rbxassetid://10039618734"
+    local headerBgAsset = (AssetManager and AssetManager.get("header_profile_panel.png")) or ""
+    local statsBgAsset = (AssetManager and AssetManager.get("stats_panel_v2.png")) or ""
+    local headerAvatarAsset = (AssetManager and AssetManager.get("header_avatar.png")) or ""
+    local statsAvatarAsset = (AssetManager and AssetManager.get("stats_center_avatar.png")) or ""
     local discordAsset = "rbxassetid://16584754883"
     local tiktokAsset = "rbxassetid://84157643184125"
 
@@ -59,11 +59,11 @@ function HomeView.create(parentContainer, dependencies)
         corner.Parent = frame
 
         local bg = nil
-        if customBg then
+        if customBg and #customBg > 0 then
             bg = Instance.new("ImageLabel")
             bg.Name = "Bg"
             bg.Size = UDim2.new(1, 0, 1, 0)
-            bg.BackgroundTransparency = 0
+            bg.BackgroundTransparency = 1
             bg.Image = customBg
             bg.ScaleType = Enum.ScaleType.Stretch
             bg.Parent = frame
@@ -181,8 +181,15 @@ function HomeView.create(parentContainer, dependencies)
     -- Card 3 renders the pristine artwork from music_player.png:
     -- Glowing album art, song title 'MONTAGEM BAILÃO (Phonk)', spectrum waveform,
     -- timeline scrubber, and playback buttons.
-    local musicBgAsset = (AssetManager and AssetManager.get("music_player.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
+    local musicBgAsset = (AssetManager and AssetManager.get("music_player.png")) or ""
     local card3, bg3 = createCard("BottomMusicCard", 78, 3, musicBgAsset)
+
+    -- Bind images safely to ensure they are never blank or grey
+    if AssetManager and AssetManager.bindImage then
+        if bg1 then AssetManager.bindImage(bg1, "header_profile_panel.png") end
+        if bg2 then AssetManager.bindImage(bg2, "stats_panel_v2.png") end
+        if bg3 then AssetManager.bindImage(bg3, "music_player.png") end
+    end
 
     -- Interactive Play/Pause Hitbox positioned right over the play button in music_player.png
     local playHitbox = Instance.new("TextButton")
