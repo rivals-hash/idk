@@ -82,24 +82,37 @@ local function addCardHeight(parent, h)
     card.Size = UDim2.new(0, 396, 0, newH)
 end
 
--- Helper: Create interactive Toggle (Pure Native UI matching reference IMG_9181.jpeg)
+-- Helper: Create interactive Toggle (Glassmorphic Darling X Style)
 local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local state = defaultState or false
 
     local row = Instance.new("Frame")
     row.Name = "Toggle_" .. title:gsub("%s+", "")
-    row.Size = UDim2.new(1, 0, 0, 44)
-    row.BackgroundTransparency = 1
+    row.Size = UDim2.new(1, 0, 0, 42)
+    row.BackgroundColor3 = Color3.fromRGB(24, 16, 22)
+    row.BackgroundTransparency = 0.55
+    row.BorderSizePixel = 0
     row.ZIndex = 3
     row.Parent = targetContainer
 
-    addCardHeight(parent, 44)
+    addCardHeight(parent, 42)
 
-    -- Left Text (Title + Short Desc matching IMG_9181.jpeg)
+    local rowCorner = Instance.new("UICorner")
+    rowCorner.CornerRadius = UDim.new(0, 8)
+    rowCorner.Parent = row
+
+    local rowStroke = Instance.new("UIStroke")
+    rowStroke.Color = Color3.fromRGB(255, 255, 255)
+    rowStroke.Transparency = 0.92
+    rowStroke.Thickness = 1
+    rowStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    rowStroke.Parent = row
+
+    -- Left Text (Title + Short Desc)
     local textContainer = Instance.new("Frame")
-    textContainer.Size = UDim2.new(1, -56, 1, 0)
-    textContainer.Position = UDim2.new(0, 8, 0, 0)
+    textContainer.Size = UDim2.new(1, -60, 1, 0)
+    textContainer.Position = UDim2.new(0, 10, 0, 0)
     textContainer.BackgroundTransparency = 1
     textContainer.ZIndex = 3
     textContainer.Parent = row
@@ -108,12 +121,12 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
 
     local titleLbl = Instance.new("TextLabel")
     titleLbl.Size = UDim2.new(1, 0, 0, hasDesc and 19 or 24)
-    titleLbl.Position = UDim2.new(0, 0, 0, hasDesc and 3 or 10)
+    titleLbl.Position = UDim2.new(0, 0, 0, hasDesc and 3 or 9)
     titleLbl.BackgroundTransparency = 1
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.Text = title
     titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLbl.TextSize = 12.5
+    titleLbl.TextSize = 12
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
     titleLbl.ZIndex = 4
     titleLbl.Parent = textContainer
@@ -121,23 +134,23 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     if hasDesc then
         local descLbl = Instance.new("TextLabel")
         descLbl.Size = UDim2.new(1, 0, 0, 15)
-        descLbl.Position = UDim2.new(0, 0, 0, 22)
+        descLbl.Position = UDim2.new(0, 0, 0, 21)
         descLbl.BackgroundTransparency = 1
         descLbl.Font = Enum.Font.GothamMedium
         descLbl.Text = desc
-        descLbl.TextColor3 = Color3.fromRGB(180, 175, 195)
-        descLbl.TextSize = 10
+        descLbl.TextColor3 = Color3.fromRGB(180, 170, 185)
+        descLbl.TextSize = 9.5
         descLbl.TextXAlignment = Enum.TextXAlignment.Left
         descLbl.ZIndex = 4
         descLbl.Parent = textContainer
     end
 
-    -- Pill Switch Visual (Crimson Red / Clean White without borders)
+    -- Pill Switch Visual (Crimson Red / Clean White)
     local switchBtn = Instance.new("Frame")
     switchBtn.Name = "SwitchVisual"
-    switchBtn.Size = UDim2.new(0, 42, 0, 22)
-    switchBtn.Position = UDim2.new(1, -46, 0.5, -11)
-    switchBtn.BackgroundColor3 = state and Color3.fromRGB(220, 35, 60) or Color3.fromRGB(44, 38, 46)
+    switchBtn.Size = UDim2.new(0, 40, 0, 22)
+    switchBtn.Position = UDim2.new(1, -48, 0.5, -11)
+    switchBtn.BackgroundColor3 = state and Color3.fromRGB(220, 35, 60) or Color3.fromRGB(44, 34, 42)
     switchBtn.BorderSizePixel = 0
     switchBtn.ZIndex = 4
     switchBtn.Parent = row
@@ -150,7 +163,7 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     thumb.Name = "Thumb"
     thumb.Size = UDim2.new(0, 16, 0, 16)
     thumb.Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
-    thumb.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(175, 170, 185)
+    thumb.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 170, 185)
     thumb.BorderSizePixel = 0
     thumb.ZIndex = 5
     thumb.Parent = switchBtn
@@ -161,8 +174,8 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
 
     local function updateVisual(anim)
         local dur = anim and 0.15 or 0
-        local targetBg = state and Color3.fromRGB(220, 35, 60) or Color3.fromRGB(44, 38, 46)
-        local targetThumbBg = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(175, 170, 185)
+        local targetBg = state and Color3.fromRGB(220, 35, 60) or Color3.fromRGB(44, 34, 42)
+        local targetThumbBg = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 170, 185)
         local targetPos = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
 
         if anim then
@@ -187,6 +200,15 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     hitboxBtn.ZIndex = 10
     hitboxBtn.Parent = row
 
+    hitboxBtn.MouseEnter:Connect(function()
+        TweenService:Create(row, TweenInfo.new(0.12), { BackgroundTransparency = 0.4 }):Play()
+        TweenService:Create(rowStroke, TweenInfo.new(0.12), { Transparency = 0.82 }):Play()
+    end)
+    hitboxBtn.MouseLeave:Connect(function()
+        TweenService:Create(row, TweenInfo.new(0.12), { BackgroundTransparency = 0.55 }):Play()
+        TweenService:Create(rowStroke, TweenInfo.new(0.12), { Transparency = 0.92 }):Play()
+    end)
+
     local lastToggleTick = 0
     local function toggle()
         local now = tick()
@@ -204,8 +226,7 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     return row
 end
 
--- Helper: Create interactive Dropdown with icon and chevron (e.g. Aim Mode -> Closest v)
--- Helper: Create interactive Dropdown with chevron pill (e.g. Aim Mode -> Closest v)
+-- Helper: Create interactive Dropdown with chevron pill (Glassmorphic Darling X Style)
 local function createDropdown(parent, title, desc, optionsList, defaultIndex, onSelect, Utils)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local curIdx = defaultIndex or 1
@@ -214,16 +235,29 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     local row = Instance.new("Frame")
     row.Name = "Dropdown_" .. title:gsub("%s+", "")
     row.Size = UDim2.new(1, 0, 0, 44)
-    row.BackgroundTransparency = 1
+    row.BackgroundColor3 = Color3.fromRGB(24, 16, 22)
+    row.BackgroundTransparency = 0.55
+    row.BorderSizePixel = 0
     row.ZIndex = 3
     row.Parent = targetContainer
 
     addCardHeight(parent, 44)
 
+    local rowCorner = Instance.new("UICorner")
+    rowCorner.CornerRadius = UDim.new(0, 8)
+    rowCorner.Parent = row
+
+    local rowStroke = Instance.new("UIStroke")
+    rowStroke.Color = Color3.fromRGB(255, 255, 255)
+    rowStroke.Transparency = 0.92
+    rowStroke.Thickness = 1
+    rowStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    rowStroke.Parent = row
+
     -- Left Text
     local textContainer = Instance.new("Frame")
-    textContainer.Size = UDim2.new(1, -120, 1, 0)
-    textContainer.Position = UDim2.new(0, 8, 0, 0)
+    textContainer.Size = UDim2.new(1, -125, 1, 0)
+    textContainer.Position = UDim2.new(0, 10, 0, 0)
     textContainer.BackgroundTransparency = 1
     textContainer.ZIndex = 3
     textContainer.Parent = row
@@ -237,7 +271,7 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.Text = title
     titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLbl.TextSize = 12.5
+    titleLbl.TextSize = 12
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
     titleLbl.ZIndex = 4
     titleLbl.Parent = textContainer
@@ -245,12 +279,12 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     if hasDesc then
         local descLbl = Instance.new("TextLabel")
         descLbl.Size = UDim2.new(1, 0, 0, 15)
-        descLbl.Position = UDim2.new(0, 0, 0, 22)
+        descLbl.Position = UDim2.new(0, 0, 0, 21)
         descLbl.BackgroundTransparency = 1
         descLbl.Font = Enum.Font.GothamMedium
         descLbl.Text = desc
-        descLbl.TextColor3 = Color3.fromRGB(180, 175, 195)
-        descLbl.TextSize = 10
+        descLbl.TextColor3 = Color3.fromRGB(180, 170, 185)
+        descLbl.TextSize = 9.5
         descLbl.TextXAlignment = Enum.TextXAlignment.Left
         descLbl.ZIndex = 4
         descLbl.Parent = textContainer
@@ -260,8 +294,9 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     local pillBtn = Instance.new("TextButton")
     pillBtn.Name = "PillBtn"
     pillBtn.Size = UDim2.new(0, 104, 0, 26)
-    pillBtn.Position = UDim2.new(1, -108, 0.5, -13)
-    pillBtn.BackgroundColor3 = Color3.fromRGB(30, 22, 30)
+    pillBtn.Position = UDim2.new(1, -112, 0.5, -13)
+    pillBtn.BackgroundColor3 = Color3.fromRGB(36, 20, 28)
+    pillBtn.BackgroundTransparency = 0.4
     pillBtn.BorderSizePixel = 0
     pillBtn.Text = ""
     pillBtn.AutoButtonColor = false
@@ -272,6 +307,12 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     local pillCorner = Instance.new("UICorner")
     pillCorner.CornerRadius = UDim.new(0, 6)
     pillCorner.Parent = pillBtn
+
+    local pillStroke = Instance.new("UIStroke")
+    pillStroke.Color = Color3.fromRGB(255, 255, 255)
+    pillStroke.Transparency = 0.94
+    pillStroke.Thickness = 1
+    pillStroke.Parent = pillBtn
 
     local pillText = Instance.new("TextLabel")
     pillText.Name = "PillText"
@@ -294,9 +335,20 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     chevron.Font = Enum.Font.GothamBold
     chevron.Text = "▼"
     chevron.TextSize = 9
-    chevron.TextColor3 = Color3.fromRGB(255, 120, 140)
+    chevron.TextColor3 = Color3.fromRGB(255, 85, 105)
     chevron.ZIndex = 6
     chevron.Parent = pillBtn
+
+    pillBtn.MouseEnter:Connect(function()
+        TweenService:Create(row, TweenInfo.new(0.12), { BackgroundTransparency = 0.4 }):Play()
+        TweenService:Create(rowStroke, TweenInfo.new(0.12), { Transparency = 0.82 }):Play()
+        TweenService:Create(pillBtn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(48, 26, 38) }):Play()
+    end)
+    pillBtn.MouseLeave:Connect(function()
+        TweenService:Create(row, TweenInfo.new(0.12), { BackgroundTransparency = 0.55 }):Play()
+        TweenService:Create(rowStroke, TweenInfo.new(0.12), { Transparency = 0.92 }):Play()
+        TweenService:Create(pillBtn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(36, 20, 28) }):Play()
+    end)
 
     local lastCycle = 0
     local function cycleOption()
@@ -309,9 +361,9 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
         local chosen = optionsList[curIdx]
         pillText.Text = chosen
 
-        TweenService:Create(pillBtn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(56, 26, 40) }):Play()
+        TweenService:Create(pillBtn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(65, 28, 45) }):Play()
         task.delay(0.1, function()
-            TweenService:Create(pillBtn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(30, 22, 30) }):Play()
+            TweenService:Create(pillBtn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(36, 20, 28) }):Play()
         end)
 
         if onSelect then pcall(onSelect, chosen, curIdx) end
@@ -323,19 +375,32 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     return row
 end
 
--- Helper: Create interactive Slider with Cyber HUD Badge & Glowing Neon Fill
+-- Helper: Create interactive Slider with Cyber HUD Badge & Glowing Neon Fill (Glassmorphic Darling X Style)
 local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, Utils, customIcon)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local curVal = clamp(defaultVal or minVal, minVal, maxVal)
 
     local row = Instance.new("Frame")
     row.Name = "Slider_" .. title:gsub("%s+", "")
-    row.Size = UDim2.new(1, 0, 0, 48)
-    row.BackgroundTransparency = 1
+    row.Size = UDim2.new(1, 0, 0, 50)
+    row.BackgroundColor3 = Color3.fromRGB(24, 16, 22)
+    row.BackgroundTransparency = 0.55
+    row.BorderSizePixel = 0
     row.ZIndex = 3
     row.Parent = targetContainer
 
-    addCardHeight(parent, 48)
+    addCardHeight(parent, 50)
+
+    local rowCorner = Instance.new("UICorner")
+    rowCorner.CornerRadius = UDim.new(0, 8)
+    rowCorner.Parent = row
+
+    local rowStroke = Instance.new("UIStroke")
+    rowStroke.Color = Color3.fromRGB(255, 255, 255)
+    rowStroke.Transparency = 0.92
+    rowStroke.Thickness = 1
+    rowStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    rowStroke.Parent = row
 
     local header = Instance.new("Frame")
     header.Size = UDim2.new(1, 0, 0, 20)
@@ -344,12 +409,12 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     header.Parent = row
 
     local titleLbl = Instance.new("TextLabel")
-    titleLbl.Size = UDim2.new(1, -60, 1, 0)
-    titleLbl.Position = UDim2.new(0, 4, 0, 0)
+    titleLbl.Size = UDim2.new(1, -70, 1, 0)
+    titleLbl.Position = UDim2.new(0, 10, 0, 2)
     titleLbl.BackgroundTransparency = 1
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.Text = title
-    titleLbl.TextColor3 = Color3.fromRGB(245, 240, 245)
+    titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
     titleLbl.TextSize = 12
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
     titleLbl.ZIndex = 4
@@ -359,8 +424,9 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     local valBadge = Instance.new("Frame")
     valBadge.Name = "ValBadge"
     valBadge.Size = UDim2.new(0, 52, 0, 18)
-    valBadge.Position = UDim2.new(1, -56, 0, 1)
-    valBadge.BackgroundColor3 = Color3.fromRGB(36, 20, 28)
+    valBadge.Position = UDim2.new(1, -60, 0, 3)
+    valBadge.BackgroundColor3 = Color3.fromRGB(40, 20, 30)
+    valBadge.BackgroundTransparency = 0.35
     valBadge.BorderSizePixel = 0
     valBadge.ZIndex = 4
     valBadge.Parent = header
@@ -368,6 +434,12 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     local vbCorner = Instance.new("UICorner")
     vbCorner.CornerRadius = UDim.new(0, 5)
     vbCorner.Parent = valBadge
+
+    local vbStroke = Instance.new("UIStroke")
+    vbStroke.Color = Color3.fromRGB(255, 255, 255)
+    vbStroke.Transparency = 0.94
+    vbStroke.Thickness = 1
+    vbStroke.Parent = valBadge
 
     local valLbl = Instance.new("TextLabel")
     valLbl.Size = UDim2.new(1, 0, 1, 0)
@@ -382,9 +454,10 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     -- Slider Track Frame with Glowing Crimson/Ruby Gradient Fill
     local track = Instance.new("Frame")
     track.Name = "Track"
-    track.Size = UDim2.new(1, -8, 0, 6)
-    track.Position = UDim2.new(0, 4, 0, 30)
-    track.BackgroundColor3 = Color3.fromRGB(26, 18, 24)
+    track.Size = UDim2.new(1, -20, 0, 6)
+    track.Position = UDim2.new(0, 10, 0, 32)
+    track.BackgroundColor3 = Color3.fromRGB(16, 10, 16)
+    track.BackgroundTransparency = 0.2
     track.BorderSizePixel = 0
     track.ZIndex = 4
     track.Parent = row
@@ -414,7 +487,7 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
         end
     end)
 
-    -- Clean Pure White Circular Thumb Knob (No border)
+    -- Clean Pure White Circular Thumb Knob
     local thumb = Instance.new("Frame")
     thumb.Name = "Thumb"
     thumb.Size = UDim2.new(0, 14, 0, 14)
@@ -441,6 +514,17 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     sliderHitbox.Parent = row
 
     local sliding = false
+    sliderHitbox.MouseEnter:Connect(function()
+        TweenService:Create(row, TweenInfo.new(0.12), { BackgroundTransparency = 0.4 }):Play()
+        TweenService:Create(rowStroke, TweenInfo.new(0.12), { Transparency = 0.82 }):Play()
+    end)
+    sliderHitbox.MouseLeave:Connect(function()
+        if not sliding then
+            TweenService:Create(row, TweenInfo.new(0.12), { BackgroundTransparency = 0.55 }):Play()
+            TweenService:Create(rowStroke, TweenInfo.new(0.12), { Transparency = 0.92 }):Play()
+        end
+    end)
+
     local function setRatio(ratio)
         ratio = clamp(ratio, 0, 1)
         curVal = minVal + (ratio * (maxVal - minVal))
@@ -486,15 +570,15 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     return row
 end
 
--- Helper: Create Action Button with red accent hover
+-- Helper: Create Action Button with red accent hover (Glassmorphic Darling X Style)
 local function createActionButton(parent, title, desc, onClick, Utils)
     local targetContainer = parent:FindFirstChild("Content") or parent
 
     local btn = Instance.new("TextButton")
     btn.Name = "Btn_" .. title:gsub("%s+", "")
-    btn.Size = UDim2.new(1, 0, 0, 36)
-    btn.BackgroundColor3 = Color3.fromRGB(30, 20, 26)
-    btn.BackgroundTransparency = 0.2
+    btn.Size = UDim2.new(1, 0, 0, 38)
+    btn.BackgroundColor3 = Color3.fromRGB(30, 18, 24)
+    btn.BackgroundTransparency = 0.5
     btn.BorderSizePixel = 0
     btn.Text = ""
     btn.AutoButtonColor = false
@@ -502,22 +586,31 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     btn.ZIndex = 4
     btn.Parent = targetContainer
 
-    addCardHeight(parent, 36)
+    addCardHeight(parent, 38)
 
     local bCorner = Instance.new("UICorner")
     bCorner.CornerRadius = UDim.new(0, 8)
     bCorner.Parent = btn
 
+    local bStroke = Instance.new("UIStroke")
+    bStroke.Color = Color3.fromRGB(255, 255, 255)
+    bStroke.Transparency = 0.92
+    bStroke.Thickness = 1
+    bStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    bStroke.Parent = btn
+
     btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(56, 24, 34) }):Play()
+        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(56, 24, 34), BackgroundTransparency = 0.35 }):Play()
+        TweenService:Create(bStroke, TweenInfo.new(0.12), { Transparency = 0.8 }):Play()
     end)
     btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(30, 20, 26) }):Play()
+        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(30, 18, 24), BackgroundTransparency = 0.5 }):Play()
+        TweenService:Create(bStroke, TweenInfo.new(0.12), { Transparency = 0.92 }):Play()
     end)
 
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, -20, 1, 0)
-    lbl.Position = UDim2.new(0, 10, 0, 0)
+    lbl.Position = UDim2.new(0, 12, 0, 0)
     lbl.BackgroundTransparency = 1
     lbl.Font = Enum.Font.GothamBold
     lbl.Text = title
@@ -535,7 +628,7 @@ local function createActionButton(parent, title, desc, onClick, Utils)
 
         TweenService:Create(btn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(205, 30, 55) }):Play()
         task.delay(0.1, function()
-            TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(30, 20, 26) }):Play()
+            TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(30, 18, 24) }):Play()
         end)
         if onClick then pcall(onClick) end
     end
@@ -545,7 +638,7 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     return btn
 end
 
--- Helper: Create Color Picker Palette
+-- Helper: Create Color Picker Palette (Glassmorphic Darling X Style)
 local function createColorPicker(parent, title, desc, colorNames, defaultColorName, onSelectColor, Utils)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local selected = defaultColorName or "Rainbow"
@@ -555,11 +648,24 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     local container = Instance.new("Frame")
     container.Name = "ColorPicker_" .. title:gsub("%s+", "")
     container.Size = UDim2.new(1, 0, 0, containerHeight)
-    container.BackgroundTransparency = 1
+    container.BackgroundColor3 = Color3.fromRGB(24, 16, 22)
+    container.BackgroundTransparency = 0.55
+    container.BorderSizePixel = 0
     container.ZIndex = 3
     container.Parent = targetContainer
 
     addCardHeight(parent, containerHeight)
+
+    local cCorner = Instance.new("UICorner")
+    cCorner.CornerRadius = UDim.new(0, 8)
+    cCorner.Parent = container
+
+    local cStroke = Instance.new("UIStroke")
+    cStroke.Color = Color3.fromRGB(255, 255, 255)
+    cStroke.Transparency = 0.92
+    cStroke.Thickness = 1
+    cStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    cStroke.Parent = container
 
     local headerRow = Instance.new("Frame")
     headerRow.Size = UDim2.new(1, 0, 0, 20)
@@ -569,23 +675,23 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
 
     local titleLbl = Instance.new("TextLabel")
     titleLbl.Size = UDim2.new(0.6, 0, 1, 0)
-    titleLbl.Position = UDim2.new(0, 4, 0, 0)
+    titleLbl.Position = UDim2.new(0, 10, 0, 4)
     titleLbl.BackgroundTransparency = 1
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.Text = title
-    titleLbl.TextColor3 = Color3.fromRGB(240, 240, 250)
+    titleLbl.TextColor3 = Color3.fromRGB(245, 240, 250)
     titleLbl.TextSize = 12
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
     titleLbl.ZIndex = 4
     titleLbl.Parent = headerRow
 
     local valLbl = Instance.new("TextLabel")
-    valLbl.Size = UDim2.new(0.4, -8, 1, 0)
-    valLbl.Position = UDim2.new(0.6, 0, 0, 0)
+    valLbl.Size = UDim2.new(0.4, -12, 1, 0)
+    valLbl.Position = UDim2.new(0.6, 0, 0, 4)
     valLbl.BackgroundTransparency = 1
     valLbl.Font = Enum.Font.GothamMedium
     valLbl.Text = selected
-    valLbl.TextColor3 = Color3.fromRGB(255, 120, 140)
+    valLbl.TextColor3 = Color3.fromRGB(255, 85, 105)
     valLbl.TextSize = 11
     valLbl.TextXAlignment = Enum.TextXAlignment.Right
     valLbl.ZIndex = 4
@@ -593,8 +699,8 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
 
     local scroll = Instance.new("ScrollingFrame")
     scroll.Name = "PaletteScroll"
-    scroll.Size = UDim2.new(1, -8, 0, 30)
-    scroll.Position = UDim2.new(0, 4, 0, 26)
+    scroll.Size = UDim2.new(1, -20, 0, 30)
+    scroll.Position = UDim2.new(0, 10, 0, 28)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
     scroll.ScrollBarThickness = 0
@@ -612,7 +718,8 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     local function updatePills()
         for cName, pill in pairs(colorPills) do
             local isSel = (cName == selected)
-            pill.Frame.BackgroundColor3 = isSel and Color3.fromRGB(205, 30, 55) or Color3.fromRGB(30, 22, 28)
+            pill.Frame.BackgroundColor3 = isSel and Color3.fromRGB(205, 30, 55) or Color3.fromRGB(32, 20, 26)
+            pill.Frame.BackgroundTransparency = isSel and 0.1 or 0.35
         end
         valLbl.Text = selected
     end
@@ -622,7 +729,8 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
         local pill = Instance.new("TextButton")
         pill.Name = "Color_" .. cName
         pill.Size = UDim2.new(0, 70, 0, 24)
-        pill.BackgroundColor3 = (cName == selected) and Color3.fromRGB(205, 30, 55) or Color3.fromRGB(30, 22, 28)
+        pill.BackgroundColor3 = (cName == selected) and Color3.fromRGB(205, 30, 55) or Color3.fromRGB(32, 20, 26)
+        pill.BackgroundTransparency = (cName == selected) and 0.1 or 0.35
         pill.BorderSizePixel = 0
         pill.Text = cName
         pill.Font = Enum.Font.GothamBold
@@ -636,6 +744,12 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
         local pCorner = Instance.new("UICorner")
         pCorner.CornerRadius = UDim.new(0, 6)
         pCorner.Parent = pill
+
+        local pStroke = Instance.new("UIStroke")
+        pStroke.Color = Color3.fromRGB(255, 255, 255)
+        pStroke.Transparency = 0.94
+        pStroke.Thickness = 1
+        pStroke.Parent = pill
 
         colorPills[cName] = { Frame = pill }
 
@@ -656,7 +770,7 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     return container
 end
 
--- Helper: Create Chip Grid for Blacklist
+-- Helper: Create Chip Grid for Blacklist (Glassmorphic Darling X Style)
 local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Utils)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local blacklisted = {}
@@ -665,19 +779,32 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     local container = Instance.new("Frame")
     container.Name = "ChipGrid_" .. title:gsub("%s+", "")
     container.Size = UDim2.new(1, 0, 0, totalHeight)
-    container.BackgroundTransparency = 1
+    container.BackgroundColor3 = Color3.fromRGB(24, 16, 22)
+    container.BackgroundTransparency = 0.55
+    container.BorderSizePixel = 0
     container.ZIndex = 3
     container.Parent = targetContainer
 
     addCardHeight(parent, totalHeight)
 
+    local cCorner = Instance.new("UICorner")
+    cCorner.CornerRadius = UDim.new(0, 8)
+    cCorner.Parent = container
+
+    local cStroke = Instance.new("UIStroke")
+    cStroke.Color = Color3.fromRGB(255, 255, 255)
+    cStroke.Transparency = 0.92
+    cStroke.Thickness = 1
+    cStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    cStroke.Parent = container
+
     local titleLbl = Instance.new("TextLabel")
     titleLbl.Size = UDim2.new(1, 0, 0, 18)
-    titleLbl.Position = UDim2.new(0, 4, 0, 0)
+    titleLbl.Position = UDim2.new(0, 10, 0, 4)
     titleLbl.BackgroundTransparency = 1
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.Text = title
-    titleLbl.TextColor3 = Color3.fromRGB(240, 240, 250)
+    titleLbl.TextColor3 = Color3.fromRGB(245, 240, 250)
     titleLbl.TextSize = 12
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
     titleLbl.ZIndex = 4
@@ -685,8 +812,8 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
 
     local gridFrame = Instance.new("Frame")
     gridFrame.Name = "Grid"
-    gridFrame.Size = UDim2.new(1, -8, 0, 110)
-    gridFrame.Position = UDim2.new(0, 4, 0, 24)
+    gridFrame.Size = UDim2.new(1, -20, 0, 104)
+    gridFrame.Position = UDim2.new(0, 10, 0, 26)
     gridFrame.BackgroundTransparency = 1
     gridFrame.ZIndex = 4
     gridFrame.Parent = container
@@ -699,7 +826,8 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     for _, chipName in ipairs(chipsList) do
         local chip = Instance.new("TextButton")
         chip.Name = "Chip_" .. chipName:gsub("%s+", "")
-        chip.BackgroundColor3 = Color3.fromRGB(28, 20, 26)
+        chip.BackgroundColor3 = Color3.fromRGB(32, 20, 26)
+        chip.BackgroundTransparency = 0.35
         chip.BorderSizePixel = 0
         chip.Text = chipName
         chip.Font = Enum.Font.GothamMedium
@@ -714,14 +842,21 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
         cCorner.CornerRadius = UDim.new(0, 6)
         cCorner.Parent = chip
 
+        local cpStroke = Instance.new("UIStroke")
+        cpStroke.Color = Color3.fromRGB(255, 255, 255)
+        cpStroke.Transparency = 0.94
+        cpStroke.Thickness = 1
+        cpStroke.Parent = chip
+
         local isBl = false
         chip.MouseButton1Click:Connect(function()
             isBl = not isBl
             blacklisted[chipName] = isBl
-            local targetBg = isBl and Color3.fromRGB(180, 25, 45) or Color3.fromRGB(28, 20, 26)
+            local targetBg = isBl and Color3.fromRGB(180, 25, 45) or Color3.fromRGB(32, 20, 26)
+            local targetTrans = isBl and 0.1 or 0.35
             local targetText = isBl and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(215, 210, 230)
 
-            TweenService:Create(chip, TweenInfo.new(0.12), { BackgroundColor3 = targetBg, TextColor3 = targetText }):Play()
+            TweenService:Create(chip, TweenInfo.new(0.12), { BackgroundColor3 = targetBg, BackgroundTransparency = targetTrans, TextColor3 = targetText }):Play()
             if onToggleChip then pcall(onToggleChip, chipName, isBl) end
         end)
     end
@@ -729,27 +864,17 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     return container
 end
 
--- Helper: Create Feature Card with sleek obsidian/ruby gradient background
+-- Helper: Create Feature Card (100% Transparent container with ruby red header)
 local function createFeatureCard(parent, title, AssetManager)
     local card = Instance.new("Frame")
     card.Name = "Card_" .. title:gsub("%s+", "")
     card.Size = UDim2.new(0, 396, 0, 36)
-    card.BackgroundColor3 = Color3.fromRGB(20, 16, 22)
-    card.BackgroundTransparency = 0.05
+    card.BackgroundTransparency = 1
     card.BorderSizePixel = 0
-    card.ClipsDescendants = true
+    card.ClipsDescendants = false
     card.Parent = parent
 
     cardHeights[card] = 36
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 10)
-    corner.Parent = card
-
-    local cardGrad = Instance.new("UIGradient")
-    cardGrad.Color = ColorSequence.new(Color3.fromRGB(28, 18, 26), Color3.fromRGB(15, 12, 17))
-    cardGrad.Rotation = 45
-    cardGrad.Parent = card
 
     local content = Instance.new("Frame")
     content.Name = "Content"
@@ -759,21 +884,21 @@ local function createFeatureCard(parent, title, AssetManager)
     content.Parent = card
 
     local pad = Instance.new("UIPadding")
-    pad.PaddingTop = UDim.new(0, 8)
-    pad.PaddingBottom = UDim.new(0, 10)
-    pad.PaddingLeft = UDim.new(0, 10)
-    pad.PaddingRight = UDim.new(0, 10)
+    pad.PaddingTop = UDim.new(0, 4)
+    pad.PaddingBottom = UDim.new(0, 8)
+    pad.PaddingLeft = UDim.new(0, 6)
+    pad.PaddingRight = UDim.new(0, 6)
     pad.Parent = content
 
     local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 4)
+    layout.Padding = UDim.new(0, 6)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Parent = content
 
-    -- Header row
+    -- Header row in Ruby Red Darling X Aesthetic
     local headerRow = Instance.new("Frame")
     headerRow.Name = "HeaderRow"
-    headerRow.Size = UDim2.new(1, 0, 0, 20)
+    headerRow.Size = UDim2.new(1, 0, 0, 22)
     headerRow.BackgroundTransparency = 1
     headerRow.LayoutOrder = 0
     headerRow.ZIndex = 3
@@ -782,11 +907,12 @@ local function createFeatureCard(parent, title, AssetManager)
     local header = Instance.new("TextLabel")
     header.Name = "Header"
     header.Size = UDim2.new(1, 0, 1, 0)
+    header.Position = UDim2.new(0, 4, 0, 0)
     header.BackgroundTransparency = 1
     header.Font = Enum.Font.GothamBold
     header.Text = title:upper()
-    header.TextColor3 = Color3.fromRGB(255, 215, 225)
-    header.TextSize = 11
+    header.TextColor3 = Color3.fromRGB(255, 60, 80)
+    header.TextSize = 12
     header.TextXAlignment = Enum.TextXAlignment.Left
     header.ZIndex = 4
     header.Parent = headerRow
@@ -806,8 +932,11 @@ function TabViews.build(tabName, parentContainer, options)
     scroll.Position = UDim2.new(0, 0, 0, 0)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
-    scroll.ScrollBarThickness = 0
-    scroll.CanvasSize = UDim2.new(0, 0, 0, 800)
+    scroll.ScrollBarThickness = 3
+    scroll.ScrollBarImageColor3 = Color3.fromRGB(220, 35, 60)
+    scroll.ScrollBarImageTransparency = 0.5
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
     scroll.Visible = false
     scroll.ClipsDescendants = true
     scroll.Parent = parentContainer
@@ -825,12 +954,12 @@ function TabViews.build(tabName, parentContainer, options)
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Parent = scroll
 
-    -- Top Header Banner Card with sleek obsidian/ruby gradient
+    -- Top Header Banner Card with sleek translucent glassmorphism
     local banner = Instance.new("Frame")
     banner.Name = "Banner"
-    banner.Size = UDim2.new(0, 396, 0, 48)
-    banner.BackgroundColor3 = Color3.fromRGB(24, 16, 22)
-    banner.BackgroundTransparency = 0.05
+    banner.Size = UDim2.new(0, 396, 0, 44)
+    banner.BackgroundColor3 = Color3.fromRGB(24, 14, 20)
+    banner.BackgroundTransparency = 0.55
     banner.BorderSizePixel = 0
     banner.ClipsDescendants = true
     banner.LayoutOrder = 1
@@ -840,34 +969,41 @@ function TabViews.build(tabName, parentContainer, options)
     bCorner.CornerRadius = UDim.new(0, 10)
     bCorner.Parent = banner
 
-    local bGrad = Instance.new("UIGradient")
-    bGrad.Color = ColorSequence.new(Color3.fromRGB(36, 18, 28), Color3.fromRGB(18, 12, 20))
-    bGrad.Rotation = 45
-    bGrad.Parent = banner
+    local bStroke = Instance.new("UIStroke")
+    bStroke.Color = Color3.fromRGB(255, 255, 255)
+    bStroke.Transparency = 0.92
+    bStroke.Thickness = 1
+    bStroke.Parent = banner
 
     local bTitle = Instance.new("TextLabel")
     bTitle.Size = UDim2.new(1, -28, 0, 20)
-    bTitle.Position = UDim2.new(0, 14, 0, 5)
+    bTitle.Position = UDim2.new(0, 14, 0, 4)
     bTitle.BackgroundTransparency = 1
     bTitle.Font = Enum.Font.GothamBold
     bTitle.Text = tabName
     bTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    bTitle.TextSize = 16
+    bTitle.TextSize = 15
     bTitle.TextXAlignment = Enum.TextXAlignment.Left
     bTitle.ZIndex = 3
     bTitle.Parent = banner
 
     local bDesc = Instance.new("TextLabel")
     bDesc.Size = UDim2.new(1, -28, 0, 15)
-    bDesc.Position = UDim2.new(0, 14, 0, 26)
+    bDesc.Position = UDim2.new(0, 14, 0, 24)
     bDesc.BackgroundTransparency = 1
     bDesc.Font = Enum.Font.GothamMedium
     bDesc.Text = tabName:lower()
-    bDesc.TextColor3 = Color3.fromRGB(215, 175, 195)
-    bDesc.TextSize = 11
+    bDesc.TextColor3 = Color3.fromRGB(255, 85, 105)
+    bDesc.TextSize = 10.5
     bDesc.TextXAlignment = Enum.TextXAlignment.Left
     bDesc.ZIndex = 3
     bDesc.Parent = banner
+
+    pcall(function()
+        if Utils and Utils.makeDraggable and parentContainer and parentContainer.Parent then
+            Utils.makeDraggable(parentContainer.Parent, banner)
+        end
+    end)
 
     local function makeCard(title)
         return createFeatureCard(scroll, title, AssetManager)
@@ -1123,8 +1259,8 @@ function TabViews.build(tabName, parentContainer, options)
                     local pRow = Instance.new("Frame")
                     pRow.Name = "PlrRow_" .. plr.Name
                     pRow.Size = UDim2.new(1, 0, 0, 78)
-                    pRow.BackgroundColor3 = Color3.fromRGB(24, 18, 38)
-                    pRow.BackgroundTransparency = 0.25
+                    pRow.BackgroundColor3 = Color3.fromRGB(24, 16, 22)
+                    pRow.BackgroundTransparency = 0.55
                     pRow.BorderSizePixel = 0
                     pRow.Parent = playerListContainer
 
@@ -1132,12 +1268,20 @@ function TabViews.build(tabName, parentContainer, options)
                     prCorner.CornerRadius = UDim.new(0, 8)
                     prCorner.Parent = pRow
 
+                    local prStroke = Instance.new("UIStroke")
+                    prStroke.Color = Color3.fromRGB(255, 255, 255)
+                    prStroke.Transparency = 0.92
+                    prStroke.Thickness = 1
+                    prStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                    prStroke.Parent = pRow
+
                     -- Avatar Headshot
                     local headshot = Instance.new("ImageLabel")
                     headshot.Name = "Headshot"
                     headshot.Size = UDim2.new(0, 42, 0, 42)
                     headshot.Position = UDim2.new(0, 8, 0, 8)
-                    headshot.BackgroundColor3 = Color3.fromRGB(18, 14, 28)
+                    headshot.BackgroundColor3 = Color3.fromRGB(18, 12, 18)
+                    headshot.BackgroundTransparency = 0.3
                     headshot.Image = "rbxthumb://type=AvatarHeadShot&id=" .. plr.UserId .. "&w=100&h=100"
                     headshot.ScaleType = Enum.ScaleType.Crop
                     headshot.Parent = pRow

@@ -22,19 +22,33 @@ function Sidebar.create(parentGui, options)
 
     local sidebarFrame = Instance.new("Frame")
     sidebarFrame.Name = "SidebarFrame"
-    sidebarFrame.Size = UDim2.new(0, 154, 0, 316)
+    sidebarFrame.Size = UDim2.new(0, 154, 0, 400)
     sidebarFrame.Position = UDim2.new(1, -154, 0, 0)
-    sidebarFrame.BackgroundTransparency = 1
+    sidebarFrame.BackgroundColor3 = Color3.fromRGB(16, 11, 20)
+    sidebarFrame.BackgroundTransparency = 0.5
+    sidebarFrame.BorderSizePixel = 0
     sidebarFrame.Parent = parentGui
 
-    -- Background Image with Anime Purple Torii Night Sky & Moon Aesthetic
+    local sCorner = Instance.new("UICorner")
+    sCorner.CornerRadius = UDim.new(0, 10)
+    sCorner.Parent = sidebarFrame
+
+    -- Subtle translucent glass divider stroke
+    local sStroke = Instance.new("UIStroke")
+    sStroke.Color = Color3.fromRGB(255, 255, 255)
+    sStroke.Transparency = 0.94
+    sStroke.Thickness = 1
+    sStroke.Parent = sidebarFrame
+
+    -- Background Image with Anime Torii Night Sky
     local bgImg = Instance.new("ImageLabel")
     bgImg.Name = "SidebarBackground"
     bgImg.Size = UDim2.new(1, 0, 1, 0)
-    bgImg.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
+    bgImg.BackgroundColor3 = Color3.fromRGB(16, 11, 20)
     bgImg.BackgroundTransparency = 1
+    bgImg.ImageTransparency = 0.5
     bgImg.Image = (AssetManager and (AssetManager.get("sidebar_bg_red.png") or AssetManager.get("sidebar_bg_v2.png"))) or ""
-    bgImg.ScaleType = Enum.ScaleType.Stretch
+    bgImg.ScaleType = Enum.ScaleType.Crop
     bgImg.Parent = sidebarFrame
 
     if AssetManager and AssetManager.bindImage then
@@ -145,13 +159,14 @@ function Sidebar.create(parentGui, options)
     -- Navigation Tabs List (ScrollingFrame supporting infinite tabs cleanly)
     local tabsListFrame = Instance.new("ScrollingFrame")
     tabsListFrame.Name = "TabsListFrame"
-    tabsListFrame.Size = UDim2.new(1, -16, 1, -38)
-    tabsListFrame.Position = UDim2.new(0, 8, 0, 32)
+    tabsListFrame.Size = UDim2.new(1, -12, 1, -38)
+    tabsListFrame.Position = UDim2.new(0, 6, 0, 32)
     tabsListFrame.BackgroundTransparency = 1
     tabsListFrame.BorderSizePixel = 0
-    tabsListFrame.ScrollBarThickness = 3
+    tabsListFrame.ScrollBarThickness = 4
     tabsListFrame.ScrollBarImageColor3 = Color3.fromRGB(220, 35, 60)
-    tabsListFrame.ScrollBarImageTransparency = 0.2
+    tabsListFrame.ScrollBarImageTransparency = 0
+    tabsListFrame.VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Right
     tabsListFrame.VerticalScrollBarInset = Enum.ScrollBarInset.None
     tabsListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
     tabsListFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -229,7 +244,7 @@ function Sidebar.create(parentGui, options)
     for i, tabData in ipairs(tabDefinitions) do
         local tabBtn = Instance.new("TextButton")
         tabBtn.Name = "Tab_" .. tabData.Id
-        tabBtn.Size = UDim2.new(1, 0, 0, 31)
+        tabBtn.Size = UDim2.new(1, -6, 0, 31)
         tabBtn.LayoutOrder = i
         tabBtn.BackgroundColor3 = Color3.fromRGB(20, 16, 28)
         tabBtn.BackgroundTransparency = 1

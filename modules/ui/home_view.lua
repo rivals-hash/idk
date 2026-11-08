@@ -50,7 +50,7 @@ function HomeView.create(parentContainer, dependencies)
         frame.Size = UDim2.new(0, 406, 0, height)
         frame.LayoutOrder = layoutOrder
         frame.BackgroundColor3 = Color3.fromRGB(18, 14, 20)
-        frame.BackgroundTransparency = 0.08
+        frame.BackgroundTransparency = 0.35
         frame.BorderSizePixel = 0
         frame.ClipsDescendants = true
         frame.Parent = homeScroll
@@ -58,6 +58,12 @@ function HomeView.create(parentContainer, dependencies)
         local corner = Instance.new("UICorner")
         corner.CornerRadius = UDim.new(0, 10)
         corner.Parent = frame
+
+        local fStroke = Instance.new("UIStroke")
+        fStroke.Color = Color3.fromRGB(255, 255, 255)
+        fStroke.Transparency = 0.94
+        fStroke.Thickness = 1
+        fStroke.Parent = frame
 
         local bg = Instance.new("ImageLabel")
         bg.Name = "Bg"
@@ -175,8 +181,8 @@ function HomeView.create(parentContainer, dependencies)
     card3.Name = "BottomMusicCard"
     card3.Size = UDim2.new(0, 406, 0, 78)
     card3.LayoutOrder = 3
-    card3.BackgroundColor3 = Color3.fromRGB(18, 14, 20)
-    card3.BackgroundTransparency = 0.08
+    card3.BackgroundColor3 = Color3.fromRGB(20, 14, 22)
+    card3.BackgroundTransparency = 0.5
     card3.BorderSizePixel = 0
     card3.ClipsDescendants = true
     card3.Parent = homeScroll
@@ -185,8 +191,14 @@ function HomeView.create(parentContainer, dependencies)
     corner3.CornerRadius = UDim.new(0, 10)
     corner3.Parent = card3
 
+    local c3Stroke = Instance.new("UIStroke")
+    c3Stroke.Color = Color3.fromRGB(255, 255, 255)
+    c3Stroke.Transparency = 0.94
+    c3Stroke.Thickness = 1
+    c3Stroke.Parent = card3
+
     local grad3 = Instance.new("UIGradient")
-    grad3.Color = ColorSequence.new(Color3.fromRGB(26, 18, 24), Color3.fromRGB(14, 11, 16))
+    grad3.Color = ColorSequence.new(Color3.fromRGB(30, 18, 26), Color3.fromRGB(16, 11, 18))
     grad3.Rotation = 45
     grad3.Parent = card3
 

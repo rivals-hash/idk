@@ -105,6 +105,34 @@ function Window.create(dependencies)
     mainFrame.ClipsDescendants = false
     mainFrame.Parent = ScreenGui
 
+    -- Master Window Glassmorphic Background (Spans behind ContentArea and Sidebar)
+    local masterWindowBg = Instance.new("ImageLabel")
+    masterWindowBg.Name = "MasterWindowBackground"
+    masterWindowBg.Size = UDim2.new(1, 0, 1, 0)
+    masterWindowBg.Position = UDim2.new(0, 0, 0, 0)
+    masterWindowBg.BackgroundColor3 = Color3.fromRGB(14, 10, 16)
+    masterWindowBg.BackgroundTransparency = 0.2
+    masterWindowBg.BorderSizePixel = 0
+    masterWindowBg.Image = (AssetManager and (AssetManager.get("sidebar_bg_red.png") or AssetManager.get("sidebar_bg_v2.png"))) or ""
+    masterWindowBg.ImageTransparency = 0.35
+    masterWindowBg.ScaleType = Enum.ScaleType.Crop
+    masterWindowBg.ZIndex = 1
+    masterWindowBg.Parent = mainFrame
+
+    if AssetManager and AssetManager.bindImage then
+        AssetManager.bindImage(masterWindowBg, "sidebar_bg_red.png", "sidebar_bg_v2.png")
+    end
+
+    local masterCorner = Instance.new("UICorner")
+    masterCorner.CornerRadius = UDim.new(0, 12)
+    masterCorner.Parent = masterWindowBg
+
+    local masterStroke = Instance.new("UIStroke")
+    masterStroke.Color = Color3.fromRGB(220, 35, 60)
+    masterStroke.Transparency = 0.8
+    masterStroke.Thickness = 1
+    masterStroke.Parent = masterWindowBg
+
     -- Responsive UIScale for Mobile and Tablet
     local uiScale = Instance.new("UIScale")
     uiScale.Name = "WindowScale"
