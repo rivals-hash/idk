@@ -1,12 +1,12 @@
 --[[
     Darling Hub - modules/ui/tabs/settings.lua
-    Themes & Configuration Suite for WindUI.
-    Includes:
-    - Dynamic WindUI theme switcher (Crimson, Violet, Dark, Midnight, Rose, Emerald, etc.)
-    - UI Scale and Glass Acrylic toggles
-    - Customizable Open/Close Keybind
+    Interface & System Configuration Suite for WindUI.
+    Includes 100% of Darling Hub Settings features:
+    - UI Scale slider (resize window dynamically)
+    - Customizable Open/Close Keybind (LeftControl, RightShift, etc.)
+    - Rejoin Server button
+    - Server Hop button
     - Safe Hub Unload & Destruction handler
-    - Rejoin & Server hop utilities
 ]]
 
 local SettingsTabMod = {}
@@ -22,56 +22,18 @@ function SettingsTabMod.init(WindowObj, dependencies)
 
     local Tab = Window:Tab({
         Title = "Settings",
-        Desc = "Themes, keybinds & script unload",
+        Desc = "Interface scale, keybinds & script unload",
         Icon = "solar:settings-bold",
         IconColor = Color3.fromHex("#FF2A55"),
     })
 
-    -- 1. Themes & Appearance Section
-    local ThemeSection = Tab:Section({
-        Title = "Themes & Appearance",
+    -- 1. Interface & Scaling Section
+    local InterfaceSection = Tab:Section({
+        Title = "Interface & Display",
         Opened = true,
     })
 
-    local themesList = {
-        "Crimson",
-        "Violet",
-        "Dark",
-        "Midnight",
-        "Rose",
-        "Emerald",
-        "Cotton Candy",
-        "Amber",
-        "Mellowsi",
-        "Rainbow",
-        "Light",
-    }
-
-    ThemeSection:Dropdown({
-        Title = "WindUI Theme",
-        Desc = "Select dynamic aesthetic colorway",
-        Values = themesList,
-        Value = "Dark",
-        Callback = function(themeName)
-            if WindUI and WindUI.SetTheme then
-                pcall(function()
-                    WindUI:SetTheme(themeName)
-                end)
-                if WindUI.Notify then
-                    WindUI:Notify({
-                        Title = "Theme Changed",
-                        Content = "Applied " .. themeName .. " theme!",
-                        Duration = 2,
-                        Icon = "solar:palette-bold",
-                    })
-                end
-            end
-        end,
-    })
-
-    ThemeSection:Space()
-
-    ThemeSection:Slider({
+    InterfaceSection:Slider({
         Title = "UI Scale",
         Desc = "Resize window for mobile and tablet displays",
         Step = 5,
