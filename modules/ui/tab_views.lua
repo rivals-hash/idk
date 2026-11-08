@@ -132,14 +132,14 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
         descLbl.Parent = textContainer
     end
 
-    -- Pill Switch Visual (Luminous Neon Styling)
-    -- When ON: Radiant neon violet capsule with glowing lilac rim and crisp white thumb
-    -- When OFF: Sleek dark glass capsule with subtle purple border and muted soft thumb
+    -- Pill Switch Visual (Clean styling matching reference crop_toggles.png without purple borders)
+    -- When ON: Pure clean white capsule with dark circular thumb
+    -- When OFF: Sleek dark slate capsule with soft light-grey circular thumb
     local switchBtn = Instance.new("Frame")
     switchBtn.Name = "SwitchVisual"
     switchBtn.Size = UDim2.new(0, 42, 0, 22)
     switchBtn.Position = UDim2.new(1, -46, 0.5, -11)
-    switchBtn.BackgroundColor3 = state and Color3.fromRGB(155, 60, 235) or Color3.fromRGB(28, 22, 40)
+    switchBtn.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(46, 44, 56)
     switchBtn.BorderSizePixel = 0
     switchBtn.ZIndex = 4
     switchBtn.Parent = row
@@ -148,16 +148,11 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     swCorner.CornerRadius = UDim.new(1, 0)
     swCorner.Parent = switchBtn
 
-    local swStroke = Instance.new("UIStroke")
-    swStroke.Color = state and Color3.fromRGB(240, 195, 255) or Color3.fromRGB(68, 54, 90)
-    swStroke.Thickness = state and 1.8 or 1.2
-    swStroke.Parent = switchBtn
-
     local thumb = Instance.new("Frame")
     thumb.Name = "Thumb"
     thumb.Size = UDim2.new(0, 16, 0, 16)
     thumb.Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
-    thumb.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(145, 138, 168)
+    thumb.BackgroundColor3 = state and Color3.fromRGB(26, 24, 32) or Color3.fromRGB(182, 180, 196)
     thumb.BorderSizePixel = 0
     thumb.ZIndex = 5
     thumb.Parent = switchBtn
@@ -168,20 +163,15 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
 
     local function updateVisual(anim)
         local dur = anim and 0.15 or 0
-        local targetBg = state and Color3.fromRGB(155, 60, 235) or Color3.fromRGB(28, 22, 40)
-        local targetStroke = state and Color3.fromRGB(240, 195, 255) or Color3.fromRGB(68, 54, 90)
-        local targetStrokeThick = state and 1.8 or 1.2
-        local targetThumbBg = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(145, 138, 168)
+        local targetBg = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(46, 44, 56)
+        local targetThumbBg = state and Color3.fromRGB(26, 24, 32) or Color3.fromRGB(182, 180, 196)
         local targetPos = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
 
         if anim then
             TweenService:Create(switchBtn, TweenInfo.new(dur), { BackgroundColor3 = targetBg }):Play()
-            TweenService:Create(swStroke, TweenInfo.new(dur), { Color = targetStroke, Thickness = targetStrokeThick }):Play()
             TweenService:Create(thumb, TweenInfo.new(dur), { BackgroundColor3 = targetThumbBg, Position = targetPos }):Play()
         else
             switchBtn.BackgroundColor3 = targetBg
-            swStroke.Color = targetStroke
-            swStroke.Thickness = targetStrokeThick
             thumb.BackgroundColor3 = targetThumbBg
             thumb.Position = targetPos
         end
