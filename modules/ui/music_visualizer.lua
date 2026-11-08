@@ -41,10 +41,10 @@ function MusicVisualizer.create(parentFrame, MusicEngine, Utils, AssetManager)
     trackTitle.Size = UDim2.new(0.65, -20, 1, 0)
     trackTitle.Position = UDim2.new(0, 20, 0, 0)
     trackTitle.BackgroundTransparency = 1
-    trackTitle.Font = Enum.Font.GothamBold
+    trackTitle.Font = Enum.Font.Kalam
     trackTitle.Text = "MONTAGEM BAILÃO (Phonk)"
     trackTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    trackTitle.TextSize = 11
+    trackTitle.TextSize = 13
     trackTitle.TextXAlignment = Enum.TextXAlignment.Left
     trackTitle.TextTruncate = Enum.TextTruncate.AtEnd
     trackTitle.Parent = headerFrame
@@ -54,10 +54,10 @@ function MusicVisualizer.create(parentFrame, MusicEngine, Utils, AssetManager)
     timeLabel.Size = UDim2.new(0.35, 0, 1, 0)
     timeLabel.Position = UDim2.new(0.65, 0, 0, 0)
     timeLabel.BackgroundTransparency = 1
-    timeLabel.Font = Enum.Font.GothamMedium
+    timeLabel.Font = Enum.Font.Kalam
     timeLabel.Text = "00:00 / 02:25"
     timeLabel.TextColor3 = Color3.fromRGB(210, 210, 220)
-    timeLabel.TextSize = 10
+    timeLabel.TextSize = 12
     timeLabel.TextXAlignment = Enum.TextXAlignment.Right
     timeLabel.Parent = headerFrame
 

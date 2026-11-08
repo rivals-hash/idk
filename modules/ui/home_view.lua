@@ -21,8 +21,8 @@ function HomeView.create(parentContainer, dependencies)
     local MusicVisualizer = dependencies.MusicVisualizer
     local AssetManager = dependencies.AssetManager
 
-    local headerBgAsset = (AssetManager and AssetManager.get("header_profile_panel.png")) or ""
-    local statsBgAsset = (AssetManager and AssetManager.get("stats_panel_v2.png")) or ""
+    local headerBgAsset = (AssetManager and (AssetManager.get("header_profile_panel_red.png") or AssetManager.get("header_profile_panel.png"))) or ""
+    local statsBgAsset = (AssetManager and (AssetManager.get("stats_panel_red.png") or AssetManager.get("stats_panel_v2.png"))) or ""
     local headerAvatarAsset = (AssetManager and AssetManager.get("header_avatar.png")) or ""
     local statsAvatarAsset = (AssetManager and AssetManager.get("stats_center_avatar.png")) or ""
     local discordAsset = "rbxassetid://16584754883"
@@ -49,9 +49,10 @@ function HomeView.create(parentContainer, dependencies)
         frame.Name = name
         frame.Size = UDim2.new(0, 406, 0, height)
         frame.LayoutOrder = layoutOrder
-        frame.BackgroundColor3 = Color3.fromRGB(18, 14, 26)
+        frame.BackgroundColor3 = Color3.fromRGB(18, 14, 20)
         frame.BackgroundTransparency = 0.08
         frame.BorderSizePixel = 0
+        frame.ClipsDescendants = true
         frame.Parent = homeScroll
 
         local corner = Instance.new("UICorner")
@@ -130,10 +131,10 @@ function HomeView.create(parentContainer, dependencies)
         lbl.Size = UDim2.new(0, width, 0, 20)
         lbl.Position = UDim2.new(0, xPos, 0, yPos)
         lbl.BackgroundTransparency = 1
-        lbl.Font = Enum.Font.GothamMedium
+        lbl.Font = Enum.Font.Kalam
         lbl.Text = text
-        lbl.TextSize = 11.5
-        lbl.TextColor3 = Color3.fromRGB(245, 240, 255)
+        lbl.TextSize = 13
+        lbl.TextColor3 = Color3.fromRGB(245, 240, 245)
         lbl.TextXAlignment = Enum.TextXAlignment.Left
         lbl.ZIndex = 7
         lbl.Parent = card2
@@ -168,19 +169,19 @@ function HomeView.create(parentContainer, dependencies)
     end
 
     ----------------------------------------------------------------------------
-    -- 3. CARD 3: BOTTOM MUSIC PLAYER CARD (music_player.png)
+    -- 3. CARD 3: BOTTOM MUSIC PLAYER CARD (music_player_red.png)
     ----------------------------------------------------------------------------
-    -- Card 3 renders the pristine artwork from music_player.png:
+    -- Card 3 renders the pristine artwork from music_player_red.png:
     -- Glowing album art, song title 'MONTAGEM BAILÃO (Phonk)', spectrum waveform,
     -- timeline scrubber, and playback buttons.
-    local musicBgAsset = (AssetManager and AssetManager.get("music_player.png")) or ""
+    local musicBgAsset = (AssetManager and (AssetManager.get("music_player_red.png") or AssetManager.get("music_player.png"))) or ""
     local card3, bg3 = createCard("BottomMusicCard", 78, 3, musicBgAsset)
 
     -- Bind images safely to ensure they are never blank or grey
     if AssetManager and AssetManager.bindImage then
-        if bg1 then AssetManager.bindImage(bg1, "header_profile_panel.png") end
-        if bg2 then AssetManager.bindImage(bg2, "stats_panel_v2.png") end
-        if bg3 then AssetManager.bindImage(bg3, "music_player.png") end
+        if bg1 then AssetManager.bindImage(bg1, "header_profile_panel_red.png", "header_profile_panel.png") end
+        if bg2 then AssetManager.bindImage(bg2, "stats_panel_red.png", "stats_panel_v2.png") end
+        if bg3 then AssetManager.bindImage(bg3, "music_player_red.png", "music_player.png") end
     end
 
     -- Interactive Play/Pause Hitbox positioned right over the play button in music_player.png

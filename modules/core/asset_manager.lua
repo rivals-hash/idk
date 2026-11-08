@@ -15,11 +15,12 @@ local exMakeFolder = makefolder or make_folder or (getgenv and getgenv().makefol
 local exRequest = request or http_request or (syn and syn.request) or (http and http.request)
 
 local BASE_URL = "https://raw.githubusercontent.com/rivals-hash/idk/main/assets/"
-local CACHE_FOLDER = "Monody_Assets_v8"
+local CACHE_FOLDER = "Monody_Assets_v9"
 
 -- Candidate folders to look for already cached files
 local CANDIDATE_FOLDERS = {
     CACHE_FOLDER,
+    "Monody_Assets_v8",
     "Monody_Assets_v7",
     "Monody_Assets_v6",
     "Monody_Assets_v5",
@@ -155,11 +156,15 @@ end
 -- Preload all core images
 function AssetManager.preload(list)
     list = list or {
+        "header_profile_panel_red.png",
+        "stats_panel_red.png",
+        "music_player_red.png",
+        "sidebar_bg_red.png",
+        "floating_avatar_red.png",
         "header_profile_panel.png",
         "stats_panel_v2.png",
         "music_player.png",
         "sidebar_bg_v2.png",
-        "sidebar_bg.png",
         "floating_avatar.png"
     }
     for _, fname in ipairs(list) do

@@ -33,12 +33,12 @@ function Sidebar.create(parentGui, options)
     bgImg.Size = UDim2.new(1, 0, 1, 0)
     bgImg.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
     bgImg.BackgroundTransparency = 1
-    bgImg.Image = (AssetManager and AssetManager.get("sidebar_bg_v2.png")) or ""
+    bgImg.Image = (AssetManager and (AssetManager.get("sidebar_bg_red.png") or AssetManager.get("sidebar_bg_v2.png"))) or ""
     bgImg.ScaleType = Enum.ScaleType.Stretch
     bgImg.Parent = sidebarFrame
 
     if AssetManager and AssetManager.bindImage then
-        AssetManager.bindImage(bgImg, "sidebar_bg_v2.png")
+        AssetManager.bindImage(bgImg, "sidebar_bg_red.png", "sidebar_bg_v2.png")
     end
 
     local corner = Instance.new("UICorner")
@@ -149,7 +149,10 @@ function Sidebar.create(parentGui, options)
     tabsListFrame.Position = UDim2.new(0, 8, 0, 32)
     tabsListFrame.BackgroundTransparency = 1
     tabsListFrame.BorderSizePixel = 0
-    tabsListFrame.ScrollBarThickness = 0
+    tabsListFrame.ScrollBarThickness = 3
+    tabsListFrame.ScrollBarImageColor3 = Color3.fromRGB(220, 35, 60)
+    tabsListFrame.ScrollBarImageTransparency = 0.2
+    tabsListFrame.VerticalScrollBarInset = Enum.ScrollBarInset.None
     tabsListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
     tabsListFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
     tabsListFrame.ScrollingDirection = Enum.ScrollingDirection.Y
@@ -181,12 +184,12 @@ function Sidebar.create(parentGui, options)
             local isActive = (id == activeTabId)
 
             if isActive then
-                -- Active Tab: Luminous Neon Violet Capsule with white text/icon (no border)
+                -- Active Tab: Luminous Crimson Red Capsule with white text/icon (no border)
                 TweenService:Create(btnData.Button, TweenInfo.new(0.15), {
-                    BackgroundColor3 = Color3.fromRGB(140, 65, 230),
-                    BackgroundTransparency = 0.05
+                    BackgroundColor3 = Color3.fromRGB(205, 30, 55),
+                    BackgroundTransparency = 0.1
                 }):Play()
-                btnData.Label.Font = Enum.Font.GothamBold
+                btnData.Label.Font = Enum.Font.Kalam
                 TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
                     TextColor3 = Color3.fromRGB(255, 255, 255),
                     TextTransparency = 0
@@ -200,22 +203,22 @@ function Sidebar.create(parentGui, options)
                     TextTransparency = 0
                 }):Play()
             else
-                -- Inactive Tab: Transparent sleek background with soft lavender text and icon
+                -- Inactive Tab: Transparent sleek background with soft text and icon
                 TweenService:Create(btnData.Button, TweenInfo.new(0.15), {
-                    BackgroundColor3 = Color3.fromRGB(20, 16, 28),
+                    BackgroundColor3 = Color3.fromRGB(20, 14, 18),
                     BackgroundTransparency = 1
                 }):Play()
-                btnData.Label.Font = Enum.Font.GothamMedium
+                btnData.Label.Font = Enum.Font.Kalam
                 TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
-                    TextColor3 = Color3.fromRGB(205, 200, 225),
+                    TextColor3 = Color3.fromRGB(215, 205, 215),
                     TextTransparency = 0
                 }):Play()
                 TweenService:Create(btnData.Icon, TweenInfo.new(0.15), {
-                    ImageColor3 = Color3.fromRGB(180, 170, 210),
+                    ImageColor3 = Color3.fromRGB(190, 175, 185),
                     ImageTransparency = 0
                 }):Play()
                 TweenService:Create(btnData.Chevron, TweenInfo.new(0.15), {
-                    TextColor3 = Color3.fromRGB(140, 130, 165),
+                    TextColor3 = Color3.fromRGB(160, 130, 140),
                     TextTransparency = 0
                 }):Play()
             end
@@ -254,17 +257,17 @@ function Sidebar.create(parentGui, options)
         tabIcon.ZIndex = 7
         tabIcon.Parent = tabBtn
 
-        -- Tab Label in Gotham font
+        -- Tab Label in original Kalam font
         local tabLabel = Instance.new("TextLabel")
         tabLabel.Name = "TabLabel"
         tabLabel.Size = UDim2.new(1, -56, 1, 0)
         tabLabel.Position = UDim2.new(0, 32, 0, 0)
         tabLabel.BackgroundTransparency = 1
-        tabLabel.Font = Enum.Font.GothamMedium
+        tabLabel.Font = Enum.Font.Kalam
         tabLabel.Text = tabData.Name
-        tabLabel.TextColor3 = Color3.fromRGB(205, 200, 225)
+        tabLabel.TextColor3 = Color3.fromRGB(215, 205, 215)
         tabLabel.TextTransparency = 0
-        tabLabel.TextSize = 12
+        tabLabel.TextSize = 14
         tabLabel.TextXAlignment = Enum.TextXAlignment.Left
         tabLabel.Active = false
         tabLabel.ZIndex = 7
@@ -279,7 +282,7 @@ function Sidebar.create(parentGui, options)
         chevron.Font = Enum.Font.GothamBold
         chevron.Text = ">"
         chevron.TextSize = 11
-        chevron.TextColor3 = Color3.fromRGB(140, 130, 165)
+        chevron.TextColor3 = Color3.fromRGB(160, 130, 140)
         chevron.TextTransparency = 0
         chevron.Active = false
         chevron.ZIndex = 7
@@ -296,7 +299,7 @@ function Sidebar.create(parentGui, options)
             if activeTabId ~= tabData.Id then
                 TweenService:Create(tabBtn, TweenInfo.new(0.12), {
                     BackgroundTransparency = 0.65,
-                    BackgroundColor3 = Color3.fromRGB(140, 65, 230)
+                    BackgroundColor3 = Color3.fromRGB(180, 25, 45)
                 }):Play()
             end
         end)
@@ -305,10 +308,7 @@ function Sidebar.create(parentGui, options)
             if activeTabId ~= tabData.Id then
                 TweenService:Create(tabBtn, TweenInfo.new(0.12), {
                     BackgroundTransparency = 1,
-                    BackgroundColor3 = Color3.fromRGB(20, 16, 28)
-                }):Play()
-                TweenService:Create(tabStroke, TweenInfo.new(0.12), {
-                    Transparency = 1
+                    BackgroundColor3 = Color3.fromRGB(20, 14, 18)
                 }):Play()
             end
         end)

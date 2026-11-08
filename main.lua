@@ -158,11 +158,15 @@ local AssetManager = BestHub:Require("modules/core/asset_manager.lua")
 if AssetManager and AssetManager.preload then
     pcall(function()
         AssetManager.preload({
+            "header_profile_panel_red.png",
+            "stats_panel_red.png",
+            "music_player_red.png",
+            "sidebar_bg_red.png",
+            "floating_avatar_red.png",
             "header_profile_panel.png",
             "stats_panel_v2.png",
             "music_player.png",
             "sidebar_bg_v2.png",
-            "sidebar_bg.png",
             "floating_avatar.png"
         })
     end)

@@ -110,10 +110,10 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     titleLbl.Size = UDim2.new(1, 0, 0, hasDesc and 19 or 24)
     titleLbl.Position = UDim2.new(0, 0, 0, hasDesc and 3 or 10)
     titleLbl.BackgroundTransparency = 1
-    titleLbl.Font = Enum.Font.GothamBold
+    titleLbl.Font = Enum.Font.Kalam
     titleLbl.Text = title
     titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLbl.TextSize = 12.5
+    titleLbl.TextSize = 14
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
     titleLbl.ZIndex = 4
     titleLbl.Parent = textContainer
@@ -123,23 +123,21 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
         descLbl.Size = UDim2.new(1, 0, 0, 15)
         descLbl.Position = UDim2.new(0, 0, 0, 22)
         descLbl.BackgroundTransparency = 1
-        descLbl.Font = Enum.Font.Gotham
+        descLbl.Font = Enum.Font.Kalam
         descLbl.Text = desc
-        descLbl.TextColor3 = Color3.fromRGB(180, 175, 205)
-        descLbl.TextSize = 9.5
+        descLbl.TextColor3 = Color3.fromRGB(195, 185, 205)
+        descLbl.TextSize = 11.5
         descLbl.TextXAlignment = Enum.TextXAlignment.Left
         descLbl.ZIndex = 4
         descLbl.Parent = textContainer
     end
 
-    -- Pill Switch Visual (Clean styling matching reference crop_toggles.png without purple borders)
-    -- When ON: Pure clean white capsule with dark circular thumb
-    -- When OFF: Sleek dark slate capsule with soft light-grey circular thumb
+    -- Pill Switch Visual (Crimson Red / Clean White without borders)
     local switchBtn = Instance.new("Frame")
     switchBtn.Name = "SwitchVisual"
     switchBtn.Size = UDim2.new(0, 42, 0, 22)
     switchBtn.Position = UDim2.new(1, -46, 0.5, -11)
-    switchBtn.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(46, 44, 56)
+    switchBtn.BackgroundColor3 = state and Color3.fromRGB(220, 35, 60) or Color3.fromRGB(44, 38, 46)
     switchBtn.BorderSizePixel = 0
     switchBtn.ZIndex = 4
     switchBtn.Parent = row
@@ -152,7 +150,7 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     thumb.Name = "Thumb"
     thumb.Size = UDim2.new(0, 16, 0, 16)
     thumb.Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
-    thumb.BackgroundColor3 = state and Color3.fromRGB(26, 24, 32) or Color3.fromRGB(182, 180, 196)
+    thumb.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(175, 170, 185)
     thumb.BorderSizePixel = 0
     thumb.ZIndex = 5
     thumb.Parent = switchBtn
@@ -163,8 +161,8 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
 
     local function updateVisual(anim)
         local dur = anim and 0.15 or 0
-        local targetBg = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(46, 44, 56)
-        local targetThumbBg = state and Color3.fromRGB(26, 24, 32) or Color3.fromRGB(182, 180, 196)
+        local targetBg = state and Color3.fromRGB(220, 35, 60) or Color3.fromRGB(44, 38, 46)
+        local targetThumbBg = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(175, 170, 185)
         local targetPos = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
 
         if anim then
@@ -236,10 +234,10 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     titleLbl.Size = UDim2.new(1, 0, 0, hasDesc and 19 or 24)
     titleLbl.Position = UDim2.new(0, 0, 0, hasDesc and 3 or 10)
     titleLbl.BackgroundTransparency = 1
-    titleLbl.Font = Enum.Font.GothamBold
+    titleLbl.Font = Enum.Font.Kalam
     titleLbl.Text = title
     titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLbl.TextSize = 12.5
+    titleLbl.TextSize = 14
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
     titleLbl.ZIndex = 4
     titleLbl.Parent = textContainer
@@ -249,10 +247,10 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
         descLbl.Size = UDim2.new(1, 0, 0, 15)
         descLbl.Position = UDim2.new(0, 0, 0, 22)
         descLbl.BackgroundTransparency = 1
-        descLbl.Font = Enum.Font.Gotham
+        descLbl.Font = Enum.Font.Kalam
         descLbl.Text = desc
-        descLbl.TextColor3 = Color3.fromRGB(180, 175, 205)
-        descLbl.TextSize = 9.5
+        descLbl.TextColor3 = Color3.fromRGB(195, 185, 205)
+        descLbl.TextSize = 11.5
         descLbl.TextXAlignment = Enum.TextXAlignment.Left
         descLbl.ZIndex = 4
         descLbl.Parent = textContainer
@@ -263,7 +261,7 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     pillBtn.Name = "PillBtn"
     pillBtn.Size = UDim2.new(0, 104, 0, 26)
     pillBtn.Position = UDim2.new(1, -108, 0.5, -13)
-    pillBtn.BackgroundColor3 = Color3.fromRGB(26, 20, 38)
+    pillBtn.BackgroundColor3 = Color3.fromRGB(30, 22, 30)
     pillBtn.BorderSizePixel = 0
     pillBtn.Text = ""
     pillBtn.AutoButtonColor = false
@@ -280,10 +278,10 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     pillText.Size = UDim2.new(1, -22, 1, 0)
     pillText.Position = UDim2.new(0, 8, 0, 0)
     pillText.BackgroundTransparency = 1
-    pillText.Font = Enum.Font.GothamBold
+    pillText.Font = Enum.Font.Kalam
     pillText.Text = optionsList[curIdx] or ""
     pillText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    pillText.TextSize = 11
+    pillText.TextSize = 13
     pillText.TextXAlignment = Enum.TextXAlignment.Left
     pillText.ZIndex = 6
     pillText.Parent = pillBtn
@@ -296,7 +294,7 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     chevron.Font = Enum.Font.GothamBold
     chevron.Text = "▼"
     chevron.TextSize = 9
-    chevron.TextColor3 = Color3.fromRGB(225, 175, 255)
+    chevron.TextColor3 = Color3.fromRGB(255, 120, 140)
     chevron.ZIndex = 6
     chevron.Parent = pillBtn
 
@@ -311,9 +309,9 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
         local chosen = optionsList[curIdx]
         pillText.Text = chosen
 
-        TweenService:Create(pillBtn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(48, 36, 70) }):Play()
+        TweenService:Create(pillBtn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(56, 26, 40) }):Play()
         task.delay(0.1, function()
-            TweenService:Create(pillBtn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(26, 20, 38) }):Play()
+            TweenService:Create(pillBtn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(30, 22, 30) }):Play()
         end)
 
         if onSelect then pcall(onSelect, chosen, curIdx) end
@@ -349,20 +347,20 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     titleLbl.Size = UDim2.new(1, -60, 1, 0)
     titleLbl.Position = UDim2.new(0, 4, 0, 0)
     titleLbl.BackgroundTransparency = 1
-    titleLbl.Font = Enum.Font.GothamBold
+    titleLbl.Font = Enum.Font.Kalam
     titleLbl.Text = title
-    titleLbl.TextColor3 = Color3.fromRGB(245, 240, 255)
-    titleLbl.TextSize = 12
+    titleLbl.TextColor3 = Color3.fromRGB(245, 240, 245)
+    titleLbl.TextSize = 14
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
     titleLbl.ZIndex = 4
     titleLbl.Parent = header
 
-    -- Cyber HUD Glowing Value Badge [ 120 ]
+    -- Value Badge [ 120 ]
     local valBadge = Instance.new("Frame")
     valBadge.Name = "ValBadge"
     valBadge.Size = UDim2.new(0, 52, 0, 18)
     valBadge.Position = UDim2.new(1, -56, 0, 1)
-    valBadge.BackgroundColor3 = Color3.fromRGB(34, 25, 48)
+    valBadge.BackgroundColor3 = Color3.fromRGB(36, 20, 28)
     valBadge.BorderSizePixel = 0
     valBadge.ZIndex = 4
     valBadge.Parent = header
@@ -374,19 +372,19 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     local valLbl = Instance.new("TextLabel")
     valLbl.Size = UDim2.new(1, 0, 1, 0)
     valLbl.BackgroundTransparency = 1
-    valLbl.Font = Enum.Font.GothamBold
+    valLbl.Font = Enum.Font.Kalam
     valLbl.Text = tostring(math.floor(curVal + 0.5))
-    valLbl.TextColor3 = Color3.fromRGB(245, 220, 255)
-    valLbl.TextSize = 11
+    valLbl.TextColor3 = Color3.fromRGB(255, 215, 225)
+    valLbl.TextSize = 13
     valLbl.ZIndex = 5
     valLbl.Parent = valBadge
 
-    -- Slider Track Frame with Glowing Neon Gradient Fill
+    -- Slider Track Frame with Glowing Crimson/Ruby Gradient Fill
     local track = Instance.new("Frame")
     track.Name = "Track"
     track.Size = UDim2.new(1, -8, 0, 6)
     track.Position = UDim2.new(0, 4, 0, 30)
-    track.BackgroundColor3 = Color3.fromRGB(24, 18, 34)
+    track.BackgroundColor3 = Color3.fromRGB(26, 18, 24)
     track.BorderSizePixel = 0
     track.ZIndex = 4
     track.Parent = row
@@ -399,7 +397,7 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     fill.Name = "Fill"
     local initRatio = (curVal - minVal) / math.max(1, (maxVal - minVal))
     fill.Size = UDim2.new(clamp(initRatio, 0, 1), 0, 1, 0)
-    fill.BackgroundColor3 = Color3.fromRGB(165, 75, 245)
+    fill.BackgroundColor3 = Color3.fromRGB(220, 35, 60)
     fill.BorderSizePixel = 0
     fill.ZIndex = 5
     fill.Parent = track
@@ -411,12 +409,12 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     pcall(function()
         if ColorSequence and ColorSequence.new then
             local fillGrad = Instance.new("UIGradient")
-            fillGrad.Color = ColorSequence.new(Color3.fromRGB(130, 45, 220), Color3.fromRGB(230, 150, 255))
+            fillGrad.Color = ColorSequence.new(Color3.fromRGB(220, 35, 60), Color3.fromRGB(255, 95, 120))
             fillGrad.Parent = fill
         end
     end)
 
-    -- Clean Pure White Circular Thumb Knob (No purple border)
+    -- Clean Pure White Circular Thumb Knob (No border)
     local thumb = Instance.new("Frame")
     thumb.Name = "Thumb"
     thumb.Size = UDim2.new(0, 14, 0, 14)
@@ -488,14 +486,14 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     return row
 end
 
--- Helper: Create Action Button with neon purple hover
+-- Helper: Create Action Button with red accent hover
 local function createActionButton(parent, title, desc, onClick, Utils)
     local targetContainer = parent:FindFirstChild("Content") or parent
 
     local btn = Instance.new("TextButton")
     btn.Name = "Btn_" .. title:gsub("%s+", "")
     btn.Size = UDim2.new(1, 0, 0, 36)
-    btn.BackgroundColor3 = Color3.fromRGB(28, 22, 42)
+    btn.BackgroundColor3 = Color3.fromRGB(30, 20, 26)
     btn.BackgroundTransparency = 0.2
     btn.BorderSizePixel = 0
     btn.Text = ""
@@ -511,20 +509,20 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     bCorner.Parent = btn
 
     btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(42, 30, 65) }):Play()
+        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(56, 24, 34) }):Play()
     end)
     btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(28, 22, 42) }):Play()
+        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(30, 20, 26) }):Play()
     end)
 
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, -20, 1, 0)
     lbl.Position = UDim2.new(0, 10, 0, 0)
     lbl.BackgroundTransparency = 1
-    lbl.Font = Enum.Font.GothamBold
+    lbl.Font = Enum.Font.Kalam
     lbl.Text = title
-    lbl.TextColor3 = Color3.fromRGB(250, 245, 255)
-    lbl.TextSize = 12
+    lbl.TextColor3 = Color3.fromRGB(255, 245, 245)
+    lbl.TextSize = 14
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.ZIndex = 5
     lbl.Parent = btn
@@ -535,9 +533,9 @@ local function createActionButton(parent, title, desc, onClick, Utils)
         if lastPress > 0 and (now - lastPress < 0.25) then return end
         lastPress = now
 
-        TweenService:Create(btn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(155, 75, 245) }):Play()
+        TweenService:Create(btn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(205, 30, 55) }):Play()
         task.delay(0.1, function()
-            TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(28, 22, 42) }):Play()
+            TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(30, 20, 26) }):Play()
         end)
         if onClick then pcall(onClick) end
     end
@@ -573,10 +571,10 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     titleLbl.Size = UDim2.new(0.6, 0, 1, 0)
     titleLbl.Position = UDim2.new(0, 4, 0, 0)
     titleLbl.BackgroundTransparency = 1
-    titleLbl.Font = Enum.Font.GothamBold
+    titleLbl.Font = Enum.Font.Kalam
     titleLbl.Text = title
     titleLbl.TextColor3 = Color3.fromRGB(240, 240, 250)
-    titleLbl.TextSize = 12
+    titleLbl.TextSize = 14
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
     titleLbl.ZIndex = 4
     titleLbl.Parent = headerRow
@@ -585,10 +583,10 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     valLbl.Size = UDim2.new(0.4, -8, 1, 0)
     valLbl.Position = UDim2.new(0.6, 0, 0, 0)
     valLbl.BackgroundTransparency = 1
-    valLbl.Font = Enum.Font.GothamBold
+    valLbl.Font = Enum.Font.Kalam
     valLbl.Text = selected
-    valLbl.TextColor3 = Color3.fromRGB(215, 175, 255)
-    valLbl.TextSize = 11.5
+    valLbl.TextColor3 = Color3.fromRGB(255, 120, 140)
+    valLbl.TextSize = 13
     valLbl.TextXAlignment = Enum.TextXAlignment.Right
     valLbl.ZIndex = 4
     valLbl.Parent = headerRow
@@ -614,9 +612,7 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     local function updatePills()
         for cName, pill in pairs(colorPills) do
             local isSel = (cName == selected)
-            pill.Stroke.Color = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(48, 44, 58)
-            pill.Stroke.Thickness = isSel and 1.5 or 1
-            pill.Frame.BackgroundColor3 = isSel and Color3.fromRGB(115, 55, 185) or Color3.fromRGB(26, 20, 38)
+            pill.Frame.BackgroundColor3 = isSel and Color3.fromRGB(205, 30, 55) or Color3.fromRGB(30, 22, 28)
         end
         valLbl.Text = selected
     end
@@ -626,11 +622,11 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
         local pill = Instance.new("TextButton")
         pill.Name = "Color_" .. cName
         pill.Size = UDim2.new(0, 70, 0, 24)
-        pill.BackgroundColor3 = (cName == selected) and Color3.fromRGB(115, 55, 185) or Color3.fromRGB(26, 20, 38)
+        pill.BackgroundColor3 = (cName == selected) and Color3.fromRGB(205, 30, 55) or Color3.fromRGB(30, 22, 28)
         pill.BorderSizePixel = 0
         pill.Text = cName
-        pill.Font = Enum.Font.GothamBold
-        pill.TextSize = 10.5
+        pill.Font = Enum.Font.Kalam
+        pill.TextSize = 12
         pill.TextColor3 = Color3.fromRGB(255, 255, 255)
         pill.AutoButtonColor = false
         pill.Active = true
@@ -641,12 +637,7 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
         pCorner.CornerRadius = UDim.new(0, 6)
         pCorner.Parent = pill
 
-        local pStroke = Instance.new("UIStroke")
-        pStroke.Color = (cName == selected) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(48, 44, 58)
-        pStroke.Thickness = (cName == selected) and 1.5 or 1
-        pStroke.Parent = pill
-
-        colorPills[cName] = { Frame = pill, Stroke = pStroke }
+        colorPills[cName] = { Frame = pill }
 
         local function pick()
             local now = tick()
@@ -684,10 +675,10 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     titleLbl.Size = UDim2.new(1, 0, 0, 18)
     titleLbl.Position = UDim2.new(0, 4, 0, 0)
     titleLbl.BackgroundTransparency = 1
-    titleLbl.Font = Enum.Font.GothamBold
+    titleLbl.Font = Enum.Font.Kalam
     titleLbl.Text = title
     titleLbl.TextColor3 = Color3.fromRGB(240, 240, 250)
-    titleLbl.TextSize = 12
+    titleLbl.TextSize = 14
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
     titleLbl.ZIndex = 4
     titleLbl.Parent = container
@@ -708,11 +699,11 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     for _, chipName in ipairs(chipsList) do
         local chip = Instance.new("TextButton")
         chip.Name = "Chip_" .. chipName:gsub("%s+", "")
-        chip.BackgroundColor3 = Color3.fromRGB(26, 20, 38)
+        chip.BackgroundColor3 = Color3.fromRGB(28, 20, 26)
         chip.BorderSizePixel = 0
         chip.Text = chipName
-        chip.Font = Enum.Font.GothamMedium
-        chip.TextSize = 9.5
+        chip.Font = Enum.Font.Kalam
+        chip.TextSize = 12
         chip.TextColor3 = Color3.fromRGB(215, 210, 230)
         chip.AutoButtonColor = false
         chip.Active = true
@@ -723,21 +714,14 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
         cCorner.CornerRadius = UDim.new(0, 6)
         cCorner.Parent = chip
 
-        local cStroke = Instance.new("UIStroke")
-        cStroke.Color = Color3.fromRGB(48, 44, 58)
-        cStroke.Thickness = 1
-        cStroke.Parent = chip
-
         local isBl = false
         chip.MouseButton1Click:Connect(function()
             isBl = not isBl
             blacklisted[chipName] = isBl
-            local targetBg = isBl and Color3.fromRGB(95, 25, 45) or Color3.fromRGB(26, 20, 38)
-            local targetStroke = isBl and Color3.fromRGB(255, 75, 95) or Color3.fromRGB(48, 44, 58)
-            local targetText = isBl and Color3.fromRGB(255, 180, 190) or Color3.fromRGB(215, 210, 230)
+            local targetBg = isBl and Color3.fromRGB(180, 25, 45) or Color3.fromRGB(28, 20, 26)
+            local targetText = isBl and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(215, 210, 230)
 
             TweenService:Create(chip, TweenInfo.new(0.12), { BackgroundColor3 = targetBg, TextColor3 = targetText }):Play()
-            cStroke.Color = targetStroke
             if onToggleChip then pcall(onToggleChip, chipName, isBl) end
         end)
     end
@@ -745,14 +729,15 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     return container
 end
 
--- Helper: Create Feature Card with glowing purple header divider (Pure Native UI - No AI Image Slop)
+-- Helper: Create Feature Card with sleek obsidian/ruby gradient background
 local function createFeatureCard(parent, title, AssetManager)
     local card = Instance.new("Frame")
     card.Name = "Card_" .. title:gsub("%s+", "")
     card.Size = UDim2.new(0, 396, 0, 36)
-    card.BackgroundColor3 = Color3.fromRGB(18, 14, 26)
-    card.BackgroundTransparency = 0.08
+    card.BackgroundColor3 = Color3.fromRGB(20, 16, 22)
+    card.BackgroundTransparency = 0.05
     card.BorderSizePixel = 0
+    card.ClipsDescendants = true
     card.Parent = parent
 
     cardHeights[card] = 36
@@ -761,25 +746,10 @@ local function createFeatureCard(parent, title, AssetManager)
     corner.CornerRadius = UDim.new(0, 10)
     corner.Parent = card
 
-    -- Silky smoke texture from card_bg.png matching reference IMG_9181.jpeg
-    local bgImg = Instance.new("ImageLabel")
-    bgImg.Name = "CardBg"
-    bgImg.Size = UDim2.new(1, 0, 1, 0)
-    bgImg.BackgroundTransparency = 1
-    bgImg.Image = ""
-    if AssetManager and AssetManager.bindImage then
-        AssetManager.bindImage(bgImg, "card_bg.png")
-    else
-        bgImg.Image = (AssetManager and AssetManager.get("card_bg.png")) or ""
-    end
-    bgImg.ScaleType = Enum.ScaleType.Stretch
-    bgImg.ImageTransparency = 0.55
-    bgImg.ZIndex = 1
-    bgImg.Parent = card
-
-    local bgCorner = Instance.new("UICorner")
-    bgCorner.CornerRadius = UDim.new(0, 10)
-    bgCorner.Parent = bgImg
+    local cardGrad = Instance.new("UIGradient")
+    cardGrad.Color = ColorSequence.new(Color3.fromRGB(28, 18, 26), Color3.fromRGB(15, 12, 17))
+    cardGrad.Rotation = 45
+    cardGrad.Parent = card
 
     local content = Instance.new("Frame")
     content.Name = "Content"
@@ -800,7 +770,7 @@ local function createFeatureCard(parent, title, AssetManager)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Parent = content
 
-    -- Header row with glowing purple divider line (Matching Screenshot 2)
+    -- Header row
     local headerRow = Instance.new("Frame")
     headerRow.Name = "HeaderRow"
     headerRow.Size = UDim2.new(1, 0, 0, 20)
@@ -813,10 +783,10 @@ local function createFeatureCard(parent, title, AssetManager)
     header.Name = "Header"
     header.Size = UDim2.new(1, 0, 1, 0)
     header.BackgroundTransparency = 1
-    header.Font = Enum.Font.GothamBold
+    header.Font = Enum.Font.Kalam
     header.Text = title:upper()
-    header.TextColor3 = Color3.fromRGB(225, 215, 245)
-    header.TextSize = 11
+    header.TextColor3 = Color3.fromRGB(255, 215, 225)
+    header.TextSize = 14
     header.TextXAlignment = Enum.TextXAlignment.Left
     header.ZIndex = 4
     header.Parent = headerRow
@@ -855,13 +825,14 @@ function TabViews.build(tabName, parentContainer, options)
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Parent = scroll
 
-    -- Top Header Banner Card with silky texture and neon rim matching IMG_9181.jpeg
+    -- Top Header Banner Card with sleek obsidian/ruby gradient
     local banner = Instance.new("Frame")
     banner.Name = "Banner"
     banner.Size = UDim2.new(0, 396, 0, 48)
-    banner.BackgroundColor3 = Color3.fromRGB(22, 16, 32)
-    banner.BackgroundTransparency = 0.08
+    banner.BackgroundColor3 = Color3.fromRGB(24, 16, 22)
+    banner.BackgroundTransparency = 0.05
     banner.BorderSizePixel = 0
+    banner.ClipsDescendants = true
     banner.LayoutOrder = 1
     banner.Parent = scroll
 
@@ -869,33 +840,19 @@ function TabViews.build(tabName, parentContainer, options)
     bCorner.CornerRadius = UDim.new(0, 10)
     bCorner.Parent = banner
 
-    local bBg = Instance.new("ImageLabel")
-    bBg.Name = "BannerBg"
-    bBg.Size = UDim2.new(1, 0, 1, 0)
-    bBg.BackgroundTransparency = 1
-    bBg.Image = ""
-    if AssetManager and AssetManager.bindImage then
-        AssetManager.bindImage(bBg, "card_bg.png")
-    else
-        bBg.Image = (AssetManager and AssetManager.get("card_bg.png")) or ""
-    end
-    bBg.ScaleType = Enum.ScaleType.Stretch
-    bBg.ImageTransparency = 0.5
-    bBg.ZIndex = 1
-    bBg.Parent = banner
-
-    local bBgCorner = Instance.new("UICorner")
-    bBgCorner.CornerRadius = UDim.new(0, 10)
-    bBgCorner.Parent = bBg
+    local bGrad = Instance.new("UIGradient")
+    bGrad.Color = ColorSequence.new(Color3.fromRGB(36, 18, 28), Color3.fromRGB(18, 12, 20))
+    bGrad.Rotation = 45
+    bGrad.Parent = banner
 
     local bTitle = Instance.new("TextLabel")
     bTitle.Size = UDim2.new(1, -28, 0, 20)
     bTitle.Position = UDim2.new(0, 14, 0, 5)
     bTitle.BackgroundTransparency = 1
-    bTitle.Font = Enum.Font.GothamBold
+    bTitle.Font = Enum.Font.Kalam
     bTitle.Text = tabName
     bTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    bTitle.TextSize = 16
+    bTitle.TextSize = 18
     bTitle.TextXAlignment = Enum.TextXAlignment.Left
     bTitle.ZIndex = 3
     bTitle.Parent = banner
@@ -904,10 +861,10 @@ function TabViews.build(tabName, parentContainer, options)
     bDesc.Size = UDim2.new(1, -28, 0, 15)
     bDesc.Position = UDim2.new(0, 14, 0, 26)
     bDesc.BackgroundTransparency = 1
-    bDesc.Font = Enum.Font.Gotham
+    bDesc.Font = Enum.Font.Kalam
     bDesc.Text = tabName:lower()
-    bDesc.TextColor3 = Color3.fromRGB(185, 175, 215)
-    bDesc.TextSize = 11
+    bDesc.TextColor3 = Color3.fromRGB(215, 175, 195)
+    bDesc.TextSize = 13
     bDesc.TextXAlignment = Enum.TextXAlignment.Left
     bDesc.ZIndex = 3
     bDesc.Parent = banner
@@ -1194,10 +1151,10 @@ function TabViews.build(tabName, parentContainer, options)
                     nameLbl.Size = UDim2.new(0, 150, 0, 16)
                     nameLbl.Position = UDim2.new(0, 56, 0, 8)
                     nameLbl.BackgroundTransparency = 1
-                    nameLbl.Font = Enum.Font.GothamBold
+                    nameLbl.Font = Enum.Font.Kalam
                     nameLbl.Text = plr.DisplayName .. " (@" .. plr.Name .. ")"
                     nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    nameLbl.TextSize = 11.5
+                    nameLbl.TextSize = 13
                     nameLbl.TextXAlignment = Enum.TextXAlignment.Left
                     nameLbl.TextTruncate = Enum.TextTruncate.AtEnd
                     nameLbl.Parent = pRow
@@ -1207,12 +1164,12 @@ function TabViews.build(tabName, parentContainer, options)
                     tagsLbl.Size = UDim2.new(0, 200, 0, 14)
                     tagsLbl.Position = UDim2.new(0, 56, 0, 26)
                     tagsLbl.BackgroundTransparency = 1
-                    tagsLbl.Font = Enum.Font.GothamMedium
+                    tagsLbl.Font = Enum.Font.Kalam
                     local race = getPlayerRace(plr)
                     local toolName = getPlayerTool(plr)
                     tagsLbl.Text = "Race: " .. race .. "  |  Tool: " .. toolName
-                    tagsLbl.TextColor3 = Color3.fromRGB(215, 175, 255)
-                    tagsLbl.TextSize = 10
+                    tagsLbl.TextColor3 = Color3.fromRGB(255, 185, 200)
+                    tagsLbl.TextSize = 11.5
                     tagsLbl.TextXAlignment = Enum.TextXAlignment.Left
                     tagsLbl.TextTruncate = Enum.TextTruncate.AtEnd
                     tagsLbl.Parent = pRow
@@ -1222,7 +1179,7 @@ function TabViews.build(tabName, parentContainer, options)
                     hpTrack.Name = "HPTrack"
                     hpTrack.Size = UDim2.new(1, -64, 0, 5)
                     hpTrack.Position = UDim2.new(0, 56, 0, 44)
-                    hpTrack.BackgroundColor3 = Color3.fromRGB(40, 32, 54)
+                    hpTrack.BackgroundColor3 = Color3.fromRGB(40, 26, 36)
                     hpTrack.BorderSizePixel = 0
                     hpTrack.Parent = pRow
 
@@ -1260,11 +1217,11 @@ function TabViews.build(tabName, parentContainer, options)
                     local specBtn = Instance.new("TextButton")
                     specBtn.Size = UDim2.new(0, 80, 1, 0)
                     specBtn.Position = UDim2.new(0, 0, 0, 0)
-                    specBtn.BackgroundColor3 = (activeSpectate == plr) and Color3.fromRGB(160, 40, 70) or Color3.fromRGB(45, 35, 68)
+                    specBtn.BackgroundColor3 = (activeSpectate == plr) and Color3.fromRGB(180, 25, 45) or Color3.fromRGB(42, 26, 36)
                     specBtn.BorderSizePixel = 0
                     specBtn.Text = (activeSpectate == plr) and "Stop" or "Spectate"
-                    specBtn.Font = Enum.Font.GothamBold
-                    specBtn.TextSize = 10
+                    specBtn.Font = Enum.Font.Kalam
+                    specBtn.TextSize = 12
                     specBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
                     specBtn.Parent = actionsRow
 
@@ -1281,14 +1238,14 @@ function TabViews.build(tabName, parentContainer, options)
                                 cam.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
                             end
                             specBtn.Text = "Spectate"
-                            specBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 68)
+                            specBtn.BackgroundColor3 = Color3.fromRGB(42, 26, 36)
                         else
                             activeSpectate = plr
                             if plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
                                 cam.CameraSubject = plr.Character:FindFirstChildOfClass("Humanoid")
                             end
                             specBtn.Text = "Stop"
-                            specBtn.BackgroundColor3 = Color3.fromRGB(160, 40, 70)
+                            specBtn.BackgroundColor3 = Color3.fromRGB(180, 25, 45)
                         end
                     end)
 
@@ -1296,12 +1253,12 @@ function TabViews.build(tabName, parentContainer, options)
                     local tweenBtn = Instance.new("TextButton")
                     tweenBtn.Size = UDim2.new(0, 80, 1, 0)
                     tweenBtn.Position = UDim2.new(0, 86, 0, 0)
-                    tweenBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 68)
+                    tweenBtn.BackgroundColor3 = Color3.fromRGB(42, 26, 36)
                     tweenBtn.BorderSizePixel = 0
                     tweenBtn.Text = "Tween To"
-                    tweenBtn.Font = Enum.Font.GothamBold
-                    tweenBtn.TextSize = 10
-                    tweenBtn.TextColor3 = Color3.fromRGB(225, 215, 255)
+                    tweenBtn.Font = Enum.Font.Kalam
+                    tweenBtn.TextSize = 12
+                    tweenBtn.TextColor3 = Color3.fromRGB(245, 235, 245)
                     tweenBtn.Parent = actionsRow
 
                     local tbCorner = Instance.new("UICorner")
@@ -1329,12 +1286,12 @@ function TabViews.build(tabName, parentContainer, options)
                     blBtn.Size = UDim2.new(0, 86, 1, 0)
                     blBtn.Position = UDim2.new(0, 172, 0, 0)
                     local isBl = AimbotCore and AimbotCore.isPlayerExplicitlyBlacklisted and AimbotCore.isPlayerExplicitlyBlacklisted(plr)
-                    blBtn.BackgroundColor3 = isBl and Color3.fromRGB(140, 30, 50) or Color3.fromRGB(45, 35, 68)
+                    blBtn.BackgroundColor3 = isBl and Color3.fromRGB(180, 25, 45) or Color3.fromRGB(42, 26, 36)
                     blBtn.BorderSizePixel = 0
                     blBtn.Text = isBl and "Blacklisted" or "Blacklist"
-                    blBtn.Font = Enum.Font.GothamBold
-                    blBtn.TextSize = 10
-                    blBtn.TextColor3 = isBl and Color3.fromRGB(255, 180, 190) or Color3.fromRGB(225, 215, 255)
+                    blBtn.Font = Enum.Font.Kalam
+                    blBtn.TextSize = 12
+                    blBtn.TextColor3 = isBl and Color3.fromRGB(255, 180, 190) or Color3.fromRGB(245, 235, 245)
                     blBtn.Parent = actionsRow
 
                     local blbCorner = Instance.new("UICorner")
@@ -1346,8 +1303,8 @@ function TabViews.build(tabName, parentContainer, options)
                             isBl = not isBl
                             AimbotCore.setPlayerBlacklisted(plr, isBl)
                             blBtn.Text = isBl and "Blacklisted" or "Blacklist"
-                            blBtn.BackgroundColor3 = isBl and Color3.fromRGB(140, 30, 50) or Color3.fromRGB(45, 35, 68)
-                            blBtn.TextColor3 = isBl and Color3.fromRGB(255, 180, 190) or Color3.fromRGB(225, 215, 255)
+                            blBtn.BackgroundColor3 = isBl and Color3.fromRGB(180, 25, 45) or Color3.fromRGB(42, 26, 36)
+                            blBtn.TextColor3 = isBl and Color3.fromRGB(255, 180, 190) or Color3.fromRGB(245, 235, 245)
                             if Utils then
                                 Utils.toast("Monody", plr.DisplayName .. ": " .. (isBl and "Blacklisted from Aim" or "Unblacklisted"), 1.2)
                             end

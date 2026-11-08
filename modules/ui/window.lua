@@ -98,7 +98,7 @@ function Window.create(dependencies)
     mainFrame.Name = "Monody_MainWindow"
     mainFrame.Size = UDim2.new(0, 568, 0, 400)
     mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    mainFrame.Position = UDim2.new(0.58, 0, 0.45, 0)
+    mainFrame.Position = UDim2.new(0.50, 0, 0.44, 0)
     mainFrame.BackgroundTransparency = 1
     mainFrame.BorderSizePixel = 0
     mainFrame.ZIndex = 10
@@ -304,9 +304,9 @@ function Window.create(dependencies)
         if imgBtn then
             imgBtn.BackgroundTransparency = 1
             if AssetManager.bindImage then
-                AssetManager.bindImage(imgBtn, "floating_avatar.png")
+                AssetManager.bindImage(imgBtn, "floating_avatar_red.png", AssetManager.get("floating_avatar.png"))
             else
-                pcall(function() imgBtn.Image = AssetManager.get("floating_avatar.png") end)
+                pcall(function() imgBtn.Image = AssetManager.get("floating_avatar_red.png", AssetManager.get("floating_avatar.png")) end)
             end
         end
     end
