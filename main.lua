@@ -190,12 +190,16 @@ if not WinInstance then
     return
 end
 
--- 8. Load WindUI Tab Modules
+-- 8. Load WindUI Tab Modules (All 10 Darling Hub Tabs)
 local TabHome = BestHub:Require("modules/ui/tabs/home.lua")
 local TabAimbot = BestHub:Require("modules/ui/tabs/aimbot.lua")
 local TabCombat = BestHub:Require("modules/ui/tabs/combat.lua")
 local TabPlayers = BestHub:Require("modules/ui/tabs/players.lua")
-local TabVisuals = BestHub:Require("modules/ui/tabs/visuals.lua")
+local TabSoru = BestHub:Require("modules/ui/tabs/soru.lua")
+local TabMacro = BestHub:Require("modules/ui/tabs/macro.lua")
+local TabVFX = BestHub:Require("modules/ui/tabs/vfx.lua")
+local TabSkins = BestHub:Require("modules/ui/tabs/skins.lua")
+local TabThemes = BestHub:Require("modules/ui/tabs/themes.lua")
 local TabSettings = BestHub:Require("modules/ui/tabs/settings.lua")
 
 local deps = {
@@ -216,7 +220,11 @@ if TabHome and TabHome.init then WinInstance.Tabs.Home = TabHome.init(WinInstanc
 if TabAimbot and TabAimbot.init then WinInstance.Tabs.Aimbot = TabAimbot.init(WinInstance, deps) end
 if TabCombat and TabCombat.init then WinInstance.Tabs.Combat = TabCombat.init(WinInstance, deps) end
 if TabPlayers and TabPlayers.init then WinInstance.Tabs.Players = TabPlayers.init(WinInstance, deps) end
-if TabVisuals and TabVisuals.init then WinInstance.Tabs.Visuals = TabVisuals.init(WinInstance, deps) end
+if TabSoru and TabSoru.init then WinInstance.Tabs.Soru = TabSoru.init(WinInstance, deps) end
+if TabMacro and TabMacro.init then WinInstance.Tabs.Macro = TabMacro.init(WinInstance, deps) end
+if TabVFX and TabVFX.init then WinInstance.Tabs.VFX = TabVFX.init(WinInstance, deps) end
+if TabSkins and TabSkins.init then WinInstance.Tabs.Skins = TabSkins.init(WinInstance, deps) end
+if TabThemes and TabThemes.init then WinInstance.Tabs.Themes = TabThemes.init(WinInstance, deps) end
 if TabSettings and TabSettings.init then WinInstance.Tabs.Settings = TabSettings.init(WinInstance, deps) end
 
 BestHub.Window = WinInstance
