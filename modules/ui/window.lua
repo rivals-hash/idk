@@ -93,10 +93,14 @@ function Window.create(dependencies)
     end
     setDarkLighting(true)
 
-    -- Master Window Frame
+    -- Floating references hoisted for cross-closures
+    local sidebar = nil
+    local mobileToggle = nil
+
+    -- Master Window Frame (Exact fit 356px height, no dead space below music)
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "Monody_MainWindow"
-    mainFrame.Size = UDim2.new(0, 568, 0, 400)
+    mainFrame.Size = UDim2.new(0, 568, 0, 356)
     mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     mainFrame.Position = UDim2.new(0.53, 0, 0.48, 0)
     mainFrame.BackgroundTransparency = 1
@@ -104,34 +108,6 @@ function Window.create(dependencies)
     mainFrame.ZIndex = 10
     mainFrame.ClipsDescendants = false
     mainFrame.Parent = ScreenGui
-
-    -- Master Window Glassmorphic Background (Spans behind ContentArea and Sidebar)
-    local masterWindowBg = Instance.new("ImageLabel")
-    masterWindowBg.Name = "MasterWindowBackground"
-    masterWindowBg.Size = UDim2.new(1, 0, 1, 0)
-    masterWindowBg.Position = UDim2.new(0, 0, 0, 0)
-    masterWindowBg.BackgroundColor3 = Color3.fromRGB(14, 10, 16)
-    masterWindowBg.BackgroundTransparency = 0.2
-    masterWindowBg.BorderSizePixel = 0
-    masterWindowBg.Image = (AssetManager and (AssetManager.get("sidebar_bg_red.png") or AssetManager.get("sidebar_bg_v2.png"))) or ""
-    masterWindowBg.ImageTransparency = 0.35
-    masterWindowBg.ScaleType = Enum.ScaleType.Crop
-    masterWindowBg.ZIndex = 1
-    masterWindowBg.Parent = mainFrame
-
-    if AssetManager and AssetManager.bindImage then
-        AssetManager.bindImage(masterWindowBg, "sidebar_bg_red.png", "sidebar_bg_v2.png")
-    end
-
-    local masterCorner = Instance.new("UICorner")
-    masterCorner.CornerRadius = UDim.new(0, 12)
-    masterCorner.Parent = masterWindowBg
-
-    local masterStroke = Instance.new("UIStroke")
-    masterStroke.Color = Color3.fromRGB(220, 35, 60)
-    masterStroke.Transparency = 0.8
-    masterStroke.Thickness = 1
-    masterStroke.Parent = masterWindowBg
 
     -- Responsive UIScale for Mobile and Tablet
     local uiScale = Instance.new("UIScale")
@@ -152,15 +128,44 @@ function Window.create(dependencies)
 
     local TabViewsMod = dependencies.TabViews
 
-    -- Left Content Area (Contains HomeView or Tab Views)
+    -- Left Content Area (Contains HomeView or Tab Views - tight 356px height)
     local contentArea = Instance.new("Frame")
     contentArea.Name = "ContentArea"
-    contentArea.Size = UDim2.new(0, 406, 0, 400)
+    contentArea.Size = UDim2.new(0, 406, 0, 356)
     contentArea.Position = UDim2.new(0, 0, 0, 0)
     contentArea.BackgroundTransparency = 1
     contentArea.BorderSizePixel = 0
     contentArea.ClipsDescendants = true
     contentArea.Parent = mainFrame
+
+    -- Glassmorphic Background for Feature Tabs (Spans behind non-Home tabs)
+    local tabContentBg = Instance.new("ImageLabel")
+    tabContentBg.Name = "TabContentBackground"
+    tabContentBg.Size = UDim2.new(1, 0, 1, 0)
+    tabContentBg.Position = UDim2.new(0, 0, 0, 0)
+    tabContentBg.BackgroundColor3 = Color3.fromRGB(14, 10, 16)
+    tabContentBg.BackgroundTransparency = 0.2
+    tabContentBg.BorderSizePixel = 0
+    tabContentBg.Image = (AssetManager and (AssetManager.get("sidebar_bg_red.png") or AssetManager.get("sidebar_bg_v2.png"))) or ""
+    tabContentBg.ImageTransparency = 0.35
+    tabContentBg.ScaleType = Enum.ScaleType.Crop
+    tabContentBg.ZIndex = 1
+    tabContentBg.Visible = false
+    tabContentBg.Parent = contentArea
+
+    if AssetManager and AssetManager.bindImage then
+        AssetManager.bindImage(tabContentBg, "sidebar_bg_red.png", "sidebar_bg_v2.png")
+    end
+
+    local tcCorner = Instance.new("UICorner")
+    tcCorner.CornerRadius = UDim.new(0, 10)
+    tcCorner.Parent = tabContentBg
+
+    local tcStroke = Instance.new("UIStroke")
+    tcStroke.Color = Color3.fromRGB(220, 35, 60)
+    tcStroke.Transparency = 0.8
+    tcStroke.Thickness = 1
+    tcStroke.Parent = tabContentBg
 
     -- Toggle Hub Visibility Function with smooth scale and lighting transitions
     local isVisible = true
@@ -242,6 +247,29 @@ function Window.create(dependencies)
                     end,
                     onScaleChange = function(scale)
                         uiScale.Scale = math.clamp(scale, 0.45, 1.2)
+                    end,
+                    onThemeChange = function(themeData)
+                        if themeData.Background then
+                            tabContentBg.Image = themeData.Background
+                            if sidebar and sidebar.SetBackground then
+                                sidebar.SetBackground(themeData.Background)
+                            end
+                        end
+                        if themeData.ImageTransparency then
+                            tabContentBg.ImageTransparency = themeData.ImageTransparency
+                            if sidebar and sidebar.SetImageTransparency then
+                                sidebar.SetImageTransparency(themeData.ImageTransparency)
+                            end
+                        end
+                        if themeData.BackgroundTransparency then
+                            tabContentBg.BackgroundTransparency = themeData.BackgroundTransparency
+                        end
+                        if themeData.BlurSize and blurEffect then
+                            blurEffect.Size = themeData.BlurSize
+                        end
+                        if themeData.DimEnabled ~= nil and colorCorrection then
+                            colorCorrection.Enabled = themeData.DimEnabled
+                        end
                     end
                 })
             end)
@@ -275,6 +303,7 @@ function Window.create(dependencies)
 
     -- Switch Active Tab
     local function switchTab(tabName)
+        tabContentBg.Visible = (tabName ~= "Home")
         for name, view in pairs(tabViews) do
             view.Visible = (name == tabName)
         end
@@ -284,11 +313,8 @@ function Window.create(dependencies)
         end
     end
 
-    -- Floating Mobile Toggle Button reference (hoisted so onClose can destroy it)
-    local mobileToggle = nil
-
-    -- Create Reworked Sidebar
-    local sidebar = SidebarMod.create(mainFrame, {
+    -- Create Reworked Sidebar (Compact 316px height with smooth red scrollbar)
+    sidebar = SidebarMod.create(mainFrame, {
         Utils = Utils,
         AssetManager = AssetManager,
         onTabSelected = function(tabId)

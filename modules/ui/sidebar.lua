@@ -22,33 +22,22 @@ function Sidebar.create(parentGui, options)
 
     local sidebarFrame = Instance.new("Frame")
     sidebarFrame.Name = "SidebarFrame"
-    sidebarFrame.Size = UDim2.new(0, 154, 0, 400)
+    sidebarFrame.Size = UDim2.new(0, 154, 0, 316)
     sidebarFrame.Position = UDim2.new(1, -154, 0, 0)
     sidebarFrame.BackgroundColor3 = Color3.fromRGB(16, 11, 20)
-    sidebarFrame.BackgroundTransparency = 0.5
+    sidebarFrame.BackgroundTransparency = 1
     sidebarFrame.BorderSizePixel = 0
     sidebarFrame.Parent = parentGui
 
-    local sCorner = Instance.new("UICorner")
-    sCorner.CornerRadius = UDim.new(0, 10)
-    sCorner.Parent = sidebarFrame
-
-    -- Subtle translucent glass divider stroke
-    local sStroke = Instance.new("UIStroke")
-    sStroke.Color = Color3.fromRGB(255, 255, 255)
-    sStroke.Transparency = 0.94
-    sStroke.Thickness = 1
-    sStroke.Parent = sidebarFrame
-
-    -- Background Image with Anime Torii Night Sky
+    -- Background Image with Anime Torii Night Sky (Height 316 matching original navigation_panel.png)
     local bgImg = Instance.new("ImageLabel")
     bgImg.Name = "SidebarBackground"
     bgImg.Size = UDim2.new(1, 0, 1, 0)
     bgImg.BackgroundColor3 = Color3.fromRGB(16, 11, 20)
     bgImg.BackgroundTransparency = 1
-    bgImg.ImageTransparency = 0.5
+    bgImg.ImageTransparency = 0
     bgImg.Image = (AssetManager and (AssetManager.get("sidebar_bg_red.png") or AssetManager.get("sidebar_bg_v2.png"))) or ""
-    bgImg.ScaleType = Enum.ScaleType.Crop
+    bgImg.ScaleType = Enum.ScaleType.Stretch
     bgImg.Parent = sidebarFrame
 
     if AssetManager and AssetManager.bindImage then
@@ -189,6 +178,7 @@ function Sidebar.create(parentGui, options)
         { Id = "Macro", Name = "Macro", Icon = "rbxassetid://80451686744860" },
         { Id = "VFX", Name = "VFX", Icon = "rbxassetid://100033680381365" },
         { Id = "Skins", Name = "Skins", Icon = "rbxassetid://106579555405966" },
+        { Id = "Themes", Name = "Themes", Icon = "rbxassetid://100033680381365" },
     }
 
     local activeTabId = "Home"
@@ -351,6 +341,20 @@ function Sidebar.create(parentGui, options)
         end,
         GetActiveTab = function()
             return activeTabId
+        end,
+        SetBackground = function(img)
+            pcall(function()
+                if bgImg then
+                    bgImg.Image = img
+                end
+            end)
+        end,
+        SetImageTransparency = function(trans)
+            pcall(function()
+                if bgImg then
+                    bgImg.ImageTransparency = trans
+                end
+            end)
         end
     }
 end

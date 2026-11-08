@@ -34,11 +34,12 @@ function HomeView.create(parentContainer, dependencies)
     homeScroll.BackgroundTransparency = 1
     homeScroll.BorderSizePixel = 0
     homeScroll.ScrollBarThickness = 0
-    homeScroll.CanvasSize = UDim2.new(0, 0, 0, 398)
+    homeScroll.CanvasSize = UDim2.new(0, 0, 0, 356)
+    homeScroll.ClipsDescendants = true
     homeScroll.Parent = parentContainer
 
     local listLayout = Instance.new("UIListLayout")
-    listLayout.Padding = UDim.new(0, 8)
+    listLayout.Padding = UDim.new(0, 5)
     listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Parent = homeScroll

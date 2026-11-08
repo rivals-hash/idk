@@ -1580,6 +1580,97 @@ function TabViews.build(tabName, parentContainer, options)
             if Utils then Utils.toast("Monody", "Aura changed to Neon Cyan", 1.5) end
         end, Utils)
 
+    elseif tabName == "Themes" then
+        local onThemeChange = options.onThemeChange
+
+        -- 1. Darling X Wallpapers Gallery
+        local c1 = makeCard("Darling X Wallpapers")
+        c1.LayoutOrder = 2
+
+        local wallpapers = {
+            {
+                Name = "Darling Red (Torii & Moon)",
+                Desc = "Authentic crimson anime Torii with glowing moon.",
+                Asset = (AssetManager and AssetManager.get("sidebar_bg_red.png")) or "rbxassetid://16428787723"
+            },
+            {
+                Name = "Darling Purple (Night Shrine)",
+                Desc = "Classic purple Torii shrine under violet night sky.",
+                Asset = (AssetManager and (AssetManager.get("sidebar_bg_v2.png") or AssetManager.get("sidebar_bg.png"))) or "rbxassetid://14917571120"
+            },
+            {
+                Name = "Darling Noir (Carbon Silk)",
+                Desc = "Sleek dark carbon silk smoke with frosted shading.",
+                Asset = (AssetManager and AssetManager.get("card_bg.png")) or "rbxassetid://11401839801"
+            },
+            {
+                Name = "Darling Cyber (Neon Red)",
+                Desc = "Futuristic crimson cybernetic horizon lattice.",
+                Asset = "rbxassetid://15340058564"
+            },
+            {
+                Name = "Darling Galaxy (Midnight Stars)",
+                Desc = "Deep cosmic violet starfield nebula.",
+                Asset = "rbxassetid://11401839801"
+            },
+            {
+                Name = "Darling Acrylic (Pure Glass)",
+                Desc = "Clean translucent acrylic frosted glass (no image).",
+                Asset = ""
+            }
+        }
+
+        for _, wp in ipairs(wallpapers) do
+            createActionButton(c1, wp.Name, wp.Desc, function()
+                if onThemeChange then
+                    onThemeChange({ Background = wp.Asset })
+                end
+                if Utils then
+                    Utils.toast("Darling X Themes", "Applied " .. wp.Name, 1.5)
+                end
+            end, Utils)
+        end
+
+        -- 2. Glassmorphism & Opacity
+        local c2 = makeCard("Glassmorphism & Opacity")
+        c2.LayoutOrder = 3
+
+        createSlider(c2, "Wallpaper Opacity (%)", 10, 100, 65, function(val)
+            if onThemeChange then
+                onThemeChange({ ImageTransparency = 1 - (val / 100) })
+            end
+        end, Utils)
+
+        createSlider(c2, "Glass Frosted Tint (%)", 0, 90, 45, function(val)
+            if onThemeChange then
+                onThemeChange({ BackgroundTransparency = (val / 100) })
+            end
+        end, Utils)
+
+        createSlider(c2, "Atmospheric Blur", 0, 15, 4, function(val)
+            if onThemeChange then
+                onThemeChange({ BlurSize = val })
+            end
+        end, Utils)
+
+        createToggle(c2, "Dim 3D World (Cinematic)", "Subtle depth-of-field contrast in background.", true, function(state)
+            if onThemeChange then
+                onThemeChange({ DimEnabled = state })
+            end
+        end, Utils)
+
+        -- 3. Accent Color Presets
+        local c3 = makeCard("Accent Colors")
+        c3.LayoutOrder = 4
+
+        createColorPicker(c3, "Accent Preset", "Select interface accent color", {
+            "Crimson", "Ruby", "Purple", "Cyan", "Jade", "White"
+        }, "Crimson", function(colorName)
+            if Utils then
+                Utils.toast("Themes", "Accent preset: " .. colorName, 1.2)
+            end
+        end, Utils)
+
     elseif tabName == "Settings" then
         local c1 = makeCard("Interface Settings")
         c1.LayoutOrder = 2
