@@ -114,12 +114,17 @@ function Sidebar.create(parentGui, options)
     closeBtn.Activated:Connect(handleClose)
     closeBtn.MouseButton1Click:Connect(handleClose)
 
-    -- Left Navigation Tabs List (Width 82px, completely clear of top controls)
-    local tabsListFrame = Instance.new("Frame")
+    -- Left Navigation Tabs List (ScrollingFrame supporting infinite tabs cleanly)
+    local tabsListFrame = Instance.new("ScrollingFrame")
     tabsListFrame.Name = "TabsListFrame"
-    tabsListFrame.Size = UDim2.new(0, 82, 1, -12)
-    tabsListFrame.Position = UDim2.new(0, 6, 0, 8)
+    tabsListFrame.Size = UDim2.new(0, 84, 1, -14)
+    tabsListFrame.Position = UDim2.new(0, 6, 0, 7)
     tabsListFrame.BackgroundTransparency = 1
+    tabsListFrame.BorderSizePixel = 0
+    tabsListFrame.ScrollBarThickness = 0
+    tabsListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+    tabsListFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    tabsListFrame.ScrollingDirection = Enum.ScrollingDirection.Y
     tabsListFrame.ZIndex = 5
     tabsListFrame.Parent = sidebarFrame
 
@@ -170,7 +175,7 @@ function Sidebar.create(parentGui, options)
     for i, tabData in ipairs(tabDefinitions) do
         local tabBtn = Instance.new("TextButton")
         tabBtn.Name = "Tab_" .. tabData.Id
-        tabBtn.Size = UDim2.new(1, 0, 0, 33)
+        tabBtn.Size = UDim2.new(1, 0, 0, 31)
         tabBtn.LayoutOrder = i
         tabBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         tabBtn.BackgroundTransparency = 1
@@ -194,8 +199,8 @@ function Sidebar.create(parentGui, options)
         -- Tab Icon
         local tabIcon = Instance.new("ImageLabel")
         tabIcon.Name = "TabIcon"
-        tabIcon.Size = UDim2.new(0, 18, 0, 18)
-        tabIcon.Position = UDim2.new(0, 6, 0.5, -9)
+        tabIcon.Size = UDim2.new(0, 16, 0, 16)
+        tabIcon.Position = UDim2.new(0, 6, 0.5, -8)
         tabIcon.BackgroundTransparency = 1
         tabIcon.Image = tabData.Icon
         tabIcon.ImageColor3 = Color3.fromRGB(180, 180, 195)
@@ -203,16 +208,16 @@ function Sidebar.create(parentGui, options)
         tabIcon.ZIndex = 7
         tabIcon.Parent = tabBtn
 
-        -- Tab Label in Kalam font
+        -- Tab Label in Gotham font
         local tabLabel = Instance.new("TextLabel")
         tabLabel.Name = "TabLabel"
-        tabLabel.Size = UDim2.new(1, -28, 1, 0)
-        tabLabel.Position = UDim2.new(0, 28, 0, 0)
+        tabLabel.Size = UDim2.new(1, -26, 1, 0)
+        tabLabel.Position = UDim2.new(0, 26, 0, 0)
         tabLabel.BackgroundTransparency = 1
-        tabLabel.Font = Enum.Font.Kalam
+        tabLabel.Font = Enum.Font.GothamMedium
         tabLabel.Text = tabData.Name
         tabLabel.TextColor3 = Color3.fromRGB(195, 195, 210)
-        tabLabel.TextSize = 17
+        tabLabel.TextSize = 12
         tabLabel.TextXAlignment = Enum.TextXAlignment.Left
         tabLabel.Active = false
         tabLabel.ZIndex = 7

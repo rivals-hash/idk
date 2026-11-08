@@ -154,9 +154,6 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
 
         state = not state
         updateVisual(true)
-        if Utils then
-            Utils.toast("Monody", title .. ": " .. (state and "Activado" or "Desactivado"), 1.2)
-        end
         if onToggle then pcall(onToggle, state) end
     end
 
@@ -477,7 +474,7 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     return row
 end
 
--- Helper: Create interactive Color Palette Selector (Darling X Standard)
+-- Helper: Create interactive Color Palette Selector
 local function createColorPicker(parent, title, desc, colorNames, defaultColorName, onSelectColor, Utils)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local selected = defaultColorName or "Rainbow"
@@ -909,7 +906,7 @@ function TabViews.build(tabName, parentContainer, options)
         -- 1. Aimbot (CamLock + Aim Tracking)
         local c1 = makeCard("Aimbot")
         c1.LayoutOrder = 2
-        createToggle(c1, "Aimbot", "Fija y apunta la cámara y ataques automáticamente", false, function(state)
+        createToggle(c1, "Aimbot", "Automatically aims camera and attacks at target", false, function(state)
             if AimbotCore and AimbotCore.setAimbot then
                 AimbotCore.setAimbot(state)
             end
@@ -924,9 +921,8 @@ function TabViews.build(tabName, parentContainer, options)
             end
             _G.G_Aimbot = state
             _G.G_PlayerAim = state
-            if Utils then Utils.toast("Monody", "Aimbot: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
-        createToggle(c1, "NPC Aimbot", "Fija y apunta hacia mobs y jefes", false, function(state)
+        createToggle(c1, "NPC Aimbot", "Lock and aim towards mobs and bosses", false, function(state)
             if NPCAimbot then
                 if state then NPCAimbot.enable() else NPCAimbot.disable() end
             elseif AimbotCore then
@@ -934,15 +930,29 @@ function TabViews.build(tabName, parentContainer, options)
                 if state then AimbotCore.startLoop() else AimbotCore.stopLoop() end
             end
             _G.G_NPCAimbot = state
-            if Utils then Utils.toast("Monody", "NPC Aimbot: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
-        createToggle(c1, "Aimlock", "Fija y mantiene el objetivo durante el combate", false, function(state)
+        createToggle(c1, "Aimlock", "Lock and maintain target lock during combat", false, function(state)
             if AimbotCore and AimbotCore.setLockPlayer then
                 AimbotCore.setLockPlayer(state)
             end
-            if Utils then Utils.toast("Monody", "Aimlock: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
-        createToggle(c1, "Team Check", "Ignora jugadores aliados", false, function(state)
+        createToggle(c1, "PvP Check", "Ignore players with PvP disabled", true, function(state)
+            if AimbotCore then
+                AimbotCore.PvPCheck = state
+            end
+            if _G.MonodyCombatCore then
+                _G.MonodyCombatCore.PvPCheck = state
+            end
+        end, Utils)
+        createToggle(c1, "Safe Zone Check", "Ignore players inside safe zones", true, function(state)
+            if AimbotCore then
+                AimbotCore.SafeZoneCheck = state
+            end
+            if _G.MonodyCombatCore then
+                _G.MonodyCombatCore.SafeZoneCheck = state
+            end
+        end, Utils)
+        createToggle(c1, "Team Check", "Ignore friendly / allied players", false, function(state)
             if PlayerAimbot and PlayerAimbot.setTeamCheck then
                 PlayerAimbot.setTeamCheck(state)
             elseif AimbotCore then
@@ -951,7 +961,7 @@ function TabViews.build(tabName, parentContainer, options)
             if _G.MonodyCombatCore then _G.MonodyCombatCore.TeamCheck = state end
             if _G.DarlingCombatCore then _G.DarlingCombatCore.TeamCheck = state end
         end, Utils)
-        createDropdown(c1, "Modo", "Ángulo de detección", { "360°", "FOV", "180°" }, 1, function(opt)
+        createDropdown(c1, "Aim Mode", "Target detection angle", { "360°", "FOV", "180°" }, 1, function(opt)
             local mode = "360"
             if opt:find("FOV") then mode = "FOV"
             elseif opt:find("180") then mode = "180" end
@@ -970,9 +980,8 @@ function TabViews.build(tabName, parentContainer, options)
             if _G.DarlingHub and _G.DarlingHub.Settings and _G.DarlingHub.Settings.Aim then
                 _G.DarlingHub.Settings.Aim.Mode = mode
             end
-            if Utils then Utils.toast("Monody", "Modo Aim: " .. mode, 1.2) end
         end, Utils)
-        createDropdown(c1, "Prioridad", "Criterio de selección", { "Nearest", "Low HP", "Looking At Me" }, 1, function(opt)
+        createDropdown(c1, "Target Priority", "Target selection criterion", { "Nearest", "Low HP", "Looking At Me" }, 1, function(opt)
             if PlayerAimbot and PlayerAimbot.setPriority then
                 PlayerAimbot.setPriority(opt)
             end
@@ -988,9 +997,8 @@ function TabViews.build(tabName, parentContainer, options)
             if _G.DarlingHub and _G.DarlingHub.Settings and _G.DarlingHub.Settings.Aim then
                 _G.DarlingHub.Settings.Aim.Priority = opt
             end
-            if Utils then Utils.toast("Monody", "Prioridad: " .. opt, 1.2) end
         end, Utils)
-        createSlider(c1, "Rango", 100, 3000, 1000, function(val)
+        createSlider(c1, "Max Range", 100, 3000, 1000, function(val)
             if NPCAimbot and NPCAimbot.setMaxRange then
                 NPCAimbot.setMaxRange(val)
             end
@@ -1005,7 +1013,7 @@ function TabViews.build(tabName, parentContainer, options)
         -- 2. Silent Aim (Silent Skill & Mouse.Hit Redirection)
         local c2 = makeCard("Silent Aim")
         c2.LayoutOrder = 3
-        createToggle(c2, "Player Silent Aim", "Redirige ataques hacia jugadores sin mover la cámara", false, function(state)
+        createToggle(c2, "Player Silent Aim", "Redirect attacks to players without moving camera", false, function(state)
             if PlayerAimbot then
                 if state then PlayerAimbot.enable() else PlayerAimbot.disable() end
             elseif AimbotCore then
@@ -1020,9 +1028,8 @@ function TabViews.build(tabName, parentContainer, options)
             end
             _G.G_PlayerSilentAim = state
             _G.G_SilentAim = state
-            if Utils then Utils.toast("Monody", "Player Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
-        createToggle(c2, "NPC Silent Aim", "Redirige ataques hacia mobs y jefes sin mover la cámara", false, function(state)
+        createToggle(c2, "NPC Silent Aim", "Redirect attacks to mobs and bosses without moving camera", false, function(state)
             if NPCAimbot then
                 if state then NPCAimbot.enable() else NPCAimbot.disable() end
             elseif AimbotCore then
@@ -1030,9 +1037,8 @@ function TabViews.build(tabName, parentContainer, options)
                 if state then AimbotCore.startLoop() else AimbotCore.stopLoop() end
             end
             _G.G_NPCSilentAim = state
-            if Utils then Utils.toast("Monody", "NPC Silent Aim: " .. (state and "Activado" or "Desactivado"), 1.2) end
         end, Utils)
-        createSlider(c2, "Rango Silent Aim", 100, 3000, 1000, function(val)
+        createSlider(c2, "Silent Aim Range", 100, 3000, 1000, function(val)
             if SilentAimMod and SilentAimMod.setMaxDistance then
                 SilentAimMod.setMaxDistance(val)
             end
@@ -1041,13 +1047,13 @@ function TabViews.build(tabName, parentContainer, options)
             end
         end, Utils)
 
-        -- 3. FOV (Darling X Standard)
+        -- 3. FOV
         local c3 = makeCard("FOV")
         c3.LayoutOrder = 4
-        createToggle(c3, "Círculo FOV", "Dibuja el círculo en pantalla", false, function(state)
+        createToggle(c3, "FOV Circle", "Draw field of view circle on screen", false, function(state)
             if FOVMod and FOVMod.setVisible then FOVMod.setVisible(state) end
         end, Utils)
-        createSlider(c3, "Radio FOV", 20, 600, 120, function(val)
+        createSlider(c3, "FOV Radius", 20, 600, 120, function(val)
             if FOVMod and FOVMod.setRadius then FOVMod.setRadius(val) end
             if AimbotCore and AimbotCore.FOV then AimbotCore.FOV.Radius = val end
             if _G.MonodyCombatCore and _G.MonodyCombatCore.FOV then _G.MonodyCombatCore.FOV.Radius = val end
@@ -1056,7 +1062,7 @@ function TabViews.build(tabName, parentContainer, options)
                 _G.DarlingHub.Settings.FOV.Radius = val
             end
         end, Utils)
-        createDropdown(c3, "Posición", "Punto de anclaje", { "Centro", "Cursor" }, 1, function(opt)
+        createDropdown(c3, "Position", "Screen anchor point", { "Center", "Cursor" }, 1, function(opt)
             local mode = opt:find("Cursor") and "Mouse" or "Center"
             if FOVMod and FOVMod.setMode then FOVMod.setMode(mode) end
             if AimbotCore and AimbotCore.FOV then AimbotCore.FOV.Mode = mode end
@@ -1066,39 +1072,35 @@ function TabViews.build(tabName, parentContainer, options)
                 _G.DarlingHub.Settings.FOV.Mode = mode
             end
         end, Utils)
-        createColorPicker(c3, "Color FOV", "Colores Darling X", { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange" }, "Rainbow", function(colorName)
+        createColorPicker(c3, "FOV Color", "Select circle color palette", { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange" }, "Rainbow", function(colorName)
             if FOVMod and FOVMod.setColor then FOVMod.setColor(colorName) end
-            if Utils then Utils.toast("Monody", "Color FOV: " .. colorName, 1.2) end
         end, Utils)
 
         -- 4. Tracers (Hardware 3D Beam + 2D Line)
         local c4 = makeCard("Tracers")
         c4.LayoutOrder = 5
-        createToggle(c4, "Mostrar Tracers", "Líneas hacia enemigos", false, function(state)
+        createToggle(c4, "Show Tracers", "Draw indicator lines towards enemies", false, function(state)
             if TracersMod and TracersMod.setVisible then
                 TracersMod.setVisible(state)
             end
-            if Utils then Utils.toast("Monody", "Tracers: " .. (state and "ON" or "OFF"), 1.2) end
         end, Utils)
-        createDropdown(c4, "Modo", "Tipo de trazado", { "Ambos (3D + 2D)", "3D Beam", "2D Line" }, 1, function(opt)
+        createDropdown(c4, "Mode", "Line rendering mode", { "Both (3D + 2D)", "3D Beam", "2D Line" }, 1, function(opt)
             local m = "Both"
             if opt:find("3D") and not opt:find("2D") then m = "3D Beam"
             elseif opt:find("2D") and not opt:find("3D") then m = "2D Line" end
             if TracersMod and TracersMod.setType then
                 TracersMod.setType(m)
             end
-            if Utils then Utils.toast("Monody", "Modo Tracer: " .. opt, 1.2) end
         end, Utils)
-        createDropdown(c4, "Origen", "Punto de origen", { "Player", "Abajo", "Centro" }, 1, function(opt)
+        createDropdown(c4, "Origin", "Line origin point", { "Player", "Bottom", "Center" }, 1, function(opt)
             local orig = "Player"
-            if opt:find("Abajo") then orig = "Bottom"
-            elseif opt:find("Centro") then orig = "Center" end
+            if opt:find("Bottom") or opt:find("Abajo") then orig = "Bottom"
+            elseif opt:find("Center") or opt:find("Centro") then orig = "Center" end
             if TracersMod and TracersMod.setOrigin then
                 TracersMod.setOrigin(orig)
             end
-            if Utils then Utils.toast("Monody", "Origen: " .. opt, 1.2) end
         end, Utils)
-        createColorPicker(c4, "Color Tracer", "Color de línea", { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple" }, "White", function(colorName)
+        createColorPicker(c4, "Tracer Color", "Select line color", { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple" }, "White", function(colorName)
             if TracersMod then
                 if colorName == "Rainbow" then
                     if TracersMod.setRainbow then TracersMod.setRainbow(true) end
@@ -1116,13 +1118,12 @@ function TabViews.build(tabName, parentContainer, options)
                     end
                 end
             end
-            if Utils then Utils.toast("Monody", "Color Tracer: " .. colorName, 1.2) end
         end, Utils)
 
-        -- 5. Blacklist (Nameless Engine)
-        local c5 = makeCard("Blacklist")
+        -- 5. Blacklist (Skill Engine)
+        local c5 = makeCard("Skill Blacklist")
         c5.LayoutOrder = 6
-        createChipGrid(c5, "Excluir Habilidades", "Toca una para bloquearla del aimbot", {
+        createChipGrid(c5, "Exclude Skills", "Tap to blacklist skills from aimbot", {
             "Melee Z", "Melee X", "Melee C",
             "Sword Z", "Sword X",
             "Fruit Z", "Fruit X", "Fruit C", "Fruit V", "Fruit F", "Fruit TAP",
@@ -1136,57 +1137,53 @@ function TabViews.build(tabName, parentContainer, options)
                     AimbotCore.BlacklistedKeys[cat][key] = isBlacklisted
                 end
             end
-            if Utils then
-                Utils.toast("Monody", chip .. ": " .. (isBlacklisted and "Bloqueado" or "Habilitado"), 1.1)
-            end
         end, Utils)
 
     elseif tabName == "Combat" then
-        local c1 = makeCard("Combate Automático")
+        local c1 = makeCard("Auto Combat")
         c1.LayoutOrder = 2
-        createToggle(c1, "Fast Attack", "Ataque rápido sin retraso de animación", true, nil, Utils)
-        createToggle(c1, "Auto Clicker", "Spam de golpes automático", false, nil, Utils)
-        createToggle(c1, "Auto Skills Combo", "Lanza habilidades Z, X, C, V automáticamente", false, nil, Utils)
-        createToggle(c1, "Kill Aura", "Daña a todos los enemigos cercanos", false, nil, Utils)
+        createToggle(c1, "Fast Attack", "Fast attack with zero animation delay", true, nil, Utils)
+        createToggle(c1, "Auto Clicker", "Automatic attack spammer", false, nil, Utils)
+        createToggle(c1, "Auto Skills Combo", "Cast Z, X, C, V skills automatically", false, nil, Utils)
+        createToggle(c1, "Kill Aura", "Damage all nearby enemies", false, nil, Utils)
 
-        local c2 = makeCard("Rango & Armas")
+        local c2 = makeCard("Range & Weapons")
         c2.LayoutOrder = 3
-        createSlider(c2, "Rango de Ataque", 10, 60, 28, nil, Utils)
-        createActionButton(c2, "Equipar Mejor Arma", "Equipa tu mejor espada o fruta", function()
-            Utils.toast("Monody", "Mejor arma equipada", 1.5)
+        createSlider(c2, "Attack Range", 10, 60, 28, nil, Utils)
+        createActionButton(c2, "Equip Best Weapon", "Equip your highest damage weapon", function()
+            if Utils then Utils.toast("Monody", "Equipped best weapon", 1.5) end
         end, Utils)
 
     elseif tabName == "Players" then
-        local c1 = makeCard("Visuales (ESP)")
+        local c1 = makeCard("Visuals (ESP)")
         c1.LayoutOrder = 2
-        createToggle(c1, "Player ESP", "Muestra nombres y distancia de jugadores", true, nil, Utils)
-        createToggle(c1, "Box ESP", "Caja 2D alrededor de los personajes", false, nil, Utils)
-        createToggle(c1, "Tracers", "Líneas rastreadoras hacia jugadores", false, function(state)
+        createToggle(c1, "Player ESP", "Display player names and distances", true, nil, Utils)
+        createToggle(c1, "Box ESP", "2D bounding box around characters", false, nil, Utils)
+        createToggle(c1, "Tracers", "Indicator lines towards players", false, function(state)
             local TracersMod = options.Tracers
             if TracersMod and TracersMod.setVisible then
                 TracersMod.setVisible(state)
             end
-            if Utils then Utils.toast("Monody", "Tracers: " .. (state and "ON" or "OFF"), 1.2) end
         end, Utils)
 
-        local c2 = makeCard("Movilidad del Jugador")
+        local c2 = makeCard("Player Mobility")
         c2.LayoutOrder = 3
-        createSlider(c2, "Velocidad (WalkSpeed)", 16, 250, 16, function(v)
+        createSlider(c2, "WalkSpeed", 16, 250, 16, function(v)
             pcall(function()
                 if LocalPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
                     LocalPlayer.Character.Humanoid.WalkSpeed = v
                 end
             end)
         end, Utils)
-        createSlider(c2, "Salto (JumpPower)", 50, 300, 50, function(v)
+        createSlider(c2, "JumpPower", 50, 300, 50, function(v)
             pcall(function()
                 if LocalPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
                     LocalPlayer.Character.Humanoid.JumpPower = v
                 end
             end)
         end, Utils)
-        createToggle(c2, "Infinite Jump", "Salta infinitas veces en el aire", false, nil, Utils)
-        createToggle(c2, "Modo Vuelo Móvil (Fly)", "Vuela con joystick táctil", false, nil, Utils)
+        createToggle(c2, "Infinite Jump", "Jump infinitely in mid-air", false, nil, Utils)
+        createToggle(c2, "Mobile Fly Mode", "Fly using virtual joystick controls", false, nil, Utils)
 
     elseif tabName == "Soru" then
         local SoruEngine = options.SoruEngine or _G.MonodySoruEngine
@@ -1194,7 +1191,7 @@ function TabViews.build(tabName, parentContainer, options)
         -- 1. Flashstep & Soru Mastery
         local c1 = makeCard("Flashstep & Soru")
         c1.LayoutOrder = 2
-        createToggle(c1, "Toggle Soru Cooldown (1s)", "Mantiene enfriamiento de 1 segundo de Flashstep", false, function(state)
+        createToggle(c1, "Toggle Soru Cooldown (1s)", "Maintain 1-second Flashstep cooldown", false, function(state)
             if SoruEngine and SoruEngine.setCooldown1s then
                 SoruEngine.setCooldown1s(state)
             else
@@ -1204,104 +1201,100 @@ function TabViews.build(tabName, parentContainer, options)
                 end
                 if player and player.Character then apply(player.Character) end
             end
-            if Utils then Utils.toast("Monody", "Soru Cooldown (1s): " .. (state and "ON" or "OFF"), 1.2) end
         end, Utils)
 
-        createActionButton(c1, "Instant Soru Cooldown (1s)", "Aplica inmediatamente enfriamiento de 1s al personaje actual", function()
+        createActionButton(c1, "Instant Soru Cooldown (1s)", "Apply 1s cooldown to current character immediately", function()
             local player = Players.LocalPlayer
             if player and player.Character then
                 pcall(function() player.Character:SetAttribute("FlashstepCooldown", 1) end)
             end
-            if Utils then Utils.toast("Monody", "Flashstep cooldown 1s aplicado", 1.5) end
+            if Utils then Utils.toast("Monody", "Flashstep 1s cooldown applied", 1.5) end
         end, Utils)
 
-        createToggle(c1, "Infinite Soru", "Flashstep continuo sin límite de enfriamiento", false, function(state)
+        createToggle(c1, "Infinite Soru", "Continuous Flashstep without cooldown", false, function(state)
             if SoruEngine and SoruEngine.setInfinite then
                 SoruEngine.setInfinite(state)
             end
-            if Utils then Utils.toast("Monody", "Infinite Soru: " .. (state and "ON" or "OFF"), 1.2) end
         end, Utils)
 
-        createSlider(c1, "Distancia Máxima", 100, 3000, 1000, function(val)
+        createSlider(c1, "Max Distance", 100, 3000, 1000, function(val)
             if SoruEngine and SoruEngine.setMaxDistance then
                 SoruEngine.setMaxDistance(val)
             end
         end, Utils)
 
-        -- 2. Soru Combate & Aimbot
-        local c2 = makeCard("Soru Combate")
+        -- 2. Soru Combat & Aimbot
+        local c2 = makeCard("Soru Combat")
         c2.LayoutOrder = 3
-        createToggle(c2, "Soru Aimbot", "Te teletransporta al objetivo al usar Flashstep [R]", false, function(state)
+        createToggle(c2, "Soru Aimbot", "Teleport to target when activating Flashstep [R]", false, function(state)
             if SoruEngine and SoruEngine.setAimbot then
                 SoruEngine.setAimbot(state)
             end
-            if Utils then Utils.toast("Monody", "Soru Aimbot: " .. (state and "ON" or "OFF"), 1.2) end
         end, Utils)
 
-        createDropdown(c2, "Modo Objetivo", "Criterio de teleportación", { "Nearest Player", "Selected Player" }, 1, function(opt)
+        createDropdown(c2, "Target Mode", "Teleport target selection", { "Nearest Player", "Selected Player" }, 1, function(opt)
             if SoruEngine then
                 SoruEngine.TargetMode = opt
             end
-            if Utils then Utils.toast("Monody", "Soru Target: " .. opt, 1.2) end
         end, Utils)
 
-        createActionButton(c2, "Ejecutar Soru Ahora", "Ejecuta Flashstep inmediatamente hacia el objetivo o cursor", function()
+        createActionButton(c2, "Execute Soru Now", "Instantly Flashstep towards target or cursor", function()
             if SoruEngine and SoruEngine.executeSoru then
                 local ok = SoruEngine.executeSoru()
                 if ok and Utils then
-                    Utils.toast("Monody", "Soru ejecutado con éxito", 1.2)
+                    Utils.toast("Monody", "Soru executed successfully", 1.2)
                 end
             end
         end, Utils)
 
     elseif tabName == "Macro" then
-        local c1 = makeCard("Automatización y Farm")
+        local c1 = makeCard("Automation & Farm")
         c1.LayoutOrder = 2
-        createToggle(c1, "Auto Farm Nivel", "Acepta misiones y farmea automáticamente", false, nil, Utils)
-        createToggle(c1, "Auto Farm Enemigo Cercano", "Ataca los monstruos cercanos", false, nil, Utils)
-        createToggle(c1, "Auto Recolectar Cofres", "Vuela a cofres y recoge dinero", false, nil, Utils)
+        createToggle(c1, "Auto Farm Level", "Accept quests and farm mobs automatically", false, nil, Utils)
+        createToggle(c1, "Auto Farm Nearest", "Attack nearest enemy mobs", false, nil, Utils)
+        createToggle(c1, "Auto Collect Chests", "Fly to chests and collect cash", false, nil, Utils)
 
-        local c2 = makeCard("Velocidad de Tween")
+        local c2 = makeCard("Tween Speed")
         c2.LayoutOrder = 3
-        createSlider(c2, "Velocidad de Vuelo (Tween)", 50, 350, 220, nil, Utils)
-        createActionButton(c2, "Detener Macro", "Cancela cualquier ruta en curso", function()
-            Utils.toast("Monody", "Macro detenido", 1.5)
+        createSlider(c2, "Flight Speed (Tween)", 50, 350, 220, nil, Utils)
+        createActionButton(c2, "Stop Macro", "Cancel any active route", function()
+            if Utils then Utils.toast("Monody", "Macro stopped", 1.5) end
         end, Utils)
 
     elseif tabName == "VFX" then
-        local c1 = makeCard("Optimización y Gráficos")
+        local c1 = makeCard("Optimization & Graphics")
         c1.LayoutOrder = 2
-        createToggle(c1, "Quitar Niebla (Clear Sky)", "Elimina la niebla ambiental", true, nil, Utils)
-        createToggle(c1, "Modo Fullbright", "Iluminación máxima en zonas oscuras", true, nil, Utils)
-        createToggle(c1, "FPS Boost Móvil", "Reduce partículas y texturas para más fluidez", false, nil, Utils)
-        createToggle(c1, "Desactivar Sombras", "Aumenta la estabilidad en dispositivos gama baja", false, nil, Utils)
+        createToggle(c1, "Clear Sky (No Fog)", "Eliminate atmospheric fog", true, nil, Utils)
+        createToggle(c1, "Fullbright Mode", "Maximum ambient lighting in dark areas", true, nil, Utils)
+        createToggle(c1, "Mobile FPS Boost", "Reduce particles and textures for smoothness", false, nil, Utils)
+        createToggle(c1, "Disable Shadows", "Improve performance on low-end devices", false, nil, Utils)
 
     elseif tabName == "Skins" then
-        local c1 = makeCard("Cosméticos y Efectos")
+        local c1 = makeCard("Cosmetics & Effects")
         c1.LayoutOrder = 2
-        createToggle(c1, "Aura Arcoíris de Arma", "Aura multicolor en espadas y puños", false, nil, Utils)
-        createToggle(c1, "Estela de Personaje (Trail)", "Rastro de luz al moverte", false, nil, Utils)
-        createActionButton(c1, "Cambiar Color de Aura (Cian)", "Ciclar colores de aura", function()
-            Utils.toast("Monody", "Aura cambiada a Cian Neón", 1.5)
+        createToggle(c1, "Rainbow Weapon Aura", "Multicolor aura on swords and fists", false, nil, Utils)
+        createToggle(c1, "Character Trail", "Light trail following character movement", false, nil, Utils)
+        createActionButton(c1, "Cycle Aura Color", "Cycle through available aura colors", function()
+            if Utils then Utils.toast("Monody", "Aura changed to Neon Cyan", 1.5) end
         end, Utils)
 
     elseif tabName == "Settings" then
-        local c1 = makeCard("Configuración de Interfaz")
+        local c1 = makeCard("Interface Settings")
         c1.LayoutOrder = 2
-        createSlider(c1, "Escala UI (%)", 50, 120, 80, function(val)
+        createSlider(c1, "UI Scale (%)", 50, 120, 80, function(val)
             if options.onScaleChange then pcall(options.onScaleChange, val / 100) end
         end, Utils)
 
-        local c2 = makeCard("Utilidades de Servidor")
+        local c2 = makeCard("Server Utilities")
         c2.LayoutOrder = 3
-        createActionButton(c2, "Reconectar al Servidor", "Reingresa a este mismo servidor", function()
+        createActionButton(c2, "Rejoin Server", "Rejoin the current server instance", function()
             pcall(function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
         end, Utils)
-        createActionButton(c2, "Copiar Discord Oficial", "Copia el enlace de invitación", function()
+        createActionButton(c2, "Copy Official Discord", "Copy invite link to clipboard", function()
             Utils.setClipboard("https://discord.gg/besthub")
-            Utils.toast("Monody", "Discord copiado al portapapeles", 2)
+            if Utils then Utils.toast("Monody", "Discord copied to clipboard", 2) end
         end, Utils)
-        createActionButton(c2, "Cerrar Monody Completamente", "Descarga y destruye todo", function()
+        createActionButton(c2, "Unload Monody", "Safely unhook and destroy UI", function()
             if options.onClose then pcall(options.onClose) end
         end, Utils)
     end

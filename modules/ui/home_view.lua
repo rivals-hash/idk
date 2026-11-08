@@ -167,43 +167,66 @@ function HomeView.create(parentContainer, dependencies)
     setupHoverSocial(discordBtn)
     setupHoverSocial(tiktokBtn)
 
-    -- Title: "Monody - Premium" (Unificado para que quede pegado correctamente)
+    -- Title: "Monody" in clean GothamBold
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Name = "TitleLabel"
-    titleLabel.Size = UDim2.new(1, -125, 0, 32)
-    titleLabel.Position = UDim2.new(0, 112, 0, 14)
+    titleLabel.Size = UDim2.new(0, 92, 0, 26)
+    titleLabel.Position = UDim2.new(0, 126, 0, 14)
     titleLabel.BackgroundTransparency = 1
-    titleLabel.Font = Enum.Font.Kalam
-    titleLabel.Text = "Monody - Premium"
-    titleLabel.TextSize = 28
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.Text = "Monody"
+    titleLabel.TextSize = 22
     titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = card1
 
-    -- Subtitle: "By Darling"
+    -- Distinct Premium Badge (Vibrant Golden-Amber)
+    local premBadge = Instance.new("Frame")
+    premBadge.Name = "PremiumBadge"
+    premBadge.Size = UDim2.new(0, 66, 0, 18)
+    premBadge.Position = UDim2.new(0, 222, 0, 18)
+    premBadge.BackgroundColor3 = Color3.fromRGB(255, 190, 40)
+    premBadge.BorderSizePixel = 0
+    premBadge.Parent = card1
+
+    local premCorner = Instance.new("UICorner")
+    premCorner.CornerRadius = UDim.new(0, 4)
+    premCorner.Parent = premBadge
+
+    local premText = Instance.new("TextLabel")
+    premText.Name = "PremText"
+    premText.Size = UDim2.new(1, 0, 1, 0)
+    premText.BackgroundTransparency = 1
+    premText.Font = Enum.Font.GothamBold
+    premText.Text = "PREMIUM"
+    premText.TextSize = 9
+    premText.TextColor3 = Color3.fromRGB(24, 24, 30)
+    premText.Parent = premBadge
+
+    -- Subtitle: "By Darling" (Moved higher and more to the right)
     local authorLabel = Instance.new("TextLabel")
     authorLabel.Name = "AuthorLabel"
-    authorLabel.Size = UDim2.new(0, 140, 0, 24)
-    authorLabel.Position = UDim2.new(0, 112, 0, 48)
+    authorLabel.Size = UDim2.new(0, 140, 0, 20)
+    authorLabel.Position = UDim2.new(0, 134, 0, 42)
     authorLabel.BackgroundTransparency = 1
-    authorLabel.Font = Enum.Font.Kalam
+    authorLabel.Font = Enum.Font.GothamMedium
     authorLabel.Text = "By Darling"
-    authorLabel.TextSize = 20
-    authorLabel.TextColor3 = Color3.fromRGB(220, 220, 230)
+    authorLabel.TextSize = 13
+    authorLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
     authorLabel.TextXAlignment = Enum.TextXAlignment.Left
     authorLabel.Parent = card1
 
     -- Key Time: "Key Time: 25 Hours Left"
     local keyTimeLabel = Instance.new("TextLabel")
     keyTimeLabel.Name = "KeyTimeLabel"
-    keyTimeLabel.Size = UDim2.new(0, 200, 0, 22)
-    keyTimeLabel.Position = UDim2.new(1, -14, 1, -26)
+    keyTimeLabel.Size = UDim2.new(0, 200, 0, 20)
+    keyTimeLabel.Position = UDim2.new(1, -14, 1, -24)
     keyTimeLabel.AnchorPoint = Vector2.new(1, 0)
     keyTimeLabel.BackgroundTransparency = 1
-    keyTimeLabel.Font = Enum.Font.Kalam
+    keyTimeLabel.Font = Enum.Font.GothamMedium
     keyTimeLabel.Text = "Key Time: 25 Hours Left"
-    keyTimeLabel.TextSize = 17
-    keyTimeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    keyTimeLabel.TextSize = 12
+    keyTimeLabel.TextColor3 = Color3.fromRGB(240, 240, 250)
     keyTimeLabel.TextXAlignment = Enum.TextXAlignment.Right
     keyTimeLabel.Parent = card1
 
@@ -238,37 +261,37 @@ function HomeView.create(parentContainer, dependencies)
     cImgCorner.CornerRadius = UDim.new(1, 0)
     cImgCorner.Parent = centerAvatarImg
 
-    -- Left & Right Stats Labels
+    -- Left & Right Stats Labels (Separated from avatar to utilize outer card space)
     local function createStatLabel(name, text, yPos, isLeft)
         local lbl = Instance.new("TextLabel")
         lbl.Name = name
-        lbl.Size = UDim2.new(0, 130, 0, 26)
+        lbl.Size = UDim2.new(0, 115, 0, 24)
         lbl.BackgroundTransparency = 1
-        lbl.Font = Enum.Font.Kalam
+        lbl.Font = Enum.Font.GothamMedium
         lbl.Text = text
-        lbl.TextSize = 18
-        lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-        lbl.TextXAlignment = isLeft and Enum.TextXAlignment.Right or Enum.TextXAlignment.Left
+        lbl.TextSize = 12
+        lbl.TextColor3 = Color3.fromRGB(245, 245, 250)
+        lbl.TextXAlignment = isLeft and Enum.TextXAlignment.Left or Enum.TextXAlignment.Right
 
         if isLeft then
-            lbl.Position = UDim2.new(0.5, -60 - 130, 0, yPos)
+            lbl.Position = UDim2.new(0, 16, 0, yPos)
         else
-            lbl.Position = UDim2.new(0.5, 60, 0, yPos)
+            lbl.Position = UDim2.new(1, -16 - 115, 0, yPos)
         end
         lbl.Parent = card2
         return lbl
     end
 
-    local statDarling = createStatLabel("StatDarling", "- ???", 10, true)
+    local statDarling = createStatLabel("StatDarling", "- ???", 12, true)
     local statGame = createStatLabel("StatGame", "- ???", 46, true)
-    local statBounty = createStatLabel("StatBounty", "- ???", 82, true)
-    local statLevel = createStatLabel("StatLevel", "- ???", 118, true)
+    local statBounty = createStatLabel("StatBounty", "- ???", 80, true)
+    local statLevel = createStatLabel("StatLevel", "- ???", 114, true)
 
     -- Right Stats Labels
-    local statClock = createStatLabel("StatClock", "- 0:00", 10, false)
+    local statClock = createStatLabel("StatClock", "- 0:00", 12, false)
     local statPing = createStatLabel("StatPing", "- 60ms", 46, false)
-    local statFps = createStatLabel("StatFps", "- 60Fps", 82, false)
-    local statServerTime = createStatLabel("StatServerTime", "- 00:00", 118, false)
+    local statFps = createStatLabel("StatFps", "- 60Fps", 80, false)
+    local statServerTime = createStatLabel("StatServerTime", "- 00:00", 114, false)
 
     -- Hook dynamic real-time stats updates from StatsService
     StatsService.bind(function(snap)

@@ -1,6 +1,6 @@
 --[[
     Monody Premium - modules/combat/fov.lua
-    FOV Circle Visualizer (Darling X Edition)
+    FOV Circle Visualizer
     Dual-layer rendering: ScreenGui (100% mobile compatibility) + Drawing API.
     Supports dynamic colors (Rainbow, White, Red, Green, Blue, Yellow, Purple),
     radius scaling, and Center / Touch positioning.
@@ -25,7 +25,7 @@ local currentThickness = 1.5
 local currentMode = "Center" -- "Center" or "Mouse"
 local renderConnection = nil
 
--- Colors Palette (Darling X Standard)
+-- Colors Palette
 FOV.ColorMap = {
     Rainbow = nil,
     White = Color3.fromRGB(255, 255, 255),

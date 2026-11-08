@@ -18,6 +18,8 @@ local Core = {
     PlayerAimEnabled = false,
     NPCAimEnabled = false,
     TeamCheck = false,
+    PvPCheck = true,
+    SafeZoneCheck = true,
 
     -- Settings (360 degrees default)
     AimMode = "360", -- "360", "FOV", "180"
@@ -123,12 +125,76 @@ function Core.isKeyBlacklisted(category, key)
     return false
 end
 
+function Core.isPlayerPvPEnabled(player)
+    if not player or player == LocalPlayer then return false end
+    local ok, enabled = pcall(function()
+        if player:GetAttribute("PvpDisabled") == true then return false end
+        local char = player.Character
+        if char then
+            if char:FindFirstChildOfClass("ForceField") then return false end
+            if char:GetAttribute("PvpDisabled") == true then return false end
+        end
+        return true
+    end)
+    return not ok or enabled
+end
+
+function Core.isPlayerInSafeZone(player)
+    if not player or player == LocalPlayer then return false end
+    local ok, inZone = pcall(function()
+        local char = player.Character
+        if not char then return false end
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum and hum.Sit == true then return true end
+        if char:FindFirstChildOfClass("ForceField") then return true end
+        if char:GetAttribute("SafeZone") == true or player:GetAttribute("SafeZone") == true then return true end
+
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return false end
+        local hrpPos = hrp.Position
+
+        local function checkFolder(folder)
+            if not folder then return false end
+            for _, zone in ipairs(folder:GetChildren()) do
+                if zone:IsA("BasePart") then
+                    local mesh = zone:FindFirstChild("Mesh")
+                    local radius = (mesh and mesh:IsA("SpecialMesh") and (zone.Size.X * mesh.Scale.X) / 2) or (math.min(zone.Size.X, zone.Size.Z) / 2)
+                    if radius > 500 or radius <= 0 then radius = 350 end
+                    if (zone.Position - hrpPos).Magnitude <= radius then return true end
+
+                    local localPos = zone.CFrame:PointToObjectSpace(hrpPos)
+                    local halfSize = zone.Size / 2
+                    if math.abs(localPos.X) <= halfSize.X and math.abs(localPos.Y) <= halfSize.Y + 25 and math.abs(localPos.Z) <= halfSize.Z then
+                        return true
+                    end
+                end
+            end
+            return false
+        end
+
+        local wo = Workspace:FindFirstChild("_WorldOrigin")
+        if wo and checkFolder(wo:FindFirstChild("SafeZones")) then return true end
+        if wo and checkFolder(wo:FindFirstChild("TempSafeZones")) then return true end
+        if checkFolder(Workspace:FindFirstChild("SafeZones")) then return true end
+        local map = Workspace:FindFirstChild("Map")
+        if map and checkFolder(map:FindFirstChild("SafeZones")) then return true end
+        return false
+    end)
+    return ok and inZone
+end
+
 function Core.isPlayerBlacklisted(player)
     if not player then return false end
     if _G.DarlingBlacklistedPlayers then
         if _G.DarlingBlacklistedPlayers[player.UserId] == true or _G.DarlingBlacklistedPlayers[player.Name] == true then
             return true
         end
+    end
+    if Core.PvPCheck and not Core.isPlayerPvPEnabled(player) then
+        return true
+    end
+    if Core.SafeZoneCheck and Core.isPlayerInSafeZone(player) then
+        return true
     end
     return false
 end
@@ -566,10 +632,13 @@ local function isValidHookTarget(target)
         return false
     end
     local targetIsPlayer = (Players:GetPlayerFromCharacter(target.Parent) ~= nil)
-    if Core.NPCAimEnabled and not Core.PlayerAimEnabled and not Core.LockPlayer and not Core.AimbotEnabled and targetIsPlayer then
+    local isPlayerActive = (Core.AimbotEnabled or Core.PlayerAimEnabled or Core.LockPlayer or _G.G_Aimbot or _G.G_PlayerAim or _G.G_PlayerSilentAim)
+    local isNPCActive = (Core.NPCAimEnabled or _G.G_NPCAimbot or _G.G_NPCSilentAim)
+
+    if isNPCActive and not isPlayerActive and targetIsPlayer then
         return false
     end
-    if (Core.PlayerAimEnabled or Core.LockPlayer) and not Core.NPCAimEnabled and not Core.AimbotEnabled and not targetIsPlayer then
+    if isPlayerActive and not isNPCActive and not targetIsPlayer then
         return false
     end
     return true
@@ -820,12 +889,24 @@ local function isCurrentTargetValid(targetPart, targetChar, lpHRP, maxRange)
         return false
     end
     local isPlayer = (Players:GetPlayerFromCharacter(targetChar) ~= nil)
-    if Core.NPCAimEnabled and not Core.PlayerAimEnabled and not Core.LockPlayer and not Core.AimbotEnabled and isPlayer then
+    local isPlayerAimbotActive = (Core.AimbotEnabled or Core.PlayerAimEnabled or Core.LockPlayer)
+    local isNPCAimbotActive = Core.NPCAimEnabled
+
+    -- Strict entity separation:
+    if isNPCAimbotActive and not (Core.AimbotEnabled or Core.PlayerAimEnabled) and isPlayer then
         return false
     end
-    if (Core.PlayerAimEnabled or Core.LockPlayer) and not Core.NPCAimEnabled and not Core.AimbotEnabled and not isPlayer then
+    if isPlayerAimbotActive and not isNPCAimbotActive and not isPlayer then
         return false
     end
+
+    if isPlayer then
+        local pl = Players:GetPlayerFromCharacter(targetChar)
+        if pl and Core.isPlayerBlacklisted(pl) then
+            return false
+        end
+    end
+
     local dist = (targetPart.Position - lpHRP.Position).Magnitude
     if dist > (maxRange + 50) then
         return false
@@ -880,9 +961,20 @@ local function updateTargetCycle()
     local maxRange = hubSettings.MaxRange or Core.MaxRange or 1000
     local now = os.clock()
 
+    local isPlayerAimbotActive = (Core.AimbotEnabled or Core.PlayerAimEnabled)
+    local isNPCAimbotActive = Core.NPCAimEnabled
+
+    -- Strict filtering between Player and NPC
+    local wantPlayers = isPlayerAimbotActive or (Core.LockPlayer and not isNPCAimbotActive)
+    local wantNPCs = isNPCAimbotActive
+    if isNPCAimbotActive and not isPlayerAimbotActive and not Core.LockPlayer then
+        wantPlayers = false
+        wantNPCs = true
+    end
+
     -- 0. Lock Player & Real-time CamLock Mode
-    if Core.LockPlayer or Core.AimbotEnabled then
-        if not Core.LockedTargetPlayer or not isAlive(Core.LockedTargetPlayer.Character) then
+    if wantPlayers and (Core.LockPlayer or Core.AimbotEnabled) then
+        if not Core.LockedTargetPlayer or not isAlive(Core.LockedTargetPlayer.Character) or Core.isPlayerBlacklisted(Core.LockedTargetPlayer) then
             local myPos = lpHRP.Position
             local closestPlayer = nil
             local closestDist = maxRange
@@ -910,7 +1002,7 @@ local function updateTargetCycle()
             end
         end
 
-        if Core.LockedTargetPlayer and isAlive(Core.LockedTargetPlayer.Character) then
+        if Core.LockedTargetPlayer and isAlive(Core.LockedTargetPlayer.Character) and not Core.isPlayerBlacklisted(Core.LockedTargetPlayer) then
             local tPart = getEntityPart(Core.LockedTargetPlayer.Character)
             if tPart then
                 Core.CurrentTargetPart = tPart
@@ -921,13 +1013,15 @@ local function updateTargetCycle()
                 _G.DarlingSilentAimTarget = tPart
                 _G.currentSilentAimTarget = tPart
 
-                -- Real-time CamLock directly tracking target part
-                if Workspace.CurrentCamera then
-                    local cam = Workspace.CurrentCamera
+                -- Real-time CamLock directly tracking target part (NaN safe)
+                local cam = Workspace.CurrentCamera or Camera
+                if cam and tPart.Position then
+                    local camPos = cam.CFrame.Position
                     local aimPos = tPart.Position + Vector3.new(0, 1.2, 0)
-                    local delta = (aimPos - cam.CFrame.Position)
-                    if delta.Magnitude > 0.1 then
-                        cam.CFrame = CFrame.lookAt(cam.CFrame.Position, aimPos)
+                    if (camPos.X == camPos.X) and (aimPos.X == aimPos.X) and (aimPos - camPos).Magnitude > 0.1 then
+                        pcall(function()
+                            cam.CFrame = CFrame.new(camPos, aimPos)
+                        end)
                     end
                 end
                 Core.faceTarget(Core.CurrentTargetPosition or tPart.Position)
@@ -948,7 +1042,7 @@ local function updateTargetCycle()
 
     -- 1. Fast path: if current target is still valid and within interval, update lead prediction directly at native FPS
     if Core.CurrentTargetPart and isCurrentTargetValid(Core.CurrentTargetPart, Core.CurrentTargetCharacter, lpHRP, maxRange) then
-        if not (Core.PlayerAimEnabled and not Core.CurrentTargetIsPlayer) then
+        if not (wantPlayers and not wantNPCs and not Core.CurrentTargetIsPlayer) and not (wantNPCs and not wantPlayers and Core.CurrentTargetIsPlayer) then
             if (now - lastTargetScanTick) < TARGET_SCAN_INTERVAL then
                 Core.CurrentTargetRawPosition = Core.CurrentTargetPart.Position
                 Core.CurrentTargetPosition = Core.predictPosition(Core.CurrentTargetPart)
@@ -982,12 +1076,12 @@ local function updateTargetCycle()
     lastTargetScanTick = now
     local targetPart, predictedPos, targetChar = nil, nil, nil
 
-    if Core.PlayerAimEnabled or Core.AimbotEnabled or Core.LockPlayer then
+    if wantPlayers then
         targetPart, predictedPos, targetChar = resolvePlayerTarget(lpHRP)
         if targetPart then Core.CurrentTargetIsPlayer = true end
     end
 
-    if not targetPart and (Core.NPCAimEnabled or Core.AimbotEnabled) then
+    if not targetPart and wantNPCs then
         targetPart, predictedPos, targetChar = resolveNPCTarget(lpHRP)
         if targetPart then Core.CurrentTargetIsPlayer = false end
     end

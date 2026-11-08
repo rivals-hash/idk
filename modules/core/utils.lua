@@ -84,8 +84,11 @@ function Utils.formatTime(seconds)
     return string.format("%02d:%02d", m, s)
 end
 
--- Toast Notification System
+-- Sleek Minimalist Toast Notification System (Compact Pill, Non-Intrusive, Debounced)
 local toastContainer = nil
+local lastToastMessage = nil
+local lastToastTick = 0
+
 function Utils.getToastContainer()
     if toastContainer and toastContainer.Parent then return toastContainer end
     local sg = Instance.new("ScreenGui")
@@ -98,13 +101,13 @@ function Utils.getToastContainer()
 
     local holder = Instance.new("Frame")
     holder.Name = "ToastHolder"
-    holder.Size = UDim2.new(0, 320, 1, 0)
-    holder.Position = UDim2.new(0.5, -160, 0, 20)
+    holder.Size = UDim2.new(0, 260, 0, 200)
+    holder.Position = UDim2.new(0.5, -130, 0, 14)
     holder.BackgroundTransparency = 1
     holder.Parent = sg
 
     local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 8)
+    layout.Padding = UDim.new(0, 6)
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Parent = holder
@@ -114,89 +117,99 @@ function Utils.getToastContainer()
 end
 
 function Utils.toast(title, message, duration, iconId)
-    duration = duration or 3
+    local now = tick()
+    -- Suppress identical toast spam within 1.5s
+    if lastToastMessage == message and (now - lastToastTick) < 1.5 then
+        return
+    end
+    lastToastMessage = message
+    lastToastTick = now
+
+    duration = duration or 1.5
     local holder = Utils.getToastContainer()
     if not holder then return end
 
-    local card = Instance.new("Frame")
-    card.Name = "ToastCard"
-    card.Size = UDim2.new(1, 0, 0, 48)
-    card.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
-    card.BackgroundTransparency = 0.15
-    card.BorderSizePixel = 0
-    card.ClipsDescendants = true
-    card.Parent = holder
+    -- Keep at most 2 active toasts to avoid clutter
+    local children = holder:GetChildren()
+    local count = 0
+    for _, ch in ipairs(children) do
+        if ch:IsA("GuiObject") and ch.Name == "ToastPill" then
+            count = count + 1
+            if count >= 2 then
+                pcall(function() ch:Destroy() end)
+            end
+        end
+    end
+
+    local pill = Instance.new("Frame")
+    pill.Name = "ToastPill"
+    pill.Size = UDim2.new(0, 240, 0, 32)
+    pill.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+    pill.BackgroundTransparency = 0.15
+    pill.BorderSizePixel = 0
+    pill.ClipsDescendants = true
+    pill.Parent = holder
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = card
+    corner.CornerRadius = UDim.new(0, 16)
+    corner.Parent = pill
 
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(80, 80, 95)
+    stroke.Color = Color3.fromRGB(75, 75, 95)
     stroke.Thickness = 1
-    stroke.Parent = card
+    stroke.Transparency = 0.3
+    stroke.Parent = pill
 
-    local icon = Instance.new("ImageLabel")
-    icon.Name = "Icon"
-    icon.Size = UDim2.new(0, 26, 0, 26)
-    icon.Position = UDim2.new(0, 10, 0.5, -13)
-    icon.BackgroundTransparency = 1
-    icon.Image = iconId or "rbxassetid://98755624629571"
-    icon.Parent = card
+    local hasIcon = (iconId ~= nil and iconId ~= "")
+    local textOffset = hasIcon and 32 or 12
 
-    local titleLbl = Instance.new("TextLabel")
-    titleLbl.Name = "Title"
-    titleLbl.Size = UDim2.new(1, -50, 0, 18)
-    titleLbl.Position = UDim2.new(0, 44, 0, 6)
-    titleLbl.BackgroundTransparency = 1
-    titleLbl.Font = Enum.Font.GothamBold
-    titleLbl.Text = title or "Monody"
-    titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLbl.TextSize = 13
-    titleLbl.TextXAlignment = Enum.TextXAlignment.Left
-    titleLbl.Parent = card
+    if hasIcon then
+        local icon = Instance.new("ImageLabel")
+        icon.Name = "Icon"
+        icon.Size = UDim2.new(0, 18, 0, 18)
+        icon.Position = UDim2.new(0, 8, 0.5, -9)
+        icon.BackgroundTransparency = 1
+        icon.Image = iconId
+        icon.Parent = pill
+    end
 
-    local msgLbl = Instance.new("TextLabel")
-    msgLbl.Name = "Message"
-    msgLbl.Size = UDim2.new(1, -50, 0, 16)
-    msgLbl.Position = UDim2.new(0, 44, 0, 24)
-    msgLbl.BackgroundTransparency = 1
-    msgLbl.Font = Enum.Font.Gotham
-    msgLbl.Text = message or ""
-    msgLbl.TextColor3 = Color3.fromRGB(185, 185, 200)
-    msgLbl.TextSize = 11
-    msgLbl.TextXAlignment = Enum.TextXAlignment.Left
-    msgLbl.TextTruncate = Enum.TextTruncate.AtEnd
-    msgLbl.Parent = card
+    local textLbl = Instance.new("TextLabel")
+    textLbl.Name = "ToastText"
+    textLbl.Size = UDim2.new(1, -textOffset - 10, 1, 0)
+    textLbl.Position = UDim2.new(0, textOffset, 0, 0)
+    textLbl.BackgroundTransparency = 1
+    textLbl.Font = Enum.Font.GothamMedium
+    textLbl.Text = (message and message ~= "") and message or (title or "Monody")
+    textLbl.TextColor3 = Color3.fromRGB(240, 240, 250)
+    textLbl.TextSize = 11
+    textLbl.TextXAlignment = Enum.TextXAlignment.Left
+    textLbl.TextTruncate = Enum.TextTruncate.AtEnd
+    textLbl.Parent = pill
 
-    -- Animate in
-    card.BackgroundTransparency = 1
-    titleLbl.TextTransparency = 1
-    msgLbl.TextTransparency = 1
-    icon.ImageTransparency = 1
+    -- Smooth slide-in
+    pill.Position = UDim2.new(0, 0, 0, -8)
+    pill.BackgroundTransparency = 1
+    textLbl.TextTransparency = 1
     stroke.Transparency = 1
 
-    TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        BackgroundTransparency = 0.15
+    TweenService:Create(pill, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        BackgroundTransparency = 0.15,
+        Position = UDim2.new(0, 0, 0, 0)
     }):Play()
-    TweenService:Create(stroke, TweenInfo.new(0.25), { Transparency = 0 }):Play()
-    TweenService:Create(titleLbl, TweenInfo.new(0.25), { TextTransparency = 0 }):Play()
-    TweenService:Create(msgLbl, TweenInfo.new(0.25), { TextTransparency = 0 }):Play()
-    TweenService:Create(icon, TweenInfo.new(0.25), { ImageTransparency = 0 }):Play()
+    TweenService:Create(stroke, TweenInfo.new(0.2), { Transparency = 0.3 }):Play()
+    TweenService:Create(textLbl, TweenInfo.new(0.2), { TextTransparency = 0 }):Play()
 
     task.delay(duration, function()
-        if card and card.Parent then
-            local tw = TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+        if pill and pill.Parent then
+            local tw = TweenService:Create(pill, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
                 BackgroundTransparency = 1,
-                Size = UDim2.new(1, 0, 0, 0)
+                Position = UDim2.new(0, 0, 0, -8)
             })
-            TweenService:Create(stroke, TweenInfo.new(0.2), { Transparency = 1 }):Play()
-            TweenService:Create(titleLbl, TweenInfo.new(0.2), { TextTransparency = 1 }):Play()
-            TweenService:Create(msgLbl, TweenInfo.new(0.2), { TextTransparency = 1 }):Play()
-            TweenService:Create(icon, TweenInfo.new(0.2), { ImageTransparency = 1 }):Play()
+            TweenService:Create(stroke, TweenInfo.new(0.18), { Transparency = 1 }):Play()
+            TweenService:Create(textLbl, TweenInfo.new(0.18), { TextTransparency = 1 }):Play()
             tw:Play()
             tw.Completed:Connect(function()
-                pcall(function() card:Destroy() end)
+                pcall(function() pill:Destroy() end)
             end)
         end
     end)
