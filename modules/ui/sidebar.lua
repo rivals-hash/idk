@@ -168,17 +168,23 @@ function Sidebar.create(parentGui, options)
     tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
     tabsLayout.Parent = tabsListFrame
 
-    -- Tab definition data with exact icons from reference screenshot
+    -- Tab definition data with exact icons from reference screenshot & Darling Hub suite
     local tabDefinitions = {
         { Id = "Home", Name = "Home", Icon = "rbxassetid://10723407389" },
         { Id = "Aimbot", Name = "Aimbot", Icon = "rbxassetid://134242818164054" },
-        { Id = "Combat", Name = "Combat", Icon = "rbxassetid://81872698913435" },
-        { Id = "Players", Name = "Players", Icon = "rbxassetid://115398113982385" },
+        { Id = "Combat", Name = "Combat / PvP", Icon = "rbxassetid://81872698913435" },
+        { Id = "AutoBounty", Name = "Auto Bounty", Icon = "rbxassetid://10734950309" },
         { Id = "Soru", Name = "Soru", Icon = "rbxassetid://130551565616516" },
+        { Id = "Dungeon", Name = "Dungeon", Icon = "rbxassetid://81872698913435" },
+        { Id = "Teleport", Name = "Teleport", Icon = "rbxassetid://10734951847" },
+        { Id = "Visuals", Name = "Visuals", Icon = "rbxassetid://100033680381365" },
+        { Id = "Players", Name = "Players", Icon = "rbxassetid://115398113982385" },
+        { Id = "HUD", Name = "HUD Editor", Icon = "rbxassetid://10734898144" },
         { Id = "Macro", Name = "Macro", Icon = "rbxassetid://80451686744860" },
-        { Id = "VFX", Name = "VFX", Icon = "rbxassetid://100033680381365" },
-        { Id = "Skins", Name = "Skins", Icon = "rbxassetid://106579555405966" },
+        { Id = "Music", Name = "Music", Icon = "rbxassetid://10734898144" },
+        { Id = "Skins", Name = "Skins & VFX", Icon = "rbxassetid://106579555405966" },
         { Id = "Themes", Name = "Themes", Icon = "rbxassetid://100033680381365" },
+        { Id = "Settings", Name = "Settings", Icon = "rbxassetid://10734951847" },
     }
 
     local activeTabId = "Home"

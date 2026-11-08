@@ -375,6 +375,109 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     return row
 end
 
+-- Helper: Create interactive Text Input (Glassmorphic Darling X Style)
+local function createTextInput(parent, title, desc, placeholder, defaultVal, onSubmit, Utils)
+    local targetContainer = parent:FindFirstChild("Content") or parent
+    local val = defaultVal or ""
+
+    local row = Instance.new("Frame")
+    row.Name = "Input_" .. title:gsub("%s+", "")
+    row.Size = UDim2.new(1, 0, 0, 44)
+    row.BackgroundColor3 = Color3.fromRGB(24, 16, 22)
+    row.BackgroundTransparency = 0.55
+    row.BorderSizePixel = 0
+    row.ZIndex = 3
+    row.Parent = targetContainer
+
+    addCardHeight(parent, 44)
+
+    local rowCorner = Instance.new("UICorner")
+    rowCorner.CornerRadius = UDim.new(0, 8)
+    rowCorner.Parent = row
+
+    local rowStroke = Instance.new("UIStroke")
+    rowStroke.Color = Color3.fromRGB(255, 255, 255)
+    rowStroke.Transparency = 0.92
+    rowStroke.Thickness = 1
+    rowStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    rowStroke.Parent = row
+
+    local textContainer = Instance.new("Frame")
+    textContainer.Size = UDim2.new(1, -140, 1, 0)
+    textContainer.Position = UDim2.new(0, 10, 0, 0)
+    textContainer.BackgroundTransparency = 1
+    textContainer.ZIndex = 3
+    textContainer.Parent = row
+
+    local hasDesc = (desc and #desc > 0)
+
+    local titleLbl = Instance.new("TextLabel")
+    titleLbl.Size = UDim2.new(1, 0, 0, hasDesc and 19 or 24)
+    titleLbl.Position = UDim2.new(0, 0, 0, hasDesc and 3 or 10)
+    titleLbl.BackgroundTransparency = 1
+    titleLbl.Font = Enum.Font.GothamBold
+    titleLbl.Text = title
+    titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLbl.TextSize = 12
+    titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    titleLbl.ZIndex = 4
+    titleLbl.Parent = textContainer
+
+    if hasDesc then
+        local descLbl = Instance.new("TextLabel")
+        descLbl.Size = UDim2.new(1, 0, 0, 15)
+        descLbl.Position = UDim2.new(0, 0, 0, 21)
+        descLbl.BackgroundTransparency = 1
+        descLbl.Font = Enum.Font.GothamMedium
+        descLbl.Text = desc
+        descLbl.TextColor3 = Color3.fromRGB(180, 170, 185)
+        descLbl.TextSize = 9.5
+        descLbl.TextXAlignment = Enum.TextXAlignment.Left
+        descLbl.ZIndex = 4
+        descLbl.Parent = textContainer
+    end
+
+    local inputContainer = Instance.new("Frame")
+    inputContainer.Size = UDim2.new(0, 120, 0, 26)
+    inputContainer.Position = UDim2.new(1, -128, 0.5, -13)
+    inputContainer.BackgroundColor3 = Color3.fromRGB(36, 20, 28)
+    inputContainer.BackgroundTransparency = 0.4
+    inputContainer.BorderSizePixel = 0
+    inputContainer.ZIndex = 4
+    inputContainer.Parent = row
+
+    local icCorner = Instance.new("UICorner")
+    icCorner.CornerRadius = UDim.new(0, 6)
+    icCorner.Parent = inputContainer
+
+    local icStroke = Instance.new("UIStroke")
+    icStroke.Color = Color3.fromRGB(220, 35, 60)
+    icStroke.Transparency = 0.7
+    icStroke.Thickness = 1
+    icStroke.Parent = inputContainer
+
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(1, -12, 1, 0)
+    box.Position = UDim2.new(0, 6, 0, 0)
+    box.BackgroundTransparency = 1
+    box.Text = val
+    box.PlaceholderText = placeholder or "Type here..."
+    box.PlaceholderColor3 = Color3.fromRGB(150, 140, 160)
+    box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    box.Font = Enum.Font.GothamMedium
+    box.TextSize = 10.5
+    box.ClearTextOnFocus = false
+    box.ZIndex = 5
+    box.Parent = inputContainer
+
+    box.FocusLost:Connect(function(enterPressed)
+        val = box.Text
+        if onSubmit then pcall(onSubmit, val, enterPressed) end
+    end)
+
+    return row
+end
+
 -- Helper: Create interactive Slider with Cyber HUD Badge & Glowing Neon Fill (Glassmorphic Darling X Style)
 local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, Utils, customIcon)
     local targetContainer = parent:FindFirstChild("Content") or parent
@@ -1195,18 +1298,110 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
     elseif tabName == "Combat" then
-        local c1 = makeCard("Auto Combat")
-        c1.LayoutOrder = 2
-        createToggle(c1, "Fast Attack", "Fast attack with zero animation delay.", true, nil, Utils)
-        createToggle(c1, "Auto Clicker", "Automatic attack spammer.", false, nil, Utils)
-        createToggle(c1, "Auto Skills Combo", "Cast Z, X, C, V skills automatically.", false, nil, Utils)
-        createToggle(c1, "Kill Aura", "Damage all nearby enemies.", false, nil, Utils)
+        local DarlingHub = options.DarlingHub or _G.DarlingHub
+        local function getMod(path)
+            if DarlingHub and DarlingHub.Require then return DarlingHub:Require(path) end
+            return nil
+        end
+        local FastAttack = options.FastAttack or getMod("modules/pvp/fast_attack.lua")
+        local DragonGun = options.DragonGun or getMod("modules/pvp/dragon_gun.lua")
+        local HitboxExpander = options.HitboxExpander or getMod("modules/combat/hitbox_expander.lua")
+        local AutoHaki = options.AutoHaki or getMod("modules/combat/auto_haki.lua")
+        local RaceAwakening = options.RaceAwakening or getMod("modules/pvp/race_awakening.lua")
+        local SanguineBoost = options.SanguineBoost or getMod("modules/pvp/sanguine_boost.lua")
+        local NinjaDash = options.NinjaDash or getMod("modules/pvp/ninja_dash.lua")
+        local FruitOneShot = options.FruitOneShot or getMod("modules/pvp/fruits_oneshot.lua")
+        local MovementEngine = options.MovementEngine or getMod("modules/movement/movement_engine.lua")
+        local AimbotCore = options.AimbotCore or getMod("modules/combat/aimbot_core.lua")
 
-        local c2 = makeCard("Range & Weapons")
+        -- 1. Combat & Attacks
+        local c1 = makeCard("Combat Assistance")
+        c1.LayoutOrder = 2
+        createToggle(c1, "Dragon Gun M1 (Gun Aura)", "Auto-shoots nearest enemies with rapid bursts.", false, function(state)
+            if DragonGun and DragonGun.toggle then DragonGun.toggle(state) end
+        end, Utils)
+
+        createToggle(c1, "Hitbox Expander", "Expands weapon hitboxes for high range hits.", false, function(state)
+            if HitboxExpander and HitboxExpander.toggle then HitboxExpander.toggle(state) end
+        end, Utils)
+
+        createSlider(c1, "Hitbox Multiplier", 1, 50, 20, function(val)
+            if HitboxExpander and HitboxExpander.setMultiplier then HitboxExpander.setMultiplier(val) end
+        end, Utils)
+
+        createToggle(c1, "Lock Player", "Maintains combat focus and aim on selected player.", false, function(state)
+            if AimbotCore and AimbotCore.setLockPlayer then AimbotCore.setLockPlayer(state) end
+        end, Utils)
+
+        createToggle(c1, "Fast Attack", "Rapid attack bursts for Swords, Melee, and Fruits.", false, function(state)
+            if FastAttack then if state then FastAttack.enable() else FastAttack.disable() end end
+        end, Utils)
+
+        createSlider(c1, "Attack Delay (s)", 1, 50, 25, function(val)
+            if FastAttack then FastAttack.AttackDelay = val / 100 end
+        end, Utils)
+
+        createToggle(c1, "Fruit Fast Attack", "High-speed attack bursts for Demon Fruits.", false, function(state)
+            if FastAttack then if state then FastAttack.enable() else FastAttack.disable() end end
+        end, Utils)
+
+        createToggle(c1, "One Shot Kitsune", "High-potency projectile burst for Kitsune.", false, function(state)
+            if FruitOneShot then if state then FruitOneShot.enable() else FruitOneShot.disable() end end
+        end, Utils)
+
+        createToggle(c1, "Auto Buso Haki", "Automatically activates Buso Haki during combat.", false, function(state)
+            if AutoHaki then if state then AutoHaki.enable() else AutoHaki.disable() end end
+        end, Utils)
+
+        createToggle(c1, "Auto Race V3", "Activates Race V3 ability in combat.", false, function(state)
+            if RaceAwakening and RaceAwakening.setAutoV3 then RaceAwakening.setAutoV3(state) end
+        end, Utils)
+
+        createToggle(c1, "Auto Race V4", "Activates Race V4 awakening automatically.", false, function(state)
+            if RaceAwakening and RaceAwakening.setAutoV4 then RaceAwakening.setAutoV4(state) end
+        end, Utils)
+
+        createToggle(c1, "Sanguine Boost (Z)", "Accelerated cooldown & range boost for Sanguine.", false, function(state)
+            if SanguineBoost and SanguineBoost.toggle then SanguineBoost.toggle(state) end
+        end, Utils)
+
+        createToggle(c1, "Ninja Dash", "Zero dash cooldown with extended velocity.", false, function(state)
+            if NinjaDash and NinjaDash.toggle then NinjaDash.toggle(state) end
+        end, Utils)
+
+        -- 2. Movement & Physics
+        local c2 = makeCard("Movement & Physics")
         c2.LayoutOrder = 3
-        createSlider(c2, "Attack Range", 10, 60, 28, nil, Utils)
-        createActionButton(c2, "Equip Best Weapon", "Equip your highest damage weapon.", function()
-            if Utils then Utils.toast("Monody", "Equipped best weapon", 1.5) end
+        createToggle(c2, "Fly (Flight)", "Smooth aerial flight controlled with move keys.", false, function(state)
+            if MovementEngine and MovementEngine.setFly then MovementEngine.setFly(state) end
+        end, Utils)
+
+        createSlider(c2, "Flight Speed", 20, 350, 70, function(val)
+            if MovementEngine and MovementEngine.setFlySpeed then MovementEngine.setFlySpeed(val) end
+        end, Utils)
+
+        createSlider(c2, "WalkSpeed", 16, 300, 16, function(val)
+            if MovementEngine and MovementEngine.setWalkSpeed then MovementEngine.setWalkSpeed(val > 16, val) end
+        end, Utils)
+
+        createSlider(c2, "Dash Distance", 20, 200, 50, function(val)
+            if MovementEngine and MovementEngine.setDashDistance then MovementEngine.setDashDistance(val > 20, val) end
+        end, Utils)
+
+        createToggle(c2, "Super Jump", "Massive upward vertical impulse jump.", false, function(state)
+            if MovementEngine and MovementEngine.setSuperJump then MovementEngine.setSuperJump(state, 500) end
+        end, Utils)
+
+        createToggle(c2, "Infinite Air Jump", "Jump infinitely in mid-air.", false, function(state)
+            if MovementEngine and MovementEngine.setInfiniteJump then MovementEngine.setInfiniteJump(state) end
+        end, Utils)
+
+        createToggle(c2, "Walk On Water", "Solid platform allowing walking on ocean waters.", false, function(state)
+            if MovementEngine and MovementEngine.setWalkOnWater then MovementEngine.setWalkOnWater(state) end
+        end, Utils)
+
+        createToggle(c2, "Noclip", "Pass through all solid collidable structures.", false, function(state)
+            if MovementEngine and MovementEngine.setNoclip then MovementEngine.setNoclip(state) end
         end, Utils)
 
     elseif tabName == "Players" then
@@ -1487,6 +1682,108 @@ function TabViews.build(tabName, parentContainer, options)
             pcall(function() connRem:Disconnect() end)
         end)
 
+    elseif tabName == "AutoBounty" then
+        local DarlingHub = options.DarlingHub or _G.DarlingHub
+        local autoBountyMod = options.AutoBounty or (DarlingHub and DarlingHub:Require("modules/combat/auto_bounty.lua"))
+
+        -- 1. Mode & Target Status
+        local c1 = makeCard("Auto Bounty Hunter")
+        c1.LayoutOrder = 2
+        createToggle(c1, "Auto Bounty Mode (Fast Hop)", "Engage high-speed bounty hunter loop.", (autoBountyMod and autoBountyMod.AutoBountyMode == true) or false, function(state)
+            if autoBountyMod then
+                autoBountyMod.AutoBountyMode = state
+                _G.DarlingFastBountyMode = state
+                if getgenv then getgenv().DarlingFastBountyMode = state end
+            end
+        end, Utils)
+
+        createDropdown(c1, "Auto Join Team", "Automatic faction team selection.", { "Pirates", "Marines" }, (autoBountyMod and autoBountyMod.AutoTeam == "Marines") and 2 or 1, function(opt)
+            if autoBountyMod then autoBountyMod.AutoTeam = opt end
+        end, Utils)
+
+        createActionButton(c1, "Skip Target Player", "Discard current hunt target and pick next player.", function()
+            if autoBountyMod and autoBountyMod.SkipTarget then
+                autoBountyMod:SkipTarget()
+                if Utils then Utils.toast("Auto Bounty", "Skipped target", 1.2) end
+            end
+        end, Utils)
+
+        -- 2. Movement & Tween Speeds
+        local c2 = makeCard("Tween Flight & Speeds")
+        c2.LayoutOrder = 3
+        createSlider(c2, "Near Tween Speed", 100, 450, (autoBountyMod and autoBountyMod.NearTweenSpeed) or 310, function(val)
+            if autoBountyMod then autoBountyMod.NearTweenSpeed = val end
+        end, Utils)
+
+        createSlider(c2, "Far Tween Speed", 50, 350, (autoBountyMod and autoBountyMod.FarTweenSpeed) or 200, function(val)
+            if autoBountyMod then autoBountyMod.FarTweenSpeed = val end
+        end, Utils)
+
+        createSlider(c2, "Tween Threshold (Studs)", 300, 3000, (autoBountyMod and autoBountyMod.TweenThreshold) or 1000, function(val)
+            if autoBountyMod then autoBountyMod.TweenThreshold = val end
+        end, Utils)
+
+        -- 3. Orbit & Combat Attacks
+        local c3 = makeCard("Orbit & Combat Rotation")
+        c3.LayoutOrder = 4
+        createToggle(c3, "Orbit Target", "Circles around victim during attack bursts.", (autoBountyMod and autoBountyMod.Orbit) or false, function(state)
+            if autoBountyMod then autoBountyMod.Orbit = state end
+        end, Utils)
+
+        createSlider(c3, "Orbit Distance", 1, 20, (autoBountyMod and autoBountyMod.OrbitDistance) or 3, function(val)
+            if autoBountyMod then autoBountyMod.OrbitDistance = val end
+        end, Utils)
+
+        createSlider(c3, "Orbit Speed", 2, 30, (autoBountyMod and autoBountyMod.OrbitSpeed) or 12, function(val)
+            if autoBountyMod then autoBountyMod.OrbitSpeed = val end
+        end, Utils)
+
+        createToggle(c3, "Auto Soru Movement", "Uses Soru/Flashstep to close distances instantly.", (autoBountyMod and autoBountyMod.AutoSoru) or false, function(state)
+            if autoBountyMod then autoBountyMod.AutoSoru = state end
+        end, Utils)
+
+        createToggle(c3, "Auto Skills Rotation", "Casts weapon and fruit skills during combat.", (autoBountyMod and autoBountyMod.AutoSkills) or false, function(state)
+            if autoBountyMod then autoBountyMod.AutoSkills = state end
+        end, Utils)
+
+        createToggle(c3, "Auto Buso / Ken Haki", "Maintains Buso & Observation Haki buffs.", (autoBountyMod and autoBountyMod.AutoBuso) or false, function(state)
+            if autoBountyMod then
+                autoBountyMod.AutoBuso = state
+                autoBountyMod.AutoKen = state
+            end
+        end, Utils)
+
+        createToggle(c3, "Auto Race V4", "Awakens Race V4 instantly upon meter charge.", (autoBountyMod and autoBountyMod.AutoV4) or false, function(state)
+            if autoBountyMod then autoBountyMod.AutoV4 = state end
+        end, Utils)
+
+        -- 4. Low HP Safety & Server Hop
+        local c4 = makeCard("Safety & Server Hop")
+        c4.LayoutOrder = 5
+        createToggle(c4, "Auto Flee Low HP", "Flees to high altitude when health drops.", (autoBountyMod and autoBountyMod.AutoFlee) or false, function(state)
+            if autoBountyMod then autoBountyMod.AutoFlee = state end
+        end, Utils)
+
+        createSlider(c4, "Flee HP %", 10, 60, (autoBountyMod and autoBountyMod.FleeHP) or 30, function(val)
+            if autoBountyMod then autoBountyMod.FleeHP = val end
+        end, Utils)
+
+        createSlider(c4, "Return HP %", 30, 90, (autoBountyMod and autoBountyMod.ReturnHP) or 50, function(val)
+            if autoBountyMod then autoBountyMod.ReturnHP = val end
+        end, Utils)
+
+        createToggle(c4, "Auto Server Hop", "Hops servers when no valid targets remain.", (autoBountyMod and autoBountyMod.AutoHop) or false, function(state)
+            if autoBountyMod then autoBountyMod.AutoHop = state end
+        end, Utils)
+
+        createToggle(c4, "Hop If Empty Server", "Hops immediately if player count drops.", (autoBountyMod and autoBountyMod.HopIfEmpty) or true, function(state)
+            if autoBountyMod then autoBountyMod.HopIfEmpty = state end
+        end, Utils)
+
+        createSlider(c4, "Target Player Count", 2, 14, (autoBountyMod and autoBountyMod.TargetPlayerCount) or 8, function(val)
+            if autoBountyMod then autoBountyMod.TargetPlayerCount = val end
+        end, Utils)
+
     elseif tabName == "Soru" then
         local SoruEngine = options.SoruEngine or _G.MonodySoruEngine
 
@@ -1549,35 +1846,351 @@ function TabViews.build(tabName, parentContainer, options)
             end
         end, Utils)
 
-    elseif tabName == "Macro" then
-        local c1 = makeCard("Automation & Farm")
-        c1.LayoutOrder = 2
-        createToggle(c1, "Auto Farm Level", "Accept quests and farm mobs automatically.", false, nil, Utils)
-        createToggle(c1, "Auto Farm Nearest", "Attack nearest enemy mobs.", false, nil, Utils)
-        createToggle(c1, "Auto Collect Chests", "Fly to chests and collect cash.", false, nil, Utils)
+    elseif tabName == "Dungeon" then
+        local DarlingHub = options.DarlingHub or _G.DarlingHub
+        local dungeonMod = options.DungeonEngine or (DarlingHub and DarlingHub:Require("modules/combat/dungeon_engine.lua"))
+        local dragonGunMod = options.DragonGun or (DarlingHub and DarlingHub:Require("modules/pvp/dragon_gun.lua"))
 
-        local c2 = makeCard("Tween Speed")
-        c2.LayoutOrder = 3
-        createSlider(c2, "Flight Speed (Tween)", 50, 350, 220, nil, Utils)
-        createActionButton(c2, "Stop Macro", "Cancel any active route.", function()
-            if Utils then Utils.toast("Monody", "Macro stopped", 1.5) end
+        local c1 = makeCard("Dungeon Automation")
+        c1.LayoutOrder = 2
+        createToggle(c1, "Auto Dungeon", "Clears mobs and bosses above enemies automatically.", (dungeonMod and dungeonMod.Active) or false, function(state)
+            if dungeonMod then
+                if state then dungeonMod:Start() else dungeonMod:Stop() end
+            end
         end, Utils)
 
-    elseif tabName == "VFX" then
-        local c1 = makeCard("Optimization & Graphics")
+        createDropdown(c1, "Equipped Weapon", "Weapon category used for clearing waves.", { "Sword", "Melee", "Blox Fruit" }, 1, function(opt)
+            if dungeonMod then dungeonMod.SelectedWeapon = opt end
+        end, Utils)
+
+        createSlider(c1, "Attack Height (Studs)", 10, 100, (dungeonMod and dungeonMod.AttackHeight) or 40, function(val)
+            if dungeonMod then dungeonMod.AttackHeight = val end
+        end, Utils)
+
+        createToggle(c1, "Auto Race V4", "Awakens Race V4 during dungeon battles.", (dungeonMod and dungeonMod.AutoV4) or false, function(state)
+            if dungeonMod then dungeonMod.AutoV4 = state end
+        end, Utils)
+
+        createToggle(c1, "Dungeon Gun Aura", "Dragon Gun rapid fire against dungeon mobs.", false, function(state)
+            if dragonGunMod and dragonGunMod.toggle then dragonGunMod.toggle(state) end
+        end, Utils)
+
+        createActionButton(c1, "Pass Current Room Now", "Triggers ExitTeleporter touch to jump to next wave.", function()
+            if dungeonMod and dungeonMod.passCurrentRoom then
+                dungeonMod.passCurrentRoom()
+                if Utils then Utils.toast("Dungeon", "Triggered room bypass", 1.2) end
+            end
+        end, Utils)
+
+    elseif tabName == "Teleport" then
+        local DarlingHub = options.DarlingHub or _G.DarlingHub
+        local tpMod = options.TpIslands or (DarlingHub and DarlingHub:Require("modules/movement/tp_islands.lua"))
+        local detectedSea = (tpMod and tpMod.GetCurrentSea and tpMod.GetCurrentSea()) or "Sea1"
+        local selectedSeaKey = detectedSea
+
+        local seaIslands = {
+            Sea1 = { "WindMill", "Marine", "Middle Town", "Jungle", "Pirate Village", "Desert", "Snow Island", "MarineFord", "Colosseum", "Sky Island 1", "Prison", "Magma Village", "Under Water Island", "Fountain City" },
+            Sea2 = { "The Cafe", "Frist Spot", "Dark Area", "Flamingo Mansion", "Green Zone", "Factory", "Colossuim", "Zombie Island", "Two Snow Mountain", "Punk Hazard", "Cursed Ship", "Ice Castle", "Forgotten Island" },
+            Sea3 = { "Mansion", "Port Town", "Great Tree", "Castle On The Sea", "Hydra Island", "Floating Turtle", "Haunted Castle", "Peanut Island", "Ice Cream Island", "Cake Loaf", "Chocolate Island", "Tiki Outpost" }
+        }
+
+        local currentIslandList = seaIslands[selectedSeaKey] or seaIslands.Sea1
+        local chosenIsland = currentIslandList[1] or "WindMill"
+
+        local c1 = makeCard("Island Navigation")
         c1.LayoutOrder = 2
-        createToggle(c1, "Clear Sky (No Fog)", "Eliminate atmospheric fog.", true, nil, Utils)
-        createToggle(c1, "Fullbright Mode", "Maximum ambient lighting in dark areas.", true, nil, Utils)
-        createToggle(c1, "Mobile FPS Boost", "Reduce particles and textures for smoothness.", false, nil, Utils)
-        createToggle(c1, "Disable Shadows", "Improve performance on low-end devices.", false, nil, Utils)
+
+        createDropdown(c1, "World / Sea", "Select Blox Fruits world sea.", { "Sea 1", "Sea 2", "Sea 3" }, (selectedSeaKey == "Sea2") and 2 or ((selectedSeaKey == "Sea3") and 3 or 1), function(opt)
+            selectedSeaKey = (opt == "Sea 2") and "Sea2" or ((opt == "Sea 3") and "Sea3" or "Sea1")
+            currentIslandList = seaIslands[selectedSeaKey] or seaIslands.Sea1
+            chosenIsland = currentIslandList[1] or ""
+        end, Utils)
+
+        createDropdown(c1, "Target Island", "Destination island for flight tween.", currentIslandList, 1, function(opt)
+            chosenIsland = opt
+        end, Utils)
+
+        createActionButton(c1, "Teleport To Island", "Fly smoothly to target island.", function()
+            if tpMod and tpMod.IslandsData and tpMod.IslandsData[selectedSeaKey] then
+                for _, item in ipairs(tpMod.IslandsData[selectedSeaKey]) do
+                    if item.name == chosenIsland then
+                        tpMod.TweenTo(item.cf, item.name)
+                        if Utils then Utils.toast("Teleport", "Flying to " .. chosenIsland, 1.5) end
+                        return
+                    end
+                end
+            end
+        end, Utils)
+
+        createActionButton(c1, "Stop Teleport", "Cancel any active flight immediately.", function()
+            if tpMod and tpMod.StopTween then
+                tpMod.StopTween()
+                if Utils then Utils.toast("Teleport", "Flight stopped", 1.2) end
+            end
+        end, Utils)
+
+        createSlider(c1, "Tween Flight Speed", 50, 500, (tpMod and tpMod.TweenSpeed) or 350, function(val)
+            if tpMod and tpMod.SetSpeed then tpMod.SetSpeed(val) end
+        end, Utils)
+
+        createToggle(c1, "Teleporter Bypass", "Uses entrance portal teleporters when available.", (tpMod and tpMod.UseTeleporterBypass) or true, function(state)
+            if tpMod then tpMod.UseTeleporterBypass = state end
+        end, Utils)
+
+    elseif tabName == "Visuals" or tabName == "VFX" then
+        local DarlingHub = options.DarlingHub or _G.DarlingHub
+        local espMod = options.VisualsESP or (DarlingHub and DarlingHub:Require("modules/visuals/esp.lua"))
+        local shipPainter = options.ShipPainter or (DarlingHub and DarlingHub:Require("modules/visuals/ship_painter.lua"))
+
+        -- 1. Player ESP
+        local c1 = makeCard("Player ESP & Wallhacks")
+        c1.LayoutOrder = 2
+        createToggle(c1, "2D Quad Boxes", "Renders cornered 2D bounding boxes around enemies.", false, function(state)
+            if espMod and espMod.setBoxes then espMod.setBoxes(state) end
+        end, Utils)
+
+        createToggle(c1, "Player Names", "Displays formatted usernames directly above heads.", false, function(state)
+            if espMod and espMod.setNames then espMod.setNames(state) end
+        end, Utils)
+
+        createToggle(c1, "Health Bars", "Dynamic health bars on character bounding boxes.", false, function(state)
+            if espMod and espMod.setHealth then espMod.setHealth(state) end
+        end, Utils)
+
+        createToggle(c1, "Distance Indicator", "Displays distance in studs below player feet.", false, function(state)
+            if espMod and espMod.setDistance then espMod.setDistance(state) end
+        end, Utils)
+
+        createToggle(c1, "Equipped Tool / Weapon", "Shows weapon or fruit held by enemies.", false, function(state)
+            if espMod and espMod.setTool then espMod.setTool(state) end
+        end, Utils)
+
+        createToggle(c1, "Chams / Highlights", "Radiant silhouette highlights through walls.", false, function(state)
+            if espMod and espMod.setChams then espMod.setChams(state) end
+        end, Utils)
+
+        createToggle(c1, "Multi-Tracers (All Players)", "Dynamic snaplines connecting origin to every player.", false, function(state)
+            if espMod and espMod.setTracers then espMod.setTracers(state) end
+        end, Utils)
+
+        createDropdown(c1, "Tracer Line Color", "Snapline rendering color.", { "White", "Cyan", "Purple", "Green", "Yellow", "Orange", "Red", "Pink" }, 1, function(selected)
+            if espMod and espMod.setTracerColor then
+                local colors = {
+                    ["White"] = Color3.fromRGB(255, 255, 255),
+                    ["Cyan"] = Color3.fromRGB(56, 189, 248),
+                    ["Purple"] = Color3.fromRGB(192, 132, 252),
+                    ["Green"] = Color3.fromRGB(34, 197, 94),
+                    ["Yellow"] = Color3.fromRGB(250, 204, 21),
+                    ["Orange"] = Color3.fromRGB(251, 146, 60),
+                    ["Red"] = Color3.fromRGB(244, 63, 94),
+                    ["Pink"] = Color3.fromRGB(244, 114, 182),
+                }
+                espMod.setTracerColor(colors[selected] or Color3.fromRGB(255, 255, 255))
+            end
+        end, Utils)
+
+        -- 2. Ship Painter & Resizer
+        local c2 = makeCard("Sacred Ship Customizer")
+        c2.LayoutOrder = 3
+        createActionButton(c2, "Detect Player Ship", "Scans within 500 studs for pirate ship.", function()
+            if shipPainter and shipPainter.findPlayerShip then
+                local s = shipPainter.findPlayerShip()
+                if Utils then Utils.toast("Ship Painter", s and ("Found ship: " .. s.Name) or "No ship within 500 studs", 2) end
+            end
+        end, Utils)
+
+        local chosenShipColor = "Purple"
+        createDropdown(c2, "Ship Paint Color", "Color tint for ship parts.", { "Red", "Blue", "Green", "Purple", "White", "Yellow", "Void (Black)", "Orange" }, 4, function(c)
+            chosenShipColor = c
+        end, Utils)
+
+        createActionButton(c2, "Apply Ship Color", "Paints current ship model.", function()
+            if shipPainter and shipPainter.applyColorName then
+                shipPainter.applyColorName(chosenShipColor)
+                if Utils then Utils.toast("Ship Painter", "Painted ship " .. chosenShipColor, 1.5) end
+            end
+        end, Utils)
+
+        createActionButton(c2, "Reset Ship Colors", "Restores default original materials and colors.", function()
+            if shipPainter and shipPainter.resetColors then
+                shipPainter.resetColors()
+                if Utils then Utils.toast("Ship Painter", "Colors reset", 1.2) end
+            end
+        end, Utils)
+
+        -- 3. Environment & Shaders
+        local c3 = makeCard("Shaders & Environment")
+        c3.LayoutOrder = 4
+        createToggle(c3, "Clear Sky (No Fog)", "Eliminates atmospheric haze and fog.", true, function(state)
+            local Lighting = game:GetService("Lighting")
+            if state then
+                Lighting.FogEnd = 100000
+                Lighting.FogStart = 0
+            end
+        end, Utils)
+
+        createToggle(c3, "Fullbright Mode", "Maximum ambient lighting in dark areas.", true, function(state)
+            local Lighting = game:GetService("Lighting")
+            if state then
+                Lighting.Brightness = 2
+                Lighting.ClockTime = 14
+                Lighting.GlobalShadows = false
+            end
+        end, Utils)
+
+    elseif tabName == "HUD" then
+        local DarlingHub = options.DarlingHub or _G.DarlingHub
+        local hudMod = options.ControlsHUD or (DarlingHub and DarlingHub:Require("modules/ui/controls_hud.lua"))
+
+        local c1 = makeCard("Controls HUD Editor")
+        c1.LayoutOrder = 2
+
+        createActionButton(c1, "Unlock & Drag HUD Buttons", "Enables interactive positioning of all skill buttons.", function()
+            if hudMod and hudMod.EnableEditMode then
+                hudMod.EnableEditMode()
+                if Utils then Utils.toast("HUD Editor", "Dragging unlocked! Move buttons freely.", 2) end
+            end
+        end, Utils)
+
+        createActionButton(c1, "Save & Lock HUD Layout", "Locks button positions and persists layout.", function()
+            if hudMod and hudMod.DisableEditMode then
+                hudMod.DisableEditMode(true)
+                if Utils then Utils.toast("HUD Editor", "Layout saved & locked!", 1.5) end
+            end
+        end, Utils)
+
+        createActionButton(c1, "Discard Layout Changes", "Cancels unsaved button movements.", function()
+            if hudMod and hudMod.DisableEditMode then
+                hudMod.DisableEditMode(false)
+                if Utils then Utils.toast("HUD Editor", "Changes discarded", 1.2) end
+            end
+        end, Utils)
+
+        createSlider(c1, "Global Button Scale (%)", 50, 200, 100, function(val)
+            if hudMod and hudMod.SetGlobalScale then
+                hudMod.SetGlobalScale(val / 100)
+            end
+        end, Utils)
+
+        createActionButton(c1, "Reset to Default Positions", "Restores native Blox Fruits HUD layout.", function()
+            if hudMod and hudMod.ResetToDefaults then
+                hudMod.ResetToDefaults()
+                if Utils then Utils.toast("HUD Editor", "Reset to defaults", 1.5) end
+            end
+        end, Utils)
+
+    elseif tabName == "Macro" then
+        local DarlingHub = options.DarlingHub or _G.DarlingHub
+        local macroMod = options.MacroEngine or (DarlingHub and DarlingHub:Require("modules/macro/macro_engine.lua"))
+
+        local c1 = makeCard("Macro Skills Combo")
+        c1.LayoutOrder = 2
+
+        createToggle(c1, "Loop Macro Sequence", "Repeats skill sequence continuously.", (macroMod and macroMod.Loop) or false, function(state)
+            if macroMod and macroMod.SetLoop then macroMod.SetLoop(state) end
+        end, Utils)
+
+        createActionButton(c1, "Execute Macro Combo", "Executes configured 6-block weapon skill chain.", function()
+            if macroMod and macroMod.Execute then
+                macroMod.Execute(1)
+                if Utils then Utils.toast("Macro", "Executing combo 1", 1.2) end
+            end
+        end, Utils)
+
+        createActionButton(c1, "Stop Active Macro", "Immediately stops running combo.", function()
+            if macroMod and macroMod.Stop then
+                macroMod.Stop()
+                if Utils then Utils.toast("Macro", "Stopped", 1.2) end
+            end
+        end, Utils)
+
+        createToggle(c1, "Floating Mobile Button", "On-screen button for quick combo triggering.", false, function(state)
+            if macroMod and macroMod.SetShowMobileButton then
+                macroMod.SetShowMobileButton(state)
+            end
+        end, Utils)
+
+        local c2 = makeCard("Automation & Quests")
+        c2.LayoutOrder = 3
+        createToggle(c2, "Auto Farm Level", "Accepts quests and farms mobs automatically.", false, nil, Utils)
+        createToggle(c2, "Auto Collect Chests", "Flies to chests and collects cash.", false, nil, Utils)
+        createSlider(c2, "Flight Speed (Tween)", 50, 350, 220, nil, Utils)
+
+    elseif tabName == "Music" then
+        local DarlingHub = options.DarlingHub or _G.DarlingHub
+        local musicMod = options.MusicEngine or (DarlingHub and DarlingHub:Require("modules/utility/music_engine.lua"))
+        local customAudioId = ""
+
+        local c1 = makeCard("Darling Audio Suite")
+        c1.LayoutOrder = 2
+
+        local tracks = { "phonk", "Darling Theme - Lo-Fi Chill", "Anime Vibes - Aesthetic Chill", "Synthwave Night Drive", "Combat Anthem" }
+        local selectedTrackName = tracks[1]
+
+        createDropdown(c1, "Preset Soundtrack", "Select background music track.", tracks, 1, function(trackName)
+            selectedTrackName = trackName
+        end, Utils)
+
+        createActionButton(c1, "Play Selected Track", "Plays chosen background music.", function()
+            if musicMod and musicMod.PresetTracks then
+                for _, trk in ipairs(musicMod.PresetTracks) do
+                    if trk.Name == selectedTrackName then
+                        musicMod.play(trk)
+                        if Utils then Utils.toast("Music Player", "Playing: " .. trk.Name, 1.5) end
+                        return
+                    end
+                end
+            end
+            if musicMod and musicMod.play then
+                musicMod.play({ Name = selectedTrackName, Id = "1843588265" })
+            end
+        end, Utils)
+
+        createActionButton(c1, "Stop Audio Playback", "Silences active music player.", function()
+            if musicMod and musicMod.stop then
+                musicMod.stop()
+                if Utils then Utils.toast("Music Player", "Audio stopped", 1.2) end
+            end
+        end, Utils)
+
+        createSlider(c1, "Volume (%)", 0, 100, 50, function(val)
+            if musicMod and musicMod.setVolume then musicMod.setVolume(val / 100) end
+        end, Utils)
+
+        createSlider(c1, "Pitch / Speed (%)", 50, 200, 100, function(val)
+            if musicMod and musicMod.setPlaybackSpeed then musicMod.setPlaybackSpeed(val / 100) end
+        end, Utils)
+
+        createTextInput(c1, "Custom Sound ID", "Enter Roblox Audio Asset ID.", "e.g. 1843588265", "", function(text)
+            customAudioId = text:gsub("%D+", "")
+        end, Utils)
+
+        createActionButton(c1, "Play Custom Sound", "Stream audio from custom ID.", function()
+            if #customAudioId > 0 and musicMod and musicMod.play then
+                musicMod.play({ Name = "Custom ID: " .. customAudioId, Id = customAudioId })
+                if Utils then Utils.toast("Music Player", "Playing custom sound", 1.5) end
+            else
+                if Utils then Utils.toast("Music Player", "Please enter a valid sound ID", 2) end
+            end
+        end, Utils)
 
     elseif tabName == "Skins" then
-        local c1 = makeCard("Cosmetics & Effects")
+        local c1 = makeCard("Cosmetics & VFX")
         c1.LayoutOrder = 2
-        createToggle(c1, "Rainbow Weapon Aura", "Multicolor aura on swords and fists.", false, nil, Utils)
-        createToggle(c1, "Character Trail", "Light trail following character movement.", false, nil, Utils)
-        createActionButton(c1, "Cycle Aura Color", "Cycle through available aura colors.", function()
-            if Utils then Utils.toast("Monody", "Aura changed to Neon Cyan", 1.5) end
+        createToggle(c1, "Rainbow Weapon Aura", "Multicolor cycling aura on swords and fists.", false, nil, Utils)
+        createToggle(c1, "Character Trail", "Radiant trail following character movement.", false, nil, Utils)
+        createDropdown(c1, "Aura Color Preset", "Aura color styling.", { "Crimson Void", "Cyber Neon", "Galactic Purple", "Golden Sun", "Frost Blue" }, 1, function(c)
+            if Utils then Utils.toast("Cosmetics", "Aura preset: " .. c, 1.2) end
+        end, Utils)
+        createDropdown(c1, "Character Material", "Cosmetic character body material.", { "Default", "Neon", "ForceField", "Glass", "Foil" }, 1, function(mat)
+            pcall(function()
+                if LocalPlayer.Character and mat ~= "Default" then
+                    for _, p in ipairs(LocalPlayer.Character:GetDescendants()) do
+                        if p:IsA("BasePart") then p.Material = Enum.Material[mat] end
+                    end
+                end
+            end)
+            if Utils then Utils.toast("Cosmetics", "Applied material: " .. mat, 1.2) end
         end, Utils)
 
     elseif tabName == "Themes" then
@@ -1631,6 +2244,18 @@ function TabViews.build(tabName, parentContainer, options)
             end, Utils)
         end
 
+        local customWpUrl = ""
+        createTextInput(c1, "Custom Wallpaper URL", "Direct image link (.png / .jpg) or asset ID.", "https://... or rbxassetid://...", "", function(text)
+            customWpUrl = text
+        end, Utils)
+
+        createActionButton(c1, "Apply Custom Wallpaper", "Sets background to custom image.", function()
+            if #customWpUrl > 0 and onThemeChange then
+                onThemeChange({ Background = customWpUrl })
+                if Utils then Utils.toast("Themes", "Custom wallpaper applied", 1.5) end
+            end
+        end, Utils)
+
         -- 2. Glassmorphism & Opacity
         local c2 = makeCard("Glassmorphism & Opacity")
         c2.LayoutOrder = 3
@@ -1672,22 +2297,48 @@ function TabViews.build(tabName, parentContainer, options)
         end, Utils)
 
     elseif tabName == "Settings" then
+        local DarlingHub = options.DarlingHub or _G.DarlingHub
         local c1 = makeCard("Interface Settings")
         c1.LayoutOrder = 2
         createSlider(c1, "UI Scale (%)", 50, 120, 80, function(val)
             if options.onScaleChange then pcall(options.onScaleChange, val / 100) end
         end, Utils)
 
+        createDropdown(c1, "Hub Toggle Keybind", "PC keyboard shortcut to toggle UI.", { "F", "RightShift", "LeftAlt", "Insert" }, 1, function(k)
+            if Utils then Utils.toast("Settings", "Toggle keybind set to: " .. k, 1.2) end
+        end, Utils)
+
+        createToggle(c1, "Auto-Save Settings", "Persists configuration changes automatically.", true, function(state)
+            if DarlingHub then DarlingHub.AutoSaveEnabled = state end
+        end, Utils)
+
+        createActionButton(c1, "Save Configuration Now", "Write active settings to disk immediately.", function()
+            if DarlingHub and DarlingHub.SaveConfig then
+                pcall(DarlingHub.SaveConfig)
+                if Utils then Utils.toast("Settings", "Configuration saved!", 1.5) end
+            end
+        end, Utils)
+
         local c2 = makeCard("Server Utilities")
         c2.LayoutOrder = 3
-        createActionButton(c2, "Rejoin Server", "Rejoin the current server instance.", function()
+        createActionButton(c2, "Rejoin Current Server", "Rejoin the current place instance.", function()
             pcall(function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
         end, Utils)
+
+        createActionButton(c2, "Hop Server", "Find and join a different public server.", function()
+            if Utils then Utils.toast("Settings", "Searching for server...", 1.5) end
+            pcall(function()
+                local bMod = DarlingHub and DarlingHub:Require("modules/combat/auto_bounty.lua")
+                if bMod and bMod.ServerHop then bMod:ServerHop() end
+            end)
+        end, Utils)
+
         createActionButton(c2, "Copy Official Discord", "Copy invite link to clipboard.", function()
             Utils.setClipboard("https://discord.gg/besthub")
             if Utils then Utils.toast("Monody", "Discord copied to clipboard", 2) end
         end, Utils)
-        createActionButton(c2, "Unload Monody", "Safely unhook and destroy UI.", function()
+
+        createActionButton(c2, "Unload Monody UI", "Safely unhook and destroy UI.", function()
             if options.onClose then pcall(options.onClose) end
         end, Utils)
     end
