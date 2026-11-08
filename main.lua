@@ -528,27 +528,27 @@ task.spawn(function()
 end)
 
 local WINDUI_LUCIDE_FALLBACK = {
-    Home       = "rbxassetid://98755624629571",   -- Lucide: house
-    Aimbot     = "rbxassetid://134242818164054",  -- Lucide: crosshair
-    Players    = "rbxassetid://10747373176",      -- Lucide: users
-    PvP        = "rbxassetid://81872698913435",   -- Lucide: swords
-    Soru       = "rbxassetid://130551565616516",  -- Lucide: zap
-    AutoBounty = "rbxassetid://10747372167",      -- Lucide: skull
-    Dungeon    = "rbxassetid://10709769508",      -- Lucide: flame
-    Teleport      = "rbxassetid://10723346959",      -- Lucide: map-pin
-    ControlPeople = "rbxassetid://10734944444",      -- Lucide: gamepad-2
-    StealFruits   = "rbxassetid://10709772847",      -- Lucide: apple
-    HUD           = "rbxassetid://10734950309",      -- Lucide: layout-dashboard
-    Macro      = "rbxassetid://80451686744860",   -- Lucide: bot
-    Visuals    = "rbxassetid://100033680381365",  -- Lucide: eye
-    Esp        = "rbxassetid://100033680381365",  -- Lucide: eye
-    Skins      = "rbxassetid://10709789810",      -- Lucide: shirt
-    Music      = "rbxassetid://10709797151",      -- Lucide: music
-    Animations = "rbxassetid://10709782497",      -- Lucide: sparkles
-    Config     = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
-    Misc       = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
-    Settings   = "rbxassetid://86350350950064",   -- Lucide: palette
-    Themes     = "rbxassetid://86350350950064",   -- Lucide: palette
+    Home          = "rbxassetid://98755624629571",   -- Lucide: house
+    Aimbot        = "rbxassetid://134242818164054",  -- Lucide: crosshair
+    Players       = "rbxassetid://115398113982385",  -- Lucide: users
+    PvP           = "rbxassetid://81872698913435",   -- Lucide: swords
+    Soru          = "rbxassetid://130551565616516",  -- Lucide: zap
+    AutoBounty    = "rbxassetid://137726256442333",  -- Lucide: skull
+    Dungeon       = "rbxassetid://98218034436456",   -- Lucide: flame
+    Teleport      = "rbxassetid://84279202219901",   -- Lucide: map-pin
+    ControlPeople = "rbxassetid://92483947987410",   -- Lucide: gamepad-2
+    StealFruits   = "rbxassetid://139519182403183",  -- Lucide: cherry
+    HUD           = "rbxassetid://139929981863901",  -- Lucide: layout-dashboard
+    Macro         = "rbxassetid://80451686744860",   -- Lucide: bot
+    Visuals       = "rbxassetid://100033680381365",  -- Lucide: eye
+    Esp           = "rbxassetid://100033680381365",  -- Lucide: eye
+    Skins         = "rbxassetid://112904952151156",  -- Lucide: gem (Diamante místico / Skin changer)
+    Music         = "rbxassetid://118833729589183",  -- Lucide: headphones (Audífonos gamer modernos)
+    Animations    = "rbxassetid://138635884129147",  -- Lucide: sparkles
+    Config        = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
+    Misc          = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
+    Settings      = "rbxassetid://86350350950064",   -- Lucide: palette
+    Themes        = "rbxassetid://86350350950064",   -- Lucide: palette
 }
 
 local function ApplyTabIcon(imageLabel, tabKey, lucideName)
@@ -1793,24 +1793,24 @@ local TabOrderCounter = 0
 
 -- Tab Manifest: Defines all hub tabs up-front for instant batch creation
 local TABS_MANIFEST = {
-    { id = "Home",       name = "Home",       icon = "house" },
-    { id = "Aimbot",     name = "Aimbot",     icon = "crosshair" },
-    { id = "Players",    name = "Players",    icon = "users" },
-    { id = "PvP",        name = "PvP",        icon = "swords" },
-    { id = "Soru",       name = "Soru",       icon = "zap" },
-    { id = "AutoBounty", name = "AutoBounty", icon = "skull" },
-    { id = "Dungeon",    name = "Dungeon",    icon = "flame" },
+    { id = "Home",          name = "Home",           icon = "house" },
+    { id = "Aimbot",        name = "Aimbot",         icon = "crosshair" },
+    { id = "Players",       name = "Players",        icon = "users" },
+    { id = "PvP",           name = "PvP",            icon = "swords" },
+    { id = "Soru",          name = "Soru",           icon = "zap" },
+    { id = "AutoBounty",    name = "AutoBounty",     icon = "skull" },
+    { id = "Dungeon",       name = "Dungeon",        icon = "flame" },
     { id = "Teleport",      name = "Teleport",       icon = "map-pin" },
     { id = "ControlPeople", name = "Control People", icon = "gamepad-2" },
-    { id = "StealFruits",   name = "Steal Fruits",   icon = "apple" },
+    { id = "StealFruits",   name = "Steal Fruits",   icon = "cherry" },
     { id = "HUD",           name = "HUD",            icon = "layout-dashboard" },
-    { id = "Macro",      name = "Macro",      icon = "bot" },
-    { id = "Visuals",    name = "Visuals",    icon = "eye" },
-    { id = "Skins",      name = "Skins",      icon = "shirt" },
-    { id = "Music",      name = "Music",      icon = "music" },
-    { id = "Animations", name = "Animations", icon = "sparkles" },
-    { id = "Config",     name = "Config",     icon = "sliders-horizontal" },
-    { id = "Themes",     name = "Themes",     icon = "palette" },
+    { id = "Macro",         name = "Macro",          icon = "bot" },
+    { id = "Visuals",       name = "Visuals",        icon = "eye" },
+    { id = "Skins",         name = "Skins",          icon = "gem" },
+    { id = "Music",         name = "Music",          icon = "headphones" },
+    { id = "Animations",    name = "Animations",     icon = "sparkles" },
+    { id = "Config",        name = "Config",         icon = "sliders-horizontal" },
+    { id = "Themes",        name = "Themes",         icon = "palette" },
 }
 
 local TAB_MIN_CANVAS = {
