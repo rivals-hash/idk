@@ -535,8 +535,10 @@ local WINDUI_LUCIDE_FALLBACK = {
     Soru       = "rbxassetid://130551565616516",  -- Lucide: zap
     AutoBounty = "rbxassetid://10747372167",      -- Lucide: skull
     Dungeon    = "rbxassetid://10709769508",      -- Lucide: flame
-    Teleport   = "rbxassetid://10723346959",      -- Lucide: map-pin
-    HUD        = "rbxassetid://10734950309",      -- Lucide: layout-dashboard
+    Teleport      = "rbxassetid://10723346959",      -- Lucide: map-pin
+    ControlPeople = "rbxassetid://10734944444",      -- Lucide: gamepad-2
+    StealFruits   = "rbxassetid://10709772847",      -- Lucide: apple
+    HUD           = "rbxassetid://10734950309",      -- Lucide: layout-dashboard
     Macro      = "rbxassetid://80451686744860",   -- Lucide: bot
     Visuals    = "rbxassetid://100033680381365",  -- Lucide: eye
     Esp        = "rbxassetid://100033680381365",  -- Lucide: eye
@@ -1798,8 +1800,10 @@ local TABS_MANIFEST = {
     { id = "Soru",       name = "Soru",       icon = "zap" },
     { id = "AutoBounty", name = "AutoBounty", icon = "skull" },
     { id = "Dungeon",    name = "Dungeon",    icon = "flame" },
-    { id = "Teleport",   name = "Teleport",   icon = "map-pin" },
-    { id = "HUD",        name = "HUD",        icon = "layout-dashboard" },
+    { id = "Teleport",      name = "Teleport",       icon = "map-pin" },
+    { id = "ControlPeople", name = "Control People", icon = "gamepad-2" },
+    { id = "StealFruits",   name = "Steal Fruits",   icon = "apple" },
+    { id = "HUD",           name = "HUD",            icon = "layout-dashboard" },
     { id = "Macro",      name = "Macro",      icon = "bot" },
     { id = "Visuals",    name = "Visuals",    icon = "eye" },
     { id = "Skins",      name = "Skins",      icon = "shirt" },
@@ -1818,6 +1822,8 @@ local TAB_MIN_CANVAS = {
     AutoBounty = 600,
     Dungeon = 600,
     Teleport = 600,
+    ControlPeople = 600,
+    StealFruits = 600,
     HUD = 600,
     Macro = 1100,
     Visuals = 950,
@@ -5075,8 +5081,10 @@ local placeholderTabs = {
     { id = "Players",    title = "Players",      desc = "Módulo de gestión y visualización de jugadores." },
     { id = "AutoBounty", title = "Auto Bounty",  desc = "Módulo de caza automática de recompensas." },
     { id = "Dungeon",    title = "Dungeon",      desc = "Módulo de incursiones y mazmorras automáticas." },
-    { id = "Teleport",   title = "Teleport",     desc = "Módulo de teletransporte a islas y zonas." },
-    { id = "HUD",        title = "HUD Controls", desc = "Módulo de widgets y controles en pantalla." },
+    { id = "Teleport",      title = "Teleport",       desc = "Módulo de teletransporte a islas y zonas." },
+    { id = "ControlPeople", title = "Control People", desc = "Módulo de control e interacción con otros jugadores." },
+    { id = "StealFruits",   title = "Steal Fruits",   desc = "Módulo de detección y recolección rápida de frutas." },
+    { id = "HUD",           title = "HUD Controls",   desc = "Módulo de widgets y controles en pantalla." },
     { id = "Skins",      title = "Skins",        desc = "Módulo de personalización visual de armas y aspectos." },
     { id = "Music",      title = "Music Player", desc = "Módulo de reproductor y visualizador de música." },
     { id = "Animations", title = "Animations",   desc = "Módulo de animaciones personalizadas." },
