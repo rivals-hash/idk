@@ -213,7 +213,7 @@ end
 -- PREDICTION ENGINE
 -- ============================================================================
 function Core.predictPosition(targetPart)
-    if not targetPart then return nil end
+    if not targetPart or not targetPart:IsA("BasePart") then return nil end
     local char = targetPart.Parent
     if not isAlive(char) then return targetPart.Position end
 
@@ -229,7 +229,7 @@ function Core.predictPosition(targetPart)
     end
 
     local hrp = char:FindFirstChild("HumanoidRootPart") or targetPart
-    local vel = hrp.Velocity
+    local vel = (hrp and hrp:IsA("BasePart") and (hrp.AssemblyLinearVelocity or hrp.Velocity)) or Vector3.zero
     local speed = vel.Magnitude
 
     if speed < 4 then
@@ -238,7 +238,7 @@ function Core.predictPosition(targetPart)
         return targetPart.Position
     end
 
-    local currentDir = vel.Unit
+    local currentDir = (speed > 0.001) and vel.Unit or Vector3.zero
     if Core.LastDirection then
         local dot = Core.LastDirection:Dot(currentDir)
         if dot < 0.65 then
@@ -566,7 +566,7 @@ function Core.installHooks()
     if Core.IsHooked then return end
     Core.IsHooked = true
 
-    -- Hook 1: Mouse.__index (Hit, Target, UnitRay, Origin, Direction)
+    -- Hook 1: Mouse.__index (Hit, Target, UnitRay, Origin, Direction) for tool redirection
     local mouse = LocalPlayer and LocalPlayer:GetMouse()
     if mouse and hookmetamethod then
         pcall(function()
@@ -617,80 +617,6 @@ function Core.installHooks()
                     inHook = false
                 end
                 return oldIndex(self, key)
-            end))
-        end)
-    end
-
-    -- Hook 2: Remote interception (__namecall for FireServer & InvokeServer)
-    if hookmetamethod then
-        pcall(function()
-            local oldNamecall = nil
-            local inNamecall = false
-            oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
-                if inNamecall then return oldNamecall(self, ...) end
-                if checkcaller and checkcaller() then
-                    return oldNamecall(self, ...)
-                end
-
-                local okMethod, method = pcall(getnamecallmethod)
-                if not okMethod or not method or (method ~= "FireServer" and method ~= "InvokeServer") then
-                    return oldNamecall(self, ...)
-                end
-
-                inNamecall = true
-                local args = { ... }
-
-                if args[1] == "TAP" then
-                    inNamecall = false
-                    return oldNamecall(self, ...)
-                end
-
-                local skillKey = getSkillKeyFromArgs(args)
-                if skillKey then
-                    Core.setCurrentSkillKey(skillKey)
-                end
-
-                -- Blox Fruits Soru / Dodge / Bypass packet safeguard
-                local sName = tostring(self)
-                if sName == "CommE" or sName == "CommF_" or sName:find("Soru") or sName:find("Dodge") then
-                    for i = 1, math.min(#args, 4) do
-                        local a = args[i]
-                        if a == "Soru" or a == "BypassSoru" or a == "Dodge" then
-                            inNamecall = false
-                            return oldNamecall(self, ...)
-                        end
-                    end
-                end
-
-                local activeKey = skillKey or Core.CurrentSkillKey
-                local isBlacklisted = false
-                if activeKey and Core.isKeyBlacklisted(Core.CurrentToolCategory, activeKey) then
-                    isBlacklisted = true
-                end
-
-                if not isBlacklisted and (Core.LockPlayer or Core.PlayerAimEnabled or Core.NPCAimEnabled) and Core.CurrentTargetPart then
-                    local isSword = (Core.CurrentToolCategory == "Sword") or (Core.CurrentTool and (string.find(Core.CurrentTool.Name, "Sword") or string.find(Core.CurrentTool.Name, "Buddy")))
-                    local targetPos = (isSword and Core.CurrentTargetRawPosition) or Core.CurrentTargetPosition or Core.CurrentTargetRawPosition
-                    if targetPos and typeof(targetPos) == "Vector3" then
-                        if sName == "RemoteEvent" or sName == "CommE" or sName == "RemoteFunction" or sName == "CommF_" then
-                            for i, v in ipairs(args) do
-                                if typeof(v) == "Vector3" then
-                                    args[i] = targetPos
-                                end
-                            end
-
-                            -- sword invokeserver redirection
-                            if method == "InvokeServer" and (type(args[1]) == "string" and table.find(SKILL_KEYS, args[1])) then
-                                args[2] = targetPos
-                            end
-                            inNamecall = false
-                            return oldNamecall(self, table.unpack(args))
-                        end
-                    end
-                end
-
-                inNamecall = false
-                return oldNamecall(self, ...)
             end))
         end)
     end
@@ -866,7 +792,9 @@ function Core.startLoop()
     if Core.RenderConnection then return end
     Core.installHooks()
     lastTargetScanTick = 0
-    Core.RenderConnection = RunService.RenderStepped:Connect(updateTargetCycle)
+    Core.RenderConnection = RunService.RenderStepped:Connect(function()
+        pcall(updateTargetCycle)
+    end)
 end
 
 function Core.stopLoop()
