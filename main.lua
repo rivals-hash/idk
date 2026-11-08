@@ -1648,6 +1648,218 @@ SubTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 SubTitle.ZIndex = 16
 
+-- ============================================================
+-- CENTRAL AUDIO CONTROLLER & HEADER MUSIC BAR
+-- ============================================================
+do
+    local MonodyMusic = {
+        Sound = nil,
+        IsPlaying = false,
+        CurrentTrackName = "No Track",
+        CurrentSoundId = "",
+        Volume = 0.5,
+        Pitch = 1.0,
+        Looped = true,
+        TopBarFrame = nil,
+        OnStateChanged = nil
+    }
+    _G.MonodyMusic = MonodyMusic
+
+    local function InitMusicSound()
+        if not MonodyMusic.Sound then
+            local snd = Instance.new("Sound")
+            snd.Name = "MonodyBGM"
+            snd.Volume = MonodyMusic.Volume
+            snd.PlaybackSpeed = MonodyMusic.Pitch
+            snd.Looped = MonodyMusic.Looped
+            pcall(function() snd.Parent = game:GetService("SoundService") end)
+            snd.Ended:Connect(function()
+                if not MonodyMusic.Looped then
+                    MonodyMusic.IsPlaying = false
+                    if MonodyMusic.OnStateChanged then pcall(MonodyMusic.OnStateChanged) end
+                end
+            end)
+            MonodyMusic.Sound = snd
+        end
+        return MonodyMusic.Sound
+    end
+
+    function MonodyMusic.Play(soundId, trackName)
+        local snd = InitMusicSound()
+        if soundId and soundId ~= "" then
+            local formatted = tostring(soundId)
+            if not formatted:find("rbxassetid://") then
+                local cleanDigits = formatted:gsub("%D", "")
+                if #cleanDigits > 0 then
+                    formatted = "rbxassetid://" .. cleanDigits
+                end
+            end
+            snd.SoundId = formatted
+            MonodyMusic.CurrentSoundId = soundId
+        end
+        if trackName then MonodyMusic.CurrentTrackName = trackName end
+        snd.Volume = MonodyMusic.Volume
+        snd.PlaybackSpeed = MonodyMusic.Pitch
+        snd.Looped = MonodyMusic.Looped
+        pcall(function() snd:Play() end)
+        MonodyMusic.IsPlaying = true
+        if MonodyMusic.OnStateChanged then pcall(MonodyMusic.OnStateChanged) end
+    end
+
+    function MonodyMusic.Pause()
+        if MonodyMusic.Sound then
+            pcall(function() MonodyMusic.Sound:Pause() end)
+            MonodyMusic.IsPlaying = false
+            if MonodyMusic.OnStateChanged then pcall(MonodyMusic.OnStateChanged) end
+        end
+    end
+
+    function MonodyMusic.Resume()
+        if MonodyMusic.Sound and MonodyMusic.Sound.SoundId ~= "" then
+            pcall(function() MonodyMusic.Sound:Resume() end)
+            MonodyMusic.IsPlaying = true
+            if MonodyMusic.OnStateChanged then pcall(MonodyMusic.OnStateChanged) end
+        end
+    end
+
+    function MonodyMusic.Stop()
+        if MonodyMusic.Sound then
+            pcall(function() MonodyMusic.Sound:Stop() end)
+            MonodyMusic.IsPlaying = false
+            if MonodyMusic.OnStateChanged then pcall(MonodyMusic.OnStateChanged) end
+        end
+    end
+
+    function MonodyMusic.SetVolume(v)
+        MonodyMusic.Volume = v
+        if MonodyMusic.Sound then MonodyMusic.Sound.Volume = v end
+    end
+
+    function MonodyMusic.SetPitch(p)
+        MonodyMusic.Pitch = p
+        if MonodyMusic.Sound then MonodyMusic.Sound.PlaybackSpeed = p end
+    end
+
+    function MonodyMusic.SetLooped(l)
+        MonodyMusic.Looped = l
+        if MonodyMusic.Sound then MonodyMusic.Sound.Looped = l end
+    end
+
+    -- Top Music Bar on UI Header
+    local TopMusicBar = Instance.new("Frame", Header)
+    TopMusicBar.Name = "TopMusicBar"
+    TopMusicBar.Size = UDim2.new(0, 155, 0, 24)
+    TopMusicBar.Position = UDim2.new(1, -225, 0.5, -12)
+    TopMusicBar.BackgroundColor3 = Color3.fromRGB(15, 12, 24)
+    TopMusicBar.BackgroundTransparency = 0.45
+    TopMusicBar.ZIndex = 16
+    Instance.new("UICorner", TopMusicBar).CornerRadius = UDim.new(0, 7)
+    local topMusicStroke = Instance.new("UIStroke", TopMusicBar)
+    topMusicStroke.Color = CurrentAccent
+    topMusicStroke.Thickness = 0.8
+    topMusicStroke.Transparency = 0.35
+    RegisterThemeStroke(topMusicStroke)
+    MonodyMusic.TopBarFrame = TopMusicBar
+
+    local EqContainer = Instance.new("Frame", TopMusicBar)
+    EqContainer.Name = "EqContainer"
+    EqContainer.Size = UDim2.new(0, 18, 0, 14)
+    EqContainer.Position = UDim2.new(0, 6, 0.5, -7)
+    EqContainer.BackgroundTransparency = 1
+    EqContainer.ZIndex = 17
+
+    local eqBars = {}
+    for i = 1, 4 do
+        local bar = Instance.new("Frame", EqContainer)
+        bar.Name = "EqBar" .. i
+        bar.Size = UDim2.new(0, 3, 0, 4)
+        bar.Position = UDim2.new(0, (i - 1) * 4.5, 1, -4)
+        bar.BackgroundColor3 = CurrentAccent
+        bar.ZIndex = 18
+        Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
+        RegisterThemeFill(bar)
+        table.insert(eqBars, bar)
+    end
+
+    local TopMusicTitle = Instance.new("TextLabel", TopMusicBar)
+    TopMusicTitle.Name = "TrackTitle"
+    TopMusicTitle.Size = UDim2.new(0, 78, 1, 0)
+    TopMusicTitle.Position = UDim2.new(0, 28, 0, 0)
+    TopMusicTitle.BackgroundTransparency = 1
+    TopMusicTitle.Font = Enum.Font.GothamMedium
+    TopMusicTitle.TextSize = 8.5
+    TopMusicTitle.TextColor3 = Color3.fromRGB(240, 235, 255)
+    TopMusicTitle.TextXAlignment = Enum.TextXAlignment.Left
+    TopMusicTitle.ClipsDescendants = true
+    TopMusicTitle.Text = "No Track"
+    TopMusicTitle.ZIndex = 17
+
+    local TopPlayBtn = Instance.new("TextButton", TopMusicBar)
+    TopPlayBtn.Name = "PlayBtn"
+    TopPlayBtn.Size = UDim2.new(0, 19, 0, 18)
+    TopPlayBtn.Position = UDim2.new(1, -44, 0.5, -9)
+    TopPlayBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 35)
+    TopPlayBtn.BackgroundTransparency = 0.3
+    TopPlayBtn.Text = "▶"
+    TopPlayBtn.Font = Enum.Font.GothamBold
+    TopPlayBtn.TextSize = 9
+    TopPlayBtn.TextColor3 = CurrentAccent
+    TopPlayBtn.ZIndex = 18
+    Instance.new("UICorner", TopPlayBtn).CornerRadius = UDim.new(0, 5)
+    RegisterThemeText(TopPlayBtn)
+
+    local TopStopBtn = Instance.new("TextButton", TopMusicBar)
+    TopStopBtn.Name = "StopBtn"
+    TopStopBtn.Size = UDim2.new(0, 19, 0, 18)
+    TopStopBtn.Position = UDim2.new(1, -22, 0.5, -9)
+    TopStopBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 35)
+    TopStopBtn.BackgroundTransparency = 0.3
+    TopStopBtn.Text = "■"
+    TopStopBtn.Font = Enum.Font.GothamBold
+    TopStopBtn.TextSize = 8
+    TopStopBtn.TextColor3 = Color3.fromRGB(255, 90, 90)
+    TopStopBtn.ZIndex = 18
+    Instance.new("UICorner", TopStopBtn).CornerRadius = UDim.new(0, 5)
+
+    ConnectButton(TopPlayBtn, function()
+        if MonodyMusic.IsPlaying then
+            MonodyMusic.Pause()
+        else
+            if MonodyMusic.Sound and MonodyMusic.Sound.SoundId ~= "" then
+                MonodyMusic.Resume()
+            else
+                MonodyMusic.Play("1843588265", "Montagem Bailao")
+            end
+        end
+    end)
+
+    ConnectButton(TopStopBtn, function()
+        MonodyMusic.Stop()
+    end)
+
+    local eqAnimStep = 0
+    RunService.RenderStepped:Connect(function()
+        if MonodyMusic.IsPlaying then
+            eqAnimStep = eqAnimStep + 0.18
+            for i, bar in ipairs(eqBars) do
+                local h = math.clamp(4 + math.abs(math.sin(eqAnimStep + i * 0.85)) * 10, 3, 14)
+                bar.Size = UDim2.new(0, 3, 0, h)
+                bar.Position = UDim2.new(0, (i - 1) * 4.5, 1, -h)
+            end
+        else
+            for i, bar in ipairs(eqBars) do
+                bar.Size = UDim2.new(0, 3, 0, 4)
+                bar.Position = UDim2.new(0, (i - 1) * 4.5, 1, -4)
+            end
+        end
+    end)
+
+    MonodyMusic.OnStateChanged = function()
+        TopPlayBtn.Text = MonodyMusic.IsPlaying and "⏸" or "▶"
+        TopMusicTitle.Text = MonodyMusic.CurrentTrackName or "No Track"
+    end
+end
+
 -- Window Controls (Minimize & Close)
 local function createHeaderBtn(symbol, offsetRight, color, callback)
     local btn = Instance.new("TextButton", Header)
@@ -1961,6 +2173,84 @@ end
 -- ============================================================
 local TRANSLATIONS_DICT = {
     ["Spanish"] = {
+        ["Player Management"] = "Gestion de Jugadores",
+        ["Search Player..."] = "Buscar Jugador...",
+        ["Refresh Player List"] = "Actualizar Lista",
+        ["Blacklist"] = "Lista Negra",
+        ["Blacklisted"] = "En Lista Negra",
+        ["Spectate"] = "Espectear",
+        ["Spectating"] = "Espectando",
+        ["Stop Spectating"] = "Dejar de Espectear",
+        ["Teleport to Player"] = "Teletransportarse al Jugador",
+        ["Total Players"] = "Total de Jugadores",
+        ["Auto Dungeon Engine"] = "Motor Auto Dungeon",
+        ["Start Auto Dungeon"] = "Iniciar Auto Dungeon",
+        ["Selected Weapon"] = "Arma Seleccionada",
+        ["Sword"] = "Espada",
+        ["Melee"] = "Cuerpo a Cuerpo",
+        ["Blox Fruit"] = "Fruta Blox",
+        ["Attack Height"] = "Altura de Ataque",
+        ["Auto Pass Room"] = "Auto Pasar Sala",
+        ["Void M1 Engine"] = "Motor Void M1",
+        ["Enable Void M1"] = "Activar Void M1",
+        ["Void Only Boss Rooms"] = "Void Solo Salas de Jefe",
+        ["Void Interval (s)"] = "Intervalo de Void (s)",
+        ["Dungeon Status & Utilities"] = "Estado y Utilidades de Dungeon",
+        ["Auto Load Dungeon"] = "Cargar Dungeon Automaticamente",
+        ["Current Room"] = "Sala Actual",
+        ["Boss Status"] = "Estado del Jefe",
+        ["Island Teleport"] = "Teletransporte de Islas",
+        ["Select Sea"] = "Seleccionar Mar",
+        ["Sea 1"] = "Mar 1",
+        ["Sea 2"] = "Mar 2",
+        ["Sea 3"] = "Mar 3",
+        ["Target Island"] = "Isla de Destino",
+        ["Tween Speed"] = "Velocidad de Tween",
+        ["Travel Altitude"] = "Altitud de Viaje",
+        ["Noclip during Tween"] = "Noclip durante Tween",
+        ["Start Teleport"] = "Iniciar Teletransporte",
+        ["Stop Teleport"] = "Detener Teletransporte",
+        ["Controls Layout Editor"] = "Editor de Controles",
+        ["Unlock Drag (Edit HUD)"] = "Desbloquear Arrastre (Editar HUD)",
+        ["Controls Global Scale"] = "Escala Global de Controles",
+        ["Save Custom Layout"] = "Guardar Disposicion",
+        ["Reset Default Layout"] = "Restablecer Disposicion",
+        ["HUD Overlays"] = "Superposiciones de HUD",
+        ["Performance Watermark"] = "Marca de Rendimiento",
+        ["Custom Crosshair"] = "Punto de Mira Personalizado",
+        ["Weapon Skins"] = "Skins de Armas",
+        ["Select Weapon Skin"] = "Seleccionar Skin de Arma",
+        ["Apply Weapon Skin"] = "Aplicar Skin de Arma",
+        ["Reset Weapon Skin"] = "Restablecer Skin de Arma",
+        ["Haki & Aura Customization"] = "Personalizacion de Haki y Aura",
+        ["Haki Color"] = "Color de Haki",
+        ["Rainbow Haki"] = "Haki Arcoiris",
+        ["Custom Trail VFX"] = "Efectos Visuales de Estela",
+        ["Music Player"] = "Reproductor de Musica",
+        ["Genre / Category"] = "Genero / Categoria",
+        ["Track Preset"] = "Pista Preestablecida",
+        ["Custom Sound ID"] = "Sound ID Personalizado",
+        ["Volume"] = "Volumen",
+        ["Pitch / Speed"] = "Tono / Velocidad",
+        ["Loop Track"] = "Repetir Pista",
+        ["Show Top Music Bar"] = "Mostrar Barra de Musica Superior",
+        ["Play"] = "Reproducir",
+        ["Pause"] = "Pausar",
+        ["Resume"] = "Reanudar",
+        ["Stop"] = "Detener",
+        ["Cinematic Animations"] = "Animaciones Cinematicas",
+        ["Select Animation"] = "Seleccionar Animacion",
+        ["Hide Accessories & Weapons"] = "Ocultar Accesorios y Armas",
+        ["Play Animation"] = "Reproducir Animacion",
+        ["Stop Animation"] = "Detener Animacion",
+        ["Pure White"] = "Blanco Puro",
+        ["Crimson Red"] = "Rojo Carmesi",
+        ["Midnight Purple"] = "Purpura Medianoche",
+        ["Electric Blue"] = "Azul Electrico",
+        ["Emerald Green"] = "Verde Esmeralda",
+        ["Golden Sun"] = "Sol Dorado",
+        ["Default"] = "Por Defecto",
+        ["None"] = "Ninguno",
         ["180"] = "180",
         ["2D Boxes"] = "Cajas 2D",
         ["2D Line"] = "Linea 2D",
@@ -2345,6 +2635,84 @@ local TRANSLATIONS_DICT = {
         ["Trigger Key (PC)"] = "Tecla de Activacion (PC)",
     },
     ["Portuguese"] = {
+        ["Player Management"] = "Gerenciamento de Jogadores",
+        ["Search Player..."] = "Pesquisar Jogador...",
+        ["Refresh Player List"] = "Atualizar Lista",
+        ["Blacklist"] = "Lista Negra",
+        ["Blacklisted"] = "Na Lista Negra",
+        ["Spectate"] = "Espectar",
+        ["Spectating"] = "Espectando",
+        ["Stop Spectating"] = "Parar de Espectar",
+        ["Teleport to Player"] = "Teleportar para o Jogador",
+        ["Total Players"] = "Total de Jogadores",
+        ["Auto Dungeon Engine"] = "Motor de Auto Dungeon",
+        ["Start Auto Dungeon"] = "Iniciar Auto Dungeon",
+        ["Selected Weapon"] = "Arma Selecionada",
+        ["Sword"] = "Espada",
+        ["Melee"] = "Combate",
+        ["Blox Fruit"] = "Blox Fruit",
+        ["Attack Height"] = "Altura de Ataque",
+        ["Auto Pass Room"] = "Auto Passar Sala",
+        ["Void M1 Engine"] = "Motor Void M1",
+        ["Enable Void M1"] = "Ativar Void M1",
+        ["Void Only Boss Rooms"] = "Void Apenas Salas de Chefe",
+        ["Void Interval (s)"] = "Intervalo de Void (s)",
+        ["Dungeon Status & Utilities"] = "Status e Utilitarios de Dungeon",
+        ["Auto Load Dungeon"] = "Auto Carregar Dungeon",
+        ["Current Room"] = "Sala Atual",
+        ["Boss Status"] = "Status do Chefe",
+        ["Island Teleport"] = "Teleporte de Ilhas",
+        ["Select Sea"] = "Selecionar Mar",
+        ["Sea 1"] = "Mar 1",
+        ["Sea 2"] = "Mar 2",
+        ["Sea 3"] = "Mar 3",
+        ["Target Island"] = "Ilha Alvo",
+        ["Tween Speed"] = "Velocidade de Tween",
+        ["Travel Altitude"] = "Altitude de Viagem",
+        ["Noclip during Tween"] = "Noclip durante Tween",
+        ["Start Teleport"] = "Iniciar Teleporte",
+        ["Stop Teleport"] = "Parar Teleporte",
+        ["Controls Layout Editor"] = "Editor de Layout de Controles",
+        ["Unlock Drag (Edit HUD)"] = "Desbloquear Arraste (Editar HUD)",
+        ["Controls Global Scale"] = "Escala Global de Controles",
+        ["Save Custom Layout"] = "Salvar Layout",
+        ["Reset Default Layout"] = "Redefinir Layout",
+        ["HUD Overlays"] = "Sobreposicoes de HUD",
+        ["Performance Watermark"] = "Marca de Desempenho",
+        ["Custom Crosshair"] = "Mira Personalizada",
+        ["Weapon Skins"] = "Skins de Armas",
+        ["Select Weapon Skin"] = "Selecionar Skin de Arma",
+        ["Apply Weapon Skin"] = "Aplicar Skin de Arma",
+        ["Reset Weapon Skin"] = "Redefinir Skin de Arma",
+        ["Haki & Aura Customization"] = "Personalizacao de Haki e Aura",
+        ["Haki Color"] = "Cor do Haki",
+        ["Rainbow Haki"] = "Haki Arco-iris",
+        ["Custom Trail VFX"] = "Efeitos Visuais de Rastro",
+        ["Music Player"] = "Reprodutor de Musica",
+        ["Genre / Category"] = "Genero / Categoria",
+        ["Track Preset"] = "Faixa Predefinida",
+        ["Custom Sound ID"] = "Sound ID Personalizado",
+        ["Volume"] = "Volume",
+        ["Pitch / Speed"] = "Tom / Velocidade",
+        ["Loop Track"] = "Repetir Faixa",
+        ["Show Top Music Bar"] = "Mostrar Barra de Musica Superior",
+        ["Play"] = "Tocar",
+        ["Pause"] = "Pausar",
+        ["Resume"] = "Retomar",
+        ["Stop"] = "Parar",
+        ["Cinematic Animations"] = "Animacoes Cinematicas",
+        ["Select Animation"] = "Selecionar Animacao",
+        ["Hide Accessories & Weapons"] = "Ocultar Acessorios e Armas",
+        ["Play Animation"] = "Executar Animacao",
+        ["Stop Animation"] = "Parar Animacao",
+        ["Pure White"] = "Branco Puro",
+        ["Crimson Red"] = "Vermelho Carmesim",
+        ["Midnight Purple"] = "Roxo Meia-noite",
+        ["Electric Blue"] = "Azul Eletrico",
+        ["Emerald Green"] = "Verde Esmeralda",
+        ["Golden Sun"] = "Sol Dourado",
+        ["Default"] = "Padrao",
+        ["None"] = "Nenhum",
         ["180"] = "180",
         ["2D Boxes"] = "Caixas 2D",
         ["2D Line"] = "Linha 2D",
@@ -2729,6 +3097,84 @@ local TRANSLATIONS_DICT = {
         ["Trigger Key (PC)"] = "Tecla de Ativacao (PC)",
     },
     ["French"] = {
+        ["Player Management"] = "Gestion des Joueurs",
+        ["Search Player..."] = "Rechercher Joueur...",
+        ["Refresh Player List"] = "Rafraichir la Liste",
+        ["Blacklist"] = "Liste Noire",
+        ["Blacklisted"] = "Sur Liste Noire",
+        ["Spectate"] = "Spectateur",
+        ["Spectating"] = "En Observation",
+        ["Stop Spectating"] = "Arreter d'Observer",
+        ["Teleport to Player"] = "Teleporter vers le Joueur",
+        ["Total Players"] = "Nombre de Joueurs",
+        ["Auto Dungeon Engine"] = "Moteur Auto Dungeon",
+        ["Start Auto Dungeon"] = "Demarrer Auto Dungeon",
+        ["Selected Weapon"] = "Arme Selectionnee",
+        ["Sword"] = "Epee",
+        ["Melee"] = "Corps a Corps",
+        ["Blox Fruit"] = "Fruit Blox",
+        ["Attack Height"] = "Hauteur d'Attaque",
+        ["Auto Pass Room"] = "Passage Auto de Salle",
+        ["Void M1 Engine"] = "Moteur Void M1",
+        ["Enable Void M1"] = "Activer Void M1",
+        ["Void Only Boss Rooms"] = "Void Uniquement Salles de Boss",
+        ["Void Interval (s)"] = "Intervalle Void (s)",
+        ["Dungeon Status & Utilities"] = "Statut et Utilitaires Dungeon",
+        ["Auto Load Dungeon"] = "Chargement Auto Dungeon",
+        ["Current Room"] = "Salle Actuelle",
+        ["Boss Status"] = "Statut du Boss",
+        ["Island Teleport"] = "Teleportation d'Iles",
+        ["Select Sea"] = "Selectionner la Mer",
+        ["Sea 1"] = "Mer 1",
+        ["Sea 2"] = "Mer 2",
+        ["Sea 3"] = "Mer 3",
+        ["Target Island"] = "Ile Cible",
+        ["Tween Speed"] = "Vitesse de Tween",
+        ["Travel Altitude"] = "Altitude de Vol",
+        ["Noclip during Tween"] = "Noclip pendant Tween",
+        ["Start Teleport"] = "Demarrer Teleportation",
+        ["Stop Teleport"] = "Arreter Teleportation",
+        ["Controls Layout Editor"] = "Editeur de Disposition",
+        ["Unlock Drag (Edit HUD)"] = "Deverrouiller Deplacement",
+        ["Controls Global Scale"] = "Echelle Globale des Controles",
+        ["Save Custom Layout"] = "Enregistrer Disposition",
+        ["Reset Default Layout"] = "Reinitialiser Disposition",
+        ["HUD Overlays"] = "Superpositions HUD",
+        ["Performance Watermark"] = "Filigrane de Performance",
+        ["Custom Crosshair"] = "Reticule Personnalise",
+        ["Weapon Skins"] = "Skins d'Armes",
+        ["Select Weapon Skin"] = "Selectionner Skin d'Arme",
+        ["Apply Weapon Skin"] = "Appliquer Skin d'Arme",
+        ["Reset Weapon Skin"] = "Reinitialiser Skin d'Arme",
+        ["Haki & Aura Customization"] = "Personnalisation de Haki et Aura",
+        ["Haki Color"] = "Couleur du Haki",
+        ["Rainbow Haki"] = "Haki Arc-en-ciel",
+        ["Custom Trail VFX"] = "VFX de Trainee Personnalise",
+        ["Music Player"] = "Lecteur de Musique",
+        ["Genre / Category"] = "Genre / Categorie",
+        ["Track Preset"] = "Piste Prereglee",
+        ["Custom Sound ID"] = "Sound ID Personnalise",
+        ["Volume"] = "Volume",
+        ["Pitch / Speed"] = "Hauteur / Vitesse",
+        ["Loop Track"] = "Repeter la Piste",
+        ["Show Top Music Bar"] = "Afficher la Barre de Musique",
+        ["Play"] = "Jouer",
+        ["Pause"] = "Pause",
+        ["Resume"] = "Reprendre",
+        ["Stop"] = "Arreter",
+        ["Cinematic Animations"] = "Animations Cinematiques",
+        ["Select Animation"] = "Selectionner l'Animation",
+        ["Hide Accessories & Weapons"] = "Masquer Accessoires et Armes",
+        ["Play Animation"] = "Lancer l'Animation",
+        ["Stop Animation"] = "Arreter l'Animation",
+        ["Pure White"] = "Blanc Pur",
+        ["Crimson Red"] = "Rouge Cramoisi",
+        ["Midnight Purple"] = "Pourpre Minuit",
+        ["Electric Blue"] = "Bleu Electrique",
+        ["Emerald Green"] = "Vert Emeraude",
+        ["Golden Sun"] = "Soleil Dore",
+        ["Default"] = "Par Defaut",
+        ["None"] = "Aucun",
         ["180"] = "180",
         ["2D Boxes"] = "Boites 2D",
         ["2D Line"] = "Ligne 2D",
@@ -3113,6 +3559,84 @@ local TRANSLATIONS_DICT = {
         ["Trigger Key (PC)"] = "Touche d'Activation (PC)",
     },
     ["Vietnamese"] = {
+        ["Player Management"] = "Quan ly Nguoi choi",
+        ["Search Player..."] = "Tim kiem Nguoi choi...",
+        ["Refresh Player List"] = "Lam moi danh sach",
+        ["Blacklist"] = "Danh sach den",
+        ["Blacklisted"] = "Da vao danh sach den",
+        ["Spectate"] = "Theo doi",
+        ["Spectating"] = "Dang theo doi",
+        ["Stop Spectating"] = "Dung theo doi",
+        ["Teleport to Player"] = "Dich chuyen den Nguoi choi",
+        ["Total Players"] = "Tong so nguoi choi",
+        ["Auto Dungeon Engine"] = "Dong co Auto Dungeon",
+        ["Start Auto Dungeon"] = "Bat dau Auto Dungeon",
+        ["Selected Weapon"] = "Vu khi da chon",
+        ["Sword"] = "Kiem",
+        ["Melee"] = "Can chien",
+        ["Blox Fruit"] = "Trai ac quy",
+        ["Attack Height"] = "Do cao tan cong",
+        ["Auto Pass Room"] = "Tu dong qua phong",
+        ["Void M1 Engine"] = "Dong co Void M1",
+        ["Enable Void M1"] = "Bat Void M1",
+        ["Void Only Boss Rooms"] = "Void chi phong Boss",
+        ["Void Interval (s)"] = "Khoang cach Void (giay)",
+        ["Dungeon Status & Utilities"] = "Trang thai & Tien ich Dungeon",
+        ["Auto Load Dungeon"] = "Tu dong tai Dungeon",
+        ["Current Room"] = "Phong hien tai",
+        ["Boss Status"] = "Trang thai Boss",
+        ["Island Teleport"] = "Dich chuyen Dao",
+        ["Select Sea"] = "Chon Bien",
+        ["Sea 1"] = "Bien 1",
+        ["Sea 2"] = "Bien 2",
+        ["Sea 3"] = "Bien 3",
+        ["Target Island"] = "Dao muc tieu",
+        ["Tween Speed"] = "Toc do Tween",
+        ["Travel Altitude"] = "Do cao di chuyen",
+        ["Noclip during Tween"] = "Di xuyen tuong khi Tween",
+        ["Start Teleport"] = "Bat dau Dich chuyen",
+        ["Stop Teleport"] = "Dung Dich chuyen",
+        ["Controls Layout Editor"] = "Trinh chinh sua bo tri",
+        ["Unlock Drag (Edit HUD)"] = "Mo khoa keo (Sua HUD)",
+        ["Controls Global Scale"] = "Ty le tong the dieu khien",
+        ["Save Custom Layout"] = "Luu bo tri",
+        ["Reset Default Layout"] = "Dat lai bo tri mac dinh",
+        ["HUD Overlays"] = "Lop phu HUD",
+        ["Performance Watermark"] = "Chi so hieu nang",
+        ["Custom Crosshair"] = "Tam ngam tuy chinh",
+        ["Weapon Skins"] = "Skin Vu khi",
+        ["Select Weapon Skin"] = "Chon Skin Vu khi",
+        ["Apply Weapon Skin"] = "Ap dung Skin Vu khi",
+        ["Reset Weapon Skin"] = "Dat lai Skin Vu khi",
+        ["Haki & Aura Customization"] = "Tuy chinh Haki va Hao quang",
+        ["Haki Color"] = "Mau Haki",
+        ["Rainbow Haki"] = "Haki cau vong",
+        ["Custom Trail VFX"] = "Hieu ung vet chem tuy chinh",
+        ["Music Player"] = "Trinh phat Nhac",
+        ["Genre / Category"] = "The loai / Danh muc",
+        ["Track Preset"] = "Ban nhac co san",
+        ["Custom Sound ID"] = "ID Am thanh tuy chinh",
+        ["Volume"] = "Am luong",
+        ["Pitch / Speed"] = "Cao do / Toc do",
+        ["Loop Track"] = "Lap lai ban nhac",
+        ["Show Top Music Bar"] = "Hien thanh nhac phia tren",
+        ["Play"] = "Phat",
+        ["Pause"] = "Tam dung",
+        ["Resume"] = "Tiep tuc",
+        ["Stop"] = "Dung",
+        ["Cinematic Animations"] = "Hoat anh Dien anh",
+        ["Select Animation"] = "Chon Hoat anh",
+        ["Hide Accessories & Weapons"] = "An Phu kien va Vu khi",
+        ["Play Animation"] = "Chay Hoat anh",
+        ["Stop Animation"] = "Dung Hoat anh",
+        ["Pure White"] = "Trang Tinh Khiet",
+        ["Crimson Red"] = "Do Tham",
+        ["Midnight Purple"] = "Tim Dem",
+        ["Electric Blue"] = "Xanh Lam Tia Chop",
+        ["Emerald Green"] = "Xanh Luc Bao",
+        ["Golden Sun"] = "Vang Mat Troi",
+        ["Default"] = "Mac dinh",
+        ["None"] = "Khong co",
         ["180"] = "180",
         ["2D Boxes"] = "Khung 2D",
         ["2D Line"] = "Duong 2D",
@@ -4460,6 +4984,42 @@ SaveConfigProfile = function(force)
         cfg.MacroEnabled = cfg.Toggles["Macro Enabled"]
         cfg.MacroLoop = cfg.Toggles["Loop Sequence"]
         cfg.MacroWidget = cfg.Toggles["Macro Floating Widget"]
+        
+        -- Additional Features Sync
+        cfg.StartAutoDungeon = cfg.Toggles["Start Auto Dungeon"]
+        cfg.AutoRaceV4 = cfg.Toggles["Auto Race V4"]
+        cfg.AutoPassRoom = cfg.Toggles["Auto Pass Room"]
+        cfg.EnableVoidM1 = cfg.Toggles["Enable Void M1"]
+        cfg.VoidOnlyBoss = cfg.Toggles["Void Only Boss Rooms"]
+        cfg.AutoLoadDungeon = cfg.Toggles["Auto Load Dungeon"]
+        cfg.AttackHeight = cfg.Sliders["Attack Height"]
+        cfg.VoidInterval = cfg.Sliders["Void Interval (s)"]
+        if cfg.Choices["Selected Weapon"] then cfg.SelectedWeapon = cfg.Choices["Selected Weapon"].value end
+
+        cfg.TweenSpeed = cfg.Sliders["Tween Speed"]
+        cfg.TravelAltitude = cfg.Sliders["Travel Altitude"]
+        cfg.NoclipTween = cfg.Toggles["Noclip during Tween"]
+        if cfg.Choices["Select Sea"] then cfg.SelectSea = cfg.Choices["Select Sea"].value end
+        if cfg.Choices["Target Island"] then cfg.TargetIsland = cfg.Choices["Target Island"].value end
+
+        cfg.ControlsScale = cfg.Sliders["Controls Global Scale"]
+        cfg.Watermark = cfg.Toggles["Performance Watermark"]
+        cfg.Crosshair = cfg.Toggles["Custom Crosshair"]
+
+        if cfg.Choices["Select Weapon Skin"] then cfg.WeaponSkin = cfg.Choices["Select Weapon Skin"].value end
+        if cfg.Choices["Haki Color"] then cfg.HakiColor = cfg.Choices["Haki Color"].value end
+        cfg.RainbowHaki = cfg.Toggles["Rainbow Haki"]
+        cfg.TrailVFX = cfg.Toggles["Custom Trail VFX"]
+
+        cfg.MusicVolume = cfg.Sliders["Volume"]
+        cfg.MusicPitch = cfg.Sliders["Pitch / Speed"]
+        cfg.MusicLoop = cfg.Toggles["Loop Track"]
+        cfg.TopMusicBar = cfg.Toggles["Show Top Music Bar"]
+        if cfg.Choices["Genre / Category"] then cfg.MusicGenre = cfg.Choices["Genre / Category"].value end
+        if cfg.Choices["Track Preset"] then cfg.MusicTrack = cfg.Choices["Track Preset"].value end
+
+        cfg.HideAccessories = cfg.Toggles["Hide Accessories & Weapons"]
+        if cfg.Choices["Select Animation"] then cfg.SelectedAnimation = cfg.Choices["Select Animation"].value end
         if cfg.Sliders["WalkSpeed Value"] then cfg.WalkSpeedVal = cfg.Sliders["WalkSpeed Value"] end
         if cfg.Sliders["Super Jump Force"] then cfg.SuperJumpForce = cfg.Sliders["Super Jump Force"] end
         if cfg.Sliders["Dash Distance"] then cfg.DashLength = cfg.Sliders["Dash Distance"] end
@@ -4594,6 +5154,48 @@ LoadConfigProfile = function()
         end
         if cfg.MacroWidget ~= nil and UI_TOGGLES["Macro Floating Widget"] then
             pcall(function() UI_TOGGLES["Macro Floating Widget"].set(cfg.MacroWidget == true, true) end)
+        end
+        if cfg.StartAutoDungeon ~= nil and UI_TOGGLES["Start Auto Dungeon"] then
+            pcall(function() UI_TOGGLES["Start Auto Dungeon"].set(cfg.StartAutoDungeon == true, true) end)
+        end
+        if cfg.AutoRaceV4 ~= nil and UI_TOGGLES["Auto Race V4"] then
+            pcall(function() UI_TOGGLES["Auto Race V4"].set(cfg.AutoRaceV4 == true, true) end)
+        end
+        if cfg.AutoPassRoom ~= nil and UI_TOGGLES["Auto Pass Room"] then
+            pcall(function() UI_TOGGLES["Auto Pass Room"].set(cfg.AutoPassRoom == true, true) end)
+        end
+        if cfg.EnableVoidM1 ~= nil and UI_TOGGLES["Enable Void M1"] then
+            pcall(function() UI_TOGGLES["Enable Void M1"].set(cfg.EnableVoidM1 == true, true) end)
+        end
+        if cfg.VoidOnlyBoss ~= nil and UI_TOGGLES["Void Only Boss Rooms"] then
+            pcall(function() UI_TOGGLES["Void Only Boss Rooms"].set(cfg.VoidOnlyBoss == true, true) end)
+        end
+        if cfg.AutoLoadDungeon ~= nil and UI_TOGGLES["Auto Load Dungeon"] then
+            pcall(function() UI_TOGGLES["Auto Load Dungeon"].set(cfg.AutoLoadDungeon == true, true) end)
+        end
+        if cfg.NoclipTween ~= nil and UI_TOGGLES["Noclip during Tween"] then
+            pcall(function() UI_TOGGLES["Noclip during Tween"].set(cfg.NoclipTween == true, true) end)
+        end
+        if cfg.Watermark ~= nil and UI_TOGGLES["Performance Watermark"] then
+            pcall(function() UI_TOGGLES["Performance Watermark"].set(cfg.Watermark == true, true) end)
+        end
+        if cfg.Crosshair ~= nil and UI_TOGGLES["Custom Crosshair"] then
+            pcall(function() UI_TOGGLES["Custom Crosshair"].set(cfg.Crosshair == true, true) end)
+        end
+        if cfg.RainbowHaki ~= nil and UI_TOGGLES["Rainbow Haki"] then
+            pcall(function() UI_TOGGLES["Rainbow Haki"].set(cfg.RainbowHaki == true, true) end)
+        end
+        if cfg.TrailVFX ~= nil and UI_TOGGLES["Custom Trail VFX"] then
+            pcall(function() UI_TOGGLES["Custom Trail VFX"].set(cfg.TrailVFX == true, true) end)
+        end
+        if cfg.MusicLoop ~= nil and UI_TOGGLES["Loop Track"] then
+            pcall(function() UI_TOGGLES["Loop Track"].set(cfg.MusicLoop == true, true) end)
+        end
+        if cfg.TopMusicBar ~= nil and UI_TOGGLES["Show Top Music Bar"] then
+            pcall(function() UI_TOGGLES["Show Top Music Bar"].set(cfg.TopMusicBar == true, true) end)
+        end
+        if cfg.HideAccessories ~= nil and UI_TOGGLES["Hide Accessories & Weapons"] then
+            pcall(function() UI_TOGGLES["Hide Accessories & Weapons"].set(cfg.HideAccessories == true, true) end)
         end
 
         -- 5. Restore Sliders
@@ -5078,16 +5680,9 @@ end
 -- 1. HOME TAB (LUXURY GLASS DASHBOARD WITH SLEEK HEALTH & ENERGY CAPSULES)
 -- New Darling Hub Modular Tabs (Structure ready for step-by-step feature addition)
 local placeholderTabs = {
-    { id = "Players",    title = "Players",      desc = "Módulo de gestión y visualización de jugadores." },
-    { id = "AutoBounty", title = "Auto Bounty",  desc = "Módulo de caza automática de recompensas." },
-    { id = "Dungeon",    title = "Dungeon",      desc = "Módulo de incursiones y mazmorras automáticas." },
-    { id = "Teleport",      title = "Teleport",       desc = "Módulo de teletransporte a islas y zonas." },
+    { id = "AutoBounty",    title = "Auto Bounty",    desc = "Módulo de caza automática de recompensas." },
     { id = "ControlPeople", title = "Control People", desc = "Módulo de control e interacción con otros jugadores." },
     { id = "StealFruits",   title = "Steal Fruits",   desc = "Módulo de detección y recolección rápida de frutas." },
-    { id = "HUD",           title = "HUD Controls",   desc = "Módulo de widgets y controles en pantalla." },
-    { id = "Skins",      title = "Skins",        desc = "Módulo de personalización visual de armas y aspectos." },
-    { id = "Music",      title = "Music Player", desc = "Módulo de reproductor y visualizador de música." },
-    { id = "Animations", title = "Animations",   desc = "Módulo de animaciones personalizadas." },
 }
 
 for _, t in ipairs(placeholderTabs) do
