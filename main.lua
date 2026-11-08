@@ -146,21 +146,15 @@ local function loadCustomMediaAsset(url, fileName, timeout)
     return nil
 end
 
--- Logo Assets (Version 14 Cache Busting)
-local darlingLogoNormalUrl = "https://raw.githubusercontent.com/rivals-hash/idk/main/assets/darling_logo_v14_anime.png"
-local darlingLogoHalloweenUrl = "https://raw.githubusercontent.com/rivals-hash/idk/main/assets/darling_logo_v14_halloween.png"
-if delfile then
-    pcall(delfile, "darling_logo.png")
-    pcall(delfile, "darling_logo_halloween.png")
-end
-local darlingLogoNormal = loadCustomMediaAsset(darlingLogoNormalUrl, "darling_logo_v14_anime.png", 5)
+-- Logo Assets (Custom User Logo & Disk Cache)
+local darlingLogoCustomUrl = "https://raw.githubusercontent.com/rivals-hash/idk/main/assets/logo.jpg"
+local darlingLogoNormalUrl = darlingLogoCustomUrl
+local darlingLogoHalloweenUrl = darlingLogoCustomUrl
+local darlingLogoNormal = loadCustomMediaAsset(darlingLogoCustomUrl, "darling_custom_logo.jpg", 5)
 if not darlingLogoNormal or darlingLogoNormal == "" or darlingLogoNormal:match("^https?://") then
     darlingLogoNormal = "rbxassetid://109687263098821"
 end
-local darlingLogoHalloween = loadCustomMediaAsset(darlingLogoHalloweenUrl, "darling_logo_v14_halloween.png", 5) or "rbxassetid://98223928022309"
-if not darlingLogoHalloween or darlingLogoHalloween == "" or darlingLogoHalloween:match("^https?://") then
-    darlingLogoHalloween = "rbxassetid://98223928022309"
-end
+local darlingLogoHalloween = darlingLogoNormal
 local darlingIcon = darlingLogoNormal
 
 -- 5. Shared Environment and Duplicate Cleanup
@@ -267,25 +261,23 @@ function DarlingHub:Require(relPath)
     -- 1. Check local developer workspace paths
     local code = readLocalDevModule(relPath)
 
-    -- 2. Fetch fresh updated module from GitHub
-    if not code then
-        code = universalHttpGet(RepoBase .. relPath .. "?v=" .. tostring(os.time()))
-            or universalHttpGet(RepoBase .. relPath)
-        if code and exWriteFile then
-            local diskCacheFile = CACHE_SUBDIR .. "/" .. relPath:gsub("/", "_")
-            pcall(exWriteFile, diskCacheFile, code)
-        end
-    end
-
-    -- 3. Offline fallback to disk cache if network is unavailable
+    -- 2. Fast disk cache check (Instant bootstrap without freezing render thread)
+    local diskCacheFile = CACHE_SUBDIR .. "/" .. relPath:gsub("/", "_")
     if not code and exIsFile and exReadFile then
-        local diskCacheFile = CACHE_SUBDIR .. "/" .. relPath:gsub("/", "_")
         local okF, exists = pcall(exIsFile, diskCacheFile)
         if okF and exists then
             local ok, content = pcall(exReadFile, diskCacheFile)
             if ok and type(content) == "string" and #content > 0 then
                 code = content
             end
+        end
+    end
+
+    -- 3. Fetch from GitHub if not in local dev or disk cache
+    if not code then
+        code = universalHttpGet(RepoBase .. relPath)
+        if code and exWriteFile then
+            pcall(exWriteFile, diskCacheFile, code)
         end
     end
 
@@ -1770,6 +1762,12 @@ local function launchHub(mode)
     _G.DarlingFastBountyMode = isFast
     if getgenv then getgenv().DarlingFastBountyMode = isFast end
 
+    local LoadingScreenMod = DarlingHub:Require("modules/ui/loading_screen.lua")
+    if LoadingScreenMod and LoadingScreenMod.show then
+        LoadingScreenMod.show(darlingIcon)
+        LoadingScreenMod.update(0.08, "Iniciando sistema...")
+    end
+
     pcall(function()
         local bMod = DarlingHub:Require("modules/combat/auto_bounty.lua")
         if bMod then
@@ -1809,8 +1807,13 @@ local function launchHub(mode)
             applyMinimumGraphics()
         end
 
-        for _, item in ipairs(manifestToLoad) do
+        local totalTabs = #manifestToLoad
+        for idx, item in ipairs(manifestToLoad) do
             local tabKey, relPath = item[1], item[2]
+            local pct = 0.12 + (0.68 * (idx / totalTabs))
+            if LoadingScreenMod and LoadingScreenMod.update then
+                LoadingScreenMod.update(pct, "Cargando " .. tostring(tabKey) .. "...")
+            end
             if not DarlingHub.Tabs[tabKey] then
                 local mod = DarlingHub:Require(relPath)
                 if type(mod) == "function" then
@@ -1822,10 +1825,14 @@ local function launchHub(mode)
                     end
                 end
             end
-            task.wait(0.04)
+            task.wait(0.01)
         end
         if not isFast then
             sortTabsOrder()
+        end
+
+        if LoadingScreenMod and LoadingScreenMod.update then
+            LoadingScreenMod.update(0.88, "Cargando configuraciones...")
         end
 
         -- 15. Auto-Load Saved Configuration
@@ -1835,24 +1842,36 @@ local function launchHub(mode)
             end
         end)
 
+        if LoadingScreenMod and LoadingScreenMod.update then
+            LoadingScreenMod.update(0.96, "Sincronizando interfaz...")
+        end
+
         -- 16. Hub Initialization Complete & Reveal Main Window
-        pcall(function()
-            setWindUIGuiVisibility(true)
-            local mainFrame = (Window.GetMainFrame and Window:GetMainFrame()) or Window.Frame or (Window.UIElements and Window.UIElements.Main)
-            if mainFrame then
-                mainFrame.Visible = true
-            end
-            Window:SelectTab(1)
-            styleOpenButtonBorder()
-            createGuaranteedUIToggle()
-            local lang = _G.DarlingLanguage or (getgenv and getgenv().DarlingLanguage) or currentLanguage
-            if lang and lang ~= "English" and DarlingHub.ApplyLanguage then
-                DarlingHub.ApplyLanguage(lang)
-            end
-            if Window.SetToTheCenter then
-                Window:SetToTheCenter()
-            end
-        end)
+        local revealWindow = function()
+            pcall(function()
+                setWindUIGuiVisibility(true)
+                local mainFrame = (Window.GetMainFrame and Window:GetMainFrame()) or Window.Frame or (Window.UIElements and Window.UIElements.Main)
+                if mainFrame then
+                    mainFrame.Visible = true
+                end
+                Window:SelectTab(1)
+                styleOpenButtonBorder()
+                createGuaranteedUIToggle()
+                local lang = _G.DarlingLanguage or (getgenv and getgenv().DarlingLanguage) or currentLanguage
+                if lang and lang ~= "English" and DarlingHub.ApplyLanguage then
+                    DarlingHub.ApplyLanguage(lang)
+                end
+                if Window.SetToTheCenter then
+                    Window:SetToTheCenter()
+                end
+            end)
+        end
+
+        if LoadingScreenMod and LoadingScreenMod.finish then
+            LoadingScreenMod.finish(revealWindow)
+        else
+            revealWindow()
+        end
 
         task.wait(0.2)
         DarlingHub.IsLoadingConfig = false
@@ -2423,17 +2442,5 @@ task.spawn(function()
     end
 end)
 
--- 15. Show Startup Mode Selector Modal ("Choose A Mode")
-local ModeSelectorMod = DarlingHub:Require("modules/ui/mode_selector.lua")
-if ModeSelectorMod and ModeSelectorMod.show then
-    ModeSelectorMod.show({
-        isFastConfigured = isFastBountyMode,
-        fastAsset = darlingLogoHalloween,
-        fullAsset = darlingLogoNormal,
-        onSelect = function(mode)
-            launchHub(mode)
-        end
-    })
-else
-    launchHub(isFastBountyMode and "fast" or "full")
-end
+-- 15. Launch Hub Directly (Mode Selector Removed for Zero-Lag Instant Boot)
+launchHub(isFastBountyMode and "fast" or "full")
