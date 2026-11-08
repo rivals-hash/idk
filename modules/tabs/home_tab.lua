@@ -64,7 +64,7 @@ local playerUsername = (LocalPlayer and LocalPlayer.Name) or (Players.LocalPlaye
 
 HomeTab:Paragraph({
     Title = playerDisplayName .. " (@" .. playerUsername .. ")",
-    Desc = "Darling Hub - Version 1.4 | Special Halloween Edition",
+    Desc = "Darling Hub - Version 1.5 | Darling X Edition",
     Image = "sparkles"
 })
 

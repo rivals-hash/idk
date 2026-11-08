@@ -386,6 +386,7 @@ loadHubConfig = function(silent)
                 if s:find("oneshot") or s:find("one shot") or s:find("kitsune") then return true end
                 if s:find("bounty") or s:find("hunt auto") then return true end
                 if s:find("floating") or s:find("widget") then return true end
+                if s:find("smooth") or s:find("plastic") or s:find("fflag") or s:find("minimum") then return true end
                 return false
             end
 
