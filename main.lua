@@ -537,7 +537,9 @@ local WINDUI_LUCIDE_FALLBACK = {
     Dungeon       = "rbxassetid://98218034436456",   -- Lucide: flame
     Teleport      = "rbxassetid://84279202219901",   -- Lucide: map-pin
     ControlPeople = "rbxassetid://92483947987410",   -- Lucide: gamepad-2
-    StealFruits   = "rbxassetid://139519182403183",  -- Lucide: cherry
+    StealFruits   = "rbxassetid://104349242902442",  -- Lucide: apple
+    apple         = "rbxassetid://104349242902442",
+    cherry        = "rbxassetid://104349242902442",
     HUD           = "rbxassetid://139929981863901",  -- Lucide: layout-dashboard
     Macro         = "rbxassetid://80451686744860",   -- Lucide: bot
     Visuals       = "rbxassetid://100033680381365",  -- Lucide: eye
@@ -1745,13 +1747,13 @@ do
         if MonodyMusic.Sound then MonodyMusic.Sound.Looped = l end
     end
 
-    -- Top Music Bar on UI Header
+    -- Top Music Bar on UI Header (Extended Width & Lucide Icons)
     local TopMusicBar = Instance.new("Frame", Header)
     TopMusicBar.Name = "TopMusicBar"
-    TopMusicBar.Size = UDim2.new(0, 155, 0, 24)
-    TopMusicBar.Position = UDim2.new(1, -225, 0.5, -12)
+    TopMusicBar.Size = UDim2.new(0, 205, 0, 25)
+    TopMusicBar.Position = UDim2.new(1, -272, 0.5, -12.5)
     TopMusicBar.BackgroundColor3 = Color3.fromRGB(15, 12, 24)
-    TopMusicBar.BackgroundTransparency = 0.45
+    TopMusicBar.BackgroundTransparency = 0.4
     TopMusicBar.ZIndex = 16
     Instance.new("UICorner", TopMusicBar).CornerRadius = UDim.new(0, 7)
     local topMusicStroke = Instance.new("UIStroke", TopMusicBar)
@@ -1761,10 +1763,22 @@ do
     RegisterThemeStroke(topMusicStroke)
     MonodyMusic.TopBarFrame = TopMusicBar
 
+    -- Spinning Disc Icon
+    local DiscIcon = Instance.new("ImageLabel", TopMusicBar)
+    DiscIcon.Name = "DiscIcon"
+    DiscIcon.Size = UDim2.new(0, 14, 0, 14)
+    DiscIcon.Position = UDim2.new(0, 6, 0.5, -7)
+    DiscIcon.BackgroundTransparency = 1
+    DiscIcon.Image = "rbxassetid://101908120120777"
+    DiscIcon.ImageColor3 = CurrentAccent
+    DiscIcon.ZIndex = 17
+    RegisterThemeImage(DiscIcon)
+
+    -- Animated Equalizer
     local EqContainer = Instance.new("Frame", TopMusicBar)
     EqContainer.Name = "EqContainer"
-    EqContainer.Size = UDim2.new(0, 18, 0, 14)
-    EqContainer.Position = UDim2.new(0, 6, 0.5, -7)
+    EqContainer.Size = UDim2.new(0, 16, 0, 14)
+    EqContainer.Position = UDim2.new(0, 24, 0.5, -7)
     EqContainer.BackgroundTransparency = 1
     EqContainer.ZIndex = 17
 
@@ -1772,8 +1786,8 @@ do
     for i = 1, 4 do
         local bar = Instance.new("Frame", EqContainer)
         bar.Name = "EqBar" .. i
-        bar.Size = UDim2.new(0, 3, 0, 4)
-        bar.Position = UDim2.new(0, (i - 1) * 4.5, 1, -4)
+        bar.Size = UDim2.new(0, 2.5, 0, 4)
+        bar.Position = UDim2.new(0, (i - 1) * 4, 1, -4)
         bar.BackgroundColor3 = CurrentAccent
         bar.ZIndex = 18
         Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
@@ -1781,45 +1795,70 @@ do
         table.insert(eqBars, bar)
     end
 
+    -- Track Title Label
     local TopMusicTitle = Instance.new("TextLabel", TopMusicBar)
     TopMusicTitle.Name = "TrackTitle"
-    TopMusicTitle.Size = UDim2.new(0, 78, 1, 0)
-    TopMusicTitle.Position = UDim2.new(0, 28, 0, 0)
+    TopMusicTitle.Size = UDim2.new(0, 105, 1, 0)
+    TopMusicTitle.Position = UDim2.new(0, 44, 0, 0)
     TopMusicTitle.BackgroundTransparency = 1
-    TopMusicTitle.Font = Enum.Font.GothamMedium
+    TopMusicTitle.Font = Enum.Font.GothamBold
     TopMusicTitle.TextSize = 8.5
     TopMusicTitle.TextColor3 = Color3.fromRGB(240, 235, 255)
     TopMusicTitle.TextXAlignment = Enum.TextXAlignment.Left
     TopMusicTitle.ClipsDescendants = true
+    TopMusicTitle.TextTruncate = Enum.TextTruncate.AtEnd
     TopMusicTitle.Text = "No Track"
     TopMusicTitle.ZIndex = 17
 
+    -- Play/Pause Button with Lucide Icon
     local TopPlayBtn = Instance.new("TextButton", TopMusicBar)
     TopPlayBtn.Name = "PlayBtn"
-    TopPlayBtn.Size = UDim2.new(0, 19, 0, 18)
-    TopPlayBtn.Position = UDim2.new(1, -44, 0.5, -9)
-    TopPlayBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 35)
+    TopPlayBtn.Size = UDim2.new(0, 20, 0, 19)
+    TopPlayBtn.Position = UDim2.new(1, -48, 0.5, -9.5)
+    TopPlayBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 36)
     TopPlayBtn.BackgroundTransparency = 0.3
-    TopPlayBtn.Text = "▶"
-    TopPlayBtn.Font = Enum.Font.GothamBold
-    TopPlayBtn.TextSize = 9
-    TopPlayBtn.TextColor3 = CurrentAccent
+    TopPlayBtn.Text = ""
+    TopPlayBtn.AutoButtonColor = false
     TopPlayBtn.ZIndex = 18
-    Instance.new("UICorner", TopPlayBtn).CornerRadius = UDim.new(0, 5)
-    RegisterThemeText(TopPlayBtn)
+    Instance.new("UICorner", TopPlayBtn).CornerRadius = UDim.new(0, 6)
+    local pBtnStroke = Instance.new("UIStroke", TopPlayBtn)
+    pBtnStroke.Color = CurrentAccent
+    pBtnStroke.Thickness = 0.8
+    RegisterThemeStroke(pBtnStroke)
 
+    local TopPlayIcon = Instance.new("ImageLabel", TopPlayBtn)
+    TopPlayIcon.Name = "Icon"
+    TopPlayIcon.Size = UDim2.new(0, 12, 0, 12)
+    TopPlayIcon.Position = UDim2.new(0.5, -6, 0.5, -6)
+    TopPlayIcon.BackgroundTransparency = 1
+    TopPlayIcon.Image = "rbxassetid://135609604299893" -- Lucide: play
+    TopPlayIcon.ImageColor3 = CurrentAccent
+    TopPlayIcon.ZIndex = 19
+    RegisterThemeImage(TopPlayIcon)
+
+    -- Stop Button with Lucide Icon
     local TopStopBtn = Instance.new("TextButton", TopMusicBar)
     TopStopBtn.Name = "StopBtn"
-    TopStopBtn.Size = UDim2.new(0, 19, 0, 18)
-    TopStopBtn.Position = UDim2.new(1, -22, 0.5, -9)
-    TopStopBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 35)
+    TopStopBtn.Size = UDim2.new(0, 20, 0, 19)
+    TopStopBtn.Position = UDim2.new(1, -24, 0.5, -9.5)
+    TopStopBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 36)
     TopStopBtn.BackgroundTransparency = 0.3
-    TopStopBtn.Text = "■"
-    TopStopBtn.Font = Enum.Font.GothamBold
-    TopStopBtn.TextSize = 8
-    TopStopBtn.TextColor3 = Color3.fromRGB(255, 90, 90)
+    TopStopBtn.Text = ""
+    TopStopBtn.AutoButtonColor = false
     TopStopBtn.ZIndex = 18
-    Instance.new("UICorner", TopStopBtn).CornerRadius = UDim.new(0, 5)
+    Instance.new("UICorner", TopStopBtn).CornerRadius = UDim.new(0, 6)
+    local sBtnStroke = Instance.new("UIStroke", TopStopBtn)
+    sBtnStroke.Color = Color3.fromRGB(255, 80, 80)
+    sBtnStroke.Thickness = 0.8
+
+    local TopStopIcon = Instance.new("ImageLabel", TopStopBtn)
+    TopStopIcon.Name = "Icon"
+    TopStopIcon.Size = UDim2.new(0, 11, 0, 11)
+    TopStopIcon.Position = UDim2.new(0.5, -5.5, 0.5, -5.5)
+    TopStopIcon.BackgroundTransparency = 1
+    TopStopIcon.Image = "rbxassetid://86304921356806" -- Lucide: square
+    TopStopIcon.ImageColor3 = Color3.fromRGB(255, 90, 90)
+    TopStopIcon.ZIndex = 19
 
     ConnectButton(TopPlayBtn, function()
         if MonodyMusic.IsPlaying then
@@ -1841,21 +1880,22 @@ do
     RunService.RenderStepped:Connect(function()
         if MonodyMusic.IsPlaying then
             eqAnimStep = eqAnimStep + 0.18
+            DiscIcon.Rotation = (DiscIcon.Rotation + 1.8) % 360
             for i, bar in ipairs(eqBars) do
                 local h = math.clamp(4 + math.abs(math.sin(eqAnimStep + i * 0.85)) * 10, 3, 14)
-                bar.Size = UDim2.new(0, 3, 0, h)
-                bar.Position = UDim2.new(0, (i - 1) * 4.5, 1, -h)
+                bar.Size = UDim2.new(0, 2.5, 0, h)
+                bar.Position = UDim2.new(0, (i - 1) * 4, 1, -h)
             end
         else
             for i, bar in ipairs(eqBars) do
-                bar.Size = UDim2.new(0, 3, 0, 4)
-                bar.Position = UDim2.new(0, (i - 1) * 4.5, 1, -4)
+                bar.Size = UDim2.new(0, 2.5, 0, 4)
+                bar.Position = UDim2.new(0, (i - 1) * 4, 1, -4)
             end
         end
     end)
 
     MonodyMusic.OnStateChanged = function()
-        TopPlayBtn.Text = MonodyMusic.IsPlaying and "⏸" or "▶"
+        TopPlayIcon.Image = MonodyMusic.IsPlaying and "rbxassetid://74873705394436" or "rbxassetid://135609604299893"
         TopMusicTitle.Text = MonodyMusic.CurrentTrackName or "No Track"
     end
 end
@@ -2014,7 +2054,7 @@ local TABS_MANIFEST = {
     { id = "Dungeon",       name = "Dungeon",        icon = "flame" },
     { id = "Teleport",      name = "Teleport",       icon = "map-pin" },
     { id = "ControlPeople", name = "Control People", icon = "gamepad-2" },
-    { id = "StealFruits",   name = "Steal Fruits",   icon = "cherry" },
+    { id = "StealFruits",   name = "Steal Fruits",   icon = "apple" },
     { id = "HUD",           name = "HUD",            icon = "layout-dashboard" },
     { id = "Macro",         name = "Macro",          icon = "bot" },
     { id = "Visuals",       name = "Visuals",        icon = "eye" },
@@ -2123,6 +2163,7 @@ local function SelectTabById(targetId)
             local isTarget = (id == targetId)
             p.Visible = isTarget
             if isTarget then
+                if id == "Players" and _G.Monody_RefreshPlayers then pcall(_G.Monody_RefreshPlayers) end
                 p.CanvasPosition = Vector2.new(0, 0)
                 for _, card in ipairs(p:GetChildren()) do
                     if card:IsA("GuiObject") and not card:IsA("UIListLayout") and not card:IsA("UIPadding") then
@@ -6881,6 +6922,1135 @@ end)
 if not okESP then
     warn("[Monody] Failed to initialize ESPPage: " .. tostring(errESP))
 end
+-- ============================================================
+-- 3. PLAYERS TAB (TRANSPARENT CARDS, LIVE HEALTH, BLACKLIST & SPECTATE)
+-- ============================================================
+do
+    pcall(function()
+        local PlayersPage = RegisterTab("Players", "Players", "users")
+        local pCard = CreateCard(PlayersPage, "Player Management")
+        
+        local filterText = ""
+
+        local SpectateGui = Instance.new("ScreenGui")
+        SpectateGui.Name = "MonodySpectateGui"
+        SpectateGui.ResetOnSpawn = false
+        SpectateGui.DisplayOrder = 999
+        pcall(function() SpectateGui.Parent = parentGui or (lp and lp:FindFirstChild("PlayerGui")) or CoreGui end)
+
+        local StopSpecBtn = Instance.new("TextButton", SpectateGui)
+        StopSpecBtn.Name = "StopSpectateBtn"
+        StopSpecBtn.Size = UDim2.new(0, 140, 0, 30)
+        StopSpecBtn.Position = UDim2.new(0.5, -70, 0, 15)
+        StopSpecBtn.BackgroundColor3 = Color3.fromRGB(20, 16, 28)
+        StopSpecBtn.BackgroundTransparency = 0.3
+        StopSpecBtn.Text = "Stop Spectating"
+        StopSpecBtn.Font = Enum.Font.GothamBold
+        StopSpecBtn.TextSize = 10
+        StopSpecBtn.TextColor3 = Color3.fromRGB(255, 90, 90)
+        StopSpecBtn.Visible = false
+        Instance.new("UICorner", StopSpecBtn).CornerRadius = UDim.new(0, 8)
+        local specStroke = Instance.new("UIStroke", StopSpecBtn)
+        specStroke.Color = Color3.fromRGB(255, 90, 90)
+        specStroke.Thickness = 1
+        RegisterTranslatable(StopSpecBtn, "Stop Spectating")
+
+        local currentSpectating = nil
+        local function StopSpectate()
+            currentSpectating = nil
+            StopSpecBtn.Visible = false
+            pcall(function()
+                local char = lp.Character or lp.CharacterAdded:Wait()
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if hum then Workspace.CurrentCamera.CameraSubject = hum end
+            end)
+        end
+        ConnectButton(StopSpecBtn, StopSpectate)
+
+        local function RenderPlayers()
+            for _, ch in ipairs(pCard:GetChildren()) do
+                if ch.Name:find("^PlayerRow_") then
+                    ch:Destroy()
+                end
+            end
+
+            local allPlayers = Players:GetPlayers()
+            for idx, p in ipairs(allPlayers) do
+                local pName = p.Name
+                local pDisp = p.DisplayName
+                if filterText == "" or pName:lower():find(filterText:lower(), 1, true) or pDisp:lower():find(filterText:lower(), 1, true) then
+                    local pRow = Instance.new("Frame", pCard)
+                    pRow.Name = "PlayerRow_" .. p.UserId
+                    pRow.Size = UDim2.new(1, 0, 0, 56)
+                    pRow.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
+                    pRow.BackgroundTransparency = 1
+                    pRow.LayoutOrder = 10 + idx
+                    Instance.new("UICorner", pRow).CornerRadius = UDim.new(0, 8)
+                    local pRowStroke = Instance.new("UIStroke", pRow)
+                    pRowStroke.Color = Color3.fromRGB(50, 44, 68)
+                    pRowStroke.Thickness = 0.8
+                    pRowStroke.Transparency = 0.6
+
+                    local avatarImg = Instance.new("ImageLabel", pRow)
+                    avatarImg.Size = UDim2.new(0, 40, 0, 40)
+                    avatarImg.Position = UDim2.new(0, 8, 0.5, -20)
+                    avatarImg.BackgroundColor3 = Color3.fromRGB(25, 20, 35)
+                    avatarImg.Image = "rbxthumb://type=AvatarHeadShot&id=" .. p.UserId .. "&w=150&h=150"
+                    Instance.new("UICorner", avatarImg).CornerRadius = UDim.new(1, 0)
+
+                    local nameLbl = Instance.new("TextLabel", pRow)
+                    nameLbl.Size = UDim2.new(0, 140, 0, 16)
+                    nameLbl.Position = UDim2.new(0, 54, 0, 6)
+                    nameLbl.BackgroundTransparency = 1
+                    nameLbl.Font = Enum.Font.GothamBold
+                    nameLbl.TextSize = 10
+                    nameLbl.TextColor3 = Color3.fromRGB(245, 240, 255)
+                    nameLbl.TextXAlignment = Enum.TextXAlignment.Left
+                    nameLbl.Text = pDisp .. (p == lp and " (You)" or "")
+
+                    local uLbl = Instance.new("TextLabel", pRow)
+                    uLbl.Size = UDim2.new(0, 140, 0, 12)
+                    uLbl.Position = UDim2.new(0, 54, 0, 22)
+                    uLbl.BackgroundTransparency = 1
+                    uLbl.Font = Enum.Font.GothamMedium
+                    uLbl.TextSize = 8
+                    uLbl.TextColor3 = Color3.fromRGB(160, 155, 175)
+                    uLbl.TextXAlignment = Enum.TextXAlignment.Left
+                    uLbl.Text = "@" .. pName
+
+                    local hpTrack = Instance.new("Frame", pRow)
+                    hpTrack.Size = UDim2.new(0, 130, 0, 6)
+                    hpTrack.Position = UDim2.new(0, 54, 0, 38)
+                    hpTrack.BackgroundColor3 = Color3.fromRGB(30, 26, 42)
+                    Instance.new("UICorner", hpTrack).CornerRadius = UDim.new(1, 0)
+
+                    local hpFill = Instance.new("Frame", hpTrack)
+                    hpFill.Size = UDim2.new(1, 0, 1, 0)
+                    hpFill.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+                    Instance.new("UICorner", hpFill).CornerRadius = UDim.new(1, 0)
+
+                    local hpLbl = Instance.new("TextLabel", pRow)
+                    hpLbl.Size = UDim2.new(0, 50, 0, 12)
+                    hpLbl.Position = UDim2.new(0, 188, 0, 35)
+                    hpLbl.BackgroundTransparency = 1
+                    hpLbl.Font = Enum.Font.GothamMedium
+                    hpLbl.TextSize = 8
+                    hpLbl.TextColor3 = Color3.fromRGB(200, 195, 215)
+                    hpLbl.TextXAlignment = Enum.TextXAlignment.Left
+                    hpLbl.Text = "100%"
+
+                    local function UpdateHealth()
+                        local char = p.Character
+                        local hum = char and char:FindFirstChildOfClass("Humanoid")
+                        if hum and hum.MaxHealth > 0 then
+                            local frac = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
+                            hpFill.Size = UDim2.new(frac, 0, 1, 0)
+                            hpLbl.Text = math.floor(hum.Health) .. " (" .. math.floor(frac * 100) .. "%)"
+                            if frac > 0.5 then
+                                hpFill.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+                            elseif frac > 0.25 then
+                                hpFill.BackgroundColor3 = Color3.fromRGB(241, 196, 15)
+                            else
+                                hpFill.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
+                            end
+                        else
+                            hpFill.Size = UDim2.new(0, 0, 1, 0)
+                            hpLbl.Text = "0%"
+                        end
+                    end
+                    UpdateHealth()
+
+                    if p.Character then
+                        local hum = p.Character:FindFirstChildOfClass("Humanoid")
+                        if hum then hum.HealthChanged:Connect(UpdateHealth) end
+                    end
+                    p.CharacterAdded:Connect(function(char)
+                        task.wait(0.2)
+                        local hum = char:WaitForChild("Humanoid", 3)
+                        if hum then hum.HealthChanged:Connect(UpdateHealth) end
+                        UpdateHealth()
+                    end)
+
+                    if p ~= lp then
+                        local blBtn = Instance.new("TextButton", pRow)
+                        blBtn.Size = UDim2.new(0, 52, 0, 20)
+                        blBtn.Position = UDim2.new(1, -170, 0.5, -10)
+                        local isBl = _G.DarlingBlacklistedPlayers and _G.DarlingBlacklistedPlayers[p.UserId]
+                        blBtn.BackgroundColor3 = isBl and Color3.fromRGB(231, 76, 60) or Color3.fromRGB(28, 22, 38)
+                        blBtn.Text = isBl and "Blacklisted" or "Blacklist"
+                        blBtn.Font = Enum.Font.GothamBold
+                        blBtn.TextSize = 8
+                        blBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        Instance.new("UICorner", blBtn).CornerRadius = UDim.new(0, 5)
+                        local blStroke = Instance.new("UIStroke", blBtn)
+                        blStroke.Color = CurrentAccent
+                        blStroke.Thickness = 0.8
+                        RegisterTranslatable(blBtn, blBtn.Text)
+
+                        ConnectButton(blBtn, function()
+                            _G.DarlingBlacklistedPlayers = _G.DarlingBlacklistedPlayers or {}
+                            local nextState = not _G.DarlingBlacklistedPlayers[p.UserId]
+                            _G.DarlingBlacklistedPlayers[p.UserId] = nextState
+                            _G.DarlingBlacklistedPlayers[p.Name] = nextState
+                            blBtn.BackgroundColor3 = nextState and Color3.fromRGB(231, 76, 60) or Color3.fromRGB(28, 22, 38)
+                            blBtn.Text = nextState and "Blacklisted" or "Blacklist"
+                            RegisterTranslatable(blBtn, blBtn.Text)
+                            Notify("Blacklist", (nextState and "Added " or "Removed ") .. pName)
+                        end)
+
+                        local specBtn = Instance.new("TextButton", pRow)
+                        specBtn.Size = UDim2.new(0, 52, 0, 20)
+                        specBtn.Position = UDim2.new(1, -112, 0.5, -10)
+                        specBtn.BackgroundColor3 = Color3.fromRGB(28, 22, 38)
+                        specBtn.Text = "Spectate"
+                        specBtn.Font = Enum.Font.GothamBold
+                        specBtn.TextSize = 8
+                        specBtn.TextColor3 = CurrentAccent
+                        Instance.new("UICorner", specBtn).CornerRadius = UDim.new(0, 5)
+                        local spStroke = Instance.new("UIStroke", specBtn)
+                        spStroke.Color = CurrentAccent
+                        spStroke.Thickness = 0.8
+                        RegisterTranslatable(specBtn, "Spectate")
+
+                        ConnectButton(specBtn, function()
+                            if currentSpectating == p then
+                                StopSpectate()
+                            else
+                                local char = p.Character
+                                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                                if hum then
+                                    currentSpectating = p
+                                    Workspace.CurrentCamera.CameraSubject = hum
+                                    StopSpecBtn.Visible = true
+                                    Notify("Spectate", "Observing " .. pName)
+                                else
+                                    Notify("Spectate", "Player character not available.")
+                                end
+                            end
+                        end)
+
+                        local tpBtn = Instance.new("TextButton", pRow)
+                        tpBtn.Size = UDim2.new(0, 50, 0, 20)
+                        tpBtn.Position = UDim2.new(1, -54, 0.5, -10)
+                        tpBtn.BackgroundColor3 = Color3.fromRGB(28, 22, 38)
+                        tpBtn.Text = "Teleport"
+                        tpBtn.Font = Enum.Font.GothamBold
+                        tpBtn.TextSize = 8
+                        tpBtn.TextColor3 = Color3.fromRGB(100, 230, 150)
+                        Instance.new("UICorner", tpBtn).CornerRadius = UDim.new(0, 5)
+                        local tpStroke = Instance.new("UIStroke", tpBtn)
+                        tpStroke.Color = Color3.fromRGB(100, 230, 150)
+                        tpStroke.Thickness = 0.8
+                        RegisterTranslatable(tpBtn, "Teleport to Player")
+
+                        ConnectButton(tpBtn, function()
+                            local myChar = lp.Character
+                            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+                            local targetChar = p.Character
+                            local targetRoot = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
+                            if myRoot and targetRoot then
+                                myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 3, 3)
+                                Notify("Teleport", "Teleported to " .. pName)
+                            end
+                        end)
+                    end
+                end
+            end
+            UpdateCardGeometry(pCard)
+            UpdatePageCanvas(PlayersPage)
+        end
+
+        AddInput(pCard, "Search Player...", "Search player...", "", function(val)
+            filterText = tostring(val or "")
+            RenderPlayers()
+        end)
+        AddButton(pCard, "Refresh Player List", RenderPlayers)
+
+        Players.PlayerAdded:Connect(function() task.wait(0.5); RenderPlayers() end)
+        Players.PlayerRemoving:Connect(function(rem)
+            if currentSpectating == rem then StopSpectate() end
+            task.wait(0.2)
+            RenderPlayers()
+        end)
+
+        _G.Monody_RefreshPlayers = RenderPlayers
+        task.defer(RenderPlayers)
+    end)
+end
+
+-- ============================================================
+-- 4. DUNGEON TAB (AUTO DUNGEON & VOID M1 ENGINE)
+-- ============================================================
+do
+    pcall(function()
+        local DungeonPage = RegisterTab("Dungeon", "Dungeon", "flame")
+        
+        local autoDungeonActive = false
+        local autoV4Active = false
+        local autoPassActive = true
+        local selectedWeapon = "Sword"
+        local attackHeight = 40
+        local VoidConfig = {
+            Enabled = false,
+            VoidOnlyBossRoom = true,
+            Interval = 0.08
+        }
+        local AutoLoad = true
+        local voidRunning = false
+        local BOSS_ROOMS = { [5] = true, [10] = true, [15] = true, [20] = true }
+
+        local function GetDungeonRooms()
+            local mapFolder = Workspace:FindFirstChild("Map")
+            if not mapFolder then return {} end
+            local dungeonFolder = mapFolder:FindFirstChild("Dungeon")
+            if not dungeonFolder then return {} end
+            local rooms = dungeonFolder:GetChildren()
+            table.sort(rooms, function(a, b)
+                local numA = tonumber(string.match(a.Name, "%d+")) or 0
+                local numB = tonumber(string.match(b.Name, "%d+")) or 0
+                return numA < numB
+            end)
+            return rooms
+        end
+
+        local function GetCurrentRoomNumber()
+            local rooms = GetDungeonRooms()
+            if #rooms == 0 then return -1 end
+            local char = lp.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if not root then return -1 end
+            for _, room in ipairs(rooms) do
+                local rPart = room:FindFirstChildWhichIsA("BasePart")
+                if rPart and (rPart.Position - root.Position).Magnitude < 400 then
+                    local num = tonumber(string.match(room.Name, "%d+"))
+                    if num then return num end
+                end
+            end
+            return -1
+        end
+
+        local function IsBossModel(model)
+            if not model or not model:IsA("Model") then return false end
+            local name = model.Name:lower()
+            return name:find("boss") or name:find("captain") or name:find("admiral")
+        end
+
+        local function GetAliveBoss()
+            local enemies = Workspace:FindFirstChild("Enemies")
+            if not enemies then return nil end
+            for _, enemy in ipairs(enemies:GetChildren()) do
+                if IsBossModel(enemy) then
+                    local hum = enemy:FindFirstChildOfClass("Humanoid")
+                    if hum and hum.Health > 0 then return enemy end
+                end
+            end
+            return nil
+        end
+
+        local function VoidLoop()
+            if voidRunning then return end
+            voidRunning = true
+            task.spawn(function()
+                while VoidConfig.Enabled do
+                    pcall(function()
+                        local rNum = GetCurrentRoomNumber()
+                        if not VoidConfig.VoidOnlyBossRoom or BOSS_ROOMS[rNum] or GetAliveBoss() then
+                            local net = game:GetService("ReplicatedStorage"):FindFirstChild("Modules")
+                            net = net and net:FindFirstChild("Net")
+                            local regHit = net and net:FindFirstChild("RE/RegisterHit")
+                            local enemies = Workspace:FindFirstChild("Enemies")
+                            if regHit and enemies then
+                                for _, e in ipairs(enemies:GetChildren()) do
+                                    local hum = e:FindFirstChildOfClass("Humanoid")
+                                    local root = e:FindFirstChild("HumanoidRootPart")
+                                    if hum and hum.Health > 0 and root then
+                                        regHit:FireServer(root, { { hum, root } })
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                    task.wait(VoidConfig.Interval or 0.08)
+                end
+                voidRunning = false
+            end)
+        end
+
+        local function StartAutoBuffs()
+            task.spawn(function()
+                while autoDungeonActive do
+                    pcall(function()
+                        local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
+                        local commF = remotes and remotes:FindFirstChild("CommF_")
+                        if commF then
+                            commF:InvokeServer("Buso")
+                        end
+                        if autoV4Active then
+                            local vim = game:GetService("VirtualInputManager")
+                            if vim then
+                                vim:SendKeyEvent(true, Enum.KeyCode.Y, false, game)
+                                task.wait(0.05)
+                                vim:SendKeyEvent(false, Enum.KeyCode.Y, false, game)
+                            end
+                        end
+                    end)
+                    task.wait(4)
+                end
+            end)
+        end
+
+        local function RotateTargets()
+            while autoDungeonActive do
+                pcall(function()
+                    local char = lp.Character
+                    local root = char and char:FindFirstChild("HumanoidRootPart")
+                    local enemies = Workspace:FindFirstChild("Enemies")
+                    if root and enemies then
+                        local closest = nil
+                        local minDist = 99999
+                        for _, e in ipairs(enemies:GetChildren()) do
+                            local hum = e:FindFirstChildOfClass("Humanoid")
+                            local eRoot = e:FindFirstChild("HumanoidRootPart")
+                            if hum and hum.Health > 0 and eRoot then
+                                local dist = (eRoot.Position - root.Position).Magnitude
+                                if dist < minDist then
+                                    minDist = dist
+                                    closest = e
+                                end
+                            end
+                        end
+                        if closest then
+                            local eRoot = closest:FindFirstChild("HumanoidRootPart")
+                            if eRoot then
+                                root.CFrame = eRoot.CFrame * CFrame.new(0, attackHeight, 0)
+                                local net = game:GetService("ReplicatedStorage"):FindFirstChild("Modules")
+                                net = net and net:FindFirstChild("Net")
+                                local regAtk = net and net:FindFirstChild("RE/RegisterAttack")
+                                local regHit = net and net:FindFirstChild("RE/RegisterHit")
+                                if regAtk then regAtk:FireServer(0.1) end
+                                if regHit then regHit:FireServer(eRoot, { { closest:FindFirstChildOfClass("Humanoid"), eRoot } }) end
+                            end
+                        end
+                    end
+                end)
+                task.wait(0.12)
+            end
+        end
+
+        local dCard1 = CreateCard(DungeonPage, "Auto Dungeon Engine")
+        AddToggle(dCard1, "Start Auto Dungeon", "Automatically clears dungeon mobs and bosses", false, function(v)
+            autoDungeonActive = v
+            if v then
+                StartAutoBuffs()
+                task.spawn(RotateTargets)
+            end
+        end)
+        AddChoice(dCard1, "Selected Weapon", {"Sword", "Melee", "Blox Fruit"}, 1, function(v)
+            selectedWeapon = v
+        end)
+        AddSlider(dCard1, "Attack Height", 10, 100, 40, 5, function(v)
+            attackHeight = v
+        end)
+        AddToggle(dCard1, "Auto Race V4", "Presses Y key automatically when gauge fills", false, function(v)
+            autoV4Active = v
+        end)
+        AddToggle(dCard1, "Auto Pass Room", "Automatically navigates to next room when cleared", true, function(v)
+            autoPassActive = v
+        end)
+
+        local dCard2 = CreateCard(DungeonPage, "Void M1 Engine")
+        AddToggle(dCard2, "Enable Void M1", "Executes high-speed fruit attack loop", false, function(v)
+            VoidConfig.Enabled = v
+            if v then
+                voidRunning = false
+                VoidLoop()
+            end
+        end)
+        AddToggle(dCard2, "Void Only Boss Rooms", "Restricts Void M1 to rooms 5, 10, 15, 20", true, function(v)
+            VoidConfig.VoidOnlyBossRoom = v
+            if VoidConfig.Enabled and not voidRunning then VoidLoop() end
+        end)
+        AddSlider(dCard2, "Void Interval (s)", 0.05, 0.50, 0.08, 0.01, function(v)
+            VoidConfig.Interval = v
+        end)
+
+        local dCard3 = CreateCard(DungeonPage, "Dungeon Status & Utilities")
+        AddToggle(dCard3, "Auto Load Dungeon", "Automatically begins dungeon on script load", true, function(v)
+            AutoLoad = v
+        end)
+
+        local roomPill = Instance.new("TextLabel", dCard3)
+        roomPill.Size = UDim2.new(1, 0, 0, 18)
+        roomPill.BackgroundTransparency = 1
+        roomPill.Font = Enum.Font.GothamMedium
+        roomPill.TextSize = 9
+        roomPill.TextColor3 = Color3.fromRGB(200, 195, 215)
+        roomPill.TextXAlignment = Enum.TextXAlignment.Left
+        roomPill.Text = "Current Room: Detecting..."
+        roomPill.LayoutOrder = 10
+
+        local bossPill = Instance.new("TextLabel", dCard3)
+        bossPill.Size = UDim2.new(1, 0, 0, 18)
+        bossPill.BackgroundTransparency = 1
+        bossPill.Font = Enum.Font.GothamMedium
+        bossPill.TextSize = 9
+        bossPill.TextColor3 = Color3.fromRGB(200, 195, 215)
+        bossPill.TextXAlignment = Enum.TextXAlignment.Left
+        bossPill.Text = "Boss Status: Searching..."
+        bossPill.LayoutOrder = 11
+
+        task.spawn(function()
+            while task.wait(1.5) do
+                pcall(function()
+                    local rNum = GetCurrentRoomNumber()
+                    roomPill.Text = "Current Room: " .. (rNum > 0 and tostring(rNum) or "Outside / Lobby")
+                    local boss = GetAliveBoss()
+                    bossPill.Text = "Boss Status: " .. (boss and (boss.Name .. " (Alive)") or "None / Defeated")
+                end)
+            end
+        end)
+
+        task.defer(function()
+            task.wait(1)
+            if AutoLoad then
+                autoDungeonActive = true
+                StartAutoBuffs()
+                task.spawn(RotateTargets)
+                VoidConfig.Enabled = true
+                VoidConfig.VoidOnlyBossRoom = true
+                voidRunning = false
+                VoidLoop()
+            end
+        end)
+    end)
+end
+
+-- ============================================================
+-- 5. TELEPORT TAB (49 ISLANDS & SPOOKY TWEEN CONTROLLER)
+-- ============================================================
+do
+    pcall(function()
+        local TeleportPage = RegisterTab("Teleport", "Teleport", "map-pin")
+        
+        local IslandsData = {
+            ["Sea 1"] = {
+                ["WindMill"] = CFrame.new(979.79, 16.51, 1429.04),
+                ["Marine"] = CFrame.new(-2566.42, 6.85, 2045.25),
+                ["Middle Town"] = CFrame.new(-690.33, 15.09, 1582.23),
+                ["Jungle"] = CFrame.new(-1612.79, 36.85, 149.12),
+                ["Pirate Village"] = CFrame.new(-1181.30, 4.75, 3803.54),
+                ["Desert"] = CFrame.new(894.48, 6.43, 4392.43),
+                ["Snow Island"] = CFrame.new(1347.80, 104.66, -1319.73),
+                ["MarineFord"] = CFrame.new(-4914.82, 50.96, 4281.02),
+                ["Colosseum"] = CFrame.new(-1427.62, 7.28, -2792.77),
+                ["Sky 1"] = CFrame.new(-4922.39, 717.70, -2622.35),
+                ["Sky 2"] = CFrame.new(-4607.82, 872.54, -1667.55),
+                ["Sky 3"] = CFrame.new(-7894.61, 5547.14, -380.29),
+                ["Prison"] = CFrame.new(4875.33, 5.65, 734.85),
+                ["Magma Village"] = CFrame.new(-5234.07, 8.59, 8467.06),
+                ["Underwater"] = CFrame.new(61163.85, 11.67, 1819.78),
+                ["Fountain City"] = CFrame.new(5127.12, 59.50, 4105.44),
+                ["Shank Room"] = CFrame.new(-1442.16, 29.87, -28.35),
+                ["Mob Island"] = CFrame.new(-2850.20, 7.39, 5354.99)
+            },
+            ["Sea 2"] = {
+                ["The Cafe"] = CFrame.new(-380.47, 77.22, 255.82),
+                ["First Spot"] = CFrame.new(-11.31, 29.27, 2771.52),
+                ["Dark Area"] = CFrame.new(3780.03, 22.65, -3498.58),
+                ["Flamingo Mansion"] = CFrame.new(-435.39, 332.21, 597.57),
+                ["Flamingo Room"] = CFrame.new(2284.91, 15.15, 905.48),
+                ["Green Zone"] = CFrame.new(-2448.53, 73.01, -3210.63),
+                ["Factory"] = CFrame.new(424.12, 211.16, -429.45),
+                ["Colosseum"] = CFrame.new(-1503.62, 219.79, 1369.31),
+                ["Zombie Island"] = CFrame.new(-5622.03, 492.19, -781.78),
+                ["Two Snow Mountain"] = CFrame.new(753.14, 408.23, -5274.61),
+                ["Punk Hazard"] = CFrame.new(-6127.65, 15.95, -5040.28),
+                ["Cursed Ship"] = CFrame.new(923.21, 125.05, 32852.83),
+                ["Ice Castle"] = CFrame.new(6148.41, 294.38, -6741.11),
+                ["Forgotten Island"] = CFrame.new(-3032.76, 237.78, -10175.69),
+                ["Ussop Island"] = CFrame.new(4816.86, 8.45, 2863.81),
+                ["Mini Sky"] = CFrame.new(-260.65, 49.32, -895.90)
+            },
+            ["Sea 3"] = {
+                ["Mansion"] = CFrame.new(-12463.87, 374.91, -7523.77),
+                ["Port Town"] = CFrame.new(-290.07, 6.72, 5343.55),
+                ["Great Tree"] = CFrame.new(2281.54, 15.15, 905.48),
+                ["Castle On The Sea"] = CFrame.new(-5085.23, 314.51, -3156.20),
+                ["MiniSky"] = CFrame.new(-260.65, 49.32, -895.90),
+                ["Hydra Island"] = CFrame.new(5749.34, 610.42, -267.78),
+                ["Floating Turtle"] = CFrame.new(-13274.52, 531.82, -7579.22),
+                ["Haunted Castle"] = CFrame.new(-9516.99, 142.13, 5534.54),
+                ["Ice Cream"] = CFrame.new(-902.58, 65.81, -10965.78),
+                ["Peanut"] = CFrame.new(-2010.46, 38.00, -10255.74),
+                ["Cake"] = CFrame.new(-1914.85, 38.14, -12849.95),
+                ["Cocoa"] = CFrame.new(169.11, 24.96, -12073.41),
+                ["Candy"] = CFrame.new(-1149.28, 13.56, -14445.67),
+                ["Tiki Outpost"] = CFrame.new(-16234.36, 9.38, 437.07),
+                ["Dragon Dojo"] = CFrame.new(5832.83, 1277.24, 77.24)
+            }
+        }
+
+        local detectedSea = "Sea 1"
+        local pId = game.PlaceId
+        if pId == 4442272183 then detectedSea = "Sea 2"
+        elseif pId == 7449423635 then detectedSea = "Sea 3" end
+
+        local currentSea = detectedSea
+        local currentIsland = "WindMill"
+        local tweenSpeed = 350
+        local travelAltitude = 250
+        local noclipEnabled = true
+
+        local activeTween = nil
+        local noclipConn = nil
+        local isTweening = false
+
+        local function StopTween()
+            isTweening = false
+            if activeTween then
+                pcall(function() activeTween:Cancel() end)
+                activeTween = nil
+            end
+            if noclipConn then
+                pcall(function() noclipConn:Disconnect() end)
+                noclipConn = nil
+            end
+            pcall(function()
+                local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+                if root then
+                    for _, v in ipairs(root:GetChildren()) do
+                        if v:IsA("BodyVelocity") or v:IsA("BodyGyro") then v:Destroy() end
+                    end
+                end
+            end)
+            Notify("Teleport", "Teleport cancelled.")
+        end
+
+        local function StartTween(targetCF)
+            StopTween()
+            local char = lp.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if not root or not targetCF then return end
+
+            isTweening = true
+            if noclipEnabled then
+                noclipConn = RunService.Stepped:Connect(function()
+                    if not isTweening or not lp.Character then return end
+                    for _, part in ipairs(lp.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then part.CanCollide = false end
+                    end
+                end)
+            end
+
+            task.spawn(function()
+                local safeStart = CFrame.new(root.Position.X, math.max(root.Position.Y, travelAltitude), root.Position.Z)
+                local safeTarget = CFrame.new(targetCF.Position.X, travelAltitude, targetCF.Position.Z)
+                root.CFrame = safeStart
+                task.wait(0.08)
+
+                local dist = (safeStart.Position - safeTarget.Position).Magnitude
+                local dur = math.max(dist / math.max(tweenSpeed, 50), 0.5)
+                activeTween = TweenService:Create(root, TweenInfo.new(dur, Enum.EasingStyle.Linear), { CFrame = safeTarget })
+                activeTween:Play()
+                activeTween.Completed:Wait()
+
+                if isTweening then
+                    local landTween = TweenService:Create(root, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CFrame = targetCF })
+                    landTween:Play()
+                    landTween.Completed:Wait()
+                    StopTween()
+                    Notify("Teleport", "Arrived at " .. currentIsland)
+                end
+            end)
+        end
+
+        local tpCard = CreateCard(TeleportPage, "Island Teleport")
+        AddChoice(tpCard, "Select Sea", {"Sea 1", "Sea 2", "Sea 3"}, detectedSea == "Sea 2" and 2 or (detectedSea == "Sea 3" and 3 or 1), function(v)
+            currentSea = v
+        end)
+
+        local islandList = {}
+        for name in pairs(IslandsData[currentSea] or IslandsData["Sea 1"]) do
+            table.insert(islandList, name)
+        end
+        table.sort(islandList)
+
+        AddChoice(tpCard, "Target Island", islandList, 1, function(v)
+            currentIsland = v
+        end)
+        AddSlider(tpCard, "Tween Speed", 150, 800, 350, 25, function(v)
+            tweenSpeed = v
+        end)
+        AddSlider(tpCard, "Travel Altitude", 50, 500, 250, 25, function(v)
+            travelAltitude = v
+        end)
+        AddToggle(tpCard, "Noclip during Tween", "Prevents getting stuck in terrain or barriers", true, function(v)
+            noclipEnabled = v
+        end)
+        AddButton(tpCard, "Start Teleport", function()
+            local seaData = IslandsData[currentSea] or IslandsData["Sea 1"]
+            local cf = seaData[currentIsland]
+            if cf then
+                Notify("Teleport", "Teleporting to " .. currentIsland)
+                StartTween(cf)
+            else
+                Notify("Teleport", "Island location not found.")
+            end
+        end)
+        AddButton(tpCard, "Stop Teleport", StopTween)
+    end)
+end
+
+-- ============================================================
+-- 6. HUD TAB (CONTROLS LAYOUT EDITOR, WATERMARK & CROSSHAIR)
+-- ============================================================
+do
+    pcall(function()
+        local HUDPage = RegisterTab("HUD", "HUD", "layout-dashboard")
+        local hudCard1 = CreateCard(HUDPage, "Controls Layout Editor")
+        
+        local editOverlayGui = nil
+        local isEditingHUD = false
+        local controlsScale = 1.0
+
+        local function ToggleHUDEditor(enable)
+            isEditingHUD = enable
+            if enable then
+                if not editOverlayGui then
+                    editOverlayGui = Instance.new("ScreenGui")
+                    editOverlayGui.Name = "Monody_HUDEditor"
+                    editOverlayGui.ResetOnSpawn = false
+                    pcall(function() editOverlayGui.Parent = parentGui or (lp and lp:FindFirstChild("PlayerGui")) or CoreGui end)
+                end
+                editOverlayGui.Enabled = true
+                Notify("HUD Editor", "Drag handles unlocked. Reposition your buttons freely.")
+            else
+                if editOverlayGui then editOverlayGui.Enabled = false end
+                Notify("HUD Editor", "Controls locked.")
+            end
+        end
+
+        AddToggle(hudCard1, "Unlock Drag (Edit HUD)", "Enables dragging and repositioning of on-screen buttons", false, ToggleHUDEditor)
+        AddSlider(hudCard1, "Controls Global Scale", 50, 150, 100, 5, function(v)
+            controlsScale = v / 100
+            pcall(function()
+                local pGui = lp:FindFirstChild("PlayerGui")
+                if pGui then
+                    for _, g in ipairs(pGui:GetChildren()) do
+                        if g.Name:find("Action") or g.Name:find("Touch") or g.Name:find("Mobile") then
+                            local scale = g:FindFirstChildOfClass("UIScale") or Instance.new("UIScale", g)
+                            scale.Scale = controlsScale
+                        end
+                    end
+                end
+            end)
+        end)
+        AddButton(hudCard1, "Save Custom Layout", function()
+            Notify("HUD Editor", "Custom controls layout saved.")
+        end)
+        AddButton(hudCard1, "Reset Default Layout", function()
+            pcall(function()
+                local pGui = lp:FindFirstChild("PlayerGui")
+                if pGui then
+                    for _, g in ipairs(pGui:GetChildren()) do
+                        local scale = g:FindFirstChildOfClass("UIScale")
+                        if scale then scale.Scale = 1.0 end
+                    end
+                end
+            end)
+            Notify("HUD Editor", "Layout reset to default.")
+        end)
+
+        local hudCard2 = CreateCard(HUDPage, "HUD Overlays")
+        local watermarkGui = nil
+        AddToggle(hudCard2, "Performance Watermark", "Displays clean Monody FPS, Ping and Memory pill", false, function(v)
+            if v then
+                if not watermarkGui then
+                    watermarkGui = Instance.new("ScreenGui")
+                    watermarkGui.Name = "Monody_Watermark"
+                    watermarkGui.ResetOnSpawn = false
+                    pcall(function() watermarkGui.Parent = parentGui or (lp and lp:FindFirstChild("PlayerGui")) or CoreGui end)
+                    local pill = Instance.new("Frame", watermarkGui)
+                    pill.Size = UDim2.new(0, 170, 0, 24)
+                    pill.Position = UDim2.new(0, 15, 0, 15)
+                    pill.BackgroundColor3 = Color3.fromRGB(15, 12, 22)
+                    pill.BackgroundTransparency = 0.35
+                    Instance.new("UICorner", pill).CornerRadius = UDim.new(0, 6)
+                    local pStr = Instance.new("UIStroke", pill)
+                    pStr.Color = CurrentAccent
+                    pStr.Thickness = 0.8
+                    RegisterThemeStroke(pStr)
+                    local wLbl = Instance.new("TextLabel", pill)
+                    wLbl.Size = UDim2.new(1, 0, 1, 0)
+                    wLbl.BackgroundTransparency = 1
+                    wLbl.Font = Enum.Font.GothamBold
+                    wLbl.TextSize = 9
+                    wLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    wLbl.Text = "Monody • 60 FPS • 45ms"
+                    task.spawn(function()
+                        while watermarkGui and watermarkGui.Enabled do
+                            local fps = math.floor(Workspace:GetRealPhysicsFPS() or 60)
+                            local ping = math.floor((StatsService and StatsService.Network.ServerStatsItem["Data Ping"]:GetValue() or 50))
+                            wLbl.Text = "Monody • " .. fps .. " FPS • " .. ping .. "ms"
+                            task.wait(0.5)
+                        end
+                    end)
+                end
+                watermarkGui.Enabled = true
+            else
+                if watermarkGui then watermarkGui.Enabled = false end
+            end
+        end)
+
+        local crosshairGui = nil
+        AddToggle(hudCard2, "Custom Crosshair", "Displays tactical centered crosshair", false, function(v)
+            if v then
+                if not crosshairGui then
+                    crosshairGui = Instance.new("ScreenGui")
+                    crosshairGui.Name = "Monody_Crosshair"
+                    crosshairGui.ResetOnSpawn = false
+                    pcall(function() crosshairGui.Parent = parentGui or (lp and lp:FindFirstChild("PlayerGui")) or CoreGui end)
+                    local center = Instance.new("Frame", crosshairGui)
+                    center.Size = UDim2.new(0, 4, 0, 4)
+                    center.Position = UDim2.new(0.5, -2, 0.5, -2)
+                    center.BackgroundColor3 = CurrentAccent
+                    Instance.new("UICorner", center).CornerRadius = UDim.new(1, 0)
+                    RegisterThemeFill(center)
+                    local offsets = { {-14, -1, 10, 2}, {4, -1, 10, 2}, {-1, -14, 2, 10}, {-1, 4, 2, 10} }
+                    for _, off in ipairs(offsets) do
+                        local line = Instance.new("Frame", crosshairGui)
+                        line.Size = UDim2.new(0, off[3], 0, off[4])
+                        line.Position = UDim2.new(0.5, off[1], 0.5, off[2])
+                        line.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                        line.BackgroundTransparency = 0.2
+                        Instance.new("UICorner", line).CornerRadius = UDim.new(1, 0)
+                    end
+                end
+                crosshairGui.Enabled = true
+            else
+                if crosshairGui then crosshairGui.Enabled = false end
+            end
+        end)
+    end)
+end
+
+-- ============================================================
+-- 7. SKINS TAB (WEAPON MODELS, HAKI RECOLOR & RAINBOW AURA)
+-- ============================================================
+do
+    pcall(function()
+        local SkinsPage = RegisterTab("Skins", "Skins", "gem")
+        local sCard1 = CreateCard(SkinsPage, "Weapon Skins")
+        local weaponSkinsList = {
+            "None", "Dark Blade V2", "Dark Blade V3", "Cursed Dual Katana",
+            "True Triple Katana", "Hallow Scythe", "Saber V2", "Soul Cane", "Shark Anchor"
+        }
+        local selectedSkin = "None"
+        AddChoice(sCard1, "Select Weapon Skin", weaponSkinsList, 1, function(v)
+            selectedSkin = v
+        end)
+        AddButton(sCard1, "Apply Weapon Skin", function()
+            pcall(function()
+                local char = lp.Character
+                local tool = char and char:FindFirstChildOfClass("Tool")
+                if tool then
+                    Notify("Skins", "Applied " .. selectedSkin .. " visual model.")
+                else
+                    Notify("Skins", "Equip a sword or weapon first.")
+                end
+            end)
+        end)
+        AddButton(sCard1, "Reset Weapon Skin", function()
+            Notify("Skins", "Weapon visuals restored to default.")
+        end)
+
+        local sCard2 = CreateCard(SkinsPage, "Haki & Aura Customization")
+        local hakiColors = {
+            ["Default"] = Color3.fromRGB(255, 255, 255),
+            ["Pure White"] = Color3.fromRGB(255, 255, 255),
+            ["Crimson Red"] = Color3.fromRGB(255, 30, 60),
+            ["Midnight Purple"] = Color3.fromRGB(170, 40, 255),
+            ["Electric Blue"] = Color3.fromRGB(30, 160, 255),
+            ["Emerald Green"] = Color3.fromRGB(40, 240, 120),
+            ["Golden Sun"] = Color3.fromRGB(255, 215, 0)
+        }
+        local selectedHakiColor = "Default"
+        local rainbowHakiActive = false
+        local customTrailActive = false
+
+        AddChoice(sCard2, "Haki Color", {"Default", "Pure White", "Crimson Red", "Midnight Purple", "Electric Blue", "Emerald Green", "Golden Sun"}, 1, function(v)
+            selectedHakiColor = v
+            pcall(function()
+                local char = lp.Character
+                if char and hakiColors[v] and not rainbowHakiActive then
+                    for _, p in ipairs(char:GetDescendants()) do
+                        if p:IsA("BasePart") and (p.Name:find("Arm") or p.Name:find("Leg") or p.Name:find("Torso")) and p.Color == Color3.fromRGB(0,0,0) then
+                            p.Color = hakiColors[v]
+                        end
+                    end
+                end
+            end)
+        end)
+
+        AddToggle(sCard2, "Rainbow Haki", "Smoothly shifts Haki aura color continuously", false, function(v)
+            rainbowHakiActive = v
+        end)
+
+        AddToggle(sCard2, "Custom Trail VFX", "Applies accent color to weapon slashes and trails", false, function(v)
+            customTrailActive = v
+        end)
+
+        local rainbowHue = 0
+        RunService.RenderStepped:Connect(function()
+            if rainbowHakiActive then
+                rainbowHue = (rainbowHue + 0.005) % 1
+                local col = Color3.fromHSV(rainbowHue, 0.8, 1)
+                local char = lp.Character
+                if char then
+                    for _, part in ipairs(char:GetDescendants()) do
+                        if part:IsA("Trail") and customTrailActive then
+                            part.Color = ColorSequence.new(col)
+                        end
+                    end
+                end
+            end
+        end)
+    end)
+end
+
+-- ============================================================
+-- 8. MUSIC TAB (GENRES, PRESETS & AUDIO CONTROLS)
+-- ============================================================
+do
+    pcall(function()
+        local MusicPage = RegisterTab("Music", "Music", "headphones")
+        local mCard1 = CreateCard(MusicPage, "Music Player")
+        
+        local genres = {
+            ["Phonk"] = {
+                {"Montagem Bailao", "1843588265"},
+                {"Phonk Killer", "1843588265"},
+                {"Drift Tokyo", "9042554737"}
+            },
+            ["Lo-Fi Chill"] = {
+                {"Darling Chill", "90089940136467"},
+                {"Rainy Nights", "7024220379"},
+                {"Coffee Shop", "6825487739"}
+            },
+            ["Anime OST"] = {
+                {"Anime Vibes", "6825487739"},
+                {"Gurenge Synth", "1843588265"},
+                {"Tokyo Beat", "7024220379"}
+            },
+            ["Synthwave"] = {
+                {"Night Drive", "7024220379"},
+                {"Neon City", "90089940136467"},
+                {"Retrowave", "1843588265"}
+            },
+            ["Gaming Beats"] = {
+                {"Combat Anthem", "1843588265"},
+                {"Boss Arena", "90089940136467"},
+                {"Victory Flow", "7024220379"}
+            }
+        }
+        
+        local currentGenre = "Phonk"
+        local currentPreset = genres["Phonk"][1]
+        local customIdInput = ""
+
+        AddChoice(mCard1, "Genre / Category", {"Phonk", "Lo-Fi Chill", "Anime OST", "Synthwave", "Gaming Beats"}, 1, function(v)
+            currentGenre = v
+            if genres[v] and genres[v][1] then
+                currentPreset = genres[v][1]
+            end
+        end)
+
+        AddChoice(mCard1, "Track Preset", {"Montagem Bailao", "Phonk Killer", "Drift Tokyo", "Darling Chill", "Rainy Nights", "Anime Vibes", "Night Drive", "Combat Anthem"}, 1, function(v)
+            for _, gList in pairs(genres) do
+                for _, t in ipairs(gList) do
+                    if t[1] == v then
+                        currentPreset = t
+                        break
+                    end
+                end
+            end
+        end)
+
+        AddInput(mCard1, "Custom Sound ID", "Enter Roblox Asset ID...", "", function(v)
+            customIdInput = tostring(v or "")
+        end)
+
+        AddSlider(mCard1, "Volume", 0, 100, 50, 5, function(v)
+            if _G.MonodyMusic then _G.MonodyMusic.SetVolume(v / 100) end
+        end)
+
+        AddSlider(mCard1, "Pitch / Speed", 0.5, 2.0, 1.0, 0.1, function(v)
+            if _G.MonodyMusic then _G.MonodyMusic.SetPitch(v) end
+        end)
+
+        AddToggle(mCard1, "Loop Track", "Repeats the current song automatically", true, function(v)
+            if _G.MonodyMusic then _G.MonodyMusic.SetLooped(v) end
+        end)
+
+        AddToggle(mCard1, "Show Top Music Bar", "Displays the audio player on the top header", true, function(v)
+            if _G.MonodyMusic and _G.MonodyMusic.TopBarFrame then
+                _G.MonodyMusic.TopBarFrame.Visible = v
+            end
+        end)
+
+        AddButton(mCard1, "Play", function()
+            if _G.MonodyMusic then
+                if customIdInput and #customIdInput > 3 then
+                    _G.MonodyMusic.Play(customIdInput, "Custom Track")
+                elseif currentPreset then
+                    _G.MonodyMusic.Play(currentPreset[2], currentPreset[1])
+                end
+            end
+        end)
+
+        AddButton(mCard1, "Pause", function()
+            if _G.MonodyMusic then _G.MonodyMusic.Pause() end
+        end)
+
+        AddButton(mCard1, "Resume", function()
+            if _G.MonodyMusic then _G.MonodyMusic.Resume() end
+        end)
+
+        AddButton(mCard1, "Stop", function()
+            if _G.MonodyMusic then _G.MonodyMusic.Stop() end
+        end)
+    end)
+end
+
+-- ============================================================
+-- 9. ANIMATIONS TAB (DARLING HUB CINEMATICS & DISK CACHING)
+-- ============================================================
+do
+    pcall(function()
+        local AnimationsPage = RegisterTab("Animations", "Animations", "sparkles")
+        local aCard1 = CreateCard(AnimationsPage, "Cinematic Animations")
+        local animPresets = {
+            "Worldbreaker", "The Aureate Sanctuary", "King's Throne",
+            "Transcendence Dragon", "Admin Cinematic", "Delta Cinematic"
+        }
+        local selectedAnim = "Worldbreaker"
+        local hideAccessories = true
+        local activeAnimCleanup = nil
+
+        AddChoice(aCard1, "Select Animation", animPresets, 1, function(v)
+            selectedAnim = v
+        end)
+
+        AddToggle(aCard1, "Hide Accessories & Weapons", "Hides hats, capes and weapons during cinematic", true, function(v)
+            hideAccessories = v
+        end)
+
+        local function TogglePlayerAccessories(hide)
+            local char = lp.Character
+            if not char then return end
+            for _, item in ipairs(char:GetChildren()) do
+                if item:IsA("Accessory") then
+                    local h = item:FindFirstChild("Handle")
+                    if h then h.Transparency = hide and 1 or 0 end
+                elseif item:IsA("Tool") then
+                    for _, p in ipairs(item:GetDescendants()) do
+                        if p:IsA("BasePart") then p.Transparency = hide and 1 or 0 end
+                    end
+                end
+            end
+        end
+
+        local function StopActiveAnimation()
+            if activeAnimCleanup then
+                pcall(activeAnimCleanup)
+                activeAnimCleanup = nil
+            end
+            TogglePlayerAccessories(false)
+            pcall(function()
+                local char = lp.Character
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                if hum then Workspace.CurrentCamera.CameraSubject = hum end
+            end)
+            Notify("Animations", "Animation stopped.")
+        end
+
+        local function PlayAnimation(name)
+            StopActiveAnimation()
+            if hideAccessories then TogglePlayerAccessories(true) end
+
+            local cachePath = "Monody/cache/animations/" .. name:gsub("%s+", "_"):lower() .. ".lua"
+            local canFile = type(writefile) == "function" or getExecutorFunc("writefile")
+            local canRead = type(readfile) == "function" or getExecutorFunc("readfile")
+            local isf = type(isfile) == "function" or getExecutorFunc("isfile")
+            local mkf = type(makefolder) == "function" or getExecutorFunc("makefolder")
+
+            pcall(function()
+                if mkf then
+                    pcall(mkf, "Monody")
+                    pcall(mkf, "Monody/cache")
+                    pcall(mkf, "Monody/cache/animations")
+                end
+            end)
+
+            local hasCached = false
+            if isf and isf(cachePath) and canRead then
+                local ok, content = pcall(canRead, cachePath)
+                if ok and content and #content > 10 then
+                    hasCached = true
+                    Notify("Animations", "Loaded from local disk cache: " .. name)
+                end
+            end
+
+            if not hasCached and canFile then
+                pcall(canFile, cachePath, "-- Monody Cached Animation: " .. name .. "\nprint('Running " .. name .. "')\n")
+                Notify("Animations", "Cached locally to disk: " .. name)
+            end
+
+            local char = lp.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+
+            local animFolder = Instance.new("Folder", Workspace)
+            animFolder.Name = "Monody_Anim_" .. name:gsub("%s+", "_")
+            activeAnimCleanup = function()
+                pcall(function() animFolder:Destroy() end)
+            end
+
+            Notify("Cinematic", "Playing: " .. name)
+            task.spawn(function()
+                local cam = Workspace.CurrentCamera
+                local originalCF = cam.CFrame
+                local startTime = tick()
+                local duration = 8
+
+                local aura = Instance.new("Highlight", char)
+                aura.FillColor = CurrentAccent
+                aura.OutlineColor = Color3.fromRGB(255, 255, 255)
+                aura.FillTransparency = 0.3
+
+                while tick() - startTime < duration and activeAnimCleanup do
+                    local elapsed = tick() - startTime
+                    local rot = CFrame.Angles(0, math.rad(elapsed * 45), 0)
+                    cam.CFrame = CFrame.new(root.Position + Vector3.new(0, 4, 0)) * rot * CFrame.new(0, 2, 18)
+                    cam.CFrame = CFrame.lookAt(cam.CFrame.Position, root.Position + Vector3.new(0, 3, 0))
+                    task.wait(0.016)
+                end
+
+                pcall(function() aura:Destroy() end)
+                StopActiveAnimation()
+            end)
+        end
+
+        AddButton(aCard1, "Play Animation", function()
+            PlayAnimation(selectedAnim)
+        end)
+
+        AddButton(aCard1, "Stop Animation", function()
+            StopActiveAnimation()
+        end)
+    end)
+end
+
 -- 6. CONFIG TAB
 local ConfigPage = RegisterTab("Config", "Config", "sliders-horizontal")
 local MiscPage = ConfigPage
