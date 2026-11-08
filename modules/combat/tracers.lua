@@ -1,6 +1,6 @@
 --[[
     Darling Hub - Tracers Module
-    Hardware 3D Beam (Nameless standard) and 2D Line (Drawing API / ScreenGui fallback).
+    Hardware 3D Beam and 2D Line (Drawing API / ScreenGui fallback).
     Renders visual links from LocalPlayer to active combat targets.
 ]]--
 
@@ -33,7 +33,7 @@ local function makeRainbowSequence(offset)
     return ColorSequence.new(kps)
 end
 
--- 3D Beam Assets (Nameless implementation)
+-- Hardware 3D Beam Assets
 local tracerModel = nil
 local tracerAttachment0 = nil
 local tracerAttachment1 = nil
@@ -135,17 +135,24 @@ local function createBeamTracer()
             parentFolder.Parent = Workspace
         end
 
-        local model = Instance.new("Model")
-        model.Name = "SilentAimTracer"
-        model.Parent = parentFolder
+        local holderPart = Instance.new("Part")
+        holderPart.Name = "TracerHolder"
+        holderPart.Transparency = 1
+        holderPart.Anchored = true
+        holderPart.CanCollide = false
+        holderPart.CanTouch = false
+        holderPart.CanQuery = false
+        holderPart.Size = Vector3.new(1, 1, 1)
+        holderPart.CFrame = CFrame.new(0, 0, 0)
+        holderPart.Parent = parentFolder
 
         local att0 = Instance.new("Attachment")
         att0.Name = "SourceAttachment"
-        att0.Parent = model
+        att0.Parent = holderPart
 
         local att1 = Instance.new("Attachment")
         att1.Name = "TargetAttachment"
-        att1.Parent = model
+        att1.Parent = holderPart
 
         local beam = Instance.new("Beam")
         beam.Name = "TracerBeam"
@@ -160,9 +167,9 @@ local function createBeamTracer()
         beam.Color = ColorSequence.new(currentColor)
         beam.Transparency = NumberSequence.new(0)
         beam.Enabled = false
-        beam.Parent = model
+        beam.Parent = holderPart
 
-        tracerModel = model
+        tracerModel = holderPart
         tracerAttachment0 = att0
         tracerAttachment1 = att1
         tracerBeam = beam
@@ -173,10 +180,10 @@ local function destroyBeamTracer()
     if tracerModel then
         pcall(function() tracerModel:Destroy() end)
         tracerModel = nil
-        tracerAttachment0 = nil
-        tracerAttachment1 = nil
-        tracerBeam = nil
     end
+    tracerAttachment0 = nil
+    tracerAttachment1 = nil
+    tracerBeam = nil
 end
 
 local function isAlive(char)
@@ -188,64 +195,64 @@ end
 local function resolveTargetPart()
     local env = (getgenv and getgenv()) or _G
     local core = env.DarlingCombatCore or _G.DarlingCombatCore
-    local hub = _G.DarlingHub or (getgenv and getgenv().DarlingHub)
-    local abMod = hub and hub.Modules and hub.Modules["modules/combat/auto_bounty.lua"]
-
-    -- Tracers only appear when an aimbot or combat targeting system is actively enabled
-    local isTargetingActive = false
-    if core and (core.PlayerAimEnabled or core.NPCAimEnabled or core.LockPlayer) then
-        isTargetingActive = true
-    end
-    if _G.G_SilentAim or _G.G_NPCSilentAim or _G.G_PlayerSilentAim or _G.DarlingSilentAim then
-        isTargetingActive = true
-    end
-    if abMod and abMod.Enabled then
-        isTargetingActive = true
-    end
-
-    if not isTargetingActive then
-        return nil
-    end
-
-    local onlyNpc = (core and core.NPCAimEnabled and not core.PlayerAimEnabled and not core.LockPlayer) or (_G.G_NPCSilentAim and not _G.G_PlayerSilentAim)
-    local onlyPlayer = (core and (core.PlayerAimEnabled or core.LockPlayer) and not core.NPCAimEnabled) or (_G.G_PlayerSilentAim and not _G.G_NPCSilentAim)
-
-    local function isTargetTypeAllowed(part)
-        if not part or not part.Parent then return false end
-        local isPlayer = (Players:GetPlayerFromCharacter(part.Parent) ~= nil)
-        if onlyNpc and isPlayer then return false end
-        if onlyPlayer and not isPlayer then return false end
-        return true
-    end
 
     -- 1. Shared Aimbot or Core Target Part (NPC or Player)
     if core and core.CurrentTargetPart and core.CurrentTargetPart.Parent then
-        if isAlive(core.CurrentTargetPart.Parent) and isTargetTypeAllowed(core.CurrentTargetPart) then
+        if isAlive(core.CurrentTargetPart.Parent) then
             return core.CurrentTargetPart
         end
     end
 
     if _G.currentSilentAimTarget and _G.currentSilentAimTarget.Parent then
         local parentChar = _G.currentSilentAimTarget.Parent
-        if isAlive(parentChar) and isTargetTypeAllowed(_G.currentSilentAimTarget) then
+        if isAlive(parentChar) then
             return _G.currentSilentAimTarget
         end
     end
 
-    -- 2. AutoBounty Target (only if not restricted to NPC)
-    if not onlyNpc then
-        local abTarget = _G.DarlingAutoBountyTarget or _G.DarlingTarget or (abMod and abMod.CurrentTarget)
-        if abTarget then
-            local char = abTarget.Character or (abTarget:IsA("Model") and abTarget)
-            if isAlive(char) then
-                local p = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Head") or char:FindFirstChild("Torso")
-                if p and isTargetTypeAllowed(p) then return p end
+    if _G.DarlingSilentAimTarget and _G.DarlingSilentAimTarget.Parent then
+        local parentChar = _G.DarlingSilentAimTarget.Parent
+        if isAlive(parentChar) then
+            return _G.DarlingSilentAimTarget
+        end
+    end
+
+    -- 2. AutoBounty Target
+    local abTarget = _G.DarlingAutoBountyTarget or _G.DarlingTarget
+    if abTarget then
+        local char = abTarget.Character or (abTarget:IsA("Model") and abTarget)
+        if isAlive(char) then
+            local p = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Head") or char:FindFirstChild("Torso")
+            if p then return p end
+        end
+    end
+
+    -- 3. Closest enemy player on screen (authentic Darling Hub fallback)
+    local camera = Workspace.CurrentCamera
+    if not camera then return nil end
+    local viewport = camera.ViewportSize
+    local screenCenter = Vector2.new(viewport.X / 2, viewport.Y / 2)
+    local closestPart = nil
+    local shortestDist = math.huge
+
+    local lp = Players.LocalPlayer or LocalPlayer
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= lp and p.Character and isAlive(p.Character) then
+            local hrp = p.Character:FindFirstChild("HumanoidRootPart") or p.Character:FindFirstChild("Head")
+            if hrp then
+                local sPos, onScreen = camera:WorldToViewportPoint(hrp.Position)
+                if onScreen and sPos.Z > 0 then
+                    local d = (Vector2.new(sPos.X, sPos.Y) - screenCenter).Magnitude
+                    if d < shortestDist then
+                        shortestDist = d
+                        closestPart = hrp
+                    end
+                end
             end
         end
     end
 
-    -- No fallback loop: if no active target is locked, do not render tracers
-    return nil
+    return closestPart
 end
 
 local function getOriginPosition(lpHRP)
@@ -289,7 +296,7 @@ local function onRender()
     local want3D = (currentType == "3D Beam" or currentType == "Both")
     local want2D = (currentType == "2D Line" or currentType == "Both")
 
-    -- 1. Nameless 3D Beam Update
+    -- 1. Hardware 3D Beam Update
     if want3D then
         if not tracerBeam or not tracerBeam.Parent then
             createBeamTracer()
@@ -343,12 +350,17 @@ local function onRender()
         if frame then
             local delta = toPos - fromPos
             local dist = delta.Magnitude
-            local angle = math.atan2(delta.Y, delta.X)
-            local overlay = getOverlayGui()
-            local origin = (overlay and overlay.AbsolutePosition) or Vector2.zero
+            local originX = 0
+            local originY = 0
+            pcall(function()
+                if overlay and overlay:IsA("GuiObject") then
+                    originX = overlay.AbsolutePosition.X
+                    originY = overlay.AbsolutePosition.Y
+                end
+            end)
 
             frame.Size = UDim2.fromOffset(dist, currentThickness)
-            frame.Position = UDim2.fromOffset((fromPos.X + toPos.X) / 2 - origin.X, (fromPos.Y + toPos.Y) / 2 - origin.Y)
+            frame.Position = UDim2.fromOffset((fromPos.X + toPos.X) / 2 - originX, (fromPos.Y + toPos.Y) / 2 - originY)
             frame.Rotation = math.deg(angle)
             frame.BackgroundColor3 = dynColor
             frame.Visible = true

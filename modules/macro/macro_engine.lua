@@ -1,6 +1,6 @@
 --[[
-    Darling Hub - Smart Macro Engine (Version 1.3)
-    Darling Hub - Autonomous Cooldown Synchronization Suite
+    Darling X - Smart Macro Engine (Version 1.3)
+    Darling X - Autonomous Cooldown Synchronization Suite
     5 Slots with 6 Blocks each, CATEGORY_TIPS weapon auto-equip,
     Real-time PlayerGui.Main.Skills Cooldown HUD reading with dynamic retry,
     0.045s Tap / Hold casting via VirtualInputManager, post-skill jumps,
@@ -357,9 +357,10 @@ function MacroEngine.stopMacro()
     macroThread = nil
     setStatus("Idle")
 
-    if mobileMacroBtn then
-        mobileMacroBtn.Text = "MACRO: OFF"
-        mobileMacroBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
+    local b = macroBtn or mobileMacroBtn
+    if b then
+        b.Text = "MACRO\nOFF"
+        b.TextColor3 = Color3.fromRGB(220, 220, 220)
     end
 end
 
@@ -435,9 +436,10 @@ function MacroEngine.startMacro()
     local token = MacroEngine.RunToken
     setStatus("Running...")
 
-    if mobileMacroBtn then
-        mobileMacroBtn.Text = "MACRO: ON"
-        mobileMacroBtn.TextColor3 = Color3.fromRGB(255, 75, 145)
+    local b = macroBtn or mobileMacroBtn
+    if b then
+        b.Text = "MACRO\nON"
+        b.TextColor3 = Color3.fromRGB(255, 75, 145)
     end
 
     macroThread = task.spawn(runMacroSequence, token)
@@ -477,51 +479,93 @@ function MacroEngine.setStatusCallback(cb)
     end
 end
 
-local macroFloatingWidget = nil
-
-local function getFloatingWidgetMod()
-    local hub = _G.DarlingHub or (getgenv and getgenv().DarlingHub)
-    if hub and hub.Require then
-        local ok, mod = pcall(function() return hub:Require("modules/pvp/floating_widget.lua") end)
-        if ok and mod then return mod end
-    end
-    for _, path in ipairs({ "modules/pvp/floating_widget.lua", "darling-hub/modules/pvp/floating_widget.lua" }) do
-        if isfile and isfile(path) then
-            local ok, mod = pcall(function() return loadstring(readfile(path))() end)
-            if ok and mod then return mod end
-        end
-    end
-    return nil
-end
+local macroGui = nil
+local macroBtn = nil
 
 -- Draggable On-Screen One-Touch Action Widget
 function MacroEngine.ensureMobileButton(show)
-    local fwMod = getFloatingWidgetMod()
-    if not fwMod then return end
-
     if show then
-        if not macroFloatingWidget then
-            macroFloatingWidget = fwMod.create({
-                Id = "MacroActionWidget",
-                UIElementKey = "MacroFloatingWidget",
-                Label = "MACRO",
-                Type = "Action",
-                Visible = true,
-                Position = UDim2.new(0.85, 0, 0.45, 0),
-                Callback = function()
-                    if MacroEngine.Running then
-                        MacroEngine.stopMacro()
-                    else
-                        MacroEngine.executeCombo()
-                    end
+        if not macroGui then
+            local parent = nil
+            pcall(function()
+                local gethui = (type(gethui) == "function" and gethui) or (getgenv and getgenv().gethui)
+                parent = (gethui and gethui()) or CoreGui or (LocalPlayer and LocalPlayer:FindFirstChildOfClass("PlayerGui"))
+            end)
+            macroGui = Instance.new("ScreenGui")
+            macroGui.Name = "DarlingMacroWidget"
+            macroGui.ResetOnSpawn = false
+            macroGui.DisplayOrder = 99999
+            macroGui.IgnoreGuiInset = true
+            pcall(function()
+                local syn = (type(syn) == "table" and syn) or (getgenv and getgenv().syn)
+                if syn and syn.protect_gui then syn.protect_gui(macroGui) end
+            end)
+            macroGui.Parent = parent
+
+            local frame = Instance.new("Frame", macroGui)
+            frame.Size = UDim2.new(0, 60, 0, 60)
+            frame.Position = UDim2.new(0.85, 0, 0.45, 0)
+            frame.BackgroundColor3 = Color3.fromRGB(15, 12, 22)
+            frame.BackgroundTransparency = 0.3
+            frame.Active = true
+
+            local corner = Instance.new("UICorner", frame)
+            corner.CornerRadius = UDim.new(0, 16)
+
+            local stroke = Instance.new("UIStroke", frame)
+            stroke.Color = Color3.fromRGB(168, 85, 247)
+            stroke.Thickness = 1.2
+            stroke.Transparency = 0.4
+
+            local btn = Instance.new("TextButton", frame)
+            btn.Size = UDim2.new(1, -6, 1, -6)
+            btn.Position = UDim2.new(0, 3, 0, 3)
+            btn.BackgroundTransparency = 1
+            btn.Text = "MACRO\nOFF"
+            btn.Font = Enum.Font.GothamBold
+            btn.TextSize = 10
+            btn.TextColor3 = Color3.fromRGB(220, 220, 220)
+            macroBtn = btn
+
+            local dragging = false
+            local dragStart = nil
+            local startPos = nil
+            local hasMoved = false
+
+            btn.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = true
+                    hasMoved = false
+                    dragStart = input.Position
+                    startPos = frame.Position
+
+                    input.Changed:Connect(function()
+                        if input.UserInputState == Enum.UserInputState.End then
+                            if dragging and not hasMoved then
+                                if MacroEngine.Running then
+                                    MacroEngine.stopMacro()
+                                else
+                                    MacroEngine.executeCombo()
+                                end
+                            end
+                            dragging = false
+                        end
+                    end)
                 end
-            })
-        elseif macroFloatingWidget.SetVisible then
-            macroFloatingWidget:SetVisible(true)
+            end)
+
+            UserInputService.InputChanged:Connect(function(input)
+                if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    local delta = input.Position - dragStart
+                    if delta.Magnitude > 6 then hasMoved = true end
+                    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+                end
+            end)
         end
+        macroGui.Enabled = true
     else
-        if macroFloatingWidget and macroFloatingWidget.SetVisible then
-            macroFloatingWidget:SetVisible(false)
+        if macroGui then
+            macroGui.Enabled = false
         end
     end
 end

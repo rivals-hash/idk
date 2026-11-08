@@ -30,6 +30,7 @@ local function getCore()
     end
 
     local paths = {
+        "DarlingX/modules/combat/aimbot_core.lua",
         "modules/combat/aimbot_core.lua",
         "darling-hub/modules/combat/aimbot_core.lua",
     }

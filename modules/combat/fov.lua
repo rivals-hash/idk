@@ -22,6 +22,15 @@ local currentThickness = 2
 local currentColor = Color3.fromRGB(255, 255, 255)
 local currentMode = "Mouse" -- "Mouse" or "Center"
 local rainbowEnabled = true
+local currentAimMode = "360"
+
+local function isAimModeFov()
+    local dx = rawget(_G, "DarlingX")
+    if dx and dx.Settings and dx.Settings.Aim and dx.Settings.Aim.Mode then
+        return tostring(dx.Settings.Aim.Mode):upper() == "FOV"
+    end
+    return tostring(currentAimMode):upper() == "FOV"
+end
 
 -- ScreenGui Element References
 local overlayGui = nil
@@ -29,21 +38,28 @@ local ringFrame = nil
 local ringStroke = nil
 local ringGradient = nil
 
-local function parentFor()
+local function safeParentGui(gui)
+    if not gui then return false end
     if gethui then
         local ok, h = pcall(gethui)
-        if ok and h and typeof(h) == "Instance" then return h end
-    end
-    if CoreGui then
-        local okC, core = pcall(function() return CoreGui end)
-        if okC and core then return core end
+        if ok and h and typeof(h) == "Instance" then
+            local okP = pcall(function() gui.Parent = h end)
+            if okP and gui.Parent == h then return true end
+        end
     end
     local lp = LocalPlayer or Players.LocalPlayer
     if lp then
         local pg = lp:FindFirstChildOfClass("PlayerGui") or lp:FindFirstChild("PlayerGui")
-        if pg then return pg end
+        if pg then
+            local okP = pcall(function() gui.Parent = pg end)
+            if okP and gui.Parent == pg then return true end
+        end
     end
-    return nil
+    if CoreGui then
+        local okP = pcall(function() gui.Parent = CoreGui end)
+        if okP and gui.Parent == CoreGui then return true end
+    end
+    return gui.Parent ~= nil
 end
 
 local function makeRainbowSequence()
@@ -82,9 +98,6 @@ local function buildFovGui()
 
     cleanupGui()
 
-    local parent = parentFor()
-    if not parent then return false end
-
     local gui = Instance.new("ScreenGui")
     gui.Name = "DarlingHub_FOV"
     gui.ResetOnSpawn = false
@@ -114,7 +127,7 @@ local function buildFovGui()
 
     local stroke = Instance.new("UIStroke")
     stroke.Thickness = currentThickness
-    stroke.Color = Color3.fromRGB(255, 255, 255)
+    stroke.Color = rainbowEnabled and Color3.fromRGB(255, 255, 255) or currentColor
     stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     stroke.Transparency = 0
     stroke.Parent = frame
@@ -127,7 +140,8 @@ local function buildFovGui()
     end
     gradient.Parent = stroke
 
-    gui.Parent = parent
+    local okParent = safeParentGui(gui)
+    if not okParent then return false end
 
     overlayGui = gui
     ringFrame = frame
@@ -136,36 +150,76 @@ local function buildFovGui()
     return true
 end
 
+-- Drawing API fallback
+local drawingCircle = nil
+local hasDrawing = (typeof(Drawing) == "table" or typeof(Drawing) == "userdata") and (typeof(Drawing.new) == "function")
+
+local function updateDrawingCircle(posX, posY, col)
+    if not hasDrawing then return end
+    if not drawingCircle then
+        pcall(function()
+            drawingCircle = Drawing.new("Circle")
+            drawingCircle.Filled = false
+            drawingCircle.Transparency = 1
+        end)
+    end
+    if drawingCircle then
+        pcall(function()
+            drawingCircle.Visible = isEnabled and isAimModeFov()
+            drawingCircle.Radius = currentRadius
+            drawingCircle.Thickness = currentThickness
+            drawingCircle.Position = Vector2.new(posX, posY)
+            drawingCircle.Color = col
+        end)
+    end
+end
+
 local function onRender()
-    if not isEnabled or not ringFrame or not ringFrame.Parent then return end
+    if not isEnabled then return end
 
-    local hub = _G.DarlingHub or (getgenv and getgenv().DarlingHub)
-    local aimMode = (hub and hub.Settings and hub.Settings.Aim and hub.Settings.Aim.Mode)
-        or (_G.DarlingCombatCore and _G.DarlingCombatCore.AimMode)
-        or (getgenv and getgenv().DarlingCombatCore and getgenv().DarlingCombatCore.AimMode)
-        or "360"
-
-    if aimMode ~= "FOV" then
-        if ringFrame.Visible then
+    if not isAimModeFov() then
+        if ringFrame and ringFrame.Visible then
             ringFrame.Visible = false
+        end
+        if drawingCircle and drawingCircle.Visible then
+            pcall(function() drawingCircle.Visible = false end)
         end
         return
     end
 
-    if not ringFrame.Visible then
+    local activeColor = currentColor
+    if rainbowEnabled then
+        activeColor = Color3.fromHSV((os.clock() * 0.25) % 1, 0.85, 1)
+        if ringGradient then
+            ringGradient.Rotation = (os.clock() * 90) % 360
+        end
+        if ringStroke then
+            ringStroke.Color = activeColor
+        end
+    elseif ringStroke then
+        ringStroke.Color = currentColor
+    end
+
+    local screenPos = Vector2.new(0, 0)
+    local cam = Workspace.CurrentCamera
+    if UserInputService.TouchEnabled or currentMode == "Center" then
+        if ringFrame then ringFrame.Position = UDim2.fromScale(0.5, 0.5) end
+        if cam then
+            screenPos = Vector2.new(cam.ViewportSize.X / 2, cam.ViewportSize.Y / 2)
+        end
+    else
+        local mousePos = UserInputService:GetMouseLocation()
+        screenPos = mousePos
+        if ringFrame then
+            ringFrame.Position = UDim2.fromOffset(mousePos.X, mousePos.Y)
+        end
+    end
+
+    if ringFrame and not ringFrame.Visible then
         ringFrame.Visible = true
     end
 
-    if rainbowEnabled and ringGradient then
-        ringGradient.Rotation = (os.clock() * 90) % 360
-    end
-
-    if UserInputService.TouchEnabled or currentMode == "Center" then
-        ringFrame.Position = UDim2.fromScale(0.5, 0.5)
-    else
-        local mousePos = UserInputService:GetMouseLocation()
-        ringFrame.Position = UDim2.fromOffset(mousePos.X, mousePos.Y)
-    end
+    updateDrawingCircle(screenPos.X, screenPos.Y, activeColor)
 end
 
 function FOV.enable()
@@ -175,12 +229,7 @@ function FOV.enable()
     buildFovGui()
     if ringFrame then
         ringFrame.Size = UDim2.fromOffset(currentRadius * 2, currentRadius * 2)
-        local hub = _G.DarlingHub or (getgenv and getgenv().DarlingHub)
-        local aimMode = (hub and hub.Settings and hub.Settings.Aim and hub.Settings.Aim.Mode)
-            or (_G.DarlingCombatCore and _G.DarlingCombatCore.AimMode)
-            or (getgenv and getgenv().DarlingCombatCore and getgenv().DarlingCombatCore.AimMode)
-            or "360"
-        ringFrame.Visible = (aimMode == "FOV")
+        ringFrame.Visible = isAimModeFov()
     end
 
     if not renderConnection then
@@ -199,6 +248,9 @@ end
 
 function FOV.disable()
     isEnabled = false
+    if drawingCircle then
+        pcall(function() drawingCircle.Visible = false end)
+    end
     cleanupGui()
 end
 
@@ -271,6 +323,21 @@ end
 function FOV.isEnabled()
     return isEnabled
 end
+
+function FOV.setAimMode(mode)
+    currentAimMode = tostring(mode or "")
+    local shouldShow = isEnabled and isAimModeFov()
+    if ringFrame then
+        ringFrame.Visible = shouldShow
+    end
+    if drawingCircle then
+        pcall(function()
+            drawingCircle.Visible = shouldShow
+        end)
+    end
+end
+
+FOV.isAimModeFov = isAimModeFov
 
 function FOV.destroy()
     FOV.disable()

@@ -1,123 +1,107 @@
--- sanguine boost
+--[[
+    Darling X - Sanguine Boost Z Module
+    Exact linear velocity impulse and Z keybind.
+    Linked to unified glass widget in extra_widgets.lua.
+    Zero emojis, zero third-party references.
+]]
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
-local LocalPlayer = Players.LocalPlayer
-local Camera = Workspace.CurrentCamera
+local player = Players.LocalPlayer
+local camera = Workspace.CurrentCamera
 
-local FloatingWidget = nil
-pcall(function()
-    FloatingWidget = (_G.DarlingHub and _G.DarlingHub:Require("modules/pvp/floating_widget.lua"))
-end)
+local velocityPower = 400
+local boostDuration = 0.9
+local isCooldown = false
 
-local SanguineBoost = {
-    Enabled = false,
-    VelocityPower = 400,
-    BoostDuration = 0.9,
-    Cooldown = 0.35,
-    LastBoost = 0,
-    Keybind = Enum.KeyCode.Z,
-    Widget = nil,
-    Connection = nil,
-}
-
-function SanguineBoost.doBoost()
-    local now = os.clock()
-    if now - SanguineBoost.LastBoost < SanguineBoost.Cooldown then return end
-    SanguineBoost.LastBoost = now
-
-    local char = LocalPlayer.Character
-    if not char then return end
-
-    local hrp = char:FindFirstChild("HumanoidRootPart")
+local function doBoost()
+    local character = player.Character
+    if not character then return end
+    
+    local hrp = character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
-    local cam = Workspace.CurrentCamera or Camera
-    local dir = cam.CFrame.LookVector
+    local cam = Workspace.CurrentCamera or camera
+    local dir = cam and cam.CFrame.LookVector or hrp.CFrame.LookVector
 
     local att = Instance.new("Attachment")
-    att.Name = "SanguineBoostAttachment"
     att.Parent = hrp
 
     local lv = Instance.new("LinearVelocity")
-    lv.Name = "SanguineBoostVelocity"
     lv.MaxForce = math.huge
     lv.VelocityConstraintMode = Enum.VelocityConstraintMode.Vector
-    lv.VectorVelocity = dir * SanguineBoost.VelocityPower
+    lv.VectorVelocity = dir * velocityPower
     lv.Attachment0 = att
     lv.Parent = hrp
 
-    task.delay(SanguineBoost.BoostDuration, function()
-        pcall(function()
-            if lv and lv.Parent then lv:Destroy() end
-            if att and att.Parent then att:Destroy() end
-        end)
+    task.delay(boostDuration, function()
+        if lv and lv.Parent then lv:Destroy() end
+        if att and att.Parent then att:Destroy() end
     end)
 end
 
-function SanguineBoost.enable()
-    if SanguineBoost.Enabled then
-        if SanguineBoost.Widget then SanguineBoost.Widget:SetVisible(true) end
-        return
+local function getWidgets()
+    if rawget(_G, "DarlingX_ExtraWidgets") then
+        return _G.DarlingX_ExtraWidgets
     end
-    SanguineBoost.Enabled = true
-
-    if not SanguineBoost.Connection then
-        SanguineBoost.Connection = UserInputService.InputBegan:Connect(function(input, gpe)
-            if gpe then return end
-            if not SanguineBoost.Enabled then return end
-            if input.KeyCode == SanguineBoost.Keybind then
-                if SanguineBoost.Widget then
-                    SanguineBoost.Widget:TriggerAction()
-                else
-                    SanguineBoost.doBoost()
-                end
-            end
-        end)
+    local hub = rawget(_G, "DarlingHub") or (getgenv and getgenv().DarlingHub)
+    if hub and hub.Require then
+        local w = hub:Require("modules/pvp/extra_widgets.lua")
+        if w then return w end
     end
-
-    if not SanguineBoost.Widget and FloatingWidget then
-        SanguineBoost.Widget = FloatingWidget.create({
-            Id = "SanguineZWidget",
-            Label = "Z",
-            Type = "Action",
-            Position = UDim2.new(0.35, 0, 0.22, 0),
-            AccentColor = Color3.fromRGB(192, 132, 252),
-            Callback = function()
-                SanguineBoost.doBoost()
-            end
-        })
-    elseif SanguineBoost.Widget then
-        SanguineBoost.Widget:SetVisible(true)
+    local req = (typeof(require) == "function") and require
+    if req and script and script.Parent then
+        local ok, w = pcall(req, script.Parent.extra_widgets)
+        if ok and w then return w end
     end
+    return nil
 end
 
-function SanguineBoost.disable()
-    SanguineBoost.Enabled = false
-    if SanguineBoost.Connection then
-        pcall(function() SanguineBoost.Connection:Disconnect() end)
-        SanguineBoost.Connection = nil
+local function triggerBoostWithVisual()
+    if isCooldown then return end
+    isCooldown = true
+
+    doBoost()
+
+    local widgets = getWidgets()
+    if widgets and widgets.UpdateSanguineVisual then
+        widgets.UpdateSanguineVisual(true)
     end
-    if SanguineBoost.Widget then
-        SanguineBoost.Widget:SetState(false)
-    end
+
+    task.delay(0.35, function()
+        local w = getWidgets()
+        if w and w.UpdateSanguineVisual then
+            w.UpdateSanguineVisual(false)
+        end
+        isCooldown = false
+    end)
 end
 
-function SanguineBoost.toggle()
-    if SanguineBoost.Enabled then
-        SanguineBoost.disable()
-    else
-        SanguineBoost.enable()
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.Z and _G.DarlingX_SanguineBoost then
+        triggerBoostWithVisual()
     end
-    return SanguineBoost.Enabled
-end
+end)
 
-function SanguineBoost.setFloatingVisible(visible)
-    if SanguineBoost.Widget and SanguineBoost.Enabled then
-        SanguineBoost.Widget:SetVisible(visible)
-    end
-end
+local SanguineModule = {
+    DoBoost = doBoost,
+    Trigger = triggerBoostWithVisual,
+    SetEnabled = function(state)
+        _G.DarlingX_SanguineBoost = (state == true)
+        local widgets = getWidgets()
+        if widgets and widgets.SetSanguineWidgetVisible then
+            widgets.SetSanguineWidgetVisible(state == true)
+        end
+    end,
+    SetWidgetVisible = function(state)
+        local widgets = getWidgets()
+        if widgets and widgets.SetSanguineWidgetVisible then
+            widgets.SetSanguineWidgetVisible(state == true)
+        end
+    end,
+}
 
-return SanguineBoost
+return SanguineModule

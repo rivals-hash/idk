@@ -26,7 +26,12 @@ local function getCore()
             return Core
         end
     end
-    for _, p in ipairs({ "modules/combat/aimbot_core.lua", "darling-hub/modules/combat/aimbot_core.lua" }) do
+    local candidatePaths = {
+        "DarlingX/modules/combat/aimbot_core.lua",
+        "modules/combat/aimbot_core.lua",
+        "darling-hub/modules/combat/aimbot_core.lua",
+    }
+    for _, p in ipairs(candidatePaths) do
         if isfile and isfile(p) then
             local ok, res = pcall(function() return loadstring(readfile(p))() end)
             if ok and res then
@@ -53,6 +58,14 @@ function Blacklist.set(category, key, state)
             b[category][key] = boolState
         end
     end
+end
+
+function Blacklist.add(category, key)
+    return Blacklist.set(category, key, true)
+end
+
+function Blacklist.remove(category, key)
+    return Blacklist.set(category, key, false)
 end
 
 function Blacklist.get(category, key)
