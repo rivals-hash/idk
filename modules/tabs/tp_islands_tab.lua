@@ -90,6 +90,7 @@ return function(context)
     local seaDropdown = TeleportTab:Dropdown({
         Title = "Select Sea",
         Desc = "Choose destination sea archipelago",
+        Icon = "compass",
         Values = { "Sea 1", "Sea 2", "Sea 3" },
         Value = initialSeaDisplay,
         Callback = function(displayVal)
@@ -117,6 +118,7 @@ return function(context)
     islandDropdown = TeleportTab:Dropdown({
         Title = "Select Island",
         Desc = "Choose island coordinate to tween to",
+        Icon = "map-pin",
         Values = initialIslandList,
         Value = selectedIsland,
         Callback = function(islandName)
@@ -131,6 +133,7 @@ return function(context)
     TeleportTab:Button({
         Title = "Teleport to Island",
         Desc = "Initiates smooth noclip tween toward the selected island",
+        Icon = "navigation",
         Callback = function()
             local mod = getTPMod()
             if not mod then return end
@@ -166,6 +169,7 @@ return function(context)
     TeleportTab:Button({
         Title = "Stop Teleport",
         Desc = "Instantly cancels flight and removes temporary anchor parts",
+        Icon = "square",
         Callback = function()
             local mod = getTPMod()
             if mod then
@@ -185,6 +189,7 @@ return function(context)
     local speedSlider = TeleportTab:Slider({
         Title = "Tween Speed",
         Desc = "Flight velocity in studs/sec (Adjusts live during running flight)",
+        Icon = "gauge",
         Width = 200,
         Value = { Min = 150, Max = 550, Default = 350 },
         Callback = function(val)
@@ -202,6 +207,7 @@ return function(context)
     local bypassToggle = TeleportTab:Toggle({
         Title = "Use Teleporter Bypass",
         Desc = "Utilizes nearest entrance teleporters to cut down long travel distance",
+        Icon = "zap",
         Value = true,
         Callback = function(state)
             DarlingHub.FeatureStates["TPTeleporterBypass"] = state

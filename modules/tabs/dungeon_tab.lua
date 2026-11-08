@@ -58,6 +58,7 @@ end)
 local autoDungeonToggle = DungeonTab:Toggle({
     Title = "Auto Dungeon",
     Desc = "Automatically targets enemies, teleports above them, attacks, equips weapon, and passes rooms",
+    Icon = "skull",
     Value = false,
     Callback = function(state)
         DarlingHub.FeatureStates["AutoDungeon"] = state
@@ -88,6 +89,7 @@ end
 local gunAuraDungeonToggle = DungeonTab:Toggle({
     Title = "Dragon Gun M1 (Gun Aura)",
     Desc = "Auto-shoots nearest enemies or players with rapid Dragon Gun bursts",
+    Icon = "crosshair",
     Value = (_G.G_DragonGunM1 == true),
     Callback = function(state)
         local mod = getDragonGunMod()
@@ -104,6 +106,7 @@ DarlingHub.DefaultValues["DungeonGunAura"] = false
 local weaponDropdown = DungeonTab:Dropdown({
     Title = "Selected Weapon",
     Desc = "Weapon type to automatically equip during dungeon combat",
+    Icon = "sword",
     Values = { "Sword", "Melee", "Blox Fruit" },
     Value = "Sword",
     Callback = function(selected)
@@ -121,6 +124,7 @@ DarlingHub.DefaultValues["DungeonWeapon"] = "Sword"
 local heightSlider = DungeonTab:Slider({
     Title = "Attack Height",
     Desc = "Hover height in studs directly above target enemy",
+    Icon = "arrow-up",
     Width = 200,
     Value = { Min = 10, Max = 100, Default = 40 },
     Step = 5,
@@ -140,6 +144,7 @@ DarlingHub.DefaultValues["DungeonHeight"] = 40
 local autoV4Toggle = DungeonTab:Toggle({
     Title = "Auto Race V4",
     Desc = "Automatically triggers Race V4 awakening by pressing Y repeatedly",
+    Icon = "zap",
     Value = false,
     Callback = function(state)
         DarlingHub.FeatureStates["DungeonAutoV4"] = state
@@ -158,6 +163,7 @@ DungeonTab:Divider()
 DungeonTab:Button({
     Title = "Auto Pass Room Now",
     Desc = "Manually teleports to active room ExitTeleporter and triggers touch interest",
+    Icon = "door-open",
     Callback = function()
         local mod = getDungeonMod()
         if mod and mod.AutoPassRoom then

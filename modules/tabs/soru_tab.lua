@@ -57,6 +57,7 @@ SoruTab:Paragraph({
 local soruCooldownToggle = SoruTab:Toggle({
     Title = "Toggle Soru Cooldown",
     Desc = "Enables 1s FlashstepCooldown attribute continuously and auto-binds on character respawn",
+    Icon = "zap",
     Value = false,
     Callback = function(state)
         DarlingHub.FeatureStates["SoruCooldownToggle"] = state
@@ -95,6 +96,7 @@ DarlingHub.DefaultValues["SoruCooldownToggle"] = false
 local instantSoruBtn = SoruTab:Button({
     Title = "Instant Soru Cooldown (1s)",
     Desc = "Immediately applies FlashstepCooldown 1 attribute to current character",
+    Icon = "timer",
     Callback = function()
         local player = game.Players.LocalPlayer
         local function setupCharacter(char)
@@ -127,6 +129,7 @@ SoruTab:Divider()
 local infSoruToggle = SoruTab:Toggle({
     Title = "Infinite Soru",
     Desc = "Zero cooldown flashstep for continuous rapid teleportation",
+    Icon = "infinity",
     Value = false,
     Callback = function(state)
         local mod = getSoruMod()
@@ -139,6 +142,7 @@ DarlingHub.DefaultValues["InfiniteSoru"] = false
 local soruAimbotToggle = SoruTab:Toggle({
     Title = "Soru Aimbot",
     Desc = "Teleports directly onto target enemy player upon using Flashstep [Key: R]",
+    Icon = "crosshair",
     Value = false,
     Callback = function(state)
         local mod = getSoruMod()
@@ -150,6 +154,7 @@ DarlingHub.DefaultValues["SoruAimbot"] = false
 
 local soruModeDropdown = SoruTab:Dropdown({
     Title = "Soru Target Mode",
+    Icon = "target",
     Values = { "Nearest Player", "Selected Player" },
     Value = "Nearest Player",
     Callback = function(selected)
@@ -177,6 +182,7 @@ local soruInitialNames = getSoruPlayerNames()
 local soruTargetDropdown = SoruTab:Dropdown({
     Title = "Selected Player",
     Desc = "Target player for Soru Aimbot when Target Mode is Selected Player",
+    Icon = "user",
     Values = soruInitialNames,
     Value = soruInitialNames[1],
     Callback = function(selected)
@@ -201,6 +207,7 @@ Players.PlayerRemoving:Connect(updateSoruPlayerList)
 local soruDistSlider = SoruTab:Slider({
     Title = "Soru Max Distance",
     Desc = "Maximum distance in studs for Soru TP aimbot",
+    Icon = "ruler",
     Width = 200,
     Value = { Min = 200, Max = 3000, Default = 2000 },
     Step = 100,
@@ -224,6 +231,7 @@ SoruTab:Paragraph({
 local soruSkillToggle = SoruTab:Toggle({
     Title = "Soru Skill Combo",
     Desc = "Executes assigned weapon skill upon triggering Soru / Flashstep",
+    Icon = "swords",
     Value = false,
     Callback = function(state)
         local mod = getSoruMod()
@@ -235,6 +243,7 @@ DarlingHub.DefaultValues["SoruSkillCombo"] = false
 
 local soruWeaponDropdown = SoruTab:Dropdown({
     Title = "Soru Skill Weapon",
+    Icon = "sword",
     Values = { "Fruit", "Melee", "Sword", "Gun" },
     Value = "Fruit",
     Callback = function(selected)
@@ -247,6 +256,7 @@ DarlingHub.DefaultValues["SoruSkillWeapon"] = "Fruit"
 
 local soruKeyDropdown = SoruTab:Dropdown({
     Title = "Soru Skill Key",
+    Icon = "keyboard",
     Values = { "Z", "X", "C", "V", "F" },
     Value = "Z",
     Callback = function(selected)
@@ -260,6 +270,7 @@ DarlingHub.DefaultValues["SoruSkillKey"] = "Z"
 local soruDelaySlider = SoruTab:Slider({
     Title = "Skill Cast Delay",
     Desc = "Delay in seconds after Soru before activating skill",
+    Icon = "clock",
     Width = 200,
     Value = { Min = 0.05, Max = 1.5, Default = 0.3 },
     Step = 0.05,

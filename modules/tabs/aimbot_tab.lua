@@ -103,6 +103,7 @@ local ColorNames = { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purp
 AimbotTab:Toggle({
     Title = "Player Silent Aim",
     Desc = "Redirects skills towards enemy players",
+    Icon = "crosshair",
     Value = false,
     Callback = bindToggle("modules/combat/player_aimbot.lua", "Player Silent Aim")
 })
@@ -110,6 +111,7 @@ AimbotTab:Toggle({
 AimbotTab:Toggle({
     Title = "NPC Silent Aim",
     Desc = "Redirects skills towards mobs and bosses",
+    Icon = "bot",
     Value = false,
     Callback = bindToggle("modules/combat/npc_aimbot.lua", "NPC Silent Aim")
 })
@@ -117,6 +119,7 @@ AimbotTab:Toggle({
 local aimbotLockPlayerToggle = AimbotTab:Toggle({
     Title = "Lock Player",
     Desc = "Locks target onto current player to maintain aim and attacks during combat",
+    Icon = "lock",
     Value = false,
     Callback = function(state)
         if DarlingHub.FeatureSetters and DarlingHub.FeatureSetters["LockPlayer"] then
@@ -132,6 +135,7 @@ DarlingHub.UIElements["AimbotLockPlayer"] = aimbotLockPlayerToggle
 local aimbotLockWidgetToggle = AimbotTab:Toggle({
     Title = "Lock Player Floating Widget",
     Desc = "Displays a movable on-screen button to quickly toggle player lock",
+    Icon = "layout-grid",
     Value = false,
     Callback = function(state)
         if DarlingHub.FeatureSetters and DarlingHub.FeatureSetters["LockPlayerWidget"] then
@@ -143,6 +147,7 @@ DarlingHub.UIElements["AimbotLockPlayerWidget"] = aimbotLockWidgetToggle
 
 AimbotTab:Dropdown({
     Title = "Target Priority",
+    Icon = "list-ordered",
     Values = { "Nearest", "Low HP", "Looking At Me" },
     Value = "Nearest",
     Callback = function(v)
@@ -153,6 +158,7 @@ AimbotTab:Dropdown({
 AimbotTab:Dropdown({
     Title = "Aim Mode",
     Desc = "360 = all directions, FOV = circle, 180 = forward only",
+    Icon = "compass",
     Values = { "360", "FOV", "180" },
     Value = "360",
     Callback = function(v)
@@ -166,6 +172,7 @@ AimbotTab:Dropdown({
 
 AimbotTab:Slider({
     Title = "Max Range",
+    Icon = "ruler",
     Width = 200,
     Value = { Min = 100, Max = 3000, Default = 1000 },
     Step = 50,
@@ -186,6 +193,7 @@ AimbotTab:Slider({
 AimbotTab:Dropdown({
     Title = "Skill Blacklist",
     Desc = "Selected skills are not redirected",
+    Icon = "shield-alert",
     Values = {
         "Melee Z", "Melee X", "Melee C",
         "Sword Z", "Sword X",
@@ -206,12 +214,14 @@ AimbotTab:Divider()
 -- FOV
 AimbotTab:Toggle({
     Title = "Show FOV Circle",
+    Icon = "circle-dot",
     Value = false,
     Callback = bindToggle("modules/combat/fov.lua", "FOV Circle")
 })
 
 AimbotTab:Slider({
     Title = "FOV Radius",
+    Icon = "maximize-2",
     Width = 200,
     Value = { Min = 20, Max = 600, Default = 100 },
     Step = 5,
@@ -231,6 +241,7 @@ AimbotTab:Slider({
 
 AimbotTab:Dropdown({
     Title = "FOV Position",
+    Icon = "crosshair",
     Values = { "Center", "Mouse" },
     Value = "Center",
     Callback = function(v)
@@ -240,6 +251,7 @@ AimbotTab:Dropdown({
 
 AimbotTab:Dropdown({
     Title = "FOV Color",
+    Icon = "palette",
     Values = ColorNames,
     Value = "Rainbow",
     Callback = function(v)
@@ -259,6 +271,7 @@ AimbotTab:Divider()
 local tracersToggle = AimbotTab:Toggle({
     Title = "Show Tracers",
     Desc = "Hardware 3D Beam and 2D SnapLines linking your character directly to enemy",
+    Icon = "sparkles",
     Value = false,
     Callback = function(state)
         DarlingHub.FeatureStates["Tracers"] = state
@@ -279,6 +292,7 @@ end
 
 AimbotTab:Dropdown({
     Title = "Tracer Mode",
+    Icon = "layers",
     Values = { "3D Beam", "2D Line", "Both" },
     Value = "Both",
     Callback = function(v)
@@ -292,6 +306,7 @@ AimbotTab:Dropdown({
 
 AimbotTab:Dropdown({
     Title = "Tracer Origin",
+    Icon = "map-pin",
     Values = { "Player", "Bottom", "Center" },
     Value = "Player",
     Callback = function(v)
@@ -305,6 +320,7 @@ AimbotTab:Dropdown({
 
 AimbotTab:Dropdown({
     Title = "Tracer Color",
+    Icon = "palette",
     Values = ColorNames,
     Value = "Rainbow",
     Callback = function(v)
@@ -326,6 +342,7 @@ AimbotTab:Divider()
 local trackerToggle = AimbotTab:Toggle({
     Title = "Target Tracker",
     Desc = "Sticky target tracking that glues you behind enemy player",
+    Icon = "magnet",
     Value = false,
     Callback = function(state)
         DarlingHub.FeatureStates["Tracker"] = state
@@ -367,6 +384,7 @@ end
 local trackerDistSlider = AimbotTab:Slider({
     Title = "Tracker Distance",
     Desc = "Distance behind target player in studs",
+    Icon = "move-horizontal",
     Width = 200,
     Value = { Min = 1, Max = 15, Default = 3.5 },
     Step = 0.5,
@@ -386,6 +404,7 @@ end
 local trackerWidgetToggle = AimbotTab:Toggle({
     Title = "Tracker Widget",
     Desc = "Shows draggable quick-toggle TRACKER widget on screen",
+    Icon = "layout-grid",
     Value = false,
     Callback = function(state)
         DarlingHub.FeatureStates["TrackerWidget"] = state

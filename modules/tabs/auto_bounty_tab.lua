@@ -51,6 +51,7 @@ return function(context)
     -- ========================================================================
     local autoBountyModeToggle = AutoBountyTab:Toggle({
         Title = "Auto Bounty Mode (Fast Hop)",
+    Icon = "zap",
         Desc = "When enabled, server hop only loads the high-speed Auto Bounty engine to eliminate lag and maximize FPS",
         Value = (DarlingHub.IsFastMode == true) or (autoBountyMod and autoBountyMod.AutoBountyMode == true) or false,
         Callback = function(state)
@@ -72,6 +73,7 @@ return function(context)
     if DarlingHub.IsFastMode or _G.DarlingFastBountyMode then
         AutoBountyTab:Button({
             Title = "Load All Tabs / Full Hub",
+    Icon = "maximize-2",
             Desc = "Loads all remaining tabs and modules into this session without rejoining",
             Callback = function()
                 if DarlingHub.LoadAllTabs then
@@ -110,6 +112,7 @@ return function(context)
 
     local autoBountyToggle = AutoBountyTab:Toggle({
         Title = "Hunt Auto",
+    Icon = "crosshair",
         Desc = "Autonomous target scanning, tween flight pathing, and skill bursts",
         Value = (autoBountyMod and autoBountyMod.Enabled) or false,
         Callback = function(state)
@@ -139,6 +142,7 @@ return function(context)
     -- Auto Join Team: placed directly below Hunt Auto toggle
     local autoTeamDropdown = AutoBountyTab:Dropdown({
         Title = "Auto Join Team",
+    Icon = "users",
         Desc = "Automatically joins Marines or Pirates upon server hop or execution",
         Values = { "Pirates", "Marines" },
         Value = (autoBountyMod and autoBountyMod.AutoTeam) or "Pirates",
@@ -160,6 +164,7 @@ return function(context)
 
     local skipTargetBtn = AutoBountyTab:Button({
         Title = "Skip Current Target",
+    Icon = "skip-forward",
         Desc = "Blacklists and skips the current target to immediately acquire a new enemy",
         Callback = function()
             local mod = getAutoBountyMod()
@@ -176,6 +181,7 @@ return function(context)
     -- ========================================================================
     local nearTweenSlider = AutoBountyTab:Slider({
         Title = "Near Tween Speed (<= 1000 studs)",
+    Icon = "gauge",
         Desc = "Linear flight speed when near target (1000 studs or less)",
         Width = 200,
         Value = { Min = 100, Max = 450, Default = (autoBountyMod and autoBountyMod.NearTweenSpeed) or 310 },
@@ -193,6 +199,7 @@ return function(context)
 
     local farTweenSlider = AutoBountyTab:Slider({
         Title = "Far Tween Speed (> 1000 studs)",
+    Icon = "gauge",
         Desc = "Linear flight speed when travelling far (over 1000 studs)",
         Width = 200,
         Value = { Min = 80, Max = 450, Default = (autoBountyMod and autoBountyMod.FarTweenSpeed) or 200 },
@@ -211,6 +218,7 @@ return function(context)
 
     local orbitToggle = AutoBountyTab:Toggle({
         Title = "Orbit While Attacking",
+    Icon = "rotate-cw",
         Desc = "Performs circular flight around target during combat to dodge incoming skills",
         Value = (autoBountyMod and autoBountyMod.Orbit) or false,
         Callback = function(state)
@@ -226,6 +234,7 @@ return function(context)
 
     local orbitDistSlider = AutoBountyTab:Slider({
         Title = "Orbit Distance",
+    Icon = "ruler",
         Desc = "Radius in studs for orbital flight around target",
         Width = 200,
         Value = { Min = 1, Max = 25, Default = (autoBountyMod and autoBountyMod.OrbitDistance) or 3 },
@@ -243,6 +252,7 @@ return function(context)
 
     local combatDistSlider = AutoBountyTab:Slider({
         Title = "Combat Distance",
+    Icon = "ruler",
         Desc = "Distance in studs behind target during combat (default: 5.5 studs)",
         Width = 200,
         Value = { Min = 1, Max = 25, Default = (autoBountyMod and autoBountyMod.CombatDistance) or 5.5 },
@@ -260,6 +270,7 @@ return function(context)
 
     local orbitSpeedSlider = AutoBountyTab:Slider({
         Title = "Orbit Speed",
+    Icon = "gauge",
         Desc = "Speed of circular orbital flight around target during combat",
         Width = 200,
         Value = { Min = 2, Max = 20, Default = (autoBountyMod and autoBountyMod.OrbitSpeed) or 12.0 },
@@ -277,6 +288,7 @@ return function(context)
 
     local autoSoruToggle = AutoBountyTab:Toggle({
         Title = "Auto Soru",
+    Icon = "wind",
         Desc = "Uses Flashstep / Soru (Key R) to close long distances rapidly",
         Value = (autoBountyMod and autoBountyMod.AutoSoru) or false,
         Callback = function(state)
@@ -297,6 +309,7 @@ return function(context)
     -- ========================================================================
     local autoAttackToggle = AutoBountyTab:Toggle({
         Title = "Auto Attack (FastAttack M1)",
+    Icon = "swords",
         Desc = "Performs rapid primary attacks and clicks on target when in range",
         Value = (autoBountyMod and autoBountyMod.AutoAttack) or false,
         Callback = function(state)
@@ -312,6 +325,7 @@ return function(context)
 
     local fastAttackSpeedDropdown = AutoBountyTab:Dropdown({
         Title = "Fast Attack Speed",
+    Icon = "gauge",
         Desc = "Configures the real hit rate and delay of primary attacks",
         Values = { "Instant (0s)", "Turbo (0.03s)", "Fast (0.06s)", "Medium (0.10s)", "Safe (0.15s)", "Normal (0.25s)" },
         Value = (autoBountyMod and autoBountyMod.FastAttackSpeed) or "Medium (0.10s)",
@@ -328,6 +342,7 @@ return function(context)
 
     local autoSkillsToggle = AutoBountyTab:Toggle({
         Title = "Auto Skills",
+    Icon = "sparkles",
         Desc = "Automatically casts available weapon skills in burst sequence",
         Value = (autoBountyMod and autoBountyMod.AutoSkills) or false,
         Callback = function(state)
@@ -357,6 +372,7 @@ return function(context)
 
     local excludedSkillsDropdown = AutoBountyTab:Dropdown({
         Title = "Excluded Skills",
+    Icon = "shield-alert",
         Desc = "Select skills to exclude from auto bounty attack rotation",
         Multi = true,
         Values = {
@@ -389,6 +405,7 @@ return function(context)
 
     local meleeWeaponToggle = AutoBountyTab:Toggle({
         Title = "Use Melee Weapons",
+    Icon = "swords",
         Desc = "Equips and executes combat skills with Melee weapons",
         Value = (autoBountyMod and autoBountyMod.Enabled and autoBountyMod.Weapons and autoBountyMod.Weapons.Melee) or false,
         Callback = function(state)
@@ -405,6 +422,7 @@ return function(context)
 
     local swordWeaponToggle = AutoBountyTab:Toggle({
         Title = "Use Sword Weapons",
+    Icon = "sword",
         Desc = "Equips and executes combat skills with Sword weapons",
         Value = (autoBountyMod and autoBountyMod.Enabled and autoBountyMod.Weapons and autoBountyMod.Weapons.Sword) or false,
         Callback = function(state)
@@ -421,6 +439,7 @@ return function(context)
 
     local fruitWeaponToggle = AutoBountyTab:Toggle({
         Title = "Use Fruit Skills",
+    Icon = "flame",
         Desc = "Equips and executes combat skills with Demon Fruit weapons",
         Value = (autoBountyMod and autoBountyMod.Enabled and autoBountyMod.Weapons and autoBountyMod.Weapons.Fruit) or false,
         Callback = function(state)
@@ -437,6 +456,7 @@ return function(context)
 
     local gunWeaponToggle = AutoBountyTab:Toggle({
         Title = "Use Gun Weapons",
+    Icon = "crosshair",
         Desc = "Equips and executes combat skills with Gun weapons",
         Value = (autoBountyMod and autoBountyMod.Enabled and autoBountyMod.Weapons and autoBountyMod.Weapons.Gun) or false,
         Callback = function(state)
@@ -453,6 +473,7 @@ return function(context)
 
     local aimbotLockToggle = AutoBountyTab:Toggle({
         Title = "Target Aimbot Lock",
+    Icon = "lock",
         Desc = "Locks camera and redirects skills/attacks directly to target so you never miss",
         Value = (autoBountyMod and autoBountyMod.AimbotLock) or false,
         Callback = function(state)
@@ -468,6 +489,7 @@ return function(context)
 
     local autoBusoToggle = AutoBountyTab:Toggle({
         Title = "Auto Buso Haki",
+    Icon = "shield",
         Desc = "Automatically activates Buso Haki enhancement during combat",
         Value = (autoBountyMod and autoBountyMod.AutoBuso) or false,
         Callback = function(state)
@@ -486,6 +508,7 @@ return function(context)
 
     local autoKenToggle = AutoBountyTab:Toggle({
         Title = "Auto Observation Haki (Ken)",
+    Icon = "eye",
         Desc = "Maintains Observation / Vision Haki permanently active with automatic reactivation",
         Value = (autoBountyMod and autoBountyMod.AutoKen) or false,
         Callback = function(state)
@@ -504,6 +527,7 @@ return function(context)
 
     local autoV4Toggle = AutoBountyTab:Toggle({
         Title = "Auto Race V4",
+    Icon = "zap",
         Desc = "Automatically activates Race V4 awakening during combat when meter fills",
         Value = (autoBountyMod and autoBountyMod.AutoV4) or false,
         Callback = function(state)
@@ -519,6 +543,7 @@ return function(context)
 
     local autoEnablePvpToggle = AutoBountyTab:Toggle({
         Title = "Auto Enable PvP",
+    Icon = "swords",
         Desc = "Automatically enables PvP status via game remote after respawning",
         Value = (autoBountyMod and autoBountyMod.AutoEnablePvp) or false,
         Callback = function(state)
@@ -539,6 +564,7 @@ return function(context)
     -- ========================================================================
     local cancelFleeButton = AutoBountyTab:Button({
         Title = "Cancel Flee HP",
+    Icon = "shield-off",
         Desc = "Immediately aborts fleeing and forces character back to attacking target",
         Callback = function()
             local mod = getAutoBountyMod()
@@ -551,6 +577,7 @@ return function(context)
 
     local autoFleeToggle = AutoBountyTab:Toggle({
         Title = "Auto Flee Low HP",
+    Icon = "heart-crack",
         Desc = "Flies to sky safety when health drops below threshold to recover",
         Value = (autoBountyMod and autoBountyMod.AutoFlee) or false,
         Callback = function(state)
@@ -566,6 +593,7 @@ return function(context)
 
     local fleeHPSlider = AutoBountyTab:Slider({
         Title = "Flee Health Threshold (%)",
+    Icon = "heart",
         Desc = "Percentage of HP that triggers auto flee",
         Width = 200,
         Value = { Min = 10, Max = 50, Default = (autoBountyMod and autoBountyMod.FleeHP) or 30 },
@@ -583,6 +611,7 @@ return function(context)
 
     local returnHPSlider = AutoBountyTab:Slider({
         Title = "Return Health Threshold (%)",
+    Icon = "heart-pulse",
         Desc = "Percentage of HP required to resume attacking after fleeing",
         Width = 200,
         Value = { Min = 35, Max = 100, Default = (autoBountyMod and autoBountyMod.ReturnHP) or 50 },
@@ -605,6 +634,7 @@ return function(context)
     -- ========================================================================
     local autoHopToggle = AutoBountyTab:Toggle({
         Title = "Auto Server Hop",
+    Icon = "globe",
         Desc = "Automatically hops to another server when no valid targets remain after scanning",
         Value = (autoBountyMod and autoBountyMod.AutoHop) or false,
         Callback = function(state)
@@ -620,6 +650,7 @@ return function(context)
 
     local targetPlayerCountSlider = AutoBountyTab:Slider({
         Title = "Target Server Player Count",
+    Icon = "users",
         Desc = "Desired player count when hopping (default: 8, rejects empty servers)",
         Width = 200,
         Value = { Min = 3, Max = 11, Default = (autoBountyMod and autoBountyMod.TargetPlayerCount) or 8 },
@@ -637,6 +668,7 @@ return function(context)
 
     AutoBountyTab:Button({
         Title = "Server Hop Now",
+    Icon = "refresh-cw",
         Desc = "Smoothly ascends into the sky and hops to a new server with ~8 players immediately",
         Callback = function()
             local mod = getAutoBountyMod()
@@ -650,6 +682,7 @@ return function(context)
 
     local noSafeZoneToggle = AutoBountyTab:Toggle({
         Title = "Skip SafeZone Players",
+    Icon = "shield-check",
         Desc = "Avoids hunting players who are inside safe zones",
         Value = (autoBountyMod and autoBountyMod.NoSafeZone) or false,
         Callback = function(state)
@@ -665,6 +698,7 @@ return function(context)
 
     local noMarineAllyToggle = AutoBountyTab:Toggle({
         Title = "Ignore Marine Allies",
+    Icon = "anchor",
         Desc = "Does not target fellow Marines when playing as Marine",
         Value = (autoBountyMod and autoBountyMod.NoMarineAlly) or false,
         Callback = function(state)
@@ -686,6 +720,7 @@ return function(context)
     local bountyWidget = nil
     local bountyWidgetToggle = AutoBountyTab:Toggle({
         Title = "Auto Bounty Floating Widget",
+    Icon = "layout-grid",
         Desc = "Displays a movable on-screen widget to start/stop auto bounty",
         Value = false,
         Callback = function(state)

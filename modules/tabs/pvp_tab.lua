@@ -66,6 +66,7 @@ end
 -- --- Combat Assistance ---
 local dragonGunToggle = PvpTab:Toggle({
     Title = "Dragon Gun M1 (Gun Aura)",
+    Icon = "crosshair",
     Desc = "Auto-shoots nearest enemies or players with rapid Dragon Gun bursts",
     Value = false,
     Callback = function(state)
@@ -94,6 +95,7 @@ end
 
 local hitboxExpanderToggle = PvpTab:Toggle({
     Title = "Hitbox Expander",
+    Icon = "box-select",
     Desc = "Expands weapon hitboxes using Nameless CombatUtil hook",
     Value = false,
     Callback = function(state)
@@ -106,6 +108,7 @@ DarlingHub.DefaultValues["HitboxExpander"] = false
 
 local hitboxMultiplierSlider = PvpTab:Slider({
     Title = "Hitbox Multiplier",
+    Icon = "maximize-2",
     Desc = "Multiplier for weapon hitbox magnitude (Max: 50)",
     Width = 200,
     Value = { Min = 1, Max = 50, Default = 20 },
@@ -121,6 +124,7 @@ DarlingHub.DefaultValues["HitboxMultiplier"] = 20
 local lockWidget = nil
 local lockPlayerToggle = PvpTab:Toggle({
     Title = "Lock Player",
+    Icon = "lock",
     Desc = "Locks target onto current player to maintain aim and attacks during combat",
     Value = false,
     Callback = function(state)
@@ -150,6 +154,7 @@ end
 
 local lockWidgetToggle = PvpTab:Toggle({
     Title = "Lock Player Floating Widget",
+    Icon = "layout-grid",
     Desc = "Displays a movable on-screen button to quickly toggle player lock",
     Value = false,
     Callback = function(state)
@@ -229,6 +234,7 @@ end
 
 local fastAttackToggle = PvpTab:Toggle({
     Title = "Fast Attack",
+    Icon = "zap",
     Desc = "Rapid-fire attack bursts for Swords, Melee, and Fruits",
     Value = false,
     Callback = function(state)
@@ -243,6 +249,7 @@ DarlingHub.DefaultValues["FastAttack"] = false
 
 local attackDelaySlider = PvpTab:Slider({
     Title = "Attack Delay",
+    Icon = "clock",
     Desc = "Delay between burst hits in seconds",
     Width = 200,
     Value = { Min = 0.01, Max = 0.50, Default = 0.25 },
@@ -257,6 +264,7 @@ DarlingHub.DefaultValues["AttackDelay"] = 0.25
 
 local fruitFastAttackToggle = PvpTab:Toggle({
     Title = "Fruit Fast Attack",
+    Icon = "flame",
     Desc = "High-speed attack bursts for Demon Fruits, swords and melee",
     Value = false,
     Callback = function(state)
@@ -271,6 +279,7 @@ DarlingHub.DefaultValues["FruitFastAttack"] = false
 
 local oneshotKitsuneToggle = PvpTab:Toggle({
     Title = "One shot Kitsune",
+    Icon = "sparkles",
     Desc = "High-potency 9e30 projectile burst for Kitsune Demon Fruit",
     Value = false,
     Callback = function(state)
@@ -285,6 +294,7 @@ DarlingHub.DefaultValues["OneShotKitsune"] = false
 
 PvpTab:Toggle({
     Title = "Auto Buso Haki",
+    Icon = "shield",
     Desc = "Automatically activates Buso Haki during combat if disabled",
     Value = false,
     Callback = function(state)
@@ -300,6 +310,7 @@ PvpTab:Divider()
 -- --- Defense & Awakening ---
 PvpTab:Toggle({
     Title = "Auto Race V3",
+    Icon = "shield-alert",
     Desc = "Automatically activates Race V3 ability in combat when health drops",
     Value = false,
     Callback = function(state)
@@ -310,6 +321,7 @@ PvpTab:Toggle({
 
 PvpTab:Slider({
     Title = "Race V3 Health Threshold",
+    Icon = "heart",
     Desc = "Health percentage trigger for Race V3 activation",
     Width = 200,
     Value = { Min = 10, Max = 95, Default = 75 },
@@ -322,6 +334,7 @@ PvpTab:Slider({
 
 PvpTab:Toggle({
     Title = "Auto Race V4",
+    Icon = "zap",
     Desc = "Automatically triggers Race V4 awakening as soon as awakening meter is full",
     Value = false,
     Callback = function(state)
@@ -332,6 +345,7 @@ PvpTab:Toggle({
 
 PvpTab:Toggle({
     Title = "Anti Stun Hitbox",
+    Icon = "shield-check",
     Desc = "Clears enemy stun values and removes hostile body movers that freeze character",
     Value = false,
     Callback = function(state)
@@ -345,6 +359,7 @@ PvpTab:Divider()
 -- --- Mobility & Movement Tech ---
 PvpTab:Toggle({
     Title = "Sanguine Z Boost",
+    Icon = "droplet",
     Desc = "High-velocity directional launch in camera look direction [Key: Z]",
     Value = false,
     Callback = function(state)
@@ -357,6 +372,7 @@ PvpTab:Toggle({
 
 PvpTab:Slider({
     Title = "Sanguine Velocity Power",
+    Icon = "gauge",
     Desc = "Linear velocity power multiplier",
     Width = 200,
     Value = { Min = 100, Max = 800, Default = 400 },
@@ -369,6 +385,7 @@ PvpTab:Slider({
 
 PvpTab:Toggle({
     Title = "Ninja Dash (0 Cooldown)",
+    Icon = "wind",
     Desc = "Zero-cooldown tactical zigzag dash with camera punch and physics boost [Key: Q]",
     Value = false,
     Callback = function(state)
@@ -381,6 +398,7 @@ PvpTab:Toggle({
 
 PvpTab:Slider({
     Title = "Ninja Dash Speed",
+    Icon = "gauge",
     Desc = "Impulse velocity of the ninja dash",
     Width = 200,
     Value = { Min = 100, Max = 500, Default = 220 },
@@ -395,6 +413,7 @@ PvpTab:Slider({
 
 PvpTab:Toggle({
     Title = "Flight Mode",
+    Icon = "plane",
     Desc = "Smooth 3D camera-directed flight [Controls: WASD, Space, Shift]",
     Value = false,
     Callback = function(state)
@@ -407,6 +426,7 @@ PvpTab:Toggle({
 
 PvpTab:Slider({
     Title = "Flight Speed",
+    Icon = "gauge",
     Desc = "Flight propulsion velocity",
     Width = 200,
     Value = { Min = 20, Max = 350, Default = 70 },
@@ -419,6 +439,7 @@ PvpTab:Slider({
 
 PvpTab:Toggle({
     Title = "Walk Speed Boost",
+    Icon = "footprints",
     Desc = "Bypasses Blox Fruits speed clamp for rapid ground movement",
     Value = false,
     Callback = function(state)
@@ -429,6 +450,7 @@ PvpTab:Toggle({
 
 PvpTab:Slider({
     Title = "Walk Speed Value",
+    Icon = "gauge",
     Desc = "Target movement speed",
     Width = 200,
     Value = { Min = 16, Max = 350, Default = 32 },
@@ -441,6 +463,7 @@ PvpTab:Slider({
 
 PvpTab:Toggle({
     Title = "Dash Distance Boost",
+    Icon = "move-right",
     Desc = "Extends the distance of normal character dashes",
     Value = false,
     Callback = function(state)
@@ -451,6 +474,7 @@ PvpTab:Toggle({
 
 PvpTab:Slider({
     Title = "Dash Distance Length",
+    Icon = "ruler",
     Desc = "Dash length attribute value",
     Width = 200,
     Value = { Min = 1, Max = 300, Default = 50 },
@@ -463,6 +487,7 @@ PvpTab:Slider({
 
 PvpTab:Toggle({
     Title = "Super Jump",
+    Icon = "arrow-up-circle",
     Desc = "Instant direct vertical velocity impulse on Space or widget",
     Value = false,
     Callback = function(state)
@@ -473,6 +498,7 @@ PvpTab:Toggle({
 
 PvpTab:Slider({
     Title = "Super Jump Power",
+    Icon = "gauge",
     Desc = "Upward vertical impulse velocity",
     Width = 200,
     Value = { Min = 100, Max = 1000, Default = 500 },
@@ -485,6 +511,7 @@ PvpTab:Slider({
 
 PvpTab:Toggle({
     Title = "Infinite Air Jump",
+    Icon = "chevrons-up",
     Desc = "Resets jump counter allowing unlimited jumps in mid-air",
     Value = false,
     Callback = function(state)
@@ -495,6 +522,7 @@ PvpTab:Toggle({
 
 PvpTab:Toggle({
     Title = "Walk on Water",
+    Icon = "waves",
     Desc = "Enables water walking attribute and dynamic surface platform",
     Value = false,
     Callback = function(state)
@@ -505,6 +533,7 @@ PvpTab:Toggle({
 
 PvpTab:Toggle({
     Title = "Noclip",
+    Icon = "ghost",
     Desc = "Disables character collision allowing you to walk through walls",
     Value = false,
     Callback = function(state)
@@ -518,6 +547,7 @@ PvpTab:Divider()
 -- --- Performance & Client Tweaks ---
 PvpTab:Toggle({
     Title = "FFlags 1 (FPS Booster)",
+    Icon = "cpu",
     Desc = "120 FPS cap, smooth plastic textures, removes atmosphere fog, hides debris",
     Value = false,
     Callback = function(state)
@@ -528,6 +558,7 @@ PvpTab:Toggle({
 
 PvpTab:Toggle({
     Title = "No Animations",
+    Icon = "film",
     Desc = "Stops non-attack animations to fix sideways bug and character freezes",
     Value = false,
     Callback = function(state)
@@ -538,6 +569,7 @@ PvpTab:Toggle({
 
 PvpTab:Toggle({
     Title = "Anti Lava",
+    Icon = "flame",
     Desc = "Disables limb touch detection for complete lava damage immunity",
     Value = false,
     Callback = function(state)
@@ -548,6 +580,7 @@ PvpTab:Toggle({
 
 PvpTab:Toggle({
     Title = "Camera Skew (Rare View)",
+    Icon = "video",
     Desc = "Stretches and shears camera projection for wide competitive perspective",
     Value = false,
     Callback = function(state)
@@ -558,6 +591,7 @@ PvpTab:Toggle({
 
 PvpTab:Slider({
     Title = "Skew Resolution",
+    Icon = "sliders",
     Desc = "Vertical projection factor (lower is more stretched/skewed)",
     Width = 200,
     Value = { Min = 0.05, Max = 1.0, Default = 0.2 },
@@ -573,6 +607,7 @@ PvpTab:Divider()
 -- --- Floating Widgets Display ---
 PvpTab:Toggle({
     Title = "Show Floating Widgets",
+    Icon = "layout-grid",
     Desc = "Shows or hides all draggable quick-toggle floating widgets on screen",
     Value = false,
     Callback = function(state)
@@ -600,6 +635,7 @@ PvpTab:Toggle({
 
 PvpTab:Toggle({
     Title = "Lock Widgets Position",
+    Icon = "pin",
     Desc = "Locks all floating action and toggle widgets in place to prevent accidental dragging",
     Value = false,
     Callback = function(state)
