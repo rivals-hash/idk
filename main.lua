@@ -152,32 +152,10 @@ function BestHub:Require(relPath)
     return mod
 end
 
--- 7. Initialize UI Components
+-- 7. Initialize Logic & UI Modules
 local Utils = BestHub:Require("modules/core/utils.lua")
-local AssetManager = BestHub:Require("modules/core/asset_manager.lua")
-if AssetManager and AssetManager.preload then
-    pcall(function()
-        AssetManager.preload({
-            "header_profile_panel_red.png",
-            "stats_panel_red.png",
-            "music_player_red.png",
-            "sidebar_bg_red.png",
-            "floating_avatar_red.png",
-            "header_profile_panel.png",
-            "stats_panel_v2.png",
-            "music_player.png",
-            "sidebar_bg_v2.png",
-            "floating_avatar.png"
-        })
-    end)
-end
 local StatsService = BestHub:Require("modules/core/stats_service.lua")
 local MusicEngine = BestHub:Require("modules/utility/music_engine.lua")
-local MusicVisualizer = BestHub:Require("modules/ui/music_visualizer.lua")
-local Sidebar = BestHub:Require("modules/ui/sidebar.lua")
-local HomeView = BestHub:Require("modules/ui/home_view.lua")
-local TabViews = BestHub:Require("modules/ui/tab_views.lua")
-local MobileToggle = BestHub:Require("modules/ui/mobile_toggle.lua")
 local FOV = BestHub:Require("modules/combat/fov.lua")
 local AimbotCore = BestHub:Require("modules/combat/aimbot_core.lua")
 local PlayerAimbot = BestHub:Require("modules/combat/player_aimbot.lua")
@@ -197,12 +175,6 @@ local WinInstance = Window.create({
     Utils = Utils,
     StatsService = StatsService,
     MusicEngine = MusicEngine,
-    MusicVisualizer = MusicVisualizer,
-    Sidebar = Sidebar,
-    HomeView = HomeView,
-    TabViews = TabViews,
-    MobileToggle = MobileToggle,
-    AssetManager = AssetManager,
     FOV = FOV,
     AimbotCore = AimbotCore,
     PlayerAimbot = PlayerAimbot,
@@ -212,9 +184,44 @@ local WinInstance = Window.create({
     SilentAim = SilentAim,
     SoruEngine = SoruEngine,
 })
+
+if not WinInstance then
+    warn("[BestHub] Critical: Failed to instantiate WindUI Window.")
+    return
+end
+
+-- 8. Load WindUI Tab Modules
+local TabHome = BestHub:Require("modules/ui/tabs/home.lua")
+local TabAimbot = BestHub:Require("modules/ui/tabs/aimbot.lua")
+local TabCombat = BestHub:Require("modules/ui/tabs/combat.lua")
+local TabPlayers = BestHub:Require("modules/ui/tabs/players.lua")
+local TabVisuals = BestHub:Require("modules/ui/tabs/visuals.lua")
+local TabSettings = BestHub:Require("modules/ui/tabs/settings.lua")
+
+local deps = {
+    Utils = Utils,
+    StatsService = StatsService,
+    MusicEngine = MusicEngine,
+    FOV = FOV,
+    AimbotCore = AimbotCore,
+    PlayerAimbot = PlayerAimbot,
+    NPCAimbot = NPCAimbot,
+    Blacklist = Blacklist,
+    Tracers = Tracers,
+    SilentAim = SilentAim,
+    SoruEngine = SoruEngine,
+}
+
+if TabHome and TabHome.init then WinInstance.Tabs.Home = TabHome.init(WinInstance, deps) end
+if TabAimbot and TabAimbot.init then WinInstance.Tabs.Aimbot = TabAimbot.init(WinInstance, deps) end
+if TabCombat and TabCombat.init then WinInstance.Tabs.Combat = TabCombat.init(WinInstance, deps) end
+if TabPlayers and TabPlayers.init then WinInstance.Tabs.Players = TabPlayers.init(WinInstance, deps) end
+if TabVisuals and TabVisuals.init then WinInstance.Tabs.Visuals = TabVisuals.init(WinInstance, deps) end
+if TabSettings and TabSettings.init then WinInstance.Tabs.Settings = TabSettings.init(WinInstance, deps) end
+
 BestHub.Window = WinInstance
 
--- 8. Unload & Cleanup Handler
+-- 9. Unload & Cleanup Handler
 function BestHub:Unload()
     for _, mod in pairs(self.Modules) do
         if type(mod) == "table" then
@@ -226,18 +233,22 @@ function BestHub:Unload()
     if MusicEngine and MusicEngine.stop then
         pcall(MusicEngine.stop)
     end
-    if self.Window then
-        if self.Window.MobileToggle and self.Window.MobileToggle.Parent then
-            pcall(function() self.Window.MobileToggle:Destroy() end)
-        end
-        if self.Window.ScreenGui and self.Window.ScreenGui.Parent then
-            pcall(function() self.Window.ScreenGui:Destroy() end)
-        end
+    if self.Window and self.Window.Destroy then
+        pcall(function() self.Window:Destroy() end)
     end
     self.Modules = {}
 end
 
--- 9. Welcome Toast
-Utils.toast("Monody Premium", "Successfully loaded | By Darling", 3.0, AssetManager and AssetManager.get("avatar.png", "rbxassetid://93891873418133"))
+-- 10. Welcome Notification
+if WinInstance.WindUI and WinInstance.WindUI.Notify then
+    WinInstance.WindUI:Notify({
+        Title = "Darling Hub | Monody",
+        Content = "WindUI successfully loaded! Tap the floating heart icon to open.",
+        Duration = 4,
+        Icon = "solar:heart-bold",
+    })
+elseif Utils and Utils.toast then
+    Utils.toast("Darling Hub", "WindUI loaded successfully | By Darling", 3.0)
+end
 
 return BestHub
