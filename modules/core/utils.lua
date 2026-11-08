@@ -178,10 +178,10 @@ function Utils.toast(title, message, duration, iconId)
     textLbl.Size = UDim2.new(1, -textOffset - 10, 1, 0)
     textLbl.Position = UDim2.new(0, textOffset, 0, 0)
     textLbl.BackgroundTransparency = 1
-    textLbl.Font = Enum.Font.Kalam
+    textLbl.Font = Enum.Font.GothamMedium
     textLbl.Text = (message and message ~= "") and message or (title or "Monody")
     textLbl.TextColor3 = Color3.fromRGB(245, 240, 245)
-    textLbl.TextSize = 13.5
+    textLbl.TextSize = 11.5
     textLbl.TextXAlignment = Enum.TextXAlignment.Left
     textLbl.TextTruncate = Enum.TextTruncate.AtEnd
     textLbl.Parent = pill

@@ -164,4 +164,23 @@ function MusicEngine.getLoudness()
     return 0.05
 end
 
+function MusicEngine.seek(ratio)
+    ratio = math.clamp(tonumber(ratio) or 0, 0, 1)
+    local snd = MusicEngine.getSound()
+    if snd and snd.TimeLength > 0 then
+        pcall(function()
+            snd.TimePosition = math.clamp(ratio * snd.TimeLength, 0, snd.TimeLength)
+        end)
+    end
+end
+
+function MusicEngine.seekTime(timePos)
+    local snd = MusicEngine.getSound()
+    if snd and snd.TimeLength > 0 then
+        pcall(function()
+            snd.TimePosition = math.clamp(tonumber(timePos) or 0, 0, snd.TimeLength)
+        end)
+    end
+end
+
 return MusicEngine

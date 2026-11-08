@@ -189,7 +189,7 @@ function Sidebar.create(parentGui, options)
                     BackgroundColor3 = Color3.fromRGB(205, 30, 55),
                     BackgroundTransparency = 0.1
                 }):Play()
-                btnData.Label.Font = Enum.Font.Kalam
+                btnData.Label.Font = Enum.Font.GothamBold
                 TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
                     TextColor3 = Color3.fromRGB(255, 255, 255),
                     TextTransparency = 0
@@ -208,9 +208,9 @@ function Sidebar.create(parentGui, options)
                     BackgroundColor3 = Color3.fromRGB(20, 14, 18),
                     BackgroundTransparency = 1
                 }):Play()
-                btnData.Label.Font = Enum.Font.Kalam
+                btnData.Label.Font = Enum.Font.GothamMedium
                 TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
-                    TextColor3 = Color3.fromRGB(215, 205, 215),
+                    TextColor3 = Color3.fromRGB(205, 195, 205),
                     TextTransparency = 0
                 }):Play()
                 TweenService:Create(btnData.Icon, TweenInfo.new(0.15), {
@@ -257,17 +257,17 @@ function Sidebar.create(parentGui, options)
         tabIcon.ZIndex = 7
         tabIcon.Parent = tabBtn
 
-        -- Tab Label in original Kalam font
+        -- Tab Label in GothamMedium font
         local tabLabel = Instance.new("TextLabel")
         tabLabel.Name = "TabLabel"
         tabLabel.Size = UDim2.new(1, -56, 1, 0)
         tabLabel.Position = UDim2.new(0, 32, 0, 0)
         tabLabel.BackgroundTransparency = 1
-        tabLabel.Font = Enum.Font.Kalam
+        tabLabel.Font = Enum.Font.GothamMedium
         tabLabel.Text = tabData.Name
-        tabLabel.TextColor3 = Color3.fromRGB(215, 205, 215)
+        tabLabel.TextColor3 = Color3.fromRGB(205, 195, 205)
         tabLabel.TextTransparency = 0
-        tabLabel.TextSize = 14
+        tabLabel.TextSize = 12.5
         tabLabel.TextXAlignment = Enum.TextXAlignment.Left
         tabLabel.Active = false
         tabLabel.ZIndex = 7

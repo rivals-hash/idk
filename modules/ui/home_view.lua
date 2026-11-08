@@ -131,9 +131,9 @@ function HomeView.create(parentContainer, dependencies)
         lbl.Size = UDim2.new(0, width, 0, 20)
         lbl.Position = UDim2.new(0, xPos, 0, yPos)
         lbl.BackgroundTransparency = 1
-        lbl.Font = Enum.Font.Kalam
+        lbl.Font = Enum.Font.GothamMedium
         lbl.Text = text
-        lbl.TextSize = 13
+        lbl.TextSize = 12
         lbl.TextColor3 = Color3.fromRGB(245, 240, 245)
         lbl.TextXAlignment = Enum.TextXAlignment.Left
         lbl.ZIndex = 7
@@ -169,49 +169,37 @@ function HomeView.create(parentContainer, dependencies)
     end
 
     ----------------------------------------------------------------------------
-    -- 3. CARD 3: BOTTOM MUSIC PLAYER CARD (music_player_red.png)
+    -- 3. CARD 3: REAL INTERACTIVE MUSIC PLAYER (100% Touch & Scrubber Supported)
     ----------------------------------------------------------------------------
-    -- Card 3 renders the pristine artwork from music_player_red.png:
-    -- Glowing album art, song title 'MONTAGEM BAILÃO (Phonk)', spectrum waveform,
-    -- timeline scrubber, and playback buttons.
-    local musicBgAsset = (AssetManager and (AssetManager.get("music_player_red.png") or AssetManager.get("music_player.png"))) or ""
-    local card3, bg3 = createCard("BottomMusicCard", 78, 3, musicBgAsset)
+    local card3 = Instance.new("Frame")
+    card3.Name = "BottomMusicCard"
+    card3.Size = UDim2.new(0, 406, 0, 78)
+    card3.LayoutOrder = 3
+    card3.BackgroundColor3 = Color3.fromRGB(18, 14, 20)
+    card3.BackgroundTransparency = 0.08
+    card3.BorderSizePixel = 0
+    card3.ClipsDescendants = true
+    card3.Parent = homeScroll
 
-    -- Bind images safely to ensure they are never blank or grey
+    local corner3 = Instance.new("UICorner")
+    corner3.CornerRadius = UDim.new(0, 10)
+    corner3.Parent = card3
+
+    local grad3 = Instance.new("UIGradient")
+    grad3.Color = ColorSequence.new(Color3.fromRGB(26, 18, 24), Color3.fromRGB(14, 11, 16))
+    grad3.Rotation = 45
+    grad3.Parent = card3
+
+    -- Bind top 2 cards background images safely
     if AssetManager and AssetManager.bindImage then
         if bg1 then AssetManager.bindImage(bg1, "header_profile_panel_red.png", "header_profile_panel.png") end
         if bg2 then AssetManager.bindImage(bg2, "stats_panel_red.png", "stats_panel_v2.png") end
-        if bg3 then AssetManager.bindImage(bg3, "music_player_red.png", "music_player.png") end
     end
 
-    -- Interactive Play/Pause Hitbox positioned right over the play button in music_player.png
-    local playHitbox = Instance.new("TextButton")
-    playHitbox.Name = "PlayPauseHitbox"
-    playHitbox.Size = UDim2.new(0, 36, 0, 36)
-    playHitbox.Position = UDim2.new(0.5, 42, 0.5, -2)
-    playHitbox.AnchorPoint = Vector2.new(0.5, 0.5)
-    playHitbox.BackgroundTransparency = 1
-    playHitbox.Text = ""
-    playHitbox.Active = true
-    playHitbox.ZIndex = 10
-    playHitbox.Parent = card3
-
-    local isPlaying = false
-    playHitbox.MouseButton1Click:Connect(function()
-        isPlaying = not isPlaying
-        if MusicEngine then
-            pcall(function()
-                if isPlaying then
-                    if MusicEngine.Play then MusicEngine:Play() end
-                else
-                    if MusicEngine.Pause then MusicEngine:Pause() end
-                end
-            end)
-        end
-        if Utils then
-            Utils.toast("Monody Music", isPlaying and "Playing: MONTAGEM BAILÃO" or "Music Paused", 1.5)
-        end
-    end)
+    -- Mount Real Native Interactive Music Player widget inside Card 3!
+    if MusicVisualizer and MusicVisualizer.create then
+        MusicVisualizer.create(card3, MusicEngine, Utils, AssetManager)
+    end
 
     return {
         ScrollFrame = homeScroll,
