@@ -67,6 +67,7 @@ local Core = {
         Fruit = { Z = false, X = false, C = false, V = false, F = false, TAP = false },
         Gun   = { Z = false, X = false },
     },
+    BlacklistedPlayers = {},
 
     -- internal hooks & lifecycle
     IsHooked = false,
@@ -183,12 +184,32 @@ function Core.isPlayerInSafeZone(player)
     return ok and inZone
 end
 
+function Core.setPlayerBlacklisted(playerOrName, isBlacklisted)
+    local name = (typeof(playerOrName) == "Instance" and playerOrName.Name) or tostring(playerOrName)
+    Core.BlacklistedPlayers = Core.BlacklistedPlayers or {}
+    Core.BlacklistedPlayers[name] = (isBlacklisted == true)
+    _G.MonodyBlacklistedPlayers = _G.MonodyBlacklistedPlayers or {}
+    _G.MonodyBlacklistedPlayers[name] = (isBlacklisted == true)
+end
+
+function Core.isPlayerExplicitlyBlacklisted(playerOrName)
+    local name = (typeof(playerOrName) == "Instance" and playerOrName.Name) or tostring(playerOrName)
+    if Core.BlacklistedPlayers and Core.BlacklistedPlayers[name] == true then
+        return true
+    end
+    if _G.MonodyBlacklistedPlayers and _G.MonodyBlacklistedPlayers[name] == true then
+        return true
+    end
+    if _G.DarlingBlacklistedPlayers and _G.DarlingBlacklistedPlayers[name] == true then
+        return true
+    end
+    return false
+end
+
 function Core.isPlayerBlacklisted(player)
     if not player then return false end
-    if _G.DarlingBlacklistedPlayers then
-        if _G.DarlingBlacklistedPlayers[player.UserId] == true or _G.DarlingBlacklistedPlayers[player.Name] == true then
-            return true
-        end
+    if Core.isPlayerExplicitlyBlacklisted(player) then
+        return true
     end
     if Core.PvPCheck and not Core.isPlayerPvPEnabled(player) then
         return true

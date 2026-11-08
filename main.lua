@@ -222,6 +222,6 @@ function BestHub:Unload()
 end
 
 -- 9. Welcome Toast
-Utils.toast("Monody - Premium", "Cargado correctamente | Por Darling", 3.5, AssetManager and AssetManager.get("avatar.png", "rbxassetid://93891873418133"))
+Utils.toast("Monody Premium", "Successfully loaded | By Darling", 3.0, AssetManager and AssetManager.get("avatar.png", "rbxassetid://93891873418133"))
 
 return BestHub

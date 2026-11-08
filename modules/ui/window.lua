@@ -149,7 +149,7 @@ function Window.create(dependencies)
         else
             warn("[Monody] TabViewsMod is nil or missing build function!")
             if Utils and Utils.toast then
-                Utils.toast("Monody Error", "TabViews no disponible", 4)
+                Utils.toast("Monody Error", "TabViews unavailable", 4)
             end
         end
 
@@ -189,14 +189,14 @@ function Window.create(dependencies)
         end,
         onMinimize = function()
             setWindowVisible(not isVisible)
-            Utils.toast("Monody", not isVisible and "Minimizado. Toca el icono para reabrir." or "Abierto.", 1.5)
+            Utils.toast("Monody", not isVisible and "Minimized. Tap icon to reopen." or "Opened.", 1.5)
         end,
         onClose = function()
             pcall(function() mainFrame.Visible = false end)
             if mobileToggle and mobileToggle.Parent then
                 pcall(function() mobileToggle.Visible = false end)
             end
-            Utils.toast("Monody", "Cerrado por completo.", 1.5)
+            Utils.toast("Monody", "Closed completely.", 1.5)
             task.delay(0.05, function()
                 if mobileToggle and mobileToggle.Parent then
                     pcall(function() mobileToggle:Destroy() end)
@@ -216,8 +216,11 @@ function Window.create(dependencies)
     mobileToggle = MobileToggleMod.create(ScreenGui, function()
         setWindowVisible(not isVisible)
     end, Utils)
-    if AssetManager then
-        pcall(function() mobileToggle.Image = AssetManager.get("avatar.png", mobileToggle.Image) end)
+    if AssetManager and mobileToggle then
+        local imgBtn = mobileToggle:IsA("ImageButton") and mobileToggle or mobileToggle:FindFirstChild("ToggleBtn")
+        if imgBtn then
+            pcall(function() imgBtn.Image = AssetManager.get("floating_avatar.png", AssetManager.get("avatar.png", imgBtn.Image)) end)
+        end
     end
 
     -- Toggle Hotkey for PC (Key F)

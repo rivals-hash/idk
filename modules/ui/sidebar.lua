@@ -1,9 +1,10 @@
 --[[
-    BestHub - modules/ui/sidebar.lua
-    Reworked modern navigation sidebar:
-    - Glowing active tab indicators & slick typography
-    - Window control buttons (Minimize, Close)
-    - Right quick-action utility strip (Gamepad, Music, Keyboard, Theme, Folder, Settings)
+    Monody Premium - modules/ui/sidebar.lua
+    Right Navigation Sidebar with exact visual alignment to navigation_panel.png:
+    - Glowing purple active tab capsule
+    - Smooth ScrollingFrame supporting infinite future tabs
+    - Window controls (Minimize, Close)
+    - Clean icons, Gotham typography, and chevron indicators
 ]]
 
 local Sidebar = {}
@@ -17,52 +18,54 @@ function Sidebar.create(parentGui, options)
     local onMinimize = options.onMinimize or function() end
     local onClose = options.onClose or function() end
     local Utils = options.Utils
+    local AssetManager = options.AssetManager
 
     local sidebarFrame = Instance.new("Frame")
     sidebarFrame.Name = "SidebarFrame"
-    sidebarFrame.Size = UDim2.new(0, 154, 0, 312)
+    sidebarFrame.Size = UDim2.new(0, 154, 0, 316)
     sidebarFrame.Position = UDim2.new(1, -154, 0, 0)
     sidebarFrame.BackgroundTransparency = 1
     sidebarFrame.Parent = parentGui
 
-    -- Background Image with smoky texture
+    -- Background Image with Torii Gate, Purple Moon & Cherry Blossoms
     local bgImg = Instance.new("ImageLabel")
     bgImg.Name = "SidebarBackground"
     bgImg.Size = UDim2.new(1, 0, 1, 0)
-    bgImg.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
-    bgImg.BackgroundTransparency = 0.12
-    bgImg.Image = (options.AssetManager and options.AssetManager.get("sidebar_bg.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
+    bgImg.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
+    bgImg.BackgroundTransparency = 0.05
+    bgImg.Image = (AssetManager and AssetManager.get("navigation_panel.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
     bgImg.ScaleType = Enum.ScaleType.Stretch
     bgImg.Parent = sidebarFrame
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
+    corner.CornerRadius = UDim.new(0, 10)
     corner.Parent = bgImg
 
+    -- Luminous Purple Neon Rim
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(65, 65, 80)
-    stroke.Thickness = 1
-    stroke.Transparency = 0.5
+    stroke.Color = Color3.fromRGB(145, 90, 225)
+    stroke.Thickness = 1.2
+    stroke.Transparency = 0.35
     stroke.Parent = bgImg
 
-    -- Top Window Controls: Minimize (-) and Close (X) with high ZIndex & large touch hitboxes
+    -- Top Window Controls: Minimize (-) and Close (X)
     local controlsFrame = Instance.new("Frame")
     controlsFrame.Name = "WindowControls"
-    controlsFrame.Size = UDim2.new(0, 68, 0, 28)
-    controlsFrame.Position = UDim2.new(1, -72, 0, 4)
+    controlsFrame.Size = UDim2.new(0, 64, 0, 26)
+    controlsFrame.Position = UDim2.new(1, -68, 0, 6)
     controlsFrame.BackgroundTransparency = 1
     controlsFrame.ZIndex = 50
     controlsFrame.Parent = sidebarFrame
 
     local minBtn = Instance.new("TextButton")
     minBtn.Name = "MinimizeButton"
-    minBtn.Size = UDim2.new(0, 32, 0, 28)
+    minBtn.Size = UDim2.new(0, 28, 0, 24)
     minBtn.Position = UDim2.new(0, 0, 0, 0)
     minBtn.BackgroundTransparency = 1
     minBtn.Text = "-"
     minBtn.Font = Enum.Font.GothamBold
-    minBtn.TextSize = 22
-    minBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
+    minBtn.TextSize = 20
+    minBtn.TextColor3 = Color3.fromRGB(220, 220, 235)
     minBtn.ZIndex = 51
     minBtn.AutoButtonColor = false
     minBtn.Active = true
@@ -70,13 +73,13 @@ function Sidebar.create(parentGui, options)
 
     local closeBtn = Instance.new("TextButton")
     closeBtn.Name = "CloseButton"
-    closeBtn.Size = UDim2.new(0, 32, 0, 28)
-    closeBtn.Position = UDim2.new(1, -32, 0, 0)
+    closeBtn.Size = UDim2.new(0, 28, 0, 24)
+    closeBtn.Position = UDim2.new(1, -28, 0, 0)
     closeBtn.BackgroundTransparency = 1
     closeBtn.Text = "X"
     closeBtn.Font = Enum.Font.GothamBold
-    closeBtn.TextSize = 16
-    closeBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+    closeBtn.TextSize = 14
+    closeBtn.TextColor3 = Color3.fromRGB(255, 75, 75)
     closeBtn.ZIndex = 51
     closeBtn.AutoButtonColor = false
     closeBtn.Active = true
@@ -90,8 +93,8 @@ function Sidebar.create(parentGui, options)
             TweenService:Create(btn, TweenInfo.new(0.12), { TextColor3 = normColor }):Play()
         end)
     end
-    setupIconBtn(minBtn, Color3.fromRGB(255, 255, 255), Color3.fromRGB(220, 220, 220))
-    setupIconBtn(closeBtn, Color3.fromRGB(255, 40, 40), Color3.fromRGB(255, 80, 80))
+    setupIconBtn(minBtn, Color3.fromRGB(255, 255, 255), Color3.fromRGB(220, 220, 235))
+    setupIconBtn(closeBtn, Color3.fromRGB(255, 30, 30), Color3.fromRGB(255, 75, 75))
 
     local lastMinTick = 0
     local function handleMin()
@@ -114,11 +117,11 @@ function Sidebar.create(parentGui, options)
     closeBtn.Activated:Connect(handleClose)
     closeBtn.MouseButton1Click:Connect(handleClose)
 
-    -- Left Navigation Tabs List (ScrollingFrame supporting infinite tabs cleanly)
+    -- Navigation Tabs List (ScrollingFrame supporting infinite tabs cleanly)
     local tabsListFrame = Instance.new("ScrollingFrame")
     tabsListFrame.Name = "TabsListFrame"
-    tabsListFrame.Size = UDim2.new(0, 84, 1, -14)
-    tabsListFrame.Position = UDim2.new(0, 6, 0, 7)
+    tabsListFrame.Size = UDim2.new(1, -16, 1, -38)
+    tabsListFrame.Position = UDim2.new(0, 8, 0, 32)
     tabsListFrame.BackgroundTransparency = 1
     tabsListFrame.BorderSizePixel = 0
     tabsListFrame.ScrollBarThickness = 0
@@ -133,9 +136,9 @@ function Sidebar.create(parentGui, options)
     tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
     tabsLayout.Parent = tabsListFrame
 
-    -- Tab definition data
+    -- Tab definition data with exact icons from reference screenshot
     local tabDefinitions = {
-        { Id = "Home", Name = "Home", Icon = "rbxthumb://type=Asset&id=98755624629571&w=420&h=420" },
+        { Id = "Home", Name = "Home", Icon = "rbxassetid://10723407389" },
         { Id = "Aimbot", Name = "Aimbot", Icon = "rbxassetid://134242818164054" },
         { Id = "Combat", Name = "Combat", Icon = "rbxassetid://81872698913435" },
         { Id = "Players", Name = "Players", Icon = "rbxassetid://115398113982385" },
@@ -151,33 +154,42 @@ function Sidebar.create(parentGui, options)
     local function refreshTabStates()
         for id, btnData in pairs(tabButtons) do
             local isActive = (id == activeTabId)
-            local targetBgTrans = isActive and 0.88 or 1
-            local targetStrokeTrans = isActive and 0.35 or 1
-            local targetTextColor = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(195, 195, 210)
-            local targetIconColor = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 195)
+            local targetBg = isActive and Color3.fromRGB(115, 55, 185) or Color3.fromRGB(20, 16, 28)
+            local targetBgTrans = isActive and 0.12 or 1
+            local targetStrokeColor = isActive and Color3.fromRGB(195, 125, 255) or Color3.fromRGB(60, 45, 80)
+            local targetStrokeTrans = isActive and 0.25 or 1
+            local targetTextColor = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(220, 215, 235)
+            local targetIconColor = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 190, 225)
+            local targetChevronColor = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 145, 185)
 
             TweenService:Create(btnData.Button, TweenInfo.new(0.15), {
+                BackgroundColor3 = targetBg,
                 BackgroundTransparency = targetBgTrans
             }):Play()
             TweenService:Create(btnData.Stroke, TweenInfo.new(0.15), {
+                Color = targetStrokeColor,
                 Transparency = targetStrokeTrans
             }):Play()
             TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
                 TextColor3 = targetTextColor
             }):Play()
+            btnData.Label.Font = isActive and Enum.Font.GothamBold or Enum.Font.GothamMedium
             TweenService:Create(btnData.Icon, TweenInfo.new(0.15), {
                 ImageColor3 = targetIconColor
+            }):Play()
+            TweenService:Create(btnData.Chevron, TweenInfo.new(0.15), {
+                TextColor3 = targetChevronColor
             }):Play()
         end
     end
 
-    -- Create Tab Buttons
+    -- Create Tab Buttons matching reference
     for i, tabData in ipairs(tabDefinitions) do
         local tabBtn = Instance.new("TextButton")
         tabBtn.Name = "Tab_" .. tabData.Id
         tabBtn.Size = UDim2.new(1, 0, 0, 31)
         tabBtn.LayoutOrder = i
-        tabBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        tabBtn.BackgroundColor3 = Color3.fromRGB(20, 16, 28)
         tabBtn.BackgroundTransparency = 1
         tabBtn.BorderSizePixel = 0
         tabBtn.Text = ""
@@ -187,23 +199,23 @@ function Sidebar.create(parentGui, options)
         tabBtn.Parent = tabsListFrame
 
         local tabCorner = Instance.new("UICorner")
-        tabCorner.CornerRadius = UDim.new(0, 6)
+        tabCorner.CornerRadius = UDim.new(0, 8)
         tabCorner.Parent = tabBtn
 
         local tabStroke = Instance.new("UIStroke")
-        tabStroke.Color = Color3.fromRGB(255, 255, 255)
-        tabStroke.Thickness = 1
+        tabStroke.Color = Color3.fromRGB(195, 125, 255)
+        tabStroke.Thickness = 1.2
         tabStroke.Transparency = 1
         tabStroke.Parent = tabBtn
 
-        -- Tab Icon
+        -- Tab Icon on Left
         local tabIcon = Instance.new("ImageLabel")
         tabIcon.Name = "TabIcon"
         tabIcon.Size = UDim2.new(0, 16, 0, 16)
-        tabIcon.Position = UDim2.new(0, 6, 0.5, -8)
+        tabIcon.Position = UDim2.new(0, 10, 0.5, -8)
         tabIcon.BackgroundTransparency = 1
         tabIcon.Image = tabData.Icon
-        tabIcon.ImageColor3 = Color3.fromRGB(180, 180, 195)
+        tabIcon.ImageColor3 = Color3.fromRGB(200, 190, 225)
         tabIcon.Active = false
         tabIcon.ZIndex = 7
         tabIcon.Parent = tabBtn
@@ -211,38 +223,55 @@ function Sidebar.create(parentGui, options)
         -- Tab Label in Gotham font
         local tabLabel = Instance.new("TextLabel")
         tabLabel.Name = "TabLabel"
-        tabLabel.Size = UDim2.new(1, -26, 1, 0)
-        tabLabel.Position = UDim2.new(0, 26, 0, 0)
+        tabLabel.Size = UDim2.new(1, -56, 1, 0)
+        tabLabel.Position = UDim2.new(0, 32, 0, 0)
         tabLabel.BackgroundTransparency = 1
         tabLabel.Font = Enum.Font.GothamMedium
         tabLabel.Text = tabData.Name
-        tabLabel.TextColor3 = Color3.fromRGB(195, 195, 210)
+        tabLabel.TextColor3 = Color3.fromRGB(220, 215, 235)
         tabLabel.TextSize = 12
         tabLabel.TextXAlignment = Enum.TextXAlignment.Left
         tabLabel.Active = false
         tabLabel.ZIndex = 7
         tabLabel.Parent = tabBtn
 
+        -- Chevron ">" on Right
+        local chevron = Instance.new("TextLabel")
+        chevron.Name = "Chevron"
+        chevron.Size = UDim2.new(0, 14, 1, 0)
+        chevron.Position = UDim2.new(1, -18, 0, 0)
+        chevron.BackgroundTransparency = 1
+        chevron.Font = Enum.Font.GothamBold
+        chevron.Text = ">"
+        chevron.TextSize = 11
+        chevron.TextColor3 = Color3.fromRGB(160, 145, 185)
+        chevron.Active = false
+        chevron.ZIndex = 7
+        chevron.Parent = tabBtn
+
         tabButtons[tabData.Id] = {
             Button = tabBtn,
             Stroke = tabStroke,
             Label = tabLabel,
-            Icon = tabIcon
+            Icon = tabIcon,
+            Chevron = chevron
         }
 
         tabBtn.MouseEnter:Connect(function()
             if activeTabId ~= tabData.Id then
-                TweenService:Create(tabBtn, TweenInfo.new(0.12), { BackgroundTransparency = 0.94 }):Play()
+                TweenService:Create(tabBtn, TweenInfo.new(0.12), { BackgroundTransparency = 0.6 }):Play()
                 TweenService:Create(tabLabel, TweenInfo.new(0.12), { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
                 TweenService:Create(tabIcon, TweenInfo.new(0.12), { ImageColor3 = Color3.fromRGB(255, 255, 255) }):Play()
+                TweenService:Create(chevron, TweenInfo.new(0.12), { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
             end
         end)
 
         tabBtn.MouseLeave:Connect(function()
             if activeTabId ~= tabData.Id then
                 TweenService:Create(tabBtn, TweenInfo.new(0.12), { BackgroundTransparency = 1 }):Play()
-                TweenService:Create(tabLabel, TweenInfo.new(0.12), { TextColor3 = Color3.fromRGB(195, 195, 210) }):Play()
-                TweenService:Create(tabIcon, TweenInfo.new(0.12), { ImageColor3 = Color3.fromRGB(180, 180, 195) }):Play()
+                TweenService:Create(tabLabel, TweenInfo.new(0.12), { TextColor3 = Color3.fromRGB(220, 215, 235) }):Play()
+                TweenService:Create(tabIcon, TweenInfo.new(0.12), { ImageColor3 = Color3.fromRGB(200, 190, 225) }):Play()
+                TweenService:Create(chevron, TweenInfo.new(0.12), { TextColor3 = Color3.fromRGB(160, 145, 185) }):Play()
             end
         end)
 
@@ -253,63 +282,6 @@ function Sidebar.create(parentGui, options)
         end
         tabBtn.Activated:Connect(onActivate)
         tabBtn.MouseButton1Click:Connect(onActivate)
-    end
-
-    -- Right Action Strip (Aligned with reference screenshot)
-    local actionStrip = Instance.new("Frame")
-    actionStrip.Name = "ActionStrip"
-    actionStrip.Size = UDim2.new(0, 32, 1, 0)
-    actionStrip.Position = UDim2.new(1, -34, 0, 0)
-    actionStrip.BackgroundTransparency = 1
-    actionStrip.Parent = sidebarFrame
-
-    -- Action Buttons aligned with tabs (Gamepad at Aimbot, Music at Combat, etc.)
-    local actionDefinitions = {
-        { Id = "Gamepad", Icon = "rbxassetid://92483947987410", Action = "Mobile Controls HUD", Y = 46 },
-        { Id = "Music", Icon = "rbxassetid://113343203848535", Action = "Music Player", Y = 82 },
-        { Id = "Keyboard", Icon = "rbxassetid://121474456068237", Action = "Keybinds", Y = 118 },
-        { Id = "Palette", Icon = "rbxassetid://86350350950064", Action = "Themes", Y = 154 },
-        { Id = "Folder", Icon = "rbxassetid://85299519462846", Action = "Configs", Y = 190 },
-        { Id = "Settings", Icon = "rbxassetid://80758916183665", Action = "Settings", Y = 226 }
-    }
-
-    for _, act in ipairs(actionDefinitions) do
-        local actBtn = Instance.new("ImageButton")
-        actBtn.Name = "Action_" .. act.Id
-        actBtn.Size = UDim2.new(0, 20, 0, 20)
-        actBtn.Position = UDim2.new(0.5, -10, 0, act.Y)
-        actBtn.BackgroundTransparency = 1
-        actBtn.Image = act.Icon
-        actBtn.ImageColor3 = Color3.fromRGB(180, 180, 195)
-        actBtn.AutoButtonColor = false
-        actBtn.Parent = actionStrip
-
-        actBtn.MouseEnter:Connect(function()
-            TweenService:Create(actBtn, TweenInfo.new(0.12), {
-                ImageColor3 = Color3.fromRGB(255, 255, 255),
-                Size = UDim2.new(0, 22, 0, 22),
-                Position = UDim2.new(0.5, -11, 0, act.Y - 1)
-            }):Play()
-        end)
-        actBtn.MouseLeave:Connect(function()
-            TweenService:Create(actBtn, TweenInfo.new(0.12), {
-                ImageColor3 = Color3.fromRGB(180, 180, 195),
-                Size = UDim2.new(0, 20, 0, 20),
-                Position = UDim2.new(0.5, -10, 0, act.Y)
-            }):Play()
-        end)
-
-        local function onAct()
-            if act.Id == "Settings" then
-                activeTabId = "Settings"
-                refreshTabStates()
-                pcall(onTabSelected, "Settings")
-            elseif Utils then
-                Utils.toast("Monody", act.Action, 2, act.Icon)
-            end
-        end
-        actBtn.Activated:Connect(onAct)
-        actBtn.MouseButton1Click:Connect(onAct)
     end
 
     -- Initial state
