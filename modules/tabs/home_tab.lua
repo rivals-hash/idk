@@ -80,11 +80,6 @@ local cardCorner = Instance.new("UICorner")
 cardCorner.CornerRadius = UDim.new(0, 10)
 cardCorner.Parent = profileCard
 
-local cardStroke = Instance.new("UIStroke")
-cardStroke.Color = Color3.fromRGB(45, 42, 60)
-cardStroke.Thickness = 1
-cardStroke.Parent = profileCard
-
 local avatarBox = Instance.new("Frame")
 avatarBox.Name = "AvatarBox"
 avatarBox.Size = UDim2.new(0, 60, 0, 60)

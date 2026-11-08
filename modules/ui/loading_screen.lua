@@ -1,6 +1,6 @@
 --[[
-    Darling Hub - Real Loading Screen Engine
-    High-performance, non-blocking splash loader with progress tweening.
+    Darling Hub - Real Loading Screen Engine (Borderless Minimalist Edition)
+    High-performance, non-blocking splash loader with zero borders.
 ]]
 
 local TweenService = game:GetService("TweenService")
@@ -53,103 +53,95 @@ function LoadingScreen.show(logoAsset)
         pcall(syn.protect_gui, gui)
     end
 
-    -- Dark backdrop with subtle blur feel
+    -- Dark sleek backdrop (Zero borders)
     local backdrop = Instance.new("Frame")
     backdrop.Name = "Backdrop"
     backdrop.Size = UDim2.new(1, 0, 1, 0)
-    backdrop.BackgroundColor3 = Color3.fromRGB(8, 8, 12)
-    backdrop.BackgroundTransparency = 0.35
+    backdrop.BackgroundColor3 = Color3.fromRGB(6, 6, 9)
+    backdrop.BackgroundTransparency = 0.45
     backdrop.BorderSizePixel = 0
     backdrop.Parent = gui
 
-    -- Central Acrylic Container
+    -- Central Container (Zero borders)
     local card = Instance.new("CanvasGroup")
     card.Name = "Card"
-    card.Size = UDim2.new(0, 380, 0, 240)
+    card.Size = UDim2.new(0, 360, 0, 220)
     card.AnchorPoint = Vector2.new(0.5, 0.5)
     card.Position = UDim2.new(0.5, 0, 0.5, 0)
-    card.BackgroundColor3 = Color3.fromRGB(16, 14, 20)
-    card.BackgroundTransparency = 0.08
+    card.BackgroundColor3 = Color3.fromRGB(14, 13, 18)
+    card.BackgroundTransparency = 0.04
     card.BorderSizePixel = 0
     card.GroupTransparency = 1
     card.Parent = gui
 
     local cardCorner = Instance.new("UICorner")
-    cardCorner.CornerRadius = UDim.new(0, 16)
+    cardCorner.CornerRadius = UDim.new(0, 18)
     cardCorner.Parent = card
 
-    local cardStroke = Instance.new("UIStroke")
-    cardStroke.Color = Color3.fromRGB(220, 45, 65)
-    cardStroke.Thickness = 1.2
-    cardStroke.Transparency = 0.4
-    cardStroke.Parent = card
-
-    -- Logo Frame & Glow
+    -- Logo Frame (Zero borders)
     local logoContainer = Instance.new("Frame")
     logoContainer.Name = "LogoContainer"
-    logoContainer.Size = UDim2.new(0, 74, 0, 74)
+    logoContainer.Size = UDim2.new(0, 72, 0, 72)
     logoContainer.AnchorPoint = Vector2.new(0.5, 0)
     logoContainer.Position = UDim2.new(0.5, 0, 0, 22)
-    logoContainer.BackgroundColor3 = Color3.fromRGB(25, 20, 28)
+    logoContainer.BackgroundColor3 = Color3.fromRGB(22, 20, 28)
     logoContainer.BorderSizePixel = 0
     logoContainer.Parent = card
 
     local logoCorner = Instance.new("UICorner")
-    logoCorner.CornerRadius = UDim.new(0, 14)
+    logoCorner.CornerRadius = UDim.new(0, 16)
     logoCorner.Parent = logoContainer
-
-    local logoStroke = Instance.new("UIStroke")
-    logoStroke.Color = Color3.fromRGB(255, 65, 85)
-    logoStroke.Thickness = 1.5
-    logoStroke.Parent = logoContainer
 
     local logo = Instance.new("ImageLabel")
     logo.Name = "Logo"
-    logo.Size = UDim2.new(1, -6, 1, -6)
+    logo.Size = UDim2.new(1, 0, 1, 0)
     logo.AnchorPoint = Vector2.new(0.5, 0.5)
     logo.Position = UDim2.new(0.5, 0, 0.5, 0)
     logo.BackgroundTransparency = 1
+    logo.BorderSizePixel = 0
     logo.Image = logoAsset or "rbxassetid://109687263098821"
     logo.ScaleType = Enum.ScaleType.Fit
     logo.Parent = logoContainer
 
     local innerLogoCorner = Instance.new("UICorner")
-    innerLogoCorner.CornerRadius = UDim.new(0, 10)
+    innerLogoCorner.CornerRadius = UDim.new(0, 16)
     innerLogoCorner.Parent = logo
 
     -- Hub Title
     local title = Instance.new("TextLabel")
     title.Name = "Title"
-    title.Size = UDim2.new(1, -40, 0, 26)
+    title.Size = UDim2.new(1, -40, 0, 24)
     title.AnchorPoint = Vector2.new(0.5, 0)
-    title.Position = UDim2.new(0.5, 0, 0, 104)
+    title.Position = UDim2.new(0.5, 0, 0, 102)
     title.BackgroundTransparency = 1
+    title.BorderSizePixel = 0
     title.Font = Enum.Font.GothamBold
     title.Text = "Darling Hub"
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.TextSize = 20
+    title.TextSize = 19
     title.Parent = card
 
     -- Status Text
     local status = Instance.new("TextLabel")
     status.Name = "Status"
-    status.Size = UDim2.new(1, -40, 0, 18)
+    status.Size = UDim2.new(1, -40, 0, 16)
     status.AnchorPoint = Vector2.new(0.5, 0)
-    status.Position = UDim2.new(0.5, 0, 0, 134)
+    status.Position = UDim2.new(0.5, 0, 0, 128)
     status.BackgroundTransparency = 1
+    status.BorderSizePixel = 0
     status.Font = Enum.Font.GothamMedium
     status.Text = "Iniciando sistema..."
-    status.TextColor3 = Color3.fromRGB(190, 185, 200)
+    status.TextColor3 = Color3.fromRGB(165, 160, 175)
     status.TextSize = 12
     status.Parent = card
 
-    -- Progress Track
+    -- Progress Track (Minimalist 5px height, Zero borders)
     local track = Instance.new("Frame")
     track.Name = "Track"
-    track.Size = UDim2.new(1, -60, 0, 8)
+    track.Size = UDim2.new(1, -70, 0, 5)
     track.AnchorPoint = Vector2.new(0.5, 0)
-    track.Position = UDim2.new(0.5, 0, 0, 162)
-    track.BackgroundColor3 = Color3.fromRGB(30, 26, 36)
+    track.Position = UDim2.new(0.5, 0, 0, 154)
+    track.BackgroundColor3 = Color3.fromRGB(26, 24, 32)
     track.BorderSizePixel = 0
     track.Parent = card
 
@@ -157,11 +149,11 @@ function LoadingScreen.show(logoAsset)
     trackCorner.CornerRadius = UDim.new(1, 0)
     trackCorner.Parent = track
 
-    -- Fill Bar
+    -- Fill Bar (Zero borders)
     local fill = Instance.new("Frame")
     fill.Name = "Fill"
     fill.Size = UDim2.new(0, 0, 1, 0)
-    fill.BackgroundColor3 = Color3.fromRGB(235, 50, 75)
+    fill.BackgroundColor3 = Color3.fromRGB(235, 45, 65)
     fill.BorderSizePixel = 0
     fill.Parent = track
 
@@ -171,8 +163,8 @@ function LoadingScreen.show(logoAsset)
 
     local fillGradient = Instance.new("UIGradient")
     fillGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 80, 105)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(215, 30, 60)),
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 75, 95)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(215, 30, 55)),
     })
     fillGradient.Parent = fill
 
@@ -181,11 +173,12 @@ function LoadingScreen.show(logoAsset)
     percent.Name = "Percent"
     percent.Size = UDim2.new(1, -40, 0, 16)
     percent.AnchorPoint = Vector2.new(0.5, 0)
-    percent.Position = UDim2.new(0.5, 0, 0, 180)
+    percent.Position = UDim2.new(0.5, 0, 0, 168)
     percent.BackgroundTransparency = 1
+    percent.BorderSizePixel = 0
     percent.Font = Enum.Font.GothamBold
     percent.Text = "0%"
-    percent.TextColor3 = Color3.fromRGB(255, 90, 115)
+    percent.TextColor3 = Color3.fromRGB(240, 75, 95)
     percent.TextSize = 12
     percent.Parent = card
 
@@ -198,7 +191,6 @@ function LoadingScreen.show(logoAsset)
     LoadingScreen.PercentLabel = percent
     LoadingScreen.LogoImage = logo
 
-    -- Smooth entrance animation
     TweenService:Create(card, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         GroupTransparency = 0
     }):Play()

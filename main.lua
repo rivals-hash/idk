@@ -970,18 +970,10 @@ local function createGuaranteedUIToggle()
 
     local activeThemeName = currentSelectedTheme or (Window and Window.Theme) or "Normal / Dark"
     local initialThemeCfg = resolveThemeColor(activeThemeName)
-
-    local stroke = Instance.new("UIStroke")
-    stroke.Name = "Stroke"
-    stroke.Thickness = 2.0
-    stroke.Transparency = 0
-    stroke.Color = initialThemeCfg.Stroke
-    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    stroke.Parent = btnFrame
     btnFrame.BackgroundColor3 = initialThemeCfg.Bg
 
     floatingToggleBtn = btnFrame
-    floatingToggleStroke = stroke
+    floatingToggleStroke = nil
 
     local icon = Instance.new("ImageLabel")
     icon.Name = "Icon"
@@ -1803,10 +1795,6 @@ local function launchHub(mode)
             end
         end)
 
-        if isFast then
-            applyMinimumGraphics()
-        end
-
         local totalTabs = #manifestToLoad
         for idx, item in ipairs(manifestToLoad) do
             local tabKey, relPath = item[1], item[2]
@@ -1877,72 +1865,18 @@ local function launchHub(mode)
         DarlingHub.IsLoadingConfig = false
         sendTelemetryAfterLaunch()
 
-        if isFast then
-            -- Auto-activate Aimbot with FFlags
-            pcall(function()
-                local tweaks = DarlingHub:Require("modules/utility/client_tweaks.lua")
-                if tweaks and tweaks.setFFlags1 then
-                    tweaks.setFFlags1(true)
-                end
-                DarlingHub.FeatureStates["FFlags 1 (FPS Booster)"] = true
-                if DarlingHub.UIElements and DarlingHub.UIElements["FFlags 1 (FPS Booster)"] and DarlingHub.UIElements["FFlags 1 (FPS Booster)"].Set then
-                    DarlingHub.UIElements["FFlags 1 (FPS Booster)"]:Set(true)
-                end
-
-                DarlingHub:Toggle("modules/combat/player_aimbot.lua", true)
-                DarlingHub.FeatureStates["Player Silent Aim"] = true
-                if DarlingHub.UIElements and DarlingHub.UIElements["Player Silent Aim"] and DarlingHub.UIElements["Player Silent Aim"].Set then
-                    DarlingHub.UIElements["Player Silent Aim"]:Set(true)
-                end
-            end)
-
-            -- Auto-activate Auto Bounty
-            task.delay(1.0, function()
-                pcall(function()
-                    local bMod = DarlingHub:Require("modules/combat/auto_bounty.lua")
-                    if bMod and not bMod.Enabled then
-                        bMod.enable()
-                        if DarlingHub.FeatureStates then
-                            DarlingHub.FeatureStates["AutoBounty"] = true
-                        end
-                        if DarlingHub.UIElements and DarlingHub.UIElements["AutoBounty"] and DarlingHub.UIElements["AutoBounty"].Set then
-                            DarlingHub.UIElements["AutoBounty"]:Set(true)
-                        end
-                    end
-                end)
-            end)
-
-            WindUI:Notify({
-                Title = "Auto Bounty Mode",
-                Content = "Fast Auto Bounty active. Running with minimal overhead.",
-                Duration = 3.5,
-                Icon = darlingIcon
-            })
-        else
-            pcall(function()
-                local tweaks = DarlingHub:Require("modules/utility/client_tweaks.lua")
-                if tweaks and tweaks.setFFlags1 then
-                    tweaks.setFFlags1(false)
-                end
-                DarlingHub.FeatureStates["FFlags 1 (FPS Booster)"] = false
-                if DarlingHub.UIElements and DarlingHub.UIElements["FFlags 1 (FPS Booster)"] and DarlingHub.UIElements["FFlags 1 (FPS Booster)"].Set then
-                    DarlingHub.UIElements["FFlags 1 (FPS Booster)"]:Set(false)
-                end
-            end)
-
-            local welcomeTitle = tr("Darling Hub", currentLanguage)
-            local welcomeContent = tr("HubLoadedSuccess", currentLanguage)
-            if not welcomeContent or welcomeContent == "HubLoadedSuccess" then
-                welcomeContent = "Darling Hub loaded successfully."
-            end
-
-            WindUI:Notify({
-                Title = welcomeTitle,
-                Content = welcomeContent,
-                Duration = 3.5,
-                Icon = darlingIcon
-            })
+        local welcomeTitle = tr("Darling Hub", currentLanguage)
+        local welcomeContent = tr("HubLoadedSuccess", currentLanguage)
+        if not welcomeContent or welcomeContent == "HubLoadedSuccess" then
+            welcomeContent = "Welcome to Darling Hub - All features ready."
         end
+
+        WindUI:Notify({
+            Title = welcomeTitle,
+            Content = welcomeContent,
+            Duration = 3,
+            Icon = darlingIcon
+        })
     end)
 end
 
