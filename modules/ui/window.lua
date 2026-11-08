@@ -21,6 +21,29 @@ function Window.create(dependencies)
     local AssetManager = dependencies.AssetManager
     local cardBgAsset = AssetManager and AssetManager.get("card_bg.png", "rbxassetid://139820186687064") or "rbxassetid://139820186687064"
 
+    -- Destroy any previous existing instance of Monody_ScreenGui or Mobile Toggle across all parent targets
+    pcall(function()
+        local parents = {}
+        if gethui then
+            local ok, h = pcall(gethui)
+            if ok and h and typeof(h) == "Instance" then table.insert(parents, h) end
+        end
+        local CoreGui = game:GetService("CoreGui")
+        if CoreGui then table.insert(parents, CoreGui) end
+        local Players = game:GetService("Players")
+        if Players.LocalPlayer then
+            local pg = Players.LocalPlayer:FindFirstChildOfClass("PlayerGui") or Players.LocalPlayer:FindFirstChild("PlayerGui")
+            if pg then table.insert(parents, pg) end
+        end
+        for _, p in ipairs(parents) do
+            for _, child in ipairs(p:GetChildren()) do
+                if child.Name == "Monody_ScreenGui" or child.Name == "Monody_MobileToggleContainer" then
+                    pcall(function() child:Destroy() end)
+                end
+            end
+        end
+    end)
+
     -- Root ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "Monody_ScreenGui"

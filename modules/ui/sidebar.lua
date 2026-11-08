@@ -62,10 +62,10 @@ function Sidebar.create(parentGui, options)
     minBtn.Size = UDim2.new(0, 24, 0, 20)
     minBtn.Position = UDim2.new(0, 0, 0, 2)
     minBtn.BackgroundColor3 = Color3.fromRGB(30, 22, 44)
-    minBtn.BackgroundTransparency = 0.4
+    minBtn.BackgroundTransparency = 1
     minBtn.Text = "—"
     minBtn.Font = Enum.Font.GothamBold
-    minBtn.TextSize = 12
+    minBtn.TextSize = 13
     minBtn.TextColor3 = Color3.fromRGB(220, 210, 240)
     minBtn.ZIndex = 51
     minBtn.AutoButtonColor = false
@@ -79,7 +79,7 @@ function Sidebar.create(parentGui, options)
     local minStroke = Instance.new("UIStroke")
     minStroke.Color = Color3.fromRGB(140, 90, 210)
     minStroke.Thickness = 1
-    minStroke.Transparency = 0.4
+    minStroke.Transparency = 1
     minStroke.Parent = minBtn
 
     local closeBtn = Instance.new("TextButton")
@@ -87,10 +87,10 @@ function Sidebar.create(parentGui, options)
     closeBtn.Size = UDim2.new(0, 24, 0, 20)
     closeBtn.Position = UDim2.new(1, -24, 0, 2)
     closeBtn.BackgroundColor3 = Color3.fromRGB(48, 18, 28)
-    closeBtn.BackgroundTransparency = 0.35
+    closeBtn.BackgroundTransparency = 1
     closeBtn.Text = "✕"
     closeBtn.Font = Enum.Font.GothamBold
-    closeBtn.TextSize = 12
+    closeBtn.TextSize = 13
     closeBtn.TextColor3 = Color3.fromRGB(255, 95, 115)
     closeBtn.ZIndex = 51
     closeBtn.AutoButtonColor = false
@@ -104,25 +104,25 @@ function Sidebar.create(parentGui, options)
     local closeStroke = Instance.new("UIStroke")
     closeStroke.Color = Color3.fromRGB(255, 75, 95)
     closeStroke.Thickness = 1
-    closeStroke.Transparency = 0.35
+    closeStroke.Transparency = 1
     closeStroke.Parent = closeBtn
 
-    local function setupIconBtn(btn, stroke, hoverBg, normBg, hoverText, normText)
+    local function setupIconBtn(btn, stroke, hoverBg, hoverText, normText)
         btn.MouseEnter:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = hoverBg, TextColor3 = hoverText }):Play()
+            TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundTransparency = 0.35, BackgroundColor3 = hoverBg, TextColor3 = hoverText }):Play()
             if stroke then
-                TweenService:Create(stroke, TweenInfo.new(0.12), { Transparency = 0.1 }):Play()
+                TweenService:Create(stroke, TweenInfo.new(0.12), { Transparency = 0.2 }):Play()
             end
         end)
         btn.MouseLeave:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = normBg, TextColor3 = normText }):Play()
+            TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundTransparency = 1, TextColor3 = normText }):Play()
             if stroke then
-                TweenService:Create(stroke, TweenInfo.new(0.12), { Transparency = 0.4 }):Play()
+                TweenService:Create(stroke, TweenInfo.new(0.12), { Transparency = 1 }):Play()
             end
         end)
     end
-    setupIconBtn(minBtn, minStroke, Color3.fromRGB(60, 40, 90), Color3.fromRGB(30, 22, 44), Color3.fromRGB(255, 255, 255), Color3.fromRGB(220, 210, 240))
-    setupIconBtn(closeBtn, closeStroke, Color3.fromRGB(90, 25, 45), Color3.fromRGB(48, 18, 28), Color3.fromRGB(255, 140, 160), Color3.fromRGB(255, 95, 115))
+    setupIconBtn(minBtn, minStroke, Color3.fromRGB(60, 40, 90), Color3.fromRGB(255, 255, 255), Color3.fromRGB(220, 210, 240))
+    setupIconBtn(closeBtn, closeStroke, Color3.fromRGB(90, 25, 45), Color3.fromRGB(255, 140, 160), Color3.fromRGB(255, 95, 115))
 
     local lastMinTick = 0
     local function handleMin()
@@ -228,30 +228,8 @@ function Sidebar.create(parentGui, options)
                         TextColor3 = Color3.fromRGB(255, 255, 255),
                         TextTransparency = 0
                     }):Play()
-                elseif id == "Home" then
-                    -- Inactive Home: Dim the baked purple pill with a dark capsule and show inactive lavender text
-                    TweenService:Create(btnData.Button, TweenInfo.new(0.15), {
-                        BackgroundColor3 = Color3.fromRGB(20, 16, 28),
-                        BackgroundTransparency = 0.15
-                    }):Play()
-                    TweenService:Create(btnData.Stroke, TweenInfo.new(0.15), {
-                        Transparency = 1
-                    }):Play()
-                    btnData.Label.Font = Enum.Font.GothamMedium
-                    TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
-                        TextColor3 = Color3.fromRGB(200, 190, 225),
-                        TextTransparency = 0
-                    }):Play()
-                    TweenService:Create(btnData.Icon, TweenInfo.new(0.15), {
-                        ImageColor3 = Color3.fromRGB(190, 180, 215),
-                        ImageTransparency = 0
-                    }):Play()
-                    TweenService:Create(btnData.Chevron, TweenInfo.new(0.15), {
-                        TextColor3 = Color3.fromRGB(160, 145, 185),
-                        TextTransparency = 0
-                    }):Play()
                 else
-                    -- Other inactive tabs: Transparent so navigation_panel.png shows through cleanly
+                    -- Inactive tabs (including Home): Completely transparent so pristine navigation_panel.png shows through cleanly without any black boxes or ghost text
                     TweenService:Create(btnData.Button, TweenInfo.new(0.15), {
                         BackgroundColor3 = Color3.fromRGB(20, 16, 28),
                         BackgroundTransparency = 1

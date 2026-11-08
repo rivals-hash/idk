@@ -804,13 +804,13 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
     return container
 end
 
--- Helper: Create Feature Card matching aimbot_settings_panel.png with purple divider
-local function createFeatureCard(parent, title, bgAsset)
+-- Helper: Create Feature Card with glowing purple header divider (Pure Native UI - No AI Image Slop)
+local function createFeatureCard(parent, title)
     local card = Instance.new("Frame")
     card.Name = "Card_" .. title:gsub("%s+", "")
     card.Size = UDim2.new(0, 396, 0, 36)
-    card.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
-    card.BackgroundTransparency = 0.1
+    card.BackgroundColor3 = Color3.fromRGB(20, 16, 28)
+    card.BackgroundTransparency = 0.12
     card.BorderSizePixel = 0
     card.Parent = parent
 
@@ -825,20 +825,6 @@ local function createFeatureCard(parent, title, bgAsset)
     stroke.Thickness = 1.2
     stroke.Transparency = 0.35
     stroke.Parent = card
-
-    local bg = Instance.new("ImageLabel")
-    bg.Name = "CardBg"
-    bg.Size = UDim2.new(1, 0, 1, 0)
-    bg.BackgroundTransparency = 0
-    bg.Image = bgAsset or "rbxassetid://139820186687064"
-    bg.ScaleType = Enum.ScaleType.Stretch
-    bg.ZIndex = 1
-    bg.Active = false
-    bg.Parent = card
-
-    local bgCorner = Instance.new("UICorner")
-    bgCorner.CornerRadius = UDim.new(0, 10)
-    bgCorner.Parent = bg
 
     local content = Instance.new("Frame")
     content.Name = "Content"
@@ -899,9 +885,6 @@ function TabViews.build(tabName, parentContainer, options)
     local Utils = options.Utils
     local AssetManager = options.AssetManager
 
-    local headerBg = (AssetManager and AssetManager.get("aimbot_header.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
-    local panelBg = (AssetManager and AssetManager.get("aimbot_settings_panel.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
-
     local scroll = Instance.new("ScrollingFrame")
     scroll.Name = "TabView_" .. tabName
     scroll.Size = UDim2.new(1, 0, 1, 0)
@@ -927,11 +910,11 @@ function TabViews.build(tabName, parentContainer, options)
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Parent = scroll
 
-    -- Top Header Banner Card (Matching aimbot_header.png from Screenshot 2)
+    -- Top Header Banner Card (Pure Native UI - No AI Image Slop)
     local banner = Instance.new("Frame")
     banner.Name = "Banner"
-    banner.Size = UDim2.new(0, 396, 0, 50)
-    banner.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
+    banner.Size = UDim2.new(0, 396, 0, 48)
+    banner.BackgroundColor3 = Color3.fromRGB(24, 18, 36)
     banner.BackgroundTransparency = 0.1
     banner.BorderSizePixel = 0
     banner.LayoutOrder = 1
@@ -942,31 +925,17 @@ function TabViews.build(tabName, parentContainer, options)
     bCorner.Parent = banner
 
     local bStroke = Instance.new("UIStroke")
-    bStroke.Color = Color3.fromRGB(145, 90, 225)
+    bStroke.Color = Color3.fromRGB(160, 105, 235)
     bStroke.Thickness = 1.2
     bStroke.Transparency = 0.35
     bStroke.Parent = banner
-
-    local bannerBg = Instance.new("ImageLabel")
-    bannerBg.Name = "BannerBg"
-    bannerBg.Size = UDim2.new(1, 0, 1, 0)
-    bannerBg.BackgroundTransparency = 0
-    bannerBg.Image = headerBg
-    bannerBg.ScaleType = Enum.ScaleType.Stretch
-    bannerBg.ZIndex = 1
-    bannerBg.Active = false
-    bannerBg.Parent = banner
-
-    local bannerBgCorner = Instance.new("UICorner")
-    bannerBgCorner.CornerRadius = UDim.new(0, 10)
-    bannerBgCorner.Parent = bannerBg
 
     -- Circular glowing icon badge on left
     local bIconBox = Instance.new("Frame")
     bIconBox.Name = "BannerIconBox"
     bIconBox.Size = UDim2.new(0, 32, 0, 32)
     bIconBox.Position = UDim2.new(0, 10, 0.5, -16)
-    bIconBox.BackgroundColor3 = Color3.fromRGB(24, 18, 38)
+    bIconBox.BackgroundColor3 = Color3.fromRGB(34, 24, 52)
     bIconBox.ZIndex = 3
     bIconBox.Parent = banner
 
@@ -990,22 +959,22 @@ function TabViews.build(tabName, parentContainer, options)
 
     local bTitle = Instance.new("TextLabel")
     bTitle.Size = UDim2.new(1, -60, 0, 20)
-    bTitle.Position = UDim2.new(0, 50, 0, 6)
+    bTitle.Position = UDim2.new(0, 50, 0, 5)
     bTitle.BackgroundTransparency = 1
     bTitle.Font = Enum.Font.GothamBold
-    bTitle.Text = tabName
+    bTitle.Text = tabName:upper()
     bTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    bTitle.TextSize = 16.5
+    bTitle.TextSize = 15
     bTitle.TextXAlignment = Enum.TextXAlignment.Left
     bTitle.ZIndex = 3
     bTitle.Parent = banner
 
     local bDesc = Instance.new("TextLabel")
     bDesc.Size = UDim2.new(1, -60, 0, 15)
-    bDesc.Position = UDim2.new(0, 50, 0, 28)
+    bDesc.Position = UDim2.new(0, 50, 0, 26)
     bDesc.BackgroundTransparency = 1
     bDesc.Font = Enum.Font.Gotham
-    bDesc.Text = tabName:lower()
+    bDesc.Text = "System controls and configurations"
     bDesc.TextColor3 = Color3.fromRGB(190, 175, 225)
     bDesc.TextSize = 10.5
     bDesc.TextXAlignment = Enum.TextXAlignment.Left
@@ -1013,7 +982,7 @@ function TabViews.build(tabName, parentContainer, options)
     bDesc.Parent = banner
 
     local function makeCard(title)
-        return createFeatureCard(scroll, title, panelBg)
+        return createFeatureCard(scroll, title)
     end
 
     -- Populate content based on Tab

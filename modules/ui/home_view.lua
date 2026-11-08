@@ -49,8 +49,8 @@ function HomeView.create(parentContainer, dependencies)
         frame.Name = name
         frame.Size = UDim2.new(0, 406, 0, height)
         frame.LayoutOrder = layoutOrder
-        frame.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
-        frame.BackgroundTransparency = 0.1
+        frame.BackgroundColor3 = Color3.fromRGB(18, 14, 26)
+        frame.BackgroundTransparency = 0.08
         frame.BorderSizePixel = 0
         frame.Parent = homeScroll
 
@@ -58,17 +58,20 @@ function HomeView.create(parentContainer, dependencies)
         corner.CornerRadius = UDim.new(0, 10)
         corner.Parent = frame
 
-        local bg = Instance.new("ImageLabel")
-        bg.Name = "Bg"
-        bg.Size = UDim2.new(1, 0, 1, 0)
-        bg.BackgroundTransparency = 0
-        bg.Image = customBg or headerBgAsset
-        bg.ScaleType = Enum.ScaleType.Stretch
-        bg.Parent = frame
+        local bg = nil
+        if customBg then
+            bg = Instance.new("ImageLabel")
+            bg.Name = "Bg"
+            bg.Size = UDim2.new(1, 0, 1, 0)
+            bg.BackgroundTransparency = 0
+            bg.Image = customBg
+            bg.ScaleType = Enum.ScaleType.Stretch
+            bg.Parent = frame
 
-        local bgCorner = Instance.new("UICorner")
-        bgCorner.CornerRadius = UDim.new(0, 10)
-        bgCorner.Parent = bg
+            local bgCorner = Instance.new("UICorner")
+            bgCorner.CornerRadius = UDim.new(0, 10)
+            bgCorner.Parent = bg
+        end
 
         local stroke = Instance.new("UIStroke")
         stroke.Color = Color3.fromRGB(145, 90, 225)
@@ -122,12 +125,92 @@ function HomeView.create(parentContainer, dependencies)
     end)
 
     ----------------------------------------------------------------------------
-    -- 2. CARD 2: STATS CARD (stats_panel.png)
+    -- 2. CARD 2: REAL LIVE STATS CARD WITH BALANCED SPACING
     ----------------------------------------------------------------------------
-    -- Card 2 renders the pristine artwork from stats_panel.png:
-    -- Center anime girl with duck plushie inside glowing neon ring, crown,
-    -- and symmetrical left/right server stats connected by luminous purple curves.
-    local card2, bg2 = createCard("CenterStatsCard", 154, 2, statsBgAsset)
+    -- Card 2 renders a sleek native card with stats_center_avatar.png in the center
+    -- and real-time live stats on the left and right with balanced spacing (not glued to photo, not pushed too far).
+    local card2 = createCard("CenterStatsCard", 146, 2, nil)
+
+    -- Center Glowing Circular Avatar (Anime girl with duck plushie and crown)
+    local centerAvatar = Instance.new("ImageLabel")
+    centerAvatar.Name = "CenterAvatar"
+    centerAvatar.Size = UDim2.new(0, 84, 0, 84)
+    centerAvatar.AnchorPoint = Vector2.new(0.5, 0.5)
+    centerAvatar.Position = UDim2.new(0.5, 0, 0.5, 0)
+    centerAvatar.BackgroundTransparency = 1
+    centerAvatar.Image = statsAvatarAsset
+    centerAvatar.ScaleType = Enum.ScaleType.Fit
+    centerAvatar.ZIndex = 5
+    centerAvatar.Parent = card2
+
+    -- Helper for Left & Right Stats Rows
+    local function createStatRow(name, iconText, text, yPos, isLeft)
+        local row = Instance.new("Frame")
+        row.Name = name
+        row.Size = UDim2.new(0, 126, 0, 22)
+        row.BackgroundTransparency = 1
+        if isLeft then
+            row.Position = UDim2.new(0.5, -48 - 126, 0, yPos)
+        else
+            row.Position = UDim2.new(0.5, 48, 0, yPos)
+        end
+        row.ZIndex = 6
+        row.Parent = card2
+
+        local icon = Instance.new("TextLabel")
+        icon.Name = "Icon"
+        icon.Size = UDim2.new(0, 18, 1, 0)
+        icon.Position = UDim2.new(0, 0, 0, 0)
+        icon.BackgroundTransparency = 1
+        icon.Font = Enum.Font.GothamMedium
+        icon.Text = iconText
+        icon.TextSize = 11.5
+        icon.TextColor3 = Color3.fromRGB(215, 175, 255)
+        icon.TextXAlignment = Enum.TextXAlignment.Center
+        icon.ZIndex = 7
+        icon.Parent = row
+
+        local lbl = Instance.new("TextLabel")
+        lbl.Name = "Label"
+        lbl.Size = UDim2.new(1, -22, 1, 0)
+        lbl.Position = UDim2.new(0, 22, 0, 0)
+        lbl.BackgroundTransparency = 1
+        lbl.Font = Enum.Font.GothamMedium
+        lbl.Text = text
+        lbl.TextSize = 11.5
+        lbl.TextColor3 = Color3.fromRGB(240, 235, 250)
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+        lbl.ZIndex = 7
+        lbl.Parent = row
+
+        return lbl
+    end
+
+    -- Left 4 stats (Player, Game, Bounty, Level)
+    local statDarling = createStatRow("StatDarling", "👤", "- Loading...", 14, true)
+    local statGame = createStatRow("StatGame", "🎮", "- Blox Fruits", 44, true)
+    local statBounty = createStatRow("StatBounty", "⚔️", "- Bounty 4M", 74, true)
+    local statLevel = createStatRow("StatLevel", "📊", "- Level 2800", 104, true)
+
+    -- Right 4 stats (Session, Ping, FPS, Clock)
+    local statClock = createStatRow("StatClock", "▶️", "- 0:00", 14, false)
+    local statPing = createStatRow("StatPing", "📶", "- 50ms", 44, false)
+    local statFps = createStatRow("StatFps", "🖥️", "- 60Fps", 74, false)
+    local statServerTime = createStatRow("StatServerTime", "🕒", "- 00:00", 104, false)
+
+    -- Hook dynamic real-time stats updates from StatsService
+    if StatsService and StatsService.bind then
+        StatsService.bind(function(snap)
+            statDarling.Text = snap.PlayerStr
+            statGame.Text = snap.GameStr
+            statBounty.Text = snap.BountyStr
+            statLevel.Text = snap.LevelStr
+            statClock.Text = snap.SessionTimeStr
+            statPing.Text = snap.PingStr
+            statFps.Text = snap.FpsStr
+            statServerTime.Text = snap.TimeStr
+        end, 0.4)
+    end
 
     ----------------------------------------------------------------------------
     -- 3. CARD 3: BOTTOM MUSIC PLAYER CARD (music_player.png)
