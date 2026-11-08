@@ -132,14 +132,14 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
         descLbl.Parent = textContainer
     end
 
-    -- Pill Switch Visual (Exact match to reference IMG_9181.jpeg)
-    -- When ON: Radiant white pill with dark knob and neon violet glow rim
-    -- When OFF: Dark muted purple pill with soft knob
+    -- Pill Switch Visual (Luminous Neon Styling)
+    -- When ON: Radiant neon violet capsule with glowing lilac rim and crisp white thumb
+    -- When OFF: Sleek dark glass capsule with subtle purple border and muted soft thumb
     local switchBtn = Instance.new("Frame")
     switchBtn.Name = "SwitchVisual"
-    switchBtn.Size = UDim2.new(0, 40, 0, 22)
-    switchBtn.Position = UDim2.new(1, -44, 0.5, -11)
-    switchBtn.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(46, 40, 58)
+    switchBtn.Size = UDim2.new(0, 42, 0, 22)
+    switchBtn.Position = UDim2.new(1, -46, 0.5, -11)
+    switchBtn.BackgroundColor3 = state and Color3.fromRGB(155, 60, 235) or Color3.fromRGB(28, 22, 40)
     switchBtn.BorderSizePixel = 0
     switchBtn.ZIndex = 4
     switchBtn.Parent = row
@@ -149,15 +149,15 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     swCorner.Parent = switchBtn
 
     local swStroke = Instance.new("UIStroke")
-    swStroke.Color = state and Color3.fromRGB(215, 170, 255) or Color3.fromRGB(75, 65, 95)
-    swStroke.Thickness = state and 1.6 or 1.2
+    swStroke.Color = state and Color3.fromRGB(240, 195, 255) or Color3.fromRGB(68, 54, 90)
+    swStroke.Thickness = state and 1.8 or 1.2
     swStroke.Parent = switchBtn
 
     local thumb = Instance.new("Frame")
     thumb.Name = "Thumb"
     thumb.Size = UDim2.new(0, 16, 0, 16)
     thumb.Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
-    thumb.BackgroundColor3 = state and Color3.fromRGB(32, 26, 44) or Color3.fromRGB(145, 138, 168)
+    thumb.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(145, 138, 168)
     thumb.BorderSizePixel = 0
     thumb.ZIndex = 5
     thumb.Parent = switchBtn
@@ -168,10 +168,10 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
 
     local function updateVisual(anim)
         local dur = anim and 0.15 or 0
-        local targetBg = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(46, 40, 58)
-        local targetStroke = state and Color3.fromRGB(215, 170, 255) or Color3.fromRGB(75, 65, 95)
-        local targetStrokeThick = state and 1.6 or 1.2
-        local targetThumbBg = state and Color3.fromRGB(32, 26, 44) or Color3.fromRGB(145, 138, 168)
+        local targetBg = state and Color3.fromRGB(155, 60, 235) or Color3.fromRGB(28, 22, 40)
+        local targetStroke = state and Color3.fromRGB(240, 195, 255) or Color3.fromRGB(68, 54, 90)
+        local targetStrokeThick = state and 1.8 or 1.2
+        local targetThumbBg = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(145, 138, 168)
         local targetPos = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
 
         if anim then
@@ -286,7 +286,7 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     pillCorner.Parent = pillBtn
 
     local pillStroke = Instance.new("UIStroke")
-    pillStroke.Color = Color3.fromRGB(115, 80, 170)
+    pillStroke.Color = Color3.fromRGB(165, 95, 245)
     pillStroke.Thickness = 1.2
     pillStroke.Parent = pillBtn
 
@@ -309,9 +309,9 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     chevron.Position = UDim2.new(1, -18, 0, 0)
     chevron.BackgroundTransparency = 1
     chevron.Font = Enum.Font.GothamBold
-    chevron.Text = "v"
-    chevron.TextSize = 10
-    chevron.TextColor3 = Color3.fromRGB(200, 180, 235)
+    chevron.Text = "▼"
+    chevron.TextSize = 9
+    chevron.TextColor3 = Color3.fromRGB(225, 175, 255)
     chevron.ZIndex = 6
     chevron.Parent = pillBtn
 
@@ -340,56 +340,73 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
     return row
 end
 
--- Helper: Create interactive Slider with purple glow fill
+-- Helper: Create interactive Slider with Cyber HUD Badge & Glowing Neon Fill
 local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, Utils, customIcon)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local curVal = clamp(defaultVal or minVal, minVal, maxVal)
 
     local row = Instance.new("Frame")
     row.Name = "Slider_" .. title:gsub("%s+", "")
-    row.Size = UDim2.new(1, 0, 0, 46)
+    row.Size = UDim2.new(1, 0, 0, 48)
     row.BackgroundTransparency = 1
     row.ZIndex = 3
     row.Parent = targetContainer
 
-    addCardHeight(parent, 46)
+    addCardHeight(parent, 48)
 
     local header = Instance.new("Frame")
-    header.Size = UDim2.new(1, 0, 0, 18)
+    header.Size = UDim2.new(1, 0, 0, 20)
     header.BackgroundTransparency = 1
     header.ZIndex = 3
     header.Parent = row
 
     local titleLbl = Instance.new("TextLabel")
-    titleLbl.Size = UDim2.new(0.7, 0, 1, 0)
+    titleLbl.Size = UDim2.new(1, -60, 1, 0)
     titleLbl.Position = UDim2.new(0, 4, 0, 0)
     titleLbl.BackgroundTransparency = 1
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.Text = title
-    titleLbl.TextColor3 = Color3.fromRGB(240, 240, 250)
+    titleLbl.TextColor3 = Color3.fromRGB(245, 240, 255)
     titleLbl.TextSize = 12
     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
     titleLbl.ZIndex = 4
     titleLbl.Parent = header
 
+    -- Cyber HUD Glowing Value Badge [ 120 ]
+    local valBadge = Instance.new("Frame")
+    valBadge.Name = "ValBadge"
+    valBadge.Size = UDim2.new(0, 52, 0, 18)
+    valBadge.Position = UDim2.new(1, -56, 0, 1)
+    valBadge.BackgroundColor3 = Color3.fromRGB(34, 25, 48)
+    valBadge.BorderSizePixel = 0
+    valBadge.ZIndex = 4
+    valBadge.Parent = header
+
+    local vbCorner = Instance.new("UICorner")
+    vbCorner.CornerRadius = UDim.new(0, 5)
+    vbCorner.Parent = valBadge
+
+    local vbStroke = Instance.new("UIStroke")
+    vbStroke.Color = Color3.fromRGB(175, 100, 245)
+    vbStroke.Thickness = 1.2
+    vbStroke.Parent = valBadge
+
     local valLbl = Instance.new("TextLabel")
-    valLbl.Size = UDim2.new(0.3, -8, 1, 0)
-    valLbl.Position = UDim2.new(0.7, 0, 0, 0)
+    valLbl.Size = UDim2.new(1, 0, 1, 0)
     valLbl.BackgroundTransparency = 1
     valLbl.Font = Enum.Font.GothamBold
     valLbl.Text = tostring(math.floor(curVal + 0.5))
-    valLbl.TextColor3 = Color3.fromRGB(215, 175, 255)
-    valLbl.TextSize = 11.5
-    valLbl.TextXAlignment = Enum.TextXAlignment.Right
-    valLbl.ZIndex = 4
-    valLbl.Parent = header
+    valLbl.TextColor3 = Color3.fromRGB(245, 220, 255)
+    valLbl.TextSize = 11
+    valLbl.ZIndex = 5
+    valLbl.Parent = valBadge
 
-    -- Slider Track Frame with Purple Fill
+    -- Slider Track Frame with Glowing Neon Gradient Fill
     local track = Instance.new("Frame")
     track.Name = "Track"
-    track.Size = UDim2.new(1, -8, 0, 5)
-    track.Position = UDim2.new(0, 4, 0, 28)
-    track.BackgroundColor3 = Color3.fromRGB(40, 35, 52)
+    track.Size = UDim2.new(1, -8, 0, 6)
+    track.Position = UDim2.new(0, 4, 0, 30)
+    track.BackgroundColor3 = Color3.fromRGB(24, 18, 34)
     track.BorderSizePixel = 0
     track.ZIndex = 4
     track.Parent = row
@@ -398,11 +415,16 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     trCorner.CornerRadius = UDim.new(1, 0)
     trCorner.Parent = track
 
+    local trStroke = Instance.new("UIStroke")
+    trStroke.Color = Color3.fromRGB(62, 50, 82)
+    trStroke.Thickness = 1
+    trStroke.Parent = track
+
     local fill = Instance.new("Frame")
     fill.Name = "Fill"
     local initRatio = (curVal - minVal) / math.max(1, (maxVal - minVal))
     fill.Size = UDim2.new(clamp(initRatio, 0, 1), 0, 1, 0)
-    fill.BackgroundColor3 = Color3.fromRGB(175, 105, 255)
+    fill.BackgroundColor3 = Color3.fromRGB(165, 75, 245)
     fill.BorderSizePixel = 0
     fill.ZIndex = 5
     fill.Parent = track
@@ -411,9 +433,18 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     fillCorner.CornerRadius = UDim.new(1, 0)
     fillCorner.Parent = fill
 
+    pcall(function()
+        if ColorSequence and ColorSequence.new then
+            local fillGrad = Instance.new("UIGradient")
+            fillGrad.Color = ColorSequence.new(Color3.fromRGB(130, 45, 220), Color3.fromRGB(230, 150, 255))
+            fillGrad.Parent = fill
+        end
+    end)
+
+    -- Custom Neon Thumb Knob with White Outer Ring & Purple Inner Dot
     local thumb = Instance.new("Frame")
     thumb.Name = "Thumb"
-    thumb.Size = UDim2.new(0, 14, 0, 14)
+    thumb.Size = UDim2.new(0, 16, 0, 16)
     thumb.AnchorPoint = Vector2.new(0.5, 0.5)
     thumb.Position = UDim2.new(clamp(initRatio, 0, 1), 0, 0.5, 0)
     thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -425,10 +456,29 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     thCorner.CornerRadius = UDim.new(1, 0)
     thCorner.Parent = thumb
 
+    local thStroke = Instance.new("UIStroke")
+    thStroke.Color = Color3.fromRGB(210, 140, 255)
+    thStroke.Thickness = 2.0
+    thStroke.Parent = thumb
+
+    local innerDot = Instance.new("Frame")
+    innerDot.Name = "InnerDot"
+    innerDot.Size = UDim2.new(0, 6, 0, 6)
+    innerDot.AnchorPoint = Vector2.new(0.5, 0.5)
+    innerDot.Position = UDim2.new(0.5, 0, 0.5, 0)
+    innerDot.BackgroundColor3 = Color3.fromRGB(145, 60, 230)
+    innerDot.BorderSizePixel = 0
+    innerDot.ZIndex = 7
+    innerDot.Parent = thumb
+
+    local idCorner = Instance.new("UICorner")
+    idCorner.CornerRadius = UDim.new(1, 0)
+    idCorner.Parent = innerDot
+
     local sliderHitbox = Instance.new("TextButton")
     sliderHitbox.Name = "SliderHitbox"
     sliderHitbox.Size = UDim2.new(1, 0, 0, 32)
-    sliderHitbox.Position = UDim2.new(0, 0, 0, 14)
+    sliderHitbox.Position = UDim2.new(0, 0, 0, 16)
     sliderHitbox.BackgroundTransparency = 1
     sliderHitbox.Text = ""
     sliderHitbox.AutoButtonColor = false

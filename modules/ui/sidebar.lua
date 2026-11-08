@@ -27,13 +27,13 @@ function Sidebar.create(parentGui, options)
     sidebarFrame.BackgroundTransparency = 1
     sidebarFrame.Parent = parentGui
 
-    -- Background Image with Torii Gate, Purple Moon & Cherry Blossoms
+    -- Background Image with Authentic Smoky Silk Dark Gradient (No baked text or buttons)
     local bgImg = Instance.new("ImageLabel")
     bgImg.Name = "SidebarBackground"
     bgImg.Size = UDim2.new(1, 0, 1, 0)
     bgImg.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
     bgImg.BackgroundTransparency = 0.05
-    bgImg.Image = (AssetManager and AssetManager.get("navigation_panel.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
+    bgImg.Image = (AssetManager and AssetManager.get("sidebar_bg.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
     bgImg.ScaleType = Enum.ScaleType.Stretch
     bgImg.Parent = sidebarFrame
 
@@ -183,9 +183,32 @@ function Sidebar.create(parentGui, options)
         for id, btnData in pairs(tabButtons) do
             local isActive = (id == activeTabId)
 
-            if activeTabId == "Home" then
-                -- When Home is active, navigation_panel.png ALREADY renders the authentic glowing purple pill on Home
-                -- and clean tab labels below it. Keep all tabs transparent so zero duplicate text or ghosting occurs!
+            if isActive then
+                -- Active Tab: Luminous Neon Violet Capsule with glowing lilac rim and white text/icon
+                TweenService:Create(btnData.Button, TweenInfo.new(0.15), {
+                    BackgroundColor3 = Color3.fromRGB(140, 65, 230),
+                    BackgroundTransparency = 0.05
+                }):Play()
+                TweenService:Create(btnData.Stroke, TweenInfo.new(0.15), {
+                    Color = Color3.fromRGB(240, 175, 255),
+                    Transparency = 0,
+                    Thickness = 1.6
+                }):Play()
+                btnData.Label.Font = Enum.Font.GothamBold
+                TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
+                    TextColor3 = Color3.fromRGB(255, 255, 255),
+                    TextTransparency = 0
+                }):Play()
+                TweenService:Create(btnData.Icon, TweenInfo.new(0.15), {
+                    ImageColor3 = Color3.fromRGB(255, 255, 255),
+                    ImageTransparency = 0
+                }):Play()
+                TweenService:Create(btnData.Chevron, TweenInfo.new(0.15), {
+                    TextColor3 = Color3.fromRGB(255, 255, 255),
+                    TextTransparency = 0
+                }):Play()
+            else
+                -- Inactive Tab: Transparent sleek background with soft lavender text and icon
                 TweenService:Create(btnData.Button, TweenInfo.new(0.15), {
                     BackgroundColor3 = Color3.fromRGB(20, 16, 28),
                     BackgroundTransparency = 1
@@ -193,60 +216,19 @@ function Sidebar.create(parentGui, options)
                 TweenService:Create(btnData.Stroke, TweenInfo.new(0.15), {
                     Transparency = 1
                 }):Play()
+                btnData.Label.Font = Enum.Font.GothamMedium
                 TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
-                    TextTransparency = 1
+                    TextColor3 = Color3.fromRGB(205, 200, 225),
+                    TextTransparency = 0
                 }):Play()
                 TweenService:Create(btnData.Icon, TweenInfo.new(0.15), {
-                    ImageTransparency = 1
+                    ImageColor3 = Color3.fromRGB(180, 170, 210),
+                    ImageTransparency = 0
                 }):Play()
                 TweenService:Create(btnData.Chevron, TweenInfo.new(0.15), {
-                    TextTransparency = 1
+                    TextColor3 = Color3.fromRGB(140, 130, 165),
+                    TextTransparency = 0
                 }):Play()
-            else
-                -- Another tab is active (Aimbot, Combat, Players, etc.)
-                if isActive then
-                    -- Active Tab: Luminous Neon Violet Capsule with crisp white text
-                    TweenService:Create(btnData.Button, TweenInfo.new(0.15), {
-                        BackgroundColor3 = Color3.fromRGB(140, 65, 230),
-                        BackgroundTransparency = 0.05
-                    }):Play()
-                    TweenService:Create(btnData.Stroke, TweenInfo.new(0.15), {
-                        Color = Color3.fromRGB(240, 175, 255),
-                        Transparency = 0,
-                        Thickness = 1.6
-                    }):Play()
-                    btnData.Label.Font = Enum.Font.GothamBold
-                    TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
-                        TextColor3 = Color3.fromRGB(255, 255, 255),
-                        TextTransparency = 0
-                    }):Play()
-                    TweenService:Create(btnData.Icon, TweenInfo.new(0.15), {
-                        ImageColor3 = Color3.fromRGB(255, 255, 255),
-                        ImageTransparency = 0
-                    }):Play()
-                    TweenService:Create(btnData.Chevron, TweenInfo.new(0.15), {
-                        TextColor3 = Color3.fromRGB(255, 255, 255),
-                        TextTransparency = 0
-                    }):Play()
-                else
-                    -- Inactive tabs (including Home): Completely transparent so pristine navigation_panel.png shows through cleanly without any black boxes or ghost text
-                    TweenService:Create(btnData.Button, TweenInfo.new(0.15), {
-                        BackgroundColor3 = Color3.fromRGB(20, 16, 28),
-                        BackgroundTransparency = 1
-                    }):Play()
-                    TweenService:Create(btnData.Stroke, TweenInfo.new(0.15), {
-                        Transparency = 1
-                    }):Play()
-                    TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
-                        TextTransparency = 1
-                    }):Play()
-                    TweenService:Create(btnData.Icon, TweenInfo.new(0.15), {
-                        ImageTransparency = 1
-                    }):Play()
-                    TweenService:Create(btnData.Chevron, TweenInfo.new(0.15), {
-                        TextTransparency = 1
-                    }):Play()
-                end
             end
         end
     end
@@ -283,8 +265,8 @@ function Sidebar.create(parentGui, options)
         tabIcon.Position = UDim2.new(0, 10, 0.5, -8)
         tabIcon.BackgroundTransparency = 1
         tabIcon.Image = tabData.Icon
-        tabIcon.ImageColor3 = Color3.fromRGB(200, 190, 225)
-        tabIcon.ImageTransparency = 1
+        tabIcon.ImageColor3 = Color3.fromRGB(180, 170, 210)
+        tabIcon.ImageTransparency = 0
         tabIcon.Active = false
         tabIcon.ZIndex = 7
         tabIcon.Parent = tabBtn
@@ -297,8 +279,8 @@ function Sidebar.create(parentGui, options)
         tabLabel.BackgroundTransparency = 1
         tabLabel.Font = Enum.Font.GothamMedium
         tabLabel.Text = tabData.Name
-        tabLabel.TextColor3 = Color3.fromRGB(220, 215, 235)
-        tabLabel.TextTransparency = 1
+        tabLabel.TextColor3 = Color3.fromRGB(205, 200, 225)
+        tabLabel.TextTransparency = 0
         tabLabel.TextSize = 12
         tabLabel.TextXAlignment = Enum.TextXAlignment.Left
         tabLabel.Active = false
@@ -314,8 +296,8 @@ function Sidebar.create(parentGui, options)
         chevron.Font = Enum.Font.GothamBold
         chevron.Text = ">"
         chevron.TextSize = 11
-        chevron.TextColor3 = Color3.fromRGB(160, 145, 185)
-        chevron.TextTransparency = 1
+        chevron.TextColor3 = Color3.fromRGB(140, 130, 165)
+        chevron.TextTransparency = 0
         chevron.Active = false
         chevron.ZIndex = 7
         chevron.Parent = tabBtn
@@ -343,12 +325,9 @@ function Sidebar.create(parentGui, options)
 
         tabBtn.MouseLeave:Connect(function()
             if activeTabId ~= tabData.Id then
-                local isInactiveHome = (tabData.Id == "Home" and activeTabId ~= "Home")
-                local targetTrans = isInactiveHome and 0.15 or 1
-                local targetBg = Color3.fromRGB(20, 16, 28)
                 TweenService:Create(tabBtn, TweenInfo.new(0.12), {
-                    BackgroundTransparency = targetTrans,
-                    BackgroundColor3 = targetBg
+                    BackgroundTransparency = 1,
+                    BackgroundColor3 = Color3.fromRGB(20, 16, 28)
                 }):Play()
                 TweenService:Create(tabStroke, TweenInfo.new(0.12), {
                     Transparency = 1

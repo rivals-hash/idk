@@ -22,7 +22,7 @@ function HomeView.create(parentContainer, dependencies)
     local AssetManager = dependencies.AssetManager
 
     local headerBgAsset = (AssetManager and AssetManager.get("header_profile_panel.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
-    local statsBgAsset = (AssetManager and AssetManager.get("stats_panel.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
+    local statsBgAsset = (AssetManager and AssetManager.get("stats_panel_v2.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
     local headerAvatarAsset = (AssetManager and AssetManager.get("header_avatar.png", "rbxassetid://93891873418133")) or "rbxassetid://93891873418133"
     local statsAvatarAsset = (AssetManager and AssetManager.get("stats_center_avatar.png", "rbxassetid://10039618734")) or "rbxassetid://10039618734"
     local discordAsset = "rbxassetid://16584754883"
