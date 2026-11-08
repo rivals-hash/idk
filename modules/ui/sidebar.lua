@@ -186,9 +186,6 @@ function Sidebar.create(parentGui, options)
                     BackgroundColor3 = Color3.fromRGB(140, 65, 230),
                     BackgroundTransparency = 0.05
                 }):Play()
-                TweenService:Create(btnData.Stroke, TweenInfo.new(0.15), {
-                    Transparency = 1
-                }):Play()
                 btnData.Label.Font = Enum.Font.GothamBold
                 TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
                     TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -207,9 +204,6 @@ function Sidebar.create(parentGui, options)
                 TweenService:Create(btnData.Button, TweenInfo.new(0.15), {
                     BackgroundColor3 = Color3.fromRGB(20, 16, 28),
                     BackgroundTransparency = 1
-                }):Play()
-                TweenService:Create(btnData.Stroke, TweenInfo.new(0.15), {
-                    Transparency = 1
                 }):Play()
                 btnData.Label.Font = Enum.Font.GothamMedium
                 TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
@@ -246,12 +240,6 @@ function Sidebar.create(parentGui, options)
         local tabCorner = Instance.new("UICorner")
         tabCorner.CornerRadius = UDim.new(0, 8)
         tabCorner.Parent = tabBtn
-
-        local tabStroke = Instance.new("UIStroke")
-        tabStroke.Color = Color3.fromRGB(195, 125, 255)
-        tabStroke.Thickness = 1.2
-        tabStroke.Transparency = 1
-        tabStroke.Parent = tabBtn
 
         -- Tab Icon on Left
         local tabIcon = Instance.new("ImageLabel")
@@ -299,7 +287,6 @@ function Sidebar.create(parentGui, options)
 
         tabButtons[tabData.Id] = {
             Button = tabBtn,
-            Stroke = tabStroke,
             Label = tabLabel,
             Icon = tabIcon,
             Chevron = chevron

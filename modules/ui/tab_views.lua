@@ -811,7 +811,7 @@ local function createFeatureCard(parent, title, AssetManager)
 
     local header = Instance.new("TextLabel")
     header.Name = "Header"
-    header.Size = UDim2.new(0, 80, 1, 0)
+    header.Size = UDim2.new(1, 0, 1, 0)
     header.BackgroundTransparency = 1
     header.Font = Enum.Font.GothamBold
     header.Text = title:upper()
@@ -820,16 +820,6 @@ local function createFeatureCard(parent, title, AssetManager)
     header.TextXAlignment = Enum.TextXAlignment.Left
     header.ZIndex = 4
     header.Parent = headerRow
-
-    -- Glowing Purple Horizontal Neon Divider
-    local neonLine = Instance.new("Frame")
-    neonLine.Name = "NeonLine"
-    neonLine.Size = UDim2.new(1, -85, 0, 1.5)
-    neonLine.Position = UDim2.new(0, 85, 0.5, 0)
-    neonLine.BackgroundColor3 = Color3.fromRGB(195, 125, 255)
-    neonLine.BorderSizePixel = 0
-    neonLine.ZIndex = 4
-    neonLine.Parent = headerRow
 
     return card
 end
