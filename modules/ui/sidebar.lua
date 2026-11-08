@@ -43,8 +43,8 @@ function Sidebar.create(parentGui, options)
     corner.Parent = bgImg
 
     local sStroke = Instance.new("UIStroke")
-    sStroke.Color = Color3.fromRGB(220, 35, 60)
-    sStroke.Transparency = 0.88
+    sStroke.Color = Color3.fromRGB(50, 50, 58)
+    sStroke.Transparency = 0.5
     sStroke.Thickness = 1
     sStroke.Parent = bgImg
 
@@ -153,8 +153,8 @@ function Sidebar.create(parentGui, options)
     tabsListFrame.BackgroundTransparency = 1
     tabsListFrame.BorderSizePixel = 0
     tabsListFrame.ScrollBarThickness = 4
-    tabsListFrame.ScrollBarImageColor3 = Color3.fromRGB(220, 35, 60)
-    tabsListFrame.ScrollBarImageTransparency = 0
+    tabsListFrame.ScrollBarImageColor3 = Color3.fromRGB(120, 120, 130)
+    tabsListFrame.ScrollBarImageTransparency = 0.3
     tabsListFrame.VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Right
     tabsListFrame.VerticalScrollBarInset = Enum.ScrollBarInset.None
     tabsListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)

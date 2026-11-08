@@ -152,8 +152,8 @@ function Window.create(dependencies)
     mbCorner.Parent = masterBg
 
     local mbStroke = Instance.new("UIStroke")
-    mbStroke.Color = Color3.fromRGB(220, 35, 60)
-    mbStroke.Transparency = 0.8
+    mbStroke.Color = Color3.fromRGB(50, 50, 58)
+    mbStroke.Transparency = 0.5
     mbStroke.Thickness = 1
     mbStroke.Parent = masterBg
 

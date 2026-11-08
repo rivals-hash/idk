@@ -701,8 +701,8 @@ local function createTextInput(parent, title, desc, placeholder, defaultVal, onS
     icCorner.Parent = inputContainer
 
     local icStroke = Instance.new("UIStroke")
-    icStroke.Color = Color3.fromRGB(220, 35, 60)
-    icStroke.Transparency = 0.7
+    icStroke.Color = Color3.fromRGB(50, 50, 58)
+    icStroke.Transparency = 0.5
     icStroke.Thickness = 1
     icStroke.Parent = inputContainer
 
@@ -794,8 +794,8 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     vbCorner.Parent = valBadge
 
     local vbStroke = Instance.new("UIStroke")
-    vbStroke.Color = Color3.fromRGB(220, 35, 60)
-    vbStroke.Transparency = 0.65
+    vbStroke.Color = Color3.fromRGB(50, 50, 58)
+    vbStroke.Transparency = 0.5
     vbStroke.Thickness = 1
     vbStroke.Parent = valBadge
 
@@ -861,9 +861,9 @@ local function createSlider(parent, title, minVal, maxVal, defaultVal, onSlide, 
     thCorner.Parent = thumb
 
     local thStroke = Instance.new("UIStroke")
-    thStroke.Color = Color3.fromRGB(220, 35, 60)
-    thStroke.Thickness = 1.5
-    thStroke.Transparency = 0.3
+    thStroke.Color = Color3.fromRGB(50, 50, 58)
+    thStroke.Thickness = 1.2
+    thStroke.Transparency = 0.4
     thStroke.Parent = thumb
 
     local sliderHitbox = Instance.new("TextButton")
@@ -1345,7 +1345,7 @@ function TabViews.build(tabName, parentContainer, options)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
     scroll.ScrollBarThickness = 3
-    scroll.ScrollBarImageColor3 = Color3.fromRGB(220, 35, 60)
+    scroll.ScrollBarImageColor3 = Color3.fromRGB(120, 120, 130)
     scroll.ScrollBarImageTransparency = 0.5
     scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y

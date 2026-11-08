@@ -46,7 +46,7 @@ function LoadingScreen.show(logoAsset)
     if not parent then return end
 
     local gui = Instance.new("ScreenGui")
-    gui.Name = "DarlingHub_LoadingScreen"
+    gui.Name = "DarlingX_LoadingScreen"
     gui.ResetOnSpawn = false
     gui.IgnoreGuiInset = true
     gui.DisplayOrder = 9999999
@@ -112,7 +112,7 @@ function LoadingScreen.show(logoAsset)
     title.TextTransparency = 1
     title.BorderSizePixel = 0
     title.Font = Enum.Font.GothamBold
-    title.Text = "Darling Hub"
+    title.Text = "Darling X"
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.TextSize = 19
     title.Parent = card
