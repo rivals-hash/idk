@@ -140,6 +140,7 @@ MusicTab:Button({
 
 MusicTab:Slider({
     Title = "Playback Volume",
+        Icon = "volume-2",
     Width = 200,
     Value = {
         Min = 0,
@@ -157,6 +158,7 @@ MusicTab:Slider({
 
 MusicTab:Dropdown({
     Title = "Playback Speed & Pitch",
+        Icon = "gauge",
     Values = {
         "Slow (0.8x)",
         "Normal (1.0x)",
@@ -194,6 +196,7 @@ MusicTab:Dropdown({
 
 MusicTab:Toggle({
     Title = "Loop Track",
+        Icon = "repeat",
     Desc = "Automatically loops playback when the song ends",
     Value = true,
     Callback = function(state)
@@ -214,6 +217,7 @@ MusicTab:Paragraph({
 
 MusicTab:Input({
     Title = "Custom Sound ID / File",
+        Icon = "music",
     Desc = "Numeric Roblox Asset ID or local MP3 file",
     Placeholder = "e.g. 1843588265 or song.mp3",
     Value = "",
@@ -224,6 +228,7 @@ MusicTab:Input({
 
 MusicTab:Input({
     Title = "Track Name (For Favorites)",
+        Icon = "tag",
     Desc = "Display name for your custom track",
     Placeholder = "e.g. My Favorite Phonk",
     Value = "",

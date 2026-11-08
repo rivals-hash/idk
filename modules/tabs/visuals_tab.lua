@@ -66,6 +66,7 @@ end
 -- --- Player ESP & Multi-Tracers ---
 VisualsTab:Toggle({
     Title = "2D Quad Boxes",
+    Icon = "box",
     Desc = "Renders cornered 2D bounding boxes around all enemy players",
     Value = false,
     Callback = function(state)
@@ -76,6 +77,7 @@ VisualsTab:Toggle({
 
 VisualsTab:Toggle({
     Title = "Player Names",
+    Icon = "user",
     Desc = "Displays formatted usernames directly above player heads",
     Value = false,
     Callback = function(state)
@@ -86,6 +88,7 @@ VisualsTab:Toggle({
 
 VisualsTab:Toggle({
     Title = "Health Bars",
+    Icon = "heart",
     Desc = "Dynamic color-coded health status bar on the side of character bounding boxes",
     Value = false,
     Callback = function(state)
@@ -96,6 +99,7 @@ VisualsTab:Toggle({
 
 VisualsTab:Toggle({
     Title = "Distance Indicator",
+    Icon = "ruler",
     Desc = "Displays live distance measurement in studs below player feet",
     Value = false,
     Callback = function(state)
@@ -106,6 +110,7 @@ VisualsTab:Toggle({
 
 VisualsTab:Toggle({
     Title = "Equipped Tool / Weapon",
+    Icon = "sword",
     Desc = "Shows current weapon, fruit, melee, or gun held by the player",
     Value = false,
     Callback = function(state)
@@ -116,6 +121,7 @@ VisualsTab:Toggle({
 
 VisualsTab:Toggle({
     Title = "Chams / Highlights",
+    Icon = "sparkles",
     Desc = "Applies radiant silhouette highlights through walls over enemy models",
     Value = false,
     Callback = function(state)
@@ -126,6 +132,7 @@ VisualsTab:Toggle({
 
 VisualsTab:Toggle({
     Title = "Multi-Tracers (All Players)",
+    Icon = "scan-eye",
     Desc = "Draws dynamic snaplines connecting viewport origin to every player on the map",
     Value = false,
     Callback = function(state)
@@ -136,6 +143,7 @@ VisualsTab:Toggle({
 
 VisualsTab:Dropdown({
     Title = "Tracer Line Color",
+    Icon = "palette",
     Values = { "White", "Cyan", "Purple", "Green", "Yellow", "Orange", "Red", "Pink" },
     Value = "White",
     Callback = function(selected)
@@ -171,14 +179,14 @@ VisualsTab:Button({
                     Title = "Ship Painter",
                     Content = "Ship detected successfully: " .. tostring(ship.Name),
                     Duration = 3,
-                    Icon = darlingIcon
+                    Icon = "search"
                 })
             else
                 WindUI:Notify({
                     Title = "Ship Painter",
                     Content = "No ship found within 500 studs. Sit in a vehicle seat first.",
                     Duration = 4,
-                    Icon = darlingIcon
+                    Icon = "search"
                 })
             end
         end
@@ -187,6 +195,7 @@ VisualsTab:Button({
 
 VisualsTab:Dropdown({
     Title = "Ship Color",
+    Icon = "palette",
     Values = { "Red", "Blue", "Green", "Purple", "White", "Yellow", "Void (Black)", "Orange" },
     Value = "Purple",
     Callback = function(selected)
@@ -210,6 +219,7 @@ VisualsTab:Dropdown({
 
 VisualsTab:Toggle({
     Title = "Rainbow Ship Mode",
+    Icon = "sparkles",
     Desc = "Continuously cycles ship material hue across full RGB spectrum",
     Value = false,
     Callback = function(state)
@@ -230,7 +240,7 @@ VisualsTab:Button({
                     Title = "Ship Painter",
                     Content = "Ship colors restored to original.",
                     Duration = 3,
-                    Icon = darlingIcon
+                    Icon = "rotate-ccw"
                 })
             end
         end
@@ -242,6 +252,7 @@ VisualsTab:Divider()
 -- --- Sacred Ship Resizer ---
 VisualsTab:Slider({
     Title = "Ship Scale Multiplier",
+    Icon = "maximize-2",
     Desc = "Scales your ship size up to 20x with heartbeat anti-reversion",
     Width = 200,
     Value = { Min = 1, Max = 20, Default = 1 },
@@ -263,7 +274,7 @@ VisualsTab:Button({
                 Title = "Ship Resizer",
                 Content = "Ship size restored to default (1x).",
                 Duration = 3,
-                Icon = darlingIcon
+                Icon = "rotate-ccw"
             })
         end
     end
@@ -274,6 +285,7 @@ VisualsTab:Divider()
 -- --- Shaders & Skybox Environment ---
 VisualsTab:Toggle({
     Title = "RTX Shaders",
+    Icon = "sun",
     Desc = "High-fidelity Bloom, ColorCorrection, and atmospheric lighting filters",
     Value = false,
     Callback = function(state)
@@ -284,6 +296,7 @@ VisualsTab:Toggle({
 
 VisualsTab:Dropdown({
     Title = "RTX Preset",
+    Icon = "palette",
     Values = { "RTX ULTRA", "RTX REFLECT", "REALISTIC", "CINEMATIC", "VIBRANT", "SUNSET", "NIGHT", "GOLDEN" },
     Value = "RTX ULTRA",
     Callback = function(selected)
@@ -294,6 +307,7 @@ VisualsTab:Dropdown({
 
 VisualsTab:Toggle({
     Title = "Custom Skybox",
+    Icon = "cloud",
     Desc = "Replaces default sky with high-resolution space, nebula, or fantasy skybox",
     Value = false,
     Callback = function(state)
@@ -304,6 +318,7 @@ VisualsTab:Toggle({
 
 VisualsTab:Dropdown({
     Title = "Skybox Selection",
+    Icon = "image",
     Values = {
         "Galaxy", "Purple Night", "Blue Space", "Flaming Sunset", "Nebula",
         "Evening Glow", "Sci-Fi Stars", "Pink Cloud", "Space Nebula",
@@ -318,6 +333,7 @@ VisualsTab:Dropdown({
 
 VisualsTab:Toggle({
     Title = "Throne Shaders",
+    Icon = "crown",
     Desc = "King's Throne cinematic lighting, deep purple atmosphere, and bloom",
     Value = false,
     Callback = function(state)
@@ -334,6 +350,7 @@ VisualsTab:Divider()
 VisualsTab:Button({
     Title = "Dragon M1 VFX (Transformed)",
     Desc = "Plays cinematic Dragon Transformed M1 breath visual effect",
+    Icon = "flame",
     Callback = function()
         pcall(function()
             local RS = game:GetService("ReplicatedStorage")
@@ -383,7 +400,7 @@ VisualsTab:Button({
                 Title = "Dragon M1 VFX",
                 Content = "Dragon Transformed M1 visual breath effect played.",
                 Duration = 3,
-                Icon = darlingIcon
+                Icon = "flame"
             })
         end)
     end
@@ -396,6 +413,7 @@ local raceV4Mod = getVisualsMod("modules/visuals/race_v4_visuals.lua")
 
 VisualsTab:Dropdown({
     Title = "Select Race V4 Visual",
+    Icon = "shield",
     Values = { "Human", "Mink", "Fishman", "Skypiea", "Ghoul", "Cyborg", "Draco" },
     Value = "Human",
     Callback = function(val)
@@ -407,7 +425,7 @@ VisualsTab:Dropdown({
                     Title = "Race: " .. cfg.DisplayName,
                     Content = cfg.Description,
                     Duration = 4,
-                    Icon = darlingIcon
+                    Icon = "shield"
                 })
                 if raceV4Mod.IsV4Active then
                     raceV4Mod.setPermanentMode(true, val)
@@ -426,7 +444,7 @@ VisualsTab:Button({
                 Title = "Awaken V4 Visual",
                 Content = "Awakening " .. tostring(raceV4Mod.CurrentSelectedRace) .. " V4...",
                 Duration = 3,
-                Icon = darlingIcon
+                Icon = "play"
             })
             raceV4Mod.triggerTransformation(raceV4Mod.CurrentSelectedRace, false)
         end
@@ -435,6 +453,7 @@ VisualsTab:Button({
 
 VisualsTab:Button({
     Title = "Awaken V4 (Fast Mastery 1.5s)",
+    Icon = "zap",
     Desc = "Triggers quick mastery awakening burst with aura",
     Callback = function()
         if raceV4Mod then
@@ -445,6 +464,7 @@ VisualsTab:Button({
 
 VisualsTab:Toggle({
     Title = "Permanent V4 Mode",
+    Icon = "infinity",
     Desc = "Maintains persistent V4 aura, 3D wings, accessories, and glowing eyes",
     Value = false,
     Callback = function(state)
@@ -456,6 +476,7 @@ VisualsTab:Toggle({
 
 VisualsTab:Toggle({
     Title = "Show 3D Accessories",
+    Icon = "shirt",
     Desc = "Renders real 3D mesh wings, halo, horns, shark fins, and mink ears",
     Value = true,
     Callback = function(state)
@@ -474,6 +495,7 @@ VisualsTab:Toggle({
 
 VisualsTab:Button({
     Title = "Execute Race Visual Skill",
+    Icon = "wand-2",
     Desc = "Casts race-specific visual skill (Psycho Flash, Mink Dash, Cyborg Jump, etc.)",
     Callback = function()
         if raceV4Mod then
@@ -495,6 +517,7 @@ VisualsTab:Button({
 
 VisualsTab:Toggle({
     Title = "Use Custom Aura Color",
+    Icon = "palette",
     Desc = "Overrides default race aura color with selected custom color palette",
     Value = false,
     Callback = function(state)
@@ -510,6 +533,7 @@ VisualsTab:Toggle({
 
 VisualsTab:Dropdown({
     Title = "Custom Aura Color Preset",
+    Icon = "palette",
     Values = { "Cyan", "Red", "Gold", "Purple", "Green", "White", "Orange" },
     Value = "Cyan",
     Callback = function(val)
@@ -534,6 +558,7 @@ VisualsTab:Dropdown({
 
 VisualsTab:Slider({
     Title = "Wings & Accessories Scale",
+    Icon = "maximize-2",
     Desc = "Adjusts dimensions and scale of 3D wings, halos, and accessories",
     Width = 200,
     Value = { Min = 0.5, Max = 2.0, Default = 1.0 },
@@ -550,6 +575,7 @@ VisualsTab:Slider({
 
 VisualsTab:Toggle({
     Title = "Looped Aura Sound",
+    Icon = "volume-2",
     Desc = "Plays immersive ambient aura audio while V4 transformation is active",
     Value = true,
     Callback = function(state)
@@ -569,7 +595,7 @@ VisualsTab:Button({
                 Title = "V4 Visuals",
                 Content = "All V4 visual effects restored to normal.",
                 Duration = 3,
-                Icon = darlingIcon
+                Icon = "trash-2"
             })
         end
     end

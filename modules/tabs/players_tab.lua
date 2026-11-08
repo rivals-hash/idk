@@ -84,6 +84,7 @@ end
 local refreshBtn = PlayersTab:Button({
     Title = "Refresh Player List",
     Desc = "Reloads active players in this server",
+    Icon = "refresh-cw",
     Callback = function()
         local PlayerList = DarlingHub:Require("modules/players/player_list.lua")
         if PlayerList then

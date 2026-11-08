@@ -96,6 +96,7 @@ SkinsTab:Toggle({
 
 SkinsTab:Dropdown({
     Title = "VFX Color Preset",
+        Icon = "palette",
     Values = {
         "Purple", "Red", "Blue", "Cyan", "Green", "Gold",
         "Pink", "Magenta", "White", "Black", "Midnight", "Orange",
@@ -119,6 +120,7 @@ SkinsTab:Dropdown({
 
 SkinsTab:Toggle({
     Title = "Affect Skills",
+        Icon = "sparkles",
     Desc = "Recolors fruit and fighting style particle emitters",
     Value = true,
     Callback = function(state)
@@ -132,6 +134,7 @@ SkinsTab:Toggle({
 
 SkinsTab:Toggle({
     Title = "Affect Swords",
+        Icon = "sword",
     Desc = "Recolors sword slash highlights and trails",
     Value = true,
     Callback = function(state)
@@ -145,6 +148,7 @@ SkinsTab:Toggle({
 
 SkinsTab:Toggle({
     Title = "Affect Transform",
+        Icon = "flame",
     Desc = "Recolors Buddha, Dragon, and V4 aura highlights",
     Value = true,
     Callback = function(state)
@@ -158,6 +162,7 @@ SkinsTab:Toggle({
 
 SkinsTab:Toggle({
     Title = "Affect Environment",
+        Icon = "globe",
     Desc = "Recolors world origin ground effects",
     Value = false,
     Callback = function(state)
@@ -202,6 +207,7 @@ local selectedSkinPreset = "Purple"
 
 SkinsTab:Dropdown({
     Title = "Equipment Category",
+        Icon = "layers",
     Values = { "Fruits", "Swords", "Guns", "Melee" },
     Default = "Fruits",
     Callback = function(cat)
@@ -213,6 +219,7 @@ SkinsTab:Dropdown({
 
 SkinsTab:Dropdown({
     Title = "Skin Preset Catalog",
+        Icon = "sparkles",
     Values = {
         "White", "Black", "Purple", "Red", "Blue", "Cyan",
         "Green", "Gold", "Pink", "Orange", "Crimson", "Lime",
@@ -226,6 +233,7 @@ SkinsTab:Dropdown({
 
 SkinsTab:Input({
     Title = "Custom Asset ID (Optional)",
+        Icon = "link",
     Desc = "Override tool or hotbar icon with custom asset",
     Placeholder = "e.g. rbxassetid://106579555405966",
     Value = "",
@@ -349,6 +357,7 @@ SkinsTab:Toggle({
 
 SkinsTab:Dropdown({
     Title = "Character Tone Preset",
+        Icon = "palette",
     Values = {
         "Darling Pink", "White", "Black", "Gold", "Cyan",
         "Crimson", "Green", "Purple", "Silver", "Orange"
@@ -365,6 +374,7 @@ SkinsTab:Dropdown({
 
 SkinsTab:Dropdown({
     Title = "Character Material",
+        Icon = "box",
     Values = { "SmoothPlastic", "Neon", "ForceField", "Glass" },
     Default = "SmoothPlastic",
     Callback = function(matName)
@@ -380,6 +390,7 @@ SkinsTab:Dropdown({
 
 SkinsTab:Toggle({
     Title = "Character Particle Aura",
+        Icon = "sparkles",
     Desc = "Generates a glowing aura highlight matching your active character skin",
     Value = false,
     Callback = function(state)
@@ -435,6 +446,7 @@ SkinsTab:Button({
 local cloneTargetInput = ""
 SkinsTab:Input({
     Title = "Player Name or ID",
+        Icon = "user",
     Desc = "Enter Roblox username or numeric User ID to clone",
     Placeholder = "e.g. 12345678 or PlayerName",
     Value = "",

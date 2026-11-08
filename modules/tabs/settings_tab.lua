@@ -532,6 +532,7 @@ SettingsTab:Button({
 
 local autoSaveToggle = SettingsTab:Toggle({
     Title = "Auto-Save Configuration",
+        Icon = "save",
     Desc = "Automatically saves your configuration on changes",
     Value = true,
     Callback = function(state)
@@ -545,6 +546,7 @@ DarlingHub.UIElements["AutoSave"] = autoSaveToggle
 
 local autoLoadToggle = SettingsTab:Toggle({
     Title = "Auto-Load on Startup",
+        Icon = "download",
     Desc = "Automatically restores saved configuration when Darling Hub starts",
     Value = true,
     Callback = function(state)
@@ -558,6 +560,7 @@ SettingsTab:Divider()
 
 SettingsTab:Keybind({
     Title = "Hub Toggle Shortcut",
+        Icon = "keyboard",
     Desc = "Click to rebind. Press anywhere to toggle the Hub",
     Value = "F",
     Callback = function(keyName)
@@ -580,6 +583,7 @@ SettingsTab:Keybind({
 
 SettingsTab:Button({
     Title = "Toggle Visibility Now",
+        Icon = "eye",
     Callback = function()
         toggleHub()
     end
@@ -728,6 +732,7 @@ SettingsTab:Button({
 
 SettingsTab:Button({
     Title = "Unload Darling Hub",
+        Icon = "power",
     Desc = "Closes and completely terminates Darling Hub",
     Callback = function()
         if autoSaveConfig then

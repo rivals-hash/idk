@@ -68,6 +68,7 @@ SummonDragonTab:Paragraph({
 local selectedAnimationToPlay = "Worldbreaker"
 SummonDragonTab:Dropdown({
     Title = "Select Animation",
+    Icon = "film",
     Values = { "Worldbreaker", "The Hollow Lantern", "The Aureate Sanctuary", "Transcendence Dragon", "King's Throne", "Admin Cinematic" },
     Value = "Worldbreaker",
     Callback = function(sel)
@@ -78,6 +79,7 @@ SummonDragonTab:Dropdown({
 SummonDragonTab:Button({
     Title = "Play Animation",
     Desc = "Launches the selected cinematic cutscene or mount",
+    Icon = "play",
     Callback = function()
         local function onDone()
             if DarlingHub and DarlingHub.ShowUI then
@@ -119,6 +121,7 @@ SummonDragonTab:Button({
 SummonDragonTab:Button({
     Title = "Skip Animation",
     Desc = "Stops active cutscene or mount and safely restores character",
+    Icon = "square",
     Callback = function()
         if DarlingHub and DarlingHub.StopAllAnimations then
             pcall(function() DarlingHub:StopAllAnimations() end)
@@ -162,6 +165,7 @@ SummonDragonTab:Button({
 SummonDragonTab:Toggle({
     Title = "Hide Dragon",
     Desc = "Hides or displays dragon model and visual aura",
+    Icon = "eye-off",
     Value = false,
     Callback = function(state)
         local mod = DarlingHub:Require("modules/special/transcendence_dragon.lua")
@@ -172,6 +176,7 @@ SummonDragonTab:Toggle({
 SummonDragonTab:Toggle({
     Title = "Hide Throne",
     Desc = "Hides or displays the king's throne model",
+    Icon = "crown",
     Value = false,
     Callback = function(state)
         local mod = DarlingHub:Require("modules/special/kings_throne.lua")

@@ -79,6 +79,7 @@ return function(context)
     local editToggleBtn = HudTab:Button({
         Title = "Unlock Dragging (Edit Controls)",
         Desc = "Displays movable bounding boxes over game buttons so you can drag them freely",
+        Icon = "move",
         Callback = function()
             local mod = getHUDMod()
             if mod then
@@ -97,6 +98,7 @@ return function(context)
     HudTab:Button({
         Title = "Save & Lock Layout",
         Desc = "Locks button positions and writes custom layout to file",
+        Icon = "save",
         Callback = function()
             local mod = getHUDMod()
             if mod then
@@ -114,6 +116,7 @@ return function(context)
     HudTab:Button({
         Title = "Discard Changes",
         Desc = "Reverts button positions back to previous saved state",
+        Icon = "rotate-ccw",
         Callback = function()
             local mod = getHUDMod()
             if mod then
@@ -134,6 +137,7 @@ return function(context)
     local scaleSlider = HudTab:Slider({
         Title = "Controls Scale",
         Desc = "Adjust size of all on-screen control buttons (50% - 200%)",
+        Icon = "maximize-2",
         Width = 200,
         Value = { Min = 50, Max = 200, Default = math.clamp(initialScalePct, 50, 200) },
         Step = 5,
@@ -161,6 +165,7 @@ return function(context)
     HudTab:Button({
         Title = "Reset to Default Layout",
         Desc = "Restores original Roblox and Blox Fruits button positions and clears saved layout",
+        Icon = "trash-2",
         Callback = function()
             local mod = getHUDMod()
             if mod then

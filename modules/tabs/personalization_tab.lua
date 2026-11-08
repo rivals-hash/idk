@@ -414,6 +414,7 @@ PersonalizationTab:Divider()
 
 local bgInputObj = PersonalizationTab:Input({
     Title = "Custom Media URL or ID",
+        Icon = "link",
     Desc = "Paste custom video link, slot ID, or loadstring command",
     Placeholder = "Enter URL or ID...",
     Value = "",
@@ -507,6 +508,7 @@ PersonalizationTab:Divider()
 
 local bgDimmingSlider = PersonalizationTab:Slider({
     Title = "Background Dimming",
+        Icon = "sun",
     Desc = "Adjusts dark overlay opacity over background media",
     Width = 200,
     Value = {
@@ -535,6 +537,7 @@ DarlingHub.FeatureStates["BackgroundDimming"] = 25
 
 PersonalizationTab:Dropdown({
     Title = "Media Scale Mode",
+        Icon = "maximize-2",
     Values = { "Crop (Original)", "Stretch (Fill Window)", "Fit (Contain)" },
     Default = "Crop (Original)",
     Callback = function(mode)
@@ -580,6 +583,7 @@ end
 
 PersonalizationTab:Toggle({
     Title = "Top Floating Toggle Widget",
+        Icon = "layout-grid",
     Desc = "Displays WindUI open button when minimized",
     Value = true,
     Callback = function(state)
@@ -610,6 +614,7 @@ local defaultScalePercent = math.clamp(math.floor((defaultScaleRatio * 100) / 5 
 
 local uiScaleSlider = PersonalizationTab:Slider({
     Title = "UI Scale",
+        Icon = "maximize-2",
     Width = 200,
     Value = {
         Min = 50,
@@ -639,6 +644,7 @@ DarlingHub.FeatureStates["UIScale"] = defaultScalePercent
 
 PersonalizationTab:Toggle({
     Title = "Align Topbar Buttons Right",
+        Icon = "align-right",
     Value = true,
     Callback = function(state)
         if state then

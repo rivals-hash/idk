@@ -65,6 +65,7 @@ return function(context)
 
     local macroToggle = MacroTab:Toggle({
         Title = "Macro Enabled",
+        Icon = "cpu",
         Desc = "Enables keyboard trigger and loop execution for skill macro",
         Value = false,
         Callback = function(state)
@@ -79,6 +80,7 @@ return function(context)
     local slotOptions = { "Slot 1", "Slot 2", "Slot 3", "Slot 4", "Slot 5" }
     local slotDropdown = MacroTab:Dropdown({
         Title = "Macro Slot",
+        Icon = "layers",
         Values = slotOptions,
         Value = "Slot 1",
         Callback = function(choice)
@@ -102,6 +104,7 @@ return function(context)
 
     local macroLoopToggle = MacroTab:Toggle({
         Title = "Loop Sequence",
+        Icon = "repeat",
         Desc = "Repeat sequence continuously until stopped",
         Value = false,
         Callback = function(state)
@@ -118,6 +121,7 @@ return function(context)
 
     local mobileBtnToggle = MacroTab:Toggle({
         Title = "Macro Floating Widget",
+        Icon = "layout-grid",
         Desc = "Displays a movable squircle one-touch widget on screen to trigger combo",
         Value = false,
         Callback = function(state)
@@ -148,6 +152,7 @@ return function(context)
 
     MacroTab:Keybind({
         Title = "Macro Key (PC)",
+        Icon = "keyboard",
         Desc = "Click to rebind. Press anywhere in-game to fire combo",
         Value = "F",
         Callback = function(keyName)
@@ -165,6 +170,7 @@ return function(context)
 
     MacroTab:Button({
         Title = "Start Combo Sequence",
+        Icon = "play",
         Desc = "Begins executing active slot sequence",
         Callback = function()
             local mod = getMacroMod()
@@ -177,6 +183,7 @@ return function(context)
 
     MacroTab:Button({
         Title = "Stop Combo Sequence",
+        Icon = "square",
         Desc = "Immediately terminates current macro playback",
         Callback = function()
             local mod = getMacroMod()
@@ -212,6 +219,7 @@ return function(context)
 
         MacroTab:Toggle({
             Title = "Block " .. bNum .. " Enabled",
+            Icon = "check-circle",
             Desc = "Enable or disable step " .. bNum .. " in the combo sequence",
             Value = initBlk.Enabled,
             Callback = function(st)
@@ -223,6 +231,7 @@ return function(context)
 
         MacroTab:Dropdown({
             Title = "B" .. bNum .. " Weapon",
+            Icon = "sword",
             Values = weaponOptions,
             Value = initBlk.Weapon,
             Callback = function(w)
@@ -235,6 +244,7 @@ return function(context)
 
         MacroTab:Dropdown({
             Title = "B" .. bNum .. " Skill Key",
+            Icon = "keyboard",
             Values = skillKeyOptions,
             Value = initBlk.Skill,
             Callback = function(k)
@@ -247,6 +257,7 @@ return function(context)
 
         MacroTab:Dropdown({
             Title = "B" .. bNum .. " Cast Mode",
+            Icon = "hand",
             Values = modeOptions,
             Value = initBlk.Mode or "Tap",
             Callback = function(m)
@@ -259,6 +270,7 @@ return function(context)
 
         MacroTab:Slider({
             Title = "B" .. bNum .. " Hold Time (s)",
+            Icon = "clock",
             Width = 200,
             Value = {
                 Min = 0,
@@ -275,6 +287,7 @@ return function(context)
 
         MacroTab:Slider({
             Title = "B" .. bNum .. " Post-Skill Jumps",
+            Icon = "arrow-up",
             Width = 200,
             Value = {
                 Min = 0,
