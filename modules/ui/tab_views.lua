@@ -167,7 +167,7 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils, 
     switchBtn.Name = "SwitchVisual"
     switchBtn.Size = UDim2.new(0, 40, 0, 22)
     switchBtn.Position = UDim2.new(1, -44, 0.5, -11)
-    switchBtn.BackgroundColor3 = state and Color3.fromRGB(175, 105, 255) or Color3.fromRGB(45, 40, 60)
+    switchBtn.BackgroundColor3 = state and Color3.fromRGB(195, 115, 255) or Color3.fromRGB(38, 30, 52)
     switchBtn.BorderSizePixel = 0
     switchBtn.ZIndex = 4
     switchBtn.Parent = row
@@ -177,15 +177,15 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils, 
     swCorner.Parent = switchBtn
 
     local swStroke = Instance.new("UIStroke")
-    swStroke.Color = state and Color3.fromRGB(220, 170, 255) or Color3.fromRGB(75, 65, 95)
-    swStroke.Thickness = 1.2
+    swStroke.Color = state and Color3.fromRGB(255, 215, 255) or Color3.fromRGB(80, 65, 110)
+    swStroke.Thickness = state and 1.6 or 1.2
     swStroke.Parent = switchBtn
 
     local thumb = Instance.new("Frame")
     thumb.Name = "Thumb"
     thumb.Size = UDim2.new(0, 16, 0, 16)
     thumb.Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
-    thumb.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 175, 195)
+    thumb.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(175, 165, 195)
     thumb.BorderSizePixel = 0
     thumb.ZIndex = 5
     thumb.Parent = switchBtn
@@ -196,18 +196,20 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils, 
 
     local function updateVisual(anim)
         local dur = anim and 0.15 or 0
-        local targetBg = state and Color3.fromRGB(175, 105, 255) or Color3.fromRGB(45, 40, 60)
-        local targetStroke = state and Color3.fromRGB(220, 170, 255) or Color3.fromRGB(75, 65, 95)
-        local targetThumbBg = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 175, 195)
+        local targetBg = state and Color3.fromRGB(195, 115, 255) or Color3.fromRGB(38, 30, 52)
+        local targetStroke = state and Color3.fromRGB(255, 215, 255) or Color3.fromRGB(80, 65, 110)
+        local targetStrokeThick = state and 1.6 or 1.2
+        local targetThumbBg = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(175, 165, 195)
         local targetPos = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
 
         if anim then
             TweenService:Create(switchBtn, TweenInfo.new(dur), { BackgroundColor3 = targetBg }):Play()
-            TweenService:Create(swStroke, TweenInfo.new(dur), { Color = targetStroke }):Play()
+            TweenService:Create(swStroke, TweenInfo.new(dur), { Color = targetStroke, Thickness = targetStrokeThick }):Play()
             TweenService:Create(thumb, TweenInfo.new(dur), { BackgroundColor3 = targetThumbBg, Position = targetPos }):Play()
         else
             switchBtn.BackgroundColor3 = targetBg
             swStroke.Color = targetStroke
+            swStroke.Thickness = targetStrokeThick
             thumb.BackgroundColor3 = targetThumbBg
             thumb.Position = targetPos
         end
@@ -560,10 +562,19 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     bCorner.Parent = btn
 
     local bStroke = Instance.new("UIStroke")
-    bStroke.Color = Color3.fromRGB(115, 80, 170)
-    bStroke.Thickness = 1.2
-    bStroke.Transparency = 0.35
+    bStroke.Color = Color3.fromRGB(185, 115, 255)
+    bStroke.Thickness = 1.4
+    bStroke.Transparency = 0.15
     bStroke.Parent = btn
+
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(bStroke, TweenInfo.new(0.12), { Color = Color3.fromRGB(245, 195, 255), Thickness = 1.8 }):Play()
+        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(42, 30, 65) }):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(bStroke, TweenInfo.new(0.12), { Color = Color3.fromRGB(185, 115, 255), Thickness = 1.4 }):Play()
+        TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(28, 22, 42) }):Play()
+    end)
 
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, -20, 1, 0)
@@ -571,7 +582,7 @@ local function createActionButton(parent, title, desc, onClick, Utils)
     lbl.BackgroundTransparency = 1
     lbl.Font = Enum.Font.GothamBold
     lbl.Text = title
-    lbl.TextColor3 = Color3.fromRGB(245, 240, 255)
+    lbl.TextColor3 = Color3.fromRGB(250, 245, 255)
     lbl.TextSize = 12
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.ZIndex = 5
@@ -583,7 +594,7 @@ local function createActionButton(parent, title, desc, onClick, Utils)
         if lastPress > 0 and (now - lastPress < 0.25) then return end
         lastPress = now
 
-        TweenService:Create(btn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(115, 55, 185) }):Play()
+        TweenService:Create(btn, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(155, 75, 245) }):Play()
         task.delay(0.1, function()
             TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = Color3.fromRGB(28, 22, 42) }):Play()
         end)

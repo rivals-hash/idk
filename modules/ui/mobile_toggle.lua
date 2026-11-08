@@ -40,19 +40,28 @@ function MobileToggle.create(parentScreenGui, onToggleCallback, Utils)
     corner.CornerRadius = UDim.new(1, 0)
     corner.Parent = toggleBtn
 
-    -- Vibrant Luminous Rim Stroke
+    -- Vibrant Neon Violet Luminous Rim Stroke
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(120, 180, 255)
-    stroke.Thickness = 1.6
-    stroke.Transparency = 0.35
+    stroke.Color = Color3.fromRGB(195, 125, 255)
+    stroke.Thickness = 2.2
+    stroke.Transparency = 0.05
     stroke.Parent = toggleBtn
 
-    -- Subtle Live Status Dot (Online / Active Indicator)
+    -- Subtle Neon Pulse Animation
+    pcall(function()
+        local pulseInfo = TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
+        TweenService:Create(stroke, pulseInfo, {
+            Color = Color3.fromRGB(245, 190, 255),
+            Thickness = 2.6
+        }):Play()
+    end)
+
+    -- Subtle Live Status Dot (Online / Active Indicator in Neon Emerald)
     local statusDot = Instance.new("Frame")
     statusDot.Name = "StatusDot"
     statusDot.Size = UDim2.new(0, 12, 0, 12)
     statusDot.Position = UDim2.new(1, -12, 1, -12)
-    statusDot.BackgroundColor3 = Color3.fromRGB(60, 255, 140)
+    statusDot.BackgroundColor3 = Color3.fromRGB(45, 255, 125)
     statusDot.BorderSizePixel = 0
     statusDot.ZIndex = 203
     statusDot.Parent = toggleBtn
@@ -62,7 +71,7 @@ function MobileToggle.create(parentScreenGui, onToggleCallback, Utils)
     dotCorner.Parent = statusDot
 
     local dotStroke = Instance.new("UIStroke")
-    dotStroke.Color = Color3.fromRGB(18, 18, 24)
+    dotStroke.Color = Color3.fromRGB(16, 12, 24)
     dotStroke.Thickness = 1.8
     dotStroke.Parent = statusDot
 

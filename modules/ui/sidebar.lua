@@ -154,10 +154,11 @@ function Sidebar.create(parentGui, options)
     local function refreshTabStates()
         for id, btnData in pairs(tabButtons) do
             local isActive = (id == activeTabId)
-            local targetBg = isActive and Color3.fromRGB(115, 55, 185) or Color3.fromRGB(20, 16, 28)
-            local targetBgTrans = isActive and 0.12 or 1
-            local targetStrokeColor = isActive and Color3.fromRGB(195, 125, 255) or Color3.fromRGB(60, 45, 80)
-            local targetStrokeTrans = isActive and 0.25 or 1
+            local targetBg = isActive and Color3.fromRGB(140, 65, 230) or Color3.fromRGB(20, 16, 28)
+            local targetBgTrans = isActive and 0.05 or 1
+            local targetStrokeColor = isActive and Color3.fromRGB(240, 175, 255) or Color3.fromRGB(80, 55, 120)
+            local targetStrokeTrans = isActive and 0 or 1
+            local targetStrokeThick = isActive and 1.8 or 1.0
             local targetTextColor = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(220, 215, 235)
             local targetIconColor = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 190, 225)
             local targetChevronColor = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 145, 185)
@@ -168,7 +169,8 @@ function Sidebar.create(parentGui, options)
             }):Play()
             TweenService:Create(btnData.Stroke, TweenInfo.new(0.15), {
                 Color = targetStrokeColor,
-                Transparency = targetStrokeTrans
+                Transparency = targetStrokeTrans,
+                Thickness = targetStrokeThick
             }):Play()
             TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
                 TextColor3 = targetTextColor
@@ -259,7 +261,8 @@ function Sidebar.create(parentGui, options)
 
         tabBtn.MouseEnter:Connect(function()
             if activeTabId ~= tabData.Id then
-                TweenService:Create(tabBtn, TweenInfo.new(0.12), { BackgroundTransparency = 0.6 }):Play()
+                TweenService:Create(tabBtn, TweenInfo.new(0.12), { BackgroundTransparency = 0.5, BackgroundColor3 = Color3.fromRGB(45, 32, 68) }):Play()
+                TweenService:Create(tabStroke, TweenInfo.new(0.12), { Transparency = 0.3, Color = Color3.fromRGB(195, 125, 255) }):Play()
                 TweenService:Create(tabLabel, TweenInfo.new(0.12), { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
                 TweenService:Create(tabIcon, TweenInfo.new(0.12), { ImageColor3 = Color3.fromRGB(255, 255, 255) }):Play()
                 TweenService:Create(chevron, TweenInfo.new(0.12), { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
@@ -268,7 +271,8 @@ function Sidebar.create(parentGui, options)
 
         tabBtn.MouseLeave:Connect(function()
             if activeTabId ~= tabData.Id then
-                TweenService:Create(tabBtn, TweenInfo.new(0.12), { BackgroundTransparency = 1 }):Play()
+                TweenService:Create(tabBtn, TweenInfo.new(0.12), { BackgroundTransparency = 1, BackgroundColor3 = Color3.fromRGB(20, 16, 28) }):Play()
+                TweenService:Create(tabStroke, TweenInfo.new(0.12), { Transparency = 1 }):Play()
                 TweenService:Create(tabLabel, TweenInfo.new(0.12), { TextColor3 = Color3.fromRGB(220, 215, 235) }):Play()
                 TweenService:Create(tabIcon, TweenInfo.new(0.12), { ImageColor3 = Color3.fromRGB(200, 190, 225) }):Play()
                 TweenService:Create(chevron, TweenInfo.new(0.12), { TextColor3 = Color3.fromRGB(160, 145, 185) }):Play()
