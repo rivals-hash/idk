@@ -67,30 +67,25 @@ local function getTarget()
     return bestPlayer, bestHRP
 end
 
--- Initialize Metamethod Hook for mouse.Hit / mouse.Target when Soru is triggered
+-- Safe Soru aimbot redirection without metamethod interception
 local function setupMetamethodHook()
-    if Flashstep.Hooked then return end
-    if not hookmetamethod then return end
-
-    pcall(function()
-        local oldIndex = nil
-        oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, key)
-            if not checkcaller() and self == Mouse and (key == "Hit" or key == "Target") then
-                if Flashstep.AimbotEnabled then
-                    local _, targetHRP = getTarget()
-                    if targetHRP then
-                        if key == "Hit" then
-                            return CFrame.new(targetHRP.Position)
-                        elseif key == "Target" then
-                            return targetHRP
-                        end
+    Flashstep.Hooked = true
+    if Flashstep.AimbotEnabled then
+        local _, targetHRP = getTarget()
+        if targetHRP then
+            pcall(function()
+                local RS = game:GetService("ReplicatedStorage")
+                local mm = RS:FindFirstChild("Mouse")
+                if mm and mm:IsA("ModuleScript") then
+                    local m = require(mm)
+                    if type(m) == "table" then
+                        m.Hit = CFrame.new(targetHRP.Position)
+                        m.Target = targetHRP
                     end
                 end
-            end
-            return oldIndex(self, key)
-        end))
-        Flashstep.Hooked = true
-    end)
+            end)
+        end
+    end
 end
 
 function Flashstep.enforceInfinite(char)

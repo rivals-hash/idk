@@ -561,65 +561,12 @@ local function isValidHookTarget(target)
     return true
 end
 
--- metatable hooks
+-- Non-destructive tool and skill redirection (Metamethod-free)
 function Core.installHooks()
-    if Core.IsHooked then return end
     Core.IsHooked = true
-
-    -- Hook 1: Mouse.__index (Hit, Target, UnitRay, Origin, Direction) for tool redirection
-    local mouse = LocalPlayer and LocalPlayer:GetMouse()
-    if mouse and hookmetamethod then
-        pcall(function()
-            local oldIndex = nil
-            local inHook = false
-            oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, key)
-                if inHook then return oldIndex(self, key) end
-                if checkcaller and checkcaller() then return oldIndex(self, key) end
-
-                if typeof(self) == "Instance" and self == mouse and (key == "Hit" or key == "Target" or key == "UnitRay" or key == "Origin" or key == "Direction") then
-                    inHook = true
-                    local okTarget, target = pcall(function()
-                        return Core.CurrentTargetPart or _G.currentSilentAimTarget or _G.DarlingSilentAimTarget
-                    end)
-                    if okTarget and target and isValidHookTarget(target) then
-                        local activeKey = Core.CurrentSkillKey
-                        if activeKey and Core.isKeyBlacklisted(Core.CurrentToolCategory, activeKey) then
-                            inHook = false
-                            return oldIndex(self, key)
-                        end
-                        local isSword = (Core.CurrentToolCategory == "Sword") or (Core.CurrentTool and (string.find(Core.CurrentTool.Name, "Sword") or string.find(Core.CurrentTool.Name, "Buddy")))
-                        local tp = (isSword and Core.CurrentTargetRawPosition) or (target and target.Position) or Core.CurrentTargetPosition or Core.CurrentTargetRawPosition
-                        if tp and typeof(tp) == "Vector3" then
-                            local cam = Workspace.CurrentCamera
-                            local cp = cam and cam.CFrame and cam.CFrame.Position
-                            if cp then
-                                local delta = tp - cp
-                                local lookDir = (delta.Magnitude > 0.001) and delta.Unit or Vector3.new(0, 0, -1)
-                                if key == "Hit" then
-                                    inHook = false
-                                    return CFrame.lookAt(tp, tp + lookDir)
-                                elseif key == "Target" then
-                                    inHook = false
-                                    return target
-                                elseif key == "UnitRay" then
-                                    inHook = false
-                                    return Ray.new(cp, lookDir)
-                                elseif key == "Origin" then
-                                    inHook = false
-                                    return cp
-                                elseif key == "Direction" then
-                                    inHook = false
-                                    return lookDir
-                                end
-                            end
-                        end
-                    end
-                    inHook = false
-                end
-                return oldIndex(self, key)
-            end))
-        end)
-    end
+    -- Blox Fruits natively reads ReplicatedStorage.Mouse.Hit and ReplicatedStorage.Mouse.Target.
+    -- Frame-by-frame updates in updateTargetCycle redirect all skills and attacks safely
+    -- without any metamethod hooks that cause Byfron / 64-bit executor crashes.
 end
 
 -- ============================================================================

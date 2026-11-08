@@ -92,61 +92,25 @@ local function updateTarget()
     if part then
         SilentAim.CurrentTargetPosition = part.Position
         _G.currentSilentAimTarget = part
+        pcall(function()
+            local RS = game:GetService("ReplicatedStorage")
+            local mm = RS:FindFirstChild("Mouse")
+            if mm and mm:IsA("ModuleScript") then
+                local m = require(mm)
+                if type(m) == "table" then
+                    m.Hit = CFrame.new(part.Position)
+                    m.Target = part
+                end
+            end
+        end)
     else
         SilentAim.CurrentTargetPosition = nil
     end
 end
 
--- Metamethod Hook for Mouse.Hit and Mouse.Target (Unified with Core)
-local inHook = false
+-- Safe redirection without metamethod interception
 function SilentAim.installHook()
-    if SilentAim.IsHooked then return end
     SilentAim.IsHooked = true
-
-    -- If AimbotCore is active, let it handle the single unified hook
-    local core = _G.MonodyCombatCore or _G.DarlingCombatCore
-    if core and core.installHooks then
-        pcall(core.installHooks)
-        return
-    end
-
-    local mouse = LocalPlayer and LocalPlayer:GetMouse()
-    if not mouse then return end
-
-    if hookmetamethod then
-        local oldIndex = nil
-        oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, key)
-            if inHook then return oldIndex(self, key) end
-            if (checkcaller and checkcaller()) then return oldIndex(self, key) end
-
-            if self == mouse and (key == "Hit" or key == "Target") then
-                inHook = true
-                local target = SilentAim.CurrentTargetPart or _G.currentSilentAimTarget
-                if (SilentAim.Enabled or SilentAim.SoruSilent) and target and target.Parent then
-                    local tp = SilentAim.CurrentTargetPosition or target.Position
-                    if tp and typeof(tp) == "Vector3" then
-                        if key == "Hit" then
-                            inHook = false
-                            local cam = Workspace.CurrentCamera
-                            local cp = cam and cam.CFrame.Position
-                            if cp then
-                                local look = (tp - cp)
-                                if look.Magnitude > 0.001 then
-                                    return CFrame.lookAt(tp, tp + look.Unit)
-                                end
-                            end
-                            return CFrame.new(tp)
-                        elseif key == "Target" then
-                            inHook = false
-                            return target
-                        end
-                    end
-                end
-                inHook = false
-            end
-            return oldIndex(self, key)
-        end))
-    end
 end
 
 function SilentAim.start()

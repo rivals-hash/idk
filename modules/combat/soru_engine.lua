@@ -138,28 +138,23 @@ end
 SoruEngine.getAimbotTarget = getAimbotTarget
 
 local function setupMetamethodHook()
-    if SoruEngine.Hooked then return end
-    if not hookmetamethod then return end
-
-    pcall(function()
-        local oldIndex = nil
-        oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, key)
-            if not checkcaller() and self == Mouse and (key == "Hit" or key == "Target") then
-                if SoruEngine.AimbotEnabled then
-                    local _, targetHRP = getAimbotTarget()
-                    if targetHRP then
-                        if key == "Hit" then
-                            return CFrame.new(targetHRP.Position)
-                        elseif key == "Target" then
-                            return targetHRP
-                        end
+    SoruEngine.Hooked = true
+    if SoruEngine.AimbotEnabled then
+        local _, targetHRP = getAimbotTarget()
+        if targetHRP then
+            pcall(function()
+                local RS = game:GetService("ReplicatedStorage")
+                local mm = RS:FindFirstChild("Mouse")
+                if mm and mm:IsA("ModuleScript") then
+                    local m = require(mm)
+                    if type(m) == "table" then
+                        m.Hit = CFrame.new(targetHRP.Position)
+                        m.Target = targetHRP
                     end
                 end
-            end
-            return oldIndex(self, key)
-        end))
-        SoruEngine.Hooked = true
-    end)
+            end)
+        end
+    end
 end
 
 -- --- Infinite Soru ---
