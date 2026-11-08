@@ -27,9 +27,9 @@ function MobileToggle.create(parentScreenGui, onToggleCallback, Utils)
     toggleBtn.Size = UDim2.new(1, 0, 1, 0)
     toggleBtn.Position = UDim2.new(0, 0, 0, 0)
     toggleBtn.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
-    toggleBtn.BackgroundTransparency = 0.15
+    toggleBtn.BackgroundTransparency = 1
     toggleBtn.BorderSizePixel = 0
-    toggleBtn.Image = "rbxassetid://93891873418133"
+    toggleBtn.Image = ""
     toggleBtn.ScaleType = Enum.ScaleType.Crop
     toggleBtn.AutoButtonColor = false
     toggleBtn.Active = true

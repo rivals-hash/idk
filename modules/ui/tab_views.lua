@@ -818,7 +818,12 @@ local function createFeatureCard(parent, title, AssetManager)
     bgImg.Name = "CardBg"
     bgImg.Size = UDim2.new(1, 0, 1, 0)
     bgImg.BackgroundTransparency = 1
-    bgImg.Image = (AssetManager and AssetManager.get("card_bg.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
+    bgImg.Image = ""
+    if AssetManager and AssetManager.bindImage then
+        AssetManager.bindImage(bgImg, "card_bg.png")
+    else
+        bgImg.Image = (AssetManager and AssetManager.get("card_bg.png")) or ""
+    end
     bgImg.ScaleType = Enum.ScaleType.Stretch
     bgImg.ImageTransparency = 0.55
     bgImg.ZIndex = 1
@@ -936,7 +941,12 @@ function TabViews.build(tabName, parentContainer, options)
     bBg.Name = "BannerBg"
     bBg.Size = UDim2.new(1, 0, 1, 0)
     bBg.BackgroundTransparency = 1
-    bBg.Image = (AssetManager and AssetManager.get("card_bg.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
+    bBg.Image = ""
+    if AssetManager and AssetManager.bindImage then
+        AssetManager.bindImage(bBg, "card_bg.png")
+    else
+        bBg.Image = (AssetManager and AssetManager.get("card_bg.png")) or ""
+    end
     bBg.ScaleType = Enum.ScaleType.Stretch
     bBg.ImageTransparency = 0.5
     bBg.ZIndex = 1

@@ -58,20 +58,18 @@ function HomeView.create(parentContainer, dependencies)
         corner.CornerRadius = UDim.new(0, 10)
         corner.Parent = frame
 
-        local bg = nil
-        if customBg and #customBg > 0 then
-            bg = Instance.new("ImageLabel")
-            bg.Name = "Bg"
-            bg.Size = UDim2.new(1, 0, 1, 0)
-            bg.BackgroundTransparency = 1
-            bg.Image = customBg
-            bg.ScaleType = Enum.ScaleType.Stretch
-            bg.Parent = frame
+        local bg = Instance.new("ImageLabel")
+        bg.Name = "Bg"
+        bg.Size = UDim2.new(1, 0, 1, 0)
+        bg.BackgroundTransparency = 1
+        bg.BorderSizePixel = 0
+        bg.Image = (customBg and #customBg > 0) and customBg or ""
+        bg.ScaleType = Enum.ScaleType.Stretch
+        bg.Parent = frame
 
-            local bgCorner = Instance.new("UICorner")
-            bgCorner.CornerRadius = UDim.new(0, 10)
-            bgCorner.Parent = bg
-        end
+        local bgCorner = Instance.new("UICorner")
+        bgCorner.CornerRadius = UDim.new(0, 10)
+        bgCorner.Parent = bg
 
         local stroke = Instance.new("UIStroke")
         stroke.Color = Color3.fromRGB(195, 125, 255)

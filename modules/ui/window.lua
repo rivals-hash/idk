@@ -19,7 +19,6 @@ function Window.create(dependencies)
     local MusicVisualizer = dependencies.MusicVisualizer
     local MobileToggleMod = dependencies.MobileToggle
     local AssetManager = dependencies.AssetManager
-    local cardBgAsset = AssetManager and AssetManager.get("card_bg.png", "rbxassetid://139820186687064") or "rbxassetid://139820186687064"
 
     -- Destroy any previous existing instance of Monody_ScreenGui or Mobile Toggle across all parent targets
     pcall(function()

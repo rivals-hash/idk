@@ -134,6 +134,20 @@ function AssetManager.bindImage(imageObject, filename, fallbackId)
         pcall(function()
             imageObject.Image = asset
         end)
+    else
+        task.spawn(function()
+            for attempt = 1, 4 do
+                task.wait(0.5 * attempt)
+                if not (imageObject and imageObject.Parent) then break end
+                local retryAsset = AssetManager.get(filename, fallbackId)
+                if retryAsset and #retryAsset > 0 then
+                    pcall(function()
+                        imageObject.Image = retryAsset
+                    end)
+                    break
+                end
+            end
+        end)
     end
 end
 
