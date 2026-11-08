@@ -40,7 +40,14 @@ function MobileToggle.create(parentScreenGui, onToggleCallback, Utils)
     corner.CornerRadius = UDim.new(1, 0)
     corner.Parent = toggleBtn
 
-    -- Clean borderless avatar circle (no purple borders)
+    -- Subtle Neutral Border (No colors, purely neutral dark slate)
+    local btnStroke = Instance.new("UIStroke")
+    btnStroke.Name = "NeutralBorder"
+    btnStroke.Color = Color3.fromRGB(60, 60, 68)
+    btnStroke.Thickness = 1.4
+    btnStroke.Transparency = 0.2
+    btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    btnStroke.Parent = toggleBtn
 
     -- Subtle Live Status Dot (Online / Active Indicator in Neon Emerald)
     local statusDot = Instance.new("Frame")

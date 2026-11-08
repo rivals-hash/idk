@@ -149,11 +149,11 @@ function LoadingScreen.show(logoAsset)
     trackCorner.CornerRadius = UDim.new(1, 0)
     trackCorner.Parent = track
 
-    -- Fill Bar (Zero borders)
+    -- Fill Bar (Zero borders, Neutral clean silver/white)
     local fill = Instance.new("Frame")
     fill.Name = "Fill"
     fill.Size = UDim2.new(0, 0, 1, 0)
-    fill.BackgroundColor3 = Color3.fromRGB(235, 45, 65)
+    fill.BackgroundColor3 = Color3.fromRGB(210, 215, 228)
     fill.BorderSizePixel = 0
     fill.Parent = track
 
@@ -163,12 +163,12 @@ function LoadingScreen.show(logoAsset)
 
     local fillGradient = Instance.new("UIGradient")
     fillGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 75, 95)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(215, 30, 55)),
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(240, 242, 250)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(165, 170, 185)),
     })
     fillGradient.Parent = fill
 
-    -- Percentage Label
+    -- Percentage Label (Neutral clean text)
     local percent = Instance.new("TextLabel")
     percent.Name = "Percent"
     percent.Size = UDim2.new(1, -40, 0, 16)
@@ -178,7 +178,7 @@ function LoadingScreen.show(logoAsset)
     percent.BorderSizePixel = 0
     percent.Font = Enum.Font.GothamBold
     percent.Text = "0%"
-    percent.TextColor3 = Color3.fromRGB(240, 75, 95)
+    percent.TextColor3 = Color3.fromRGB(225, 228, 238)
     percent.TextSize = 12
     percent.Parent = card
 
