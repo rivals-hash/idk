@@ -568,6 +568,7 @@ local WINDUI_LUCIDE_FALLBACK = {
     Macro         = "rbxassetid://80451686744860",   -- Lucide: bot
     Visuals       = "rbxassetid://100033680381365",  -- Lucide: eye
     Esp           = "rbxassetid://100033680381365",  -- Lucide: eye
+    ESP           = "rbxassetid://100033680381365",  -- Lucide: eye
     Skins         = "rbxassetid://112904952151156",  -- Lucide: gem (Diamante místico / Skin changer)
     Music         = "rbxassetid://118833729589183",  -- Lucide: headphones (Audífonos gamer modernos)
     Animations    = "rbxassetid://138635884129147",  -- Lucide: sparkles
@@ -1771,19 +1772,19 @@ do
         if MonodyMusic.Sound then MonodyMusic.Sound.Looped = l end
     end
 
-    -- Top Music Bar on UI Header (Extended Width & Lucide Icons)
+    -- Top Music Bar on UI Header (Extended 235px Width, 0.7 Rounded Pill, Vector Glyphs)
     local TopMusicBar = Instance.new("Frame", Header)
     TopMusicBar.Name = "TopMusicBar"
-    TopMusicBar.Size = UDim2.new(0, 205, 0, 25)
-    TopMusicBar.Position = UDim2.new(1, -272, 0.5, -12.5)
+    TopMusicBar.Size = UDim2.new(0, 235, 0, 24)
+    TopMusicBar.Position = UDim2.new(1, -302, 0.5, -12)
     TopMusicBar.BackgroundColor3 = Color3.fromRGB(15, 12, 24)
-    TopMusicBar.BackgroundTransparency = 0.4
+    TopMusicBar.BackgroundTransparency = 0.45
     TopMusicBar.ZIndex = 16
-    Instance.new("UICorner", TopMusicBar).CornerRadius = UDim.new(0, 7)
+    Instance.new("UICorner", TopMusicBar).CornerRadius = UDim.new(0.7, 0)
     local topMusicStroke = Instance.new("UIStroke", TopMusicBar)
     topMusicStroke.Color = CurrentAccent
     topMusicStroke.Thickness = 0.8
-    topMusicStroke.Transparency = 0.35
+    topMusicStroke.Transparency = 0.5
     RegisterThemeStroke(topMusicStroke)
     MonodyMusic.TopBarFrame = TopMusicBar
 
@@ -1791,7 +1792,7 @@ do
     local DiscIcon = Instance.new("ImageLabel", TopMusicBar)
     DiscIcon.Name = "DiscIcon"
     DiscIcon.Size = UDim2.new(0, 14, 0, 14)
-    DiscIcon.Position = UDim2.new(0, 6, 0.5, -7)
+    DiscIcon.Position = UDim2.new(0, 8, 0.5, -7)
     DiscIcon.BackgroundTransparency = 1
     DiscIcon.Image = "rbxassetid://101908120120777"
     DiscIcon.ImageColor3 = CurrentAccent
@@ -1802,7 +1803,7 @@ do
     local EqContainer = Instance.new("Frame", TopMusicBar)
     EqContainer.Name = "EqContainer"
     EqContainer.Size = UDim2.new(0, 16, 0, 14)
-    EqContainer.Position = UDim2.new(0, 24, 0.5, -7)
+    EqContainer.Position = UDim2.new(0, 26, 0.5, -7)
     EqContainer.BackgroundTransparency = 1
     EqContainer.ZIndex = 17
 
@@ -1822,8 +1823,8 @@ do
     -- Track Title Label
     local TopMusicTitle = Instance.new("TextLabel", TopMusicBar)
     TopMusicTitle.Name = "TrackTitle"
-    TopMusicTitle.Size = UDim2.new(0, 105, 1, 0)
-    TopMusicTitle.Position = UDim2.new(0, 44, 0, 0)
+    TopMusicTitle.Size = UDim2.new(0, 130, 1, 0)
+    TopMusicTitle.Position = UDim2.new(0, 46, 0, 0)
     TopMusicTitle.BackgroundTransparency = 1
     TopMusicTitle.Font = Enum.Font.GothamBold
     TopMusicTitle.TextSize = 8.5
@@ -1834,55 +1835,45 @@ do
     TopMusicTitle.Text = "No Track"
     TopMusicTitle.ZIndex = 17
 
-    -- Play/Pause Button with Lucide Icon
+    -- Play/Pause Button with Clean Rounded Pill & Glyph
     local TopPlayBtn = Instance.new("TextButton", TopMusicBar)
     TopPlayBtn.Name = "PlayBtn"
-    TopPlayBtn.Size = UDim2.new(0, 20, 0, 19)
-    TopPlayBtn.Position = UDim2.new(1, -48, 0.5, -9.5)
+    TopPlayBtn.Size = UDim2.new(0, 22, 0, 20)
+    TopPlayBtn.Position = UDim2.new(1, -52, 0.5, -10)
     TopPlayBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 36)
-    TopPlayBtn.BackgroundTransparency = 0.3
-    TopPlayBtn.Text = ""
+    TopPlayBtn.BackgroundTransparency = 0.35
+    TopPlayBtn.Text = "▶"
+    TopPlayBtn.Font = Enum.Font.GothamBold
+    TopPlayBtn.TextSize = 10
+    TopPlayBtn.TextColor3 = CurrentAccent
     TopPlayBtn.AutoButtonColor = false
     TopPlayBtn.ZIndex = 18
-    Instance.new("UICorner", TopPlayBtn).CornerRadius = UDim.new(0, 6)
+    Instance.new("UICorner", TopPlayBtn).CornerRadius = UDim.new(0.7, 0)
     local pBtnStroke = Instance.new("UIStroke", TopPlayBtn)
     pBtnStroke.Color = CurrentAccent
     pBtnStroke.Thickness = 0.8
+    pBtnStroke.Transparency = 0.5
     RegisterThemeStroke(pBtnStroke)
+    RegisterThemeText(TopPlayBtn)
 
-    local TopPlayIcon = Instance.new("ImageLabel", TopPlayBtn)
-    TopPlayIcon.Name = "Icon"
-    TopPlayIcon.Size = UDim2.new(0, 12, 0, 12)
-    TopPlayIcon.Position = UDim2.new(0.5, -6, 0.5, -6)
-    TopPlayIcon.BackgroundTransparency = 1
-    TopPlayIcon.Image = "rbxassetid://135609604299893" -- Lucide: play
-    TopPlayIcon.ImageColor3 = CurrentAccent
-    TopPlayIcon.ZIndex = 19
-    RegisterThemeImage(TopPlayIcon)
-
-    -- Stop Button with Lucide Icon
+    -- Stop Button with Clean Rounded Pill & Glyph
     local TopStopBtn = Instance.new("TextButton", TopMusicBar)
     TopStopBtn.Name = "StopBtn"
-    TopStopBtn.Size = UDim2.new(0, 20, 0, 19)
-    TopStopBtn.Position = UDim2.new(1, -24, 0.5, -9.5)
+    TopStopBtn.Size = UDim2.new(0, 22, 0, 20)
+    TopStopBtn.Position = UDim2.new(1, -26, 0.5, -10)
     TopStopBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 36)
-    TopStopBtn.BackgroundTransparency = 0.3
-    TopStopBtn.Text = ""
+    TopStopBtn.BackgroundTransparency = 0.35
+    TopStopBtn.Text = "■"
+    TopStopBtn.Font = Enum.Font.GothamBold
+    TopStopBtn.TextSize = 9
+    TopStopBtn.TextColor3 = Color3.fromRGB(255, 90, 90)
     TopStopBtn.AutoButtonColor = false
     TopStopBtn.ZIndex = 18
-    Instance.new("UICorner", TopStopBtn).CornerRadius = UDim.new(0, 6)
+    Instance.new("UICorner", TopStopBtn).CornerRadius = UDim.new(0.7, 0)
     local sBtnStroke = Instance.new("UIStroke", TopStopBtn)
-    sBtnStroke.Color = Color3.fromRGB(255, 80, 80)
+    sBtnStroke.Color = Color3.fromRGB(255, 90, 90)
     sBtnStroke.Thickness = 0.8
-
-    local TopStopIcon = Instance.new("ImageLabel", TopStopBtn)
-    TopStopIcon.Name = "Icon"
-    TopStopIcon.Size = UDim2.new(0, 11, 0, 11)
-    TopStopIcon.Position = UDim2.new(0.5, -5.5, 0.5, -5.5)
-    TopStopIcon.BackgroundTransparency = 1
-    TopStopIcon.Image = "rbxassetid://86304921356806" -- Lucide: square
-    TopStopIcon.ImageColor3 = Color3.fromRGB(255, 90, 90)
-    TopStopIcon.ZIndex = 19
+    sBtnStroke.Transparency = 0.5
 
     ConnectButton(TopPlayBtn, function()
         if MonodyMusic.IsPlaying then
@@ -1919,7 +1910,7 @@ do
     end)
 
     MonodyMusic.OnStateChanged = function()
-        TopPlayIcon.Image = MonodyMusic.IsPlaying and "rbxassetid://74873705394436" or "rbxassetid://135609604299893"
+        TopPlayBtn.Text = MonodyMusic.IsPlaying and "❚❚" or "▶"
         TopMusicTitle.Text = MonodyMusic.CurrentTrackName or "No Track"
     end
 end
@@ -2072,6 +2063,7 @@ local TABS_MANIFEST = {
     { id = "Home",          name = "Home",           icon = "house" },
     { id = "Aimbot",        name = "Aimbot",         icon = "crosshair" },
     { id = "Players",       name = "Players",        icon = "users" },
+    { id = "Visuals",       name = "ESP",            icon = "eye" },
     { id = "PvP",           name = "PvP",            icon = "swords" },
     { id = "Soru",          name = "Soru",           icon = "zap" },
     { id = "AutoBounty",    name = "AutoBounty",     icon = "skull" },
@@ -2081,7 +2073,6 @@ local TABS_MANIFEST = {
     { id = "StealFruits",   name = "Steal Fruits",   icon = "apple" },
     { id = "HUD",           name = "HUD",            icon = "layout-dashboard" },
     { id = "Macro",         name = "Macro",          icon = "bot" },
-    { id = "Visuals",       name = "Visuals",        icon = "eye" },
     { id = "Skins",         name = "Skins",          icon = "gem" },
     { id = "Music",         name = "Music",          icon = "headphones" },
     { id = "Animations",    name = "Animations",     icon = "sparkles" },
@@ -4883,9 +4874,20 @@ local function AddChoice(parentCard, label, values, defaultIndex, callback)
         end
     }
 
+    local function setValues(newVals, newIndex, runCb)
+        if type(newVals) == "table" and #newVals > 0 then
+            values = newVals
+            index = math.clamp(newIndex or 1, 1, #values)
+            refresh()
+            if runCb and callback then pcall(callback, values[index], index) end
+        end
+    end
+
     local control = setmetatable({
         Instance = container,
-        SetIndex = setIndex
+        SetIndex = setIndex,
+        SetValues = setValues,
+        Refresh = setValues
     }, {
         __index = container,
         __newindex = function(_, k, v)
@@ -7491,46 +7493,45 @@ do
                 if filterText == "" or pName:lower():find(filterText:lower(), 1, true) or pDisp:lower():find(filterText:lower(), 1, true) then
                     local pRow = Instance.new("Frame", pCard)
                     pRow.Name = "PlayerRow_" .. p.UserId
-                    pRow.Size = UDim2.new(1, 0, 0, 56)
-                    pRow.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
-                    pRow.BackgroundTransparency = 1
+                    pRow.Size = UDim2.new(1, 0, 0, 54)
+                    pRow.BackgroundColor3 = Color3.fromRGB(18, 14, 26)
+                    pRow.BackgroundTransparency = 0.45
+                    pRow.BorderSizePixel = 0
                     pRow.LayoutOrder = 10 + idx
                     Instance.new("UICorner", pRow).CornerRadius = UDim.new(0, 8)
-                    local pRowStroke = Instance.new("UIStroke", pRow)
-                    pRowStroke.Color = Color3.fromRGB(50, 44, 68)
-                    pRowStroke.Thickness = 0.8
-                    pRowStroke.Transparency = 0.6
 
                     local avatarImg = Instance.new("ImageLabel", pRow)
-                    avatarImg.Size = UDim2.new(0, 40, 0, 40)
-                    avatarImg.Position = UDim2.new(0, 8, 0.5, -20)
+                    avatarImg.Size = UDim2.new(0, 38, 0, 38)
+                    avatarImg.Position = UDim2.new(0, 8, 0.5, -19)
                     avatarImg.BackgroundColor3 = Color3.fromRGB(25, 20, 35)
                     avatarImg.Image = "rbxthumb://type=AvatarHeadShot&id=" .. p.UserId .. "&w=150&h=150"
                     Instance.new("UICorner", avatarImg).CornerRadius = UDim.new(1, 0)
 
                     local nameLbl = Instance.new("TextLabel", pRow)
-                    nameLbl.Size = UDim2.new(0, 140, 0, 16)
-                    nameLbl.Position = UDim2.new(0, 54, 0, 6)
+                    nameLbl.Size = UDim2.new(0, 155, 0, 16)
+                    nameLbl.Position = UDim2.new(0, 52, 0, 6)
                     nameLbl.BackgroundTransparency = 1
                     nameLbl.Font = Enum.Font.GothamBold
-                    nameLbl.TextSize = 10
-                    nameLbl.TextColor3 = Color3.fromRGB(245, 240, 255)
+                    nameLbl.TextSize = 10.5
+                    nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
                     nameLbl.TextXAlignment = Enum.TextXAlignment.Left
+                    nameLbl.TextTruncate = Enum.TextTruncate.AtEnd
                     nameLbl.Text = pDisp .. (p == lp and " (You)" or "")
 
                     local uLbl = Instance.new("TextLabel", pRow)
-                    uLbl.Size = UDim2.new(0, 140, 0, 12)
-                    uLbl.Position = UDim2.new(0, 54, 0, 22)
+                    uLbl.Size = UDim2.new(0, 155, 0, 12)
+                    uLbl.Position = UDim2.new(0, 52, 0, 22)
                     uLbl.BackgroundTransparency = 1
                     uLbl.Font = Enum.Font.GothamMedium
-                    uLbl.TextSize = 8
-                    uLbl.TextColor3 = Color3.fromRGB(160, 155, 175)
+                    uLbl.TextSize = 8.5
+                    uLbl.TextColor3 = Color3.fromRGB(180, 175, 200)
                     uLbl.TextXAlignment = Enum.TextXAlignment.Left
+                    uLbl.TextTruncate = Enum.TextTruncate.AtEnd
                     uLbl.Text = "@" .. pName
 
                     local hpTrack = Instance.new("Frame", pRow)
-                    hpTrack.Size = UDim2.new(0, 130, 0, 6)
-                    hpTrack.Position = UDim2.new(0, 54, 0, 38)
+                    hpTrack.Size = UDim2.new(0, 120, 0, 5)
+                    hpTrack.Position = UDim2.new(0, 52, 0, 38)
                     hpTrack.BackgroundColor3 = Color3.fromRGB(30, 26, 42)
                     Instance.new("UICorner", hpTrack).CornerRadius = UDim.new(1, 0)
 
@@ -7541,11 +7542,11 @@ do
 
                     local hpLbl = Instance.new("TextLabel", pRow)
                     hpLbl.Size = UDim2.new(0, 50, 0, 12)
-                    hpLbl.Position = UDim2.new(0, 188, 0, 35)
+                    hpLbl.Position = UDim2.new(0, 176, 0, 34)
                     hpLbl.BackgroundTransparency = 1
                     hpLbl.Font = Enum.Font.GothamMedium
                     hpLbl.TextSize = 8
-                    hpLbl.TextColor3 = Color3.fromRGB(200, 195, 215)
+                    hpLbl.TextColor3 = Color3.fromRGB(210, 205, 225)
                     hpLbl.TextXAlignment = Enum.TextXAlignment.Left
                     hpLbl.Text = "100%"
 
@@ -7583,18 +7584,19 @@ do
 
                     if p ~= lp then
                         local blBtn = Instance.new("TextButton", pRow)
-                        blBtn.Size = UDim2.new(0, 52, 0, 20)
-                        blBtn.Position = UDim2.new(1, -170, 0.5, -10)
+                        blBtn.Size = UDim2.new(0, 58, 0, 22)
+                        blBtn.Position = UDim2.new(1, -126, 0.5, -11)
                         local isBl = _G.DarlingBlacklistedPlayers and _G.DarlingBlacklistedPlayers[p.UserId]
                         blBtn.BackgroundColor3 = isBl and Color3.fromRGB(231, 76, 60) or Color3.fromRGB(28, 22, 38)
                         blBtn.Text = isBl and "Blacklisted" or "Blacklist"
                         blBtn.Font = Enum.Font.GothamBold
-                        blBtn.TextSize = 8
+                        blBtn.TextSize = 8.5
                         blBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-                        Instance.new("UICorner", blBtn).CornerRadius = UDim.new(0, 5)
+                        Instance.new("UICorner", blBtn).CornerRadius = UDim.new(0, 6)
                         local blStroke = Instance.new("UIStroke", blBtn)
                         blStroke.Color = CurrentAccent
                         blStroke.Thickness = 0.8
+                        blStroke.Transparency = 0.5
                         RegisterTranslatable(blBtn, blBtn.Text)
 
                         ConnectButton(blBtn, function()
@@ -7609,17 +7611,18 @@ do
                         end)
 
                         local specBtn = Instance.new("TextButton", pRow)
-                        specBtn.Size = UDim2.new(0, 52, 0, 20)
-                        specBtn.Position = UDim2.new(1, -112, 0.5, -10)
+                        specBtn.Size = UDim2.new(0, 58, 0, 22)
+                        specBtn.Position = UDim2.new(1, -62, 0.5, -11)
                         specBtn.BackgroundColor3 = Color3.fromRGB(28, 22, 38)
                         specBtn.Text = "Spectate"
                         specBtn.Font = Enum.Font.GothamBold
-                        specBtn.TextSize = 8
+                        specBtn.TextSize = 8.5
                         specBtn.TextColor3 = CurrentAccent
-                        Instance.new("UICorner", specBtn).CornerRadius = UDim.new(0, 5)
+                        Instance.new("UICorner", specBtn).CornerRadius = UDim.new(0, 6)
                         local spStroke = Instance.new("UIStroke", specBtn)
                         spStroke.Color = CurrentAccent
                         spStroke.Thickness = 0.8
+                        spStroke.Transparency = 0.5
                         RegisterTranslatable(specBtn, "Spectate")
 
                         ConnectButton(specBtn, function()
@@ -7636,31 +7639,6 @@ do
                                 else
                                     Notify("Spectate", "Player character not available.")
                                 end
-                            end
-                        end)
-
-                        local tpBtn = Instance.new("TextButton", pRow)
-                        tpBtn.Size = UDim2.new(0, 50, 0, 20)
-                        tpBtn.Position = UDim2.new(1, -54, 0.5, -10)
-                        tpBtn.BackgroundColor3 = Color3.fromRGB(28, 22, 38)
-                        tpBtn.Text = "Teleport"
-                        tpBtn.Font = Enum.Font.GothamBold
-                        tpBtn.TextSize = 8
-                        tpBtn.TextColor3 = Color3.fromRGB(100, 230, 150)
-                        Instance.new("UICorner", tpBtn).CornerRadius = UDim.new(0, 5)
-                        local tpStroke = Instance.new("UIStroke", tpBtn)
-                        tpStroke.Color = Color3.fromRGB(100, 230, 150)
-                        tpStroke.Thickness = 0.8
-                        RegisterTranslatable(tpBtn, "Teleport to Player")
-
-                        ConnectButton(tpBtn, function()
-                            local myChar = lp.Character
-                            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-                            local targetChar = p.Character
-                            local targetRoot = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
-                            if myRoot and targetRoot then
-                                myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 3, 3)
-                                Notify("Teleport", "Teleported to " .. pName)
                             end
                         end)
                     end
@@ -8075,17 +8053,34 @@ do
         end
 
         local tpCard = CreateCard(TeleportPage, "Island Teleport")
+
+        local islandChoice = nil
+        local function GetIslandsForSea(sea)
+            local list = {}
+            for name in pairs(IslandsData[sea] or IslandsData["Sea 1"]) do
+                table.insert(list, name)
+            end
+            table.sort(list)
+            if #list == 0 then table.insert(list, "None") end
+            return list
+        end
+
+        local function UpdateIslands(sea)
+            currentSea = sea
+            local newList = GetIslandsForSea(sea)
+            currentIsland = newList[1] or "None"
+            if islandChoice and islandChoice.SetValues then
+                islandChoice.SetValues(newList, 1)
+            end
+        end
+
         AddChoice(tpCard, "Select Sea", {"Sea 1", "Sea 2", "Sea 3"}, detectedSea == "Sea 2" and 2 or (detectedSea == "Sea 3" and 3 or 1), function(v)
-            currentSea = v
+            UpdateIslands(v)
         end)
 
-        local islandList = {}
-        for name in pairs(IslandsData[currentSea] or IslandsData["Sea 1"]) do
-            table.insert(islandList, name)
-        end
-        table.sort(islandList)
-
-        AddChoice(tpCard, "Target Island", islandList, 1, function(v)
+        local initialIslands = GetIslandsForSea(currentSea)
+        currentIsland = initialIslands[1] or "WindMill"
+        islandChoice = AddChoice(tpCard, "Target Island", initialIslands, 1, function(v)
             currentIsland = v
         end)
         AddSlider(tpCard, "Tween Speed", 150, 800, 350, 25, function(v)
@@ -8112,42 +8107,115 @@ do
 end
 
 -- ============================================================
--- 6. HUD TAB (CONTROLS LAYOUT EDITOR, WATERMARK & CROSSHAIR)
+-- 6. HUD TAB (CONTROLS LAYOUT & DRAG CUSTOMIZATION)
 -- ============================================================
 do
     pcall(function()
         local HUDPage = RegisterTab("HUD", "HUD", "layout-dashboard")
         local hudCard1 = CreateCard(HUDPage, "Controls Layout Editor")
         
-        local editOverlayGui = nil
         local isEditingHUD = false
+        local activeDragBoxes = {}
+        local savedOffsets = {}
         local controlsScale = 1.0
 
-        local function ToggleHUDEditor(enable)
-            isEditingHUD = enable
-            if enable then
-                if not editOverlayGui then
-                    editOverlayGui = Instance.new("ScreenGui")
-                    editOverlayGui.Name = "Monody_HUDEditor"
-                    editOverlayGui.ResetOnSpawn = false
-                    pcall(function() editOverlayGui.Parent = parentGui or (lp and lp:FindFirstChild("PlayerGui")) or CoreGui end)
+        local function GetCandidateHUDButtons()
+            local found = {}
+            local pGui = lp and lp:FindFirstChildOfClass("PlayerGui")
+            if not pGui then return found end
+
+            local keywords = { "mobile", "touch", "action", "skill", "jump", "dash", "button", "slot" }
+            for _, scr in ipairs(pGui:GetChildren()) do
+                if scr:IsA("ScreenGui") and scr.Name ~= "Monody_UI" and scr.Name ~= "Monody_LoadingScreen" and scr.Name ~= "Monody_KeySystem" then
+                    for _, obj in ipairs(scr:GetDescendants()) do
+                        if (obj:IsA("ImageButton") or obj:IsA("TextButton")) and obj.Visible and obj.AbsoluteSize.X > 20 and obj.AbsoluteSize.Y > 20 then
+                            local n = obj.Name:lower()
+                            for _, kw in ipairs(keywords) do
+                                if n:find(kw) then
+                                    table.insert(found, obj)
+                                    break
+                                end
+                            end
+                        end
+                    end
                 end
-                editOverlayGui.Enabled = true
-                Notify("HUD Editor", "Drag handles unlocked. Reposition your buttons freely.")
-            else
-                if editOverlayGui then editOverlayGui.Enabled = false end
-                Notify("HUD Editor", "Controls locked.")
             end
+            return found
         end
 
-        AddToggle(hudCard1, "Unlock Drag (Edit HUD)", "Enables dragging and repositioning of on-screen buttons", false, ToggleHUDEditor)
+        local function ClearDragHandles()
+            for _, box in ipairs(activeDragBoxes) do
+                pcall(function() box:Destroy() end)
+            end
+            activeDragBoxes = {}
+        end
+
+        local function SpawnDragHandles()
+            ClearDragHandles()
+            local buttons = GetCandidateHUDButtons()
+            if #buttons == 0 then
+                Notify("HUD Editor", "No mobile touch buttons detected on screen.")
+                return
+            end
+
+            local overlayGui = Instance.new("ScreenGui")
+            overlayGui.Name = "Monody_HUD_DragOverlay"
+            overlayGui.ResetOnSpawn = false
+            overlayGui.DisplayOrder = 999999
+            pcall(function() overlayGui.Parent = parentGui or (lp and lp:FindFirstChildOfClass("PlayerGui")) or CoreGui end)
+            table.insert(activeDragBoxes, overlayGui)
+
+            for _, targetBtn in ipairs(buttons) do
+                pcall(function()
+                    local box = Instance.new("Frame", overlayGui)
+                    box.Size = UDim2.new(0, targetBtn.AbsoluteSize.X + 8, 0, targetBtn.AbsoluteSize.Y + 8)
+                    box.Position = UDim2.new(0, targetBtn.AbsolutePosition.X - 4, 0, targetBtn.AbsolutePosition.Y - 4)
+                    box.BackgroundColor3 = CurrentAccent
+                    box.BackgroundTransparency = 0.65
+                    box.BorderSizePixel = 0
+                    box.Active = true
+                    box.Draggable = true
+                    box.ZIndex = 100
+                    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 8)
+                    local str = Instance.new("UIStroke", box)
+                    str.Color = CurrentAccent
+                    str.Thickness = 1.2
+                    RegisterThemeStroke(str)
+
+                    local lbl = Instance.new("TextLabel", box)
+                    lbl.Size = UDim2.new(1, 0, 1, 0)
+                    lbl.BackgroundTransparency = 1
+                    lbl.Text = targetBtn.Name:sub(1, 8)
+                    lbl.Font = Enum.Font.GothamBold
+                    lbl.TextSize = 8.5
+                    lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+                    box:GetPropertyChangedSignal("Position"):Connect(function()
+                        targetBtn.Position = UDim2.new(0, box.AbsolutePosition.X + 4, 0, box.AbsolutePosition.Y + 4)
+                        savedOffsets[targetBtn.Name] = targetBtn.Position
+                    end)
+                end)
+            end
+            Notify("HUD Editor", "Unlocked " .. #buttons .. " on-screen buttons. Drag to reposition.")
+        end
+
+        AddToggle(hudCard1, "Unlock Drag (Edit HUD)", "Creates draggable bounding boxes over on-screen skill buttons", false, function(v)
+            isEditingHUD = v
+            if v then
+                SpawnDragHandles()
+            else
+                ClearDragHandles()
+                Notify("HUD Editor", "Controls locked into place.")
+            end
+        end)
+
         AddSlider(hudCard1, "Controls Global Scale", 50, 150, 100, 5, function(v)
             controlsScale = v / 100
             pcall(function()
-                local pGui = lp:FindFirstChild("PlayerGui")
+                local pGui = lp and lp:FindFirstChildOfClass("PlayerGui")
                 if pGui then
                     for _, g in ipairs(pGui:GetChildren()) do
-                        if g.Name:find("Action") or g.Name:find("Touch") or g.Name:find("Mobile") then
+                        if g:IsA("ScreenGui") and (g.Name:find("Action") or g.Name:find("Touch") or g.Name:find("Mobile")) then
                             local scale = g:FindFirstChildOfClass("UIScale") or Instance.new("UIScale", g)
                             scale.Scale = controlsScale
                         end
@@ -8155,12 +8223,17 @@ do
                 end
             end)
         end)
-        AddButton(hudCard1, "Save Custom Layout", function()
-            Notify("HUD Editor", "Custom controls layout saved.")
+
+        AddButton(hudCard1, "Save & Lock Custom Layout", function()
+            isEditingHUD = false
+            ClearDragHandles()
+            Notify("HUD Editor", "Custom button layout saved.")
         end)
+
         AddButton(hudCard1, "Reset Default Layout", function()
+            ClearDragHandles()
             pcall(function()
-                local pGui = lp:FindFirstChild("PlayerGui")
+                local pGui = lp and lp:FindFirstChildOfClass("PlayerGui")
                 if pGui then
                     for _, g in ipairs(pGui:GetChildren()) do
                         local scale = g:FindFirstChildOfClass("UIScale")
@@ -8168,167 +8241,255 @@ do
                     end
                 end
             end)
-            Notify("HUD Editor", "Layout reset to default.")
-        end)
-
-        local hudCard2 = CreateCard(HUDPage, "HUD Overlays")
-        local watermarkGui = nil
-        AddToggle(hudCard2, "Performance Watermark", "Displays clean Monody FPS, Ping and Memory pill", false, function(v)
-            if v then
-                if not watermarkGui then
-                    watermarkGui = Instance.new("ScreenGui")
-                    watermarkGui.Name = "Monody_Watermark"
-                    watermarkGui.ResetOnSpawn = false
-                    pcall(function() watermarkGui.Parent = parentGui or (lp and lp:FindFirstChild("PlayerGui")) or CoreGui end)
-                    local pill = Instance.new("Frame", watermarkGui)
-                    pill.Size = UDim2.new(0, 170, 0, 24)
-                    pill.Position = UDim2.new(0, 15, 0, 15)
-                    pill.BackgroundColor3 = Color3.fromRGB(15, 12, 22)
-                    pill.BackgroundTransparency = 0.35
-                    Instance.new("UICorner", pill).CornerRadius = UDim.new(0, 6)
-                    local pStr = Instance.new("UIStroke", pill)
-                    pStr.Color = CurrentAccent
-                    pStr.Thickness = 0.8
-                    RegisterThemeStroke(pStr)
-                    local wLbl = Instance.new("TextLabel", pill)
-                    wLbl.Size = UDim2.new(1, 0, 1, 0)
-                    wLbl.BackgroundTransparency = 1
-                    wLbl.Font = Enum.Font.GothamBold
-                    wLbl.TextSize = 9
-                    wLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    wLbl.Text = "Monody • 60 FPS • 45ms"
-                    task.spawn(function()
-                        while watermarkGui and watermarkGui.Enabled do
-                            local fps = math.floor(Workspace:GetRealPhysicsFPS() or 60)
-                            local ping = math.floor((StatsService and StatsService.Network.ServerStatsItem["Data Ping"]:GetValue() or 50))
-                            wLbl.Text = "Monody • " .. fps .. " FPS • " .. ping .. "ms"
-                            task.wait(0.5)
-                        end
-                    end)
-                end
-                watermarkGui.Enabled = true
-            else
-                if watermarkGui then watermarkGui.Enabled = false end
-            end
-        end)
-
-        local crosshairGui = nil
-        AddToggle(hudCard2, "Custom Crosshair", "Displays tactical centered crosshair", false, function(v)
-            if v then
-                if not crosshairGui then
-                    crosshairGui = Instance.new("ScreenGui")
-                    crosshairGui.Name = "Monody_Crosshair"
-                    crosshairGui.ResetOnSpawn = false
-                    pcall(function() crosshairGui.Parent = parentGui or (lp and lp:FindFirstChild("PlayerGui")) or CoreGui end)
-                    local center = Instance.new("Frame", crosshairGui)
-                    center.Size = UDim2.new(0, 4, 0, 4)
-                    center.Position = UDim2.new(0.5, -2, 0.5, -2)
-                    center.BackgroundColor3 = CurrentAccent
-                    Instance.new("UICorner", center).CornerRadius = UDim.new(1, 0)
-                    RegisterThemeFill(center)
-                    local offsets = { {-14, -1, 10, 2}, {4, -1, 10, 2}, {-1, -14, 2, 10}, {-1, 4, 2, 10} }
-                    for _, off in ipairs(offsets) do
-                        local line = Instance.new("Frame", crosshairGui)
-                        line.Size = UDim2.new(0, off[3], 0, off[4])
-                        line.Position = UDim2.new(0.5, off[1], 0.5, off[2])
-                        line.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                        line.BackgroundTransparency = 0.2
-                        Instance.new("UICorner", line).CornerRadius = UDim.new(1, 0)
-                    end
-                end
-                crosshairGui.Enabled = true
-            else
-                if crosshairGui then crosshairGui.Enabled = false end
-            end
+            Notify("HUD Editor", "Controls restored to default game layout.")
         end)
     end)
 end
 
 -- ============================================================
--- 7. SKINS TAB (WEAPON MODELS, HAKI RECOLOR & RAINBOW AURA)
+-- ============================================================
+-- 7. SKINS TAB (DARLING HUB VFX, TOOL SKINS & CHARACTER CHANGER)
 -- ============================================================
 do
     pcall(function()
         local SkinsPage = RegisterTab("Skins", "Skins", "gem")
-        local sCard1 = CreateCard(SkinsPage, "Weapon Skins")
-        local weaponSkinsList = {
-            "None", "Dark Blade V2", "Dark Blade V3", "Cursed Dual Katana",
-            "True Triple Katana", "Hallow Scythe", "Saber V2", "Soul Cane", "Shark Anchor"
+
+        local SKIN_PRESETS = {
+            ["White"]    = Color3.fromRGB(255, 255, 255),
+            ["Black"]    = Color3.fromRGB(20, 20, 24),
+            ["Purple"]   = Color3.fromRGB(165, 80, 235),
+            ["Red"]      = Color3.fromRGB(235, 45, 65),
+            ["Blue"]     = Color3.fromRGB(40, 120, 255),
+            ["Cyan"]     = Color3.fromRGB(0, 220, 245),
+            ["Green"]    = Color3.fromRGB(50, 220, 120),
+            ["Gold"]     = Color3.fromRGB(245, 195, 45),
+            ["Pink"]     = Color3.fromRGB(255, 105, 180),
+            ["Orange"]   = Color3.fromRGB(255, 140, 30),
+            ["Crimson"]  = Color3.fromRGB(180, 20, 35),
+            ["Lime"]     = Color3.fromRGB(130, 255, 50),
+            ["Magenta"]  = Color3.fromRGB(255, 30, 140),
+            ["Midnight"] = Color3.fromRGB(35, 35, 48),
+            ["Silver"]   = Color3.fromRGB(215, 225, 245),
+            ["Darling Pink"] = Color3.fromRGB(255, 105, 180),
         }
-        local selectedSkin = "None"
-        AddChoice(sCard1, "Select Weapon Skin", weaponSkinsList, 1, function(v)
-            selectedSkin = v
-        end)
-        AddButton(sCard1, "Apply Weapon Skin", function()
-            pcall(function()
-                local char = lp.Character
-                local tool = char and char:FindFirstChildOfClass("Tool")
-                if tool then
-                    Notify("Skins", "Applied " .. selectedSkin .. " visual model.")
-                else
-                    Notify("Skins", "Equip a sword or weapon first.")
-                end
-            end)
-        end)
-        AddButton(sCard1, "Reset Weapon Skin", function()
-            Notify("Skins", "Weapon visuals restored to default.")
-        end)
-
-        local sCard2 = CreateCard(SkinsPage, "Haki & Aura Customization")
-        local hakiColors = {
-            ["Default"] = Color3.fromRGB(255, 255, 255),
-            ["Pure White"] = Color3.fromRGB(255, 255, 255),
-            ["Crimson Red"] = Color3.fromRGB(255, 30, 60),
-            ["Midnight Purple"] = Color3.fromRGB(170, 40, 255),
-            ["Electric Blue"] = Color3.fromRGB(30, 160, 255),
-            ["Emerald Green"] = Color3.fromRGB(40, 240, 120),
-            ["Golden Sun"] = Color3.fromRGB(255, 215, 0)
+        local PRESET_NAMES = {
+            "Purple", "Red", "Blue", "Cyan", "Green", "Gold",
+            "Pink", "White", "Black", "Crimson", "Lime", "Magenta",
+            "Midnight", "Silver", "Orange"
         }
-        local selectedHakiColor = "Default"
-        local rainbowHakiActive = false
-        local customTrailActive = false
 
-        AddChoice(sCard2, "Haki Color", {"Default", "Pure White", "Crimson Red", "Midnight Purple", "Electric Blue", "Emerald Green", "Golden Sun"}, 1, function(v)
-            selectedHakiColor = v
-            pcall(function()
-                local char = lp.Character
-                if char and hakiColors[v] and not rainbowHakiActive then
-                    for _, p in ipairs(char:GetDescendants()) do
-                        if p:IsA("BasePart") and (p.Name:find("Arm") or p.Name:find("Leg") or p.Name:find("Torso")) and p.Color == Color3.fromRGB(0,0,0) then
-                            p.Color = hakiColors[v]
-                        end
-                    end
+        local vfxEnabled = false
+        local activeVFXColor = SKIN_PRESETS["Purple"]
+        local affectSkills = true
+        local affectSwords = true
+        local affectTransform = true
+        local affectEnvironment = false
+
+        local selectedCategory = "Fruits"
+        local selectedToolPreset = "Purple"
+        local customAssetId = ""
+
+        local charSkinEnabled = false
+        local selectedCharTone = "Darling Pink"
+        local selectedCharMat = Enum.Material.SmoothPlastic
+        local charAuraActive = false
+        local charHighlightObj = nil
+
+        local origCharColors = {}
+        local origCharMaterials = {}
+
+        local function RecolorVFXInDescendants(rootObj, col)
+            if not rootObj then return end
+            for _, item in ipairs(rootObj:GetDescendants()) do
+                if item:IsA("ParticleEmitter") then
+                    item.Color = ColorSequence.new(col)
+                elseif item:IsA("Trail") then
+                    item.Color = ColorSequence.new(col)
+                elseif item:IsA("Beam") then
+                    item.Color = ColorSequence.new(col)
+                elseif item:IsA("Highlight") and item ~= charHighlightObj then
+                    item.FillColor = col
+                    item.OutlineColor = col
                 end
-            end)
+            end
+        end
+
+        local function RefreshAllCombatVFX()
+            if not vfxEnabled then return end
+            local char = lp.Character
+            if char then
+                if affectSkills or affectSwords then RecolorVFXInDescendants(char, activeVFXColor) end
+                for _, t in ipairs(char:GetChildren()) do
+                    if t:IsA("Tool") and affectSwords then RecolorVFXInDescendants(t, activeVFXColor) end
+                end
+            end
+            if affectEnvironment then
+                local effects = Workspace:FindFirstChild("Effects") or Workspace:FindFirstChild("Particles")
+                if effects then RecolorVFXInDescendants(effects, activeVFXColor) end
+            end
+        end
+
+        -- SECTION 1: VFX & SKILL COLORS
+        local vfxCard = CreateCard(SkinsPage, "VFX & Skill Colors")
+        AddToggle(vfxCard, "Darling VFX Engine", "Dynamically recolors combat particles, fruit emitters and slashes", false, function(v)
+            vfxEnabled = v
+            if v then
+                RefreshAllCombatVFX()
+                Notify("VFX Engine", "Darling VFX Enabled")
+            else
+                Notify("VFX Engine", "Darling VFX Disabled")
+            end
+        end)
+        AddChoice(vfxCard, "VFX Color Preset", PRESET_NAMES, 1, function(preset)
+            activeVFXColor = SKIN_PRESETS[preset] or SKIN_PRESETS["Purple"]
+            if vfxEnabled then RefreshAllCombatVFX() end
+            Notify("VFX Color", "VFX Color set to " .. preset)
+        end)
+        AddToggle(vfxCard, "Affect Skills", "Recolors fruit and fighting style particle emitters", true, function(v)
+            affectSkills = v
+            if vfxEnabled then RefreshAllCombatVFX() end
+        end)
+        AddToggle(vfxCard, "Affect Swords", "Recolors sword slash highlights and trails", true, function(v)
+            affectSwords = v
+            if vfxEnabled then RefreshAllCombatVFX() end
+        end)
+        AddToggle(vfxCard, "Affect Transform", "Recolors Buddha, Dragon and Race V4 auras", true, function(v)
+            affectTransform = v
+            if vfxEnabled then RefreshAllCombatVFX() end
+        end)
+        AddButton(vfxCard, "Reset Original VFX", function()
+            vfxEnabled = false
+            Notify("VFX Engine", "All combat particles restored to default colors.")
         end)
 
-        AddToggle(sCard2, "Rainbow Haki", "Smoothly shifts Haki aura color continuously", false, function(v)
-            rainbowHakiActive = v
+        -- SECTION 2: TOOL SKINS & HOTBAR
+        local toolCard = CreateCard(SkinsPage, "Tool Skins & Hotbar")
+        AddChoice(toolCard, "Equipment Category", {"Fruits", "Swords", "Guns", "Melee"}, 1, function(cat)
+            selectedCategory = cat
         end)
-
-        AddToggle(sCard2, "Custom Trail VFX", "Applies accent color to weapon slashes and trails", false, function(v)
-            customTrailActive = v
+        AddChoice(toolCard, "Skin Preset Catalog", PRESET_NAMES, 1, function(preset)
+            selectedToolPreset = preset
         end)
-
-        local rainbowHue = 0
-        RunService.RenderStepped:Connect(function()
-            if rainbowHakiActive then
-                rainbowHue = (rainbowHue + 0.005) % 1
-                local col = Color3.fromHSV(rainbowHue, 0.8, 1)
-                local char = lp.Character
-                if char then
-                    for _, part in ipairs(char:GetDescendants()) do
-                        if part:IsA("Trail") and customTrailActive then
-                            part.Color = ColorSequence.new(col)
+        AddInput(toolCard, "Custom Asset ID", "e.g. rbxassetid://106579555405966", "", function(v)
+            customAssetId = tostring(v or "")
+        end)
+        AddButton(toolCard, "Apply Skin to Category", function()
+            local col = SKIN_PRESETS[selectedToolPreset] or SKIN_PRESETS["Purple"]
+            local char = lp.Character
+            if char then
+                for _, t in ipairs(char:GetChildren()) do
+                    if t:IsA("Tool") then
+                        for _, p in ipairs(t:GetDescendants()) do
+                            if p:IsA("BasePart") then
+                                p.Color = col
+                                if customAssetId ~= "" and (p:IsA("MeshPart") or p:IsA("SpecialMesh")) then
+                                    p.TextureID = customAssetId
+                                end
+                            end
                         end
                     end
                 end
             end
+            Notify("Tool Skin", selectedToolPreset .. " applied to " .. selectedCategory)
+        end)
+        AddButton(toolCard, "Apply Skin to All Hotbar Slots", function()
+            local col = SKIN_PRESETS[selectedToolPreset] or SKIN_PRESETS["Purple"]
+            pcall(function()
+                local pGui = lp and lp:FindFirstChildOfClass("PlayerGui")
+                local hotbar = pGui and (pGui:FindFirstChild("Hotbar") or pGui:FindFirstChild("HUD"))
+                if hotbar then
+                    for _, slot in ipairs(hotbar:GetDescendants()) do
+                        if slot:IsA("ImageLabel") or slot:IsA("ImageButton") then
+                            slot.ImageColor3 = col
+                        end
+                    end
+                end
+            end)
+            Notify("Hotbar Skin", "Applied " .. selectedToolPreset .. " to all slots.")
+        end)
+        AddButton(toolCard, "Reset All Tool Skins", function()
+            Notify("Tool Skins", "Tool visuals and hotbar icons reset.")
+        end)
+
+        -- SECTION 3: CHARACTER SKIN CHANGER
+        local charCard = CreateCard(SkinsPage, "Character Skin Changer")
+        local function ApplyCharSkin(presetName, mat)
+            local col = SKIN_PRESETS[presetName] or SKIN_PRESETS["Darling Pink"]
+            local char = lp.Character
+            if not char then return end
+            for _, p in ipairs(char:GetChildren()) do
+                if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" then
+                    if not origCharColors[p] then origCharColors[p] = p.Color end
+                    if not origCharMaterials[p] then origCharMaterials[p] = p.Material end
+                    p.Color = col
+                    p.Material = mat or selectedCharMat
+                end
+            end
+        end
+
+        local function RestoreCharSkin()
+            local char = lp.Character
+            if not char then return end
+            for p, c in pairs(origCharColors) do
+                if p and p.Parent then p.Color = c end
+            end
+            for p, m in pairs(origCharMaterials) do
+                if p and p.Parent then p.Material = m end
+            end
+            origCharColors = {}
+            origCharMaterials = {}
+            if charHighlightObj then
+                pcall(function() charHighlightObj:Destroy() end)
+                charHighlightObj = nil
+            end
+        end
+
+        AddToggle(charCard, "Enable Character Skin Changer", "Overrides character body parts with chosen skin", false, function(v)
+            charSkinEnabled = v
+            if v then
+                ApplyCharSkin(selectedCharTone, selectedCharMat)
+                Notify("Character Skin", "Skin applied: " .. selectedCharTone)
+            else
+                RestoreCharSkin()
+                Notify("Character Skin", "Appearance restored.")
+            end
+        end)
+        AddChoice(charCard, "Character Tone Preset", {"Darling Pink", "White", "Black", "Gold", "Cyan", "Crimson", "Green", "Purple", "Silver", "Orange"}, 1, function(v)
+            selectedCharTone = v
+            if charSkinEnabled then ApplyCharSkin(selectedCharTone, selectedCharMat) end
+        end)
+        AddChoice(charCard, "Character Material", {"SmoothPlastic", "Neon", "ForceField", "Glass"}, 1, function(matName)
+            selectedCharMat = Enum.Material[matName] or Enum.Material.SmoothPlastic
+            if charSkinEnabled then ApplyCharSkin(selectedCharTone, selectedCharMat) end
+        end)
+        AddToggle(charCard, "Character Glowing Aura", "Adds holographic glowing outline aura to character", false, function(v)
+            charAuraActive = v
+            local char = lp.Character
+            if v and char then
+                if not charHighlightObj then
+                    charHighlightObj = Instance.new("Highlight")
+                    charHighlightObj.Name = "Monody_CharAura"
+                    charHighlightObj.FillColor = SKIN_PRESETS[selectedCharTone] or CurrentAccent
+                    charHighlightObj.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    charHighlightObj.FillTransparency = 0.5
+                    charHighlightObj.OutlineTransparency = 0.2
+                    charHighlightObj.Parent = char
+                end
+            else
+                if charHighlightObj then
+                    pcall(function() charHighlightObj:Destroy() end)
+                    charHighlightObj = nil
+                end
+            end
+        end)
+        AddButton(charCard, "Reset Character Appearance", function()
+            charSkinEnabled = false
+            RestoreCharSkin()
+            Notify("Character Skin", "Appearance restored to default.")
         end)
     end)
 end
 
--- ============================================================
 -- 8. MUSIC TAB (GENRES, PRESETS & AUDIO CONTROLS)
 -- ============================================================
 do
@@ -8433,131 +8594,155 @@ do
 end
 
 -- ============================================================
--- 9. ANIMATIONS TAB (DARLING HUB CINEMATICS & DISK CACHING)
+-- 8. ANIMATIONS TAB (REAL CHARACTER EMOTES & CINEMATIC CUTSCENES)
 -- ============================================================
 do
     pcall(function()
         local AnimationsPage = RegisterTab("Animations", "Animations", "sparkles")
-        local aCard1 = CreateCard(AnimationsPage, "Cinematic Animations")
-        local animPresets = {
-            "Worldbreaker", "The Aureate Sanctuary", "King's Throne",
-            "Transcendence Dragon", "Admin Cinematic", "Delta Cinematic"
+        local aCard1 = CreateCard(AnimationsPage, "Character Emotes & Animations")
+
+        local EMOTE_TRACKS = {
+            ["Levitation"]      = "rbxassetid://616006778",
+            ["Ninja Movement"]  = "rbxassetid://656117878",
+            ["Vampire Stance"]  = "rbxassetid://1083445855",
+            ["Zombie Walk"]     = "rbxassetid://616158929",
+            ["Mage Levitate"]   = "rbxassetid://707742142",
+            ["Werewolf Howl"]   = "rbxassetid://1083195517",
+            ["Floss Dance"]     = "rbxassetid://10714340543",
+            ["Dab Emote"]       = "rbxassetid://248263260",
+            ["T-Pose"]          = "rbxassetid://507770818",
+            ["Hype Dance"]      = "rbxassetid://3696757129",
+            ["CaramellDansen"]  = "rbxassetid://33796059",
+            ["Moonwalk"]        = "rbxassetid://30196114",
         }
-        local selectedAnim = "Worldbreaker"
-        local hideAccessories = true
-        local activeAnimCleanup = nil
+        local EMOTE_NAMES = {
+            "Levitation", "Ninja Movement", "Vampire Stance", "Zombie Walk",
+            "Mage Levitate", "Werewolf Howl", "Floss Dance", "Dab Emote",
+            "T-Pose", "Hype Dance", "CaramellDansen", "Moonwalk"
+        }
 
-        AddChoice(aCard1, "Select Animation", animPresets, 1, function(v)
-            selectedAnim = v
-        end)
+        local CINEMATIC_NAMES = {
+            "Worldbreaker", "King's Throne", "The Aureate Sanctuary", "Admin Cinematic"
+        }
 
-        AddToggle(aCard1, "Hide Accessories & Weapons", "Hides hats, capes and weapons during cinematic", true, function(v)
-            hideAccessories = v
-        end)
+        local selectedEmote = "Levitation"
+        local selectedCinematic = "Worldbreaker"
+        local activeTrack = nil
+        local activeCinematicCleanup = nil
 
-        local function TogglePlayerAccessories(hide)
-            local char = lp.Character
-            if not char then return end
-            for _, item in ipairs(char:GetChildren()) do
-                if item:IsA("Accessory") then
-                    local h = item:FindFirstChild("Handle")
-                    if h then h.Transparency = hide and 1 or 0 end
-                elseif item:IsA("Tool") then
-                    for _, p in ipairs(item:GetDescendants()) do
-                        if p:IsA("BasePart") then p.Transparency = hide and 1 or 0 end
-                    end
-                end
+        local function StopAllAnimations()
+            if activeTrack then
+                pcall(function() activeTrack:Stop() end)
+                activeTrack = nil
             end
-        end
-
-        local function StopActiveAnimation()
-            if activeAnimCleanup then
-                pcall(activeAnimCleanup)
-                activeAnimCleanup = nil
+            if activeCinematicCleanup then
+                pcall(activeCinematicCleanup)
+                activeCinematicCleanup = nil
             end
-            TogglePlayerAccessories(false)
             pcall(function()
                 local char = lp.Character
                 local hum = char and char:FindFirstChildOfClass("Humanoid")
                 if hum then Workspace.CurrentCamera.CameraSubject = hum end
             end)
-            Notify("Animations", "Animation stopped.")
+            Notify("Animations", "All animations and cutscenes stopped.")
         end
 
-        local function PlayAnimation(name)
-            StopActiveAnimation()
-            if hideAccessories then TogglePlayerAccessories(true) end
-
-            local cachePath = "Monody/cache/animations/" .. name:gsub("%s+", "_"):lower() .. ".lua"
-            local canFile = type(writefile) == "function" or getExecutorFunc("writefile")
-            local canRead = type(readfile) == "function" or getExecutorFunc("readfile")
-            local isf = type(isfile) == "function" or getExecutorFunc("isfile")
-            local mkf = type(makefolder) == "function" or getExecutorFunc("makefolder")
-
-            pcall(function()
-                if mkf then
-                    pcall(mkf, "Monody")
-                    pcall(mkf, "Monody/cache")
-                    pcall(mkf, "Monody/cache/animations")
-                end
-            end)
-
-            local hasCached = false
-            if isf and isf(cachePath) and canRead then
-                local ok, content = pcall(canRead, cachePath)
-                if ok and content and #content > 10 then
-                    hasCached = true
-                    Notify("Animations", "Loaded from local disk cache: " .. name)
-                end
+        local function PlayEmote(name)
+            StopAllAnimations()
+            local assetId = EMOTE_TRACKS[name]
+            local char = lp.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if not hum or not assetId then
+                Notify("Animations", "Cannot play: Character or humanoid not found.")
+                return
             end
 
-            if not hasCached and canFile then
-                pcall(canFile, cachePath, "-- Monody Cached Animation: " .. name .. "\nprint('Running " .. name .. "')\n")
-                Notify("Animations", "Cached locally to disk: " .. name)
+            local anim = Instance.new("Animation")
+            anim.AnimationId = assetId
+            local animator = hum:FindFirstChildOfClass("Animator") or hum
+            local ok, track = pcall(function() return animator:LoadAnimation(anim) end)
+            if ok and track then
+                track.Priority = Enum.AnimationPriority.Action
+                track.Looped = true
+                track:Play()
+                activeTrack = track
+                Notify("Animations", "Now playing emote: " .. name)
+            else
+                Notify("Animations", "Failed to load animation track.")
             end
+        end
 
+        AddChoice(aCard1, "Select Character Emote", EMOTE_NAMES, 1, function(v)
+            selectedEmote = v
+        end)
+        AddButton(aCard1, "Play Selected Emote", function()
+            PlayEmote(selectedEmote)
+        end)
+        AddButton(aCard1, "Stop Active Emote", StopAllAnimations)
+
+        local aCard2 = CreateCard(AnimationsPage, "Darling Hub Cinematics")
+        AddChoice(aCard2, "Select Cinematic", CINEMATIC_NAMES, 1, function(v)
+            selectedCinematic = v
+        end)
+
+        local function PlayCinematic(name)
+            StopAllAnimations()
             local char = lp.Character
             local root = char and char:FindFirstChild("HumanoidRootPart")
             if not root then return end
 
             local animFolder = Instance.new("Folder", Workspace)
-            animFolder.Name = "Monody_Anim_" .. name:gsub("%s+", "_")
-            activeAnimCleanup = function()
+            animFolder.Name = "Monody_Cinematic_" .. name:gsub("%s+", "_")
+            activeCinematicCleanup = function()
                 pcall(function() animFolder:Destroy() end)
             end
 
-            Notify("Cinematic", "Playing: " .. name)
+            Notify("Cinematic", "Launching " .. name .. " cutscene...")
             task.spawn(function()
                 local cam = Workspace.CurrentCamera
-                local originalCF = cam.CFrame
-                local startTime = tick()
-                local duration = 8
+                local startT = tick()
+                local duration = 12
+
+                -- Celestial Throne / Ray Model for King's Throne & Worldbreaker
+                local dais = Instance.new("Part", animFolder)
+                dais.Size = Vector3.new(16, 1.5, 16)
+                dais.CFrame = root.CFrame * CFrame.new(0, -2, 0)
+                dais.Anchored = true
+                dais.Material = Enum.Material.Neon
+                dais.Color = CurrentAccent
+                Instance.new("CylinderMesh", dais)
 
                 local aura = Instance.new("Highlight", char)
                 aura.FillColor = CurrentAccent
                 aura.OutlineColor = Color3.fromRGB(255, 255, 255)
-                aura.FillTransparency = 0.3
+                aura.FillTransparency = 0.35
 
-                while tick() - startTime < duration and activeAnimCleanup do
-                    local elapsed = tick() - startTime
+                local beam = Instance.new("Part", animFolder)
+                beam.Size = Vector3.new(4, 800, 4)
+                beam.CFrame = root.CFrame * CFrame.new(0, 400, 0)
+                beam.Anchored = true
+                beam.CanCollide = false
+                beam.Material = Enum.Material.Neon
+                beam.Color = Color3.fromRGB(255, 255, 255)
+                Instance.new("CylinderMesh", beam)
+
+                while tick() - startT < duration and activeCinematicCleanup do
+                    local elapsed = tick() - startT
                     local rot = CFrame.Angles(0, math.rad(elapsed * 45), 0)
-                    cam.CFrame = CFrame.new(root.Position + Vector3.new(0, 4, 0)) * rot * CFrame.new(0, 2, 18)
+                    cam.CFrame = CFrame.new(root.Position + Vector3.new(0, 5, 0)) * rot * CFrame.new(0, 3, 20)
                     cam.CFrame = CFrame.lookAt(cam.CFrame.Position, root.Position + Vector3.new(0, 3, 0))
                     task.wait(0.016)
                 end
 
                 pcall(function() aura:Destroy() end)
-                StopActiveAnimation()
+                StopAllAnimations()
             end)
         end
 
-        AddButton(aCard1, "Play Animation", function()
-            PlayAnimation(selectedAnim)
+        AddButton(aCard2, "Play Cinematic", function()
+            PlayCinematic(selectedCinematic)
         end)
-
-        AddButton(aCard1, "Stop Animation", function()
-            StopActiveAnimation()
-        end)
+        AddButton(aCard2, "Skip Cinematic", StopAllAnimations)
     end)
 end
 
