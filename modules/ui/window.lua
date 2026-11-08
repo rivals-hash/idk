@@ -40,7 +40,7 @@ function Window.create(dependencies)
         if oldBlur then oldBlur:Destroy() end
         blurEffect = Instance.new("BlurEffect")
         blurEffect.Name = "Monody_ScreenBlur"
-        blurEffect.Size = 16
+        blurEffect.Size = 24
         blurEffect.Enabled = true
         blurEffect.Parent = Lighting
     end)
@@ -50,7 +50,7 @@ function Window.create(dependencies)
     blackDimFrame.Size = UDim2.new(2, 0, 2, 0)
     blackDimFrame.Position = UDim2.new(-0.5, 0, -0.5, 0)
     blackDimFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    blackDimFrame.BackgroundTransparency = 0.65 -- Cinematic black dim backdrop
+    blackDimFrame.BackgroundTransparency = 0.02 -- Pitch black backdrop for neon pop
     blackDimFrame.BorderSizePixel = 0
     blackDimFrame.ZIndex = 1
     blackDimFrame.Active = false
@@ -97,7 +97,7 @@ function Window.create(dependencies)
     contentArea.ClipsDescendants = true
     contentArea.Parent = mainFrame
 
-    -- Toggle Hub Visibility Function with smooth backdrop fading
+    -- Toggle Hub Visibility Function with smooth pitch-black backdrop fading
     local isVisible = true
     local function setWindowVisible(visible)
         isVisible = visible
@@ -105,12 +105,12 @@ function Window.create(dependencies)
             mainFrame.Visible = true
             blackDimFrame.Visible = true
             TweenService:Create(blackDimFrame, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                BackgroundTransparency = 0.65
+                BackgroundTransparency = 0.02
             }):Play()
             if blurEffect then
                 blurEffect.Enabled = true
                 TweenService:Create(blurEffect, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    Size = 16
+                    Size = 24
                 }):Play()
             end
             TweenService:Create(uiScale, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {

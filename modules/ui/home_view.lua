@@ -124,80 +124,48 @@ function HomeView.create(parentContainer, dependencies)
     ----------------------------------------------------------------------------
     -- 2. CARD 2: STATS CARD (stats_panel.png)
     ----------------------------------------------------------------------------
+    -- Card 2 renders the pristine artwork from stats_panel.png:
+    -- Center anime girl with duck plushie inside glowing neon ring, crown,
+    -- and symmetrical left/right server stats connected by luminous purple curves.
     local card2, bg2 = createCard("CenterStatsCard", 154, 2, statsBgAsset)
 
-    -- The center circle and anime girl are already baked into stats_panel.png.
-    -- Left & Right Stats Labels with subtle icons matching reference
-    local function createStatRow(name, iconText, text, yPos, isLeft)
-        local row = Instance.new("Frame")
-        row.Name = name
-        row.Size = UDim2.new(0, 126, 0, 22)
-        row.BackgroundTransparency = 1
-        if isLeft then
-            row.Position = UDim2.new(0.5, -60 - 126, 0, yPos)
-        else
-            row.Position = UDim2.new(0.5, 60, 0, yPos)
+    ----------------------------------------------------------------------------
+    -- 3. CARD 3: BOTTOM MUSIC PLAYER CARD (music_player.png)
+    ----------------------------------------------------------------------------
+    -- Card 3 renders the pristine artwork from music_player.png:
+    -- Glowing album art, song title 'MONTAGEM BAILÃO (Phonk)', spectrum waveform,
+    -- timeline scrubber, and playback buttons.
+    local musicBgAsset = (AssetManager and AssetManager.get("music_player.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
+    local card3, bg3 = createCard("BottomMusicCard", 78, 3, musicBgAsset)
+
+    -- Interactive Play/Pause Hitbox positioned right over the play button in music_player.png
+    local playHitbox = Instance.new("TextButton")
+    playHitbox.Name = "PlayPauseHitbox"
+    playHitbox.Size = UDim2.new(0, 36, 0, 36)
+    playHitbox.Position = UDim2.new(0.5, 42, 0.5, -2)
+    playHitbox.AnchorPoint = Vector2.new(0.5, 0.5)
+    playHitbox.BackgroundTransparency = 1
+    playHitbox.Text = ""
+    playHitbox.Active = true
+    playHitbox.ZIndex = 10
+    playHitbox.Parent = card3
+
+    local isPlaying = false
+    playHitbox.MouseButton1Click:Connect(function()
+        isPlaying = not isPlaying
+        if MusicEngine then
+            pcall(function()
+                if isPlaying then
+                    if MusicEngine.Play then MusicEngine:Play() end
+                else
+                    if MusicEngine.Pause then MusicEngine:Pause() end
+                end
+            end)
         end
-        row.Parent = card2
-
-        local icon = Instance.new("TextLabel")
-        icon.Name = "Icon"
-        icon.Size = UDim2.new(0, 18, 1, 0)
-        icon.Position = isLeft and UDim2.new(0, 0, 0, 0) or UDim2.new(0, 0, 0, 0)
-        icon.BackgroundTransparency = 1
-        icon.Font = Enum.Font.GothamMedium
-        icon.Text = iconText
-        icon.TextSize = 11.5
-        icon.TextColor3 = Color3.fromRGB(215, 175, 255)
-        icon.TextXAlignment = Enum.TextXAlignment.Center
-        icon.Parent = row
-
-        local lbl = Instance.new("TextLabel")
-        lbl.Name = "Label"
-        lbl.Size = UDim2.new(1, -22, 1, 0)
-        lbl.Position = UDim2.new(0, 22, 0, 0)
-        lbl.BackgroundTransparency = 1
-        lbl.Font = Enum.Font.GothamMedium
-        lbl.Text = text
-        lbl.TextSize = 11.5
-        lbl.TextColor3 = Color3.fromRGB(240, 235, 250)
-        lbl.TextXAlignment = Enum.TextXAlignment.Left
-        lbl.Parent = row
-
-        return lbl
-    end
-
-    -- Left 4 stats (Player, Game, Bounty, Level)
-    local statDarling = createStatRow("StatDarling", "👤", "- ???", 14, true)
-    local statGame = createStatRow("StatGame", "🎮", "- ???", 46, true)
-    local statBounty = createStatRow("StatBounty", "⚔️", "- ???", 78, true)
-    local statLevel = createStatRow("StatLevel", "📊", "- ???", 110, true)
-
-    -- Right 4 stats (Session, Ping, FPS, Clock)
-    local statClock = createStatRow("StatClock", "▶️", "- 0:00", 14, false)
-    local statPing = createStatRow("StatPing", "📶", "- 60ms", 46, false)
-    local statFps = createStatRow("StatFps", "🖥️", "- 60Fps", 78, false)
-    local statServerTime = createStatRow("StatServerTime", "🕒", "- 00:00", 110, false)
-
-    -- Hook dynamic real-time stats updates from StatsService
-    StatsService.bind(function(snap)
-        statDarling.Text = snap.PlayerStr
-        statGame.Text = snap.GameStr
-        statBounty.Text = snap.BountyStr
-        statLevel.Text = snap.LevelStr
-        statClock.Text = snap.SessionTimeStr
-        statPing.Text = snap.PingStr
-        statFps.Text = snap.FpsStr
-        statServerTime.Text = snap.TimeStr
-    end, 0.4)
-
-    ----------------------------------------------------------------------------
-    -- 3. CARD 3: BOTTOM MUSIC VISUALIZER CARD
-    ----------------------------------------------------------------------------
-    -- Clean dark card container to allow MusicVisualizer to animate without static image ghosting
-    local card3, bg3 = createCard("BottomMusicCard", 78, 3, nil)
-    if bg3 then bg3.ImageTransparency = 1 end
-    MusicVisualizer.create(card3, MusicEngine, Utils, AssetManager)
+        if Utils then
+            Utils.toast("Monody Music", isPlaying and "Playing: MONTAGEM BAILÃO" or "Music Paused", 1.5)
+        end
+    end)
 
     return {
         ScrollFrame = homeScroll,
