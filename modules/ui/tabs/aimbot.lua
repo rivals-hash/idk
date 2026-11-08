@@ -1,13 +1,14 @@
 --[[
     Darling Hub - modules/ui/tabs/aimbot.lua
     Aimbot & Silent Aim Suite for WindUI.
-    Includes:
-    - Player & NPC aimbot toggles
-    - Silent Aim engine with hit redirection
-    - Target bone & priority selection
-    - Interactive FOV Circle visualizer (radius, color, center/mouse)
-    - 3D Beam and 2D Line Tracers
+    Includes 100% of Darling Hub features:
+    - Player Aimbot, NPC Aimbot, and Aimlock
+    - Silent Aim engine with bone selector & range slider
+    - Target priority & Aim Mode (Closest, 360°, FOV, 180°)
+    - FOV Circle visualizer (radius, color, center/mouse)
+    - 3D Beam and 2D Line Tracers (origin, color, type)
     - Safe zone, team check, and pvp filters
+    - Skill Blacklist multi-selector (Fruit, Melee, Sword, Gun)
 ]]
 
 local AimbotTabMod = {}
@@ -21,6 +22,7 @@ function AimbotTabMod.init(WindowObj, dependencies)
     local SilentAim = dependencies.SilentAim
     local FOV = dependencies.FOV
     local Tracers = dependencies.Tracers
+    local Blacklist = dependencies.Blacklist
 
     local Tab = Window:Tab({
         Title = "Aimbot",
@@ -37,16 +39,19 @@ function AimbotTabMod.init(WindowObj, dependencies)
 
     TargetSection:Toggle({
         Title = "Player Aimbot",
-        Desc = "Automatically targets enemy players",
+        Desc = "Automatically aims camera and attacks at target",
         Value = (AimbotCore and AimbotCore.PlayerAimEnabled) or false,
         Callback = function(enabled)
+            if AimbotCore and AimbotCore.setAimbot then AimbotCore.setAimbot(enabled) end
+            if AimbotCore and AimbotCore.setLockPlayer then AimbotCore.setLockPlayer(enabled) end
             if PlayerAimbot then
-                if enabled then
-                    PlayerAimbot.enable()
-                else
-                    PlayerAimbot.disable()
-                end
+                if enabled then PlayerAimbot.enable() else PlayerAimbot.disable() end
+            elseif AimbotCore then
+                AimbotCore.PlayerAimEnabled = enabled
+                if enabled then AimbotCore.startLoop() else AimbotCore.stopLoop() end
             end
+            _G.G_Aimbot = enabled
+            _G.G_PlayerAim = enabled
         end,
     })
 
@@ -54,15 +59,28 @@ function AimbotTabMod.init(WindowObj, dependencies)
 
     TargetSection:Toggle({
         Title = "NPC / Mob Aimbot",
-        Desc = "Locks onto nearest hostile NPCs & bosses",
+        Desc = "Lock and aim towards monsters and bosses",
         Value = (AimbotCore and AimbotCore.NPCAimEnabled) or false,
         Callback = function(enabled)
             if NPCAimbot then
-                if enabled then
-                    NPCAimbot.enable()
-                else
-                    NPCAimbot.disable()
-                end
+                if enabled then NPCAimbot.enable() else NPCAimbot.disable() end
+            elseif AimbotCore then
+                AimbotCore.NPCAimEnabled = enabled
+                if enabled then AimbotCore.startLoop() else AimbotCore.stopLoop() end
+            end
+            _G.G_NPCAimbot = enabled
+        end,
+    })
+
+    TargetSection:Space()
+
+    TargetSection:Toggle({
+        Title = "Aimlock",
+        Desc = "Lock and maintain a target lock during combat",
+        Value = false,
+        Callback = function(enabled)
+            if AimbotCore and AimbotCore.setLockPlayer then
+                AimbotCore.setLockPlayer(enabled)
             end
         end,
     })
@@ -70,15 +88,42 @@ function AimbotTabMod.init(WindowObj, dependencies)
     TargetSection:Space()
 
     TargetSection:Toggle({
-        Title = "Silent Aim",
-        Desc = "Redirects weapon attacks without rotating camera",
+        Title = "Player Silent Aim",
+        Desc = "Redirect attacks to players without camera lock",
         Value = (SilentAim and SilentAim.Enabled) or false,
         Callback = function(enabled)
             if SilentAim then
                 SilentAim.Enabled = enabled
                 _G.G_PlayerSilentAim = enabled
-                _G.G_NPCSilentAim = enabled
+                _G.G_SilentAim = enabled
             end
+        end,
+    })
+
+    TargetSection:Space()
+
+    TargetSection:Toggle({
+        Title = "NPC Silent Aim",
+        Desc = "Redirect attacks to mobs without camera lock",
+        Value = false,
+        Callback = function(enabled)
+            _G.G_NPCSilentAim = enabled
+        end,
+    })
+
+    TargetSection:Space()
+
+    TargetSection:Dropdown({
+        Title = "Aim Mode",
+        Desc = "Target search trajectory angle",
+        Values = { "360°", "Closest", "FOV", "180°" },
+        Value = "360°",
+        Callback = function(opt)
+            local mode = "360"
+            if opt:find("FOV") then mode = "FOV"
+            elseif opt:find("180") then mode = "180" end
+            if PlayerAimbot and PlayerAimbot.setAimMode then PlayerAimbot.setAimMode(mode) end
+            if AimbotCore then AimbotCore.AimMode = mode end
         end,
     })
 
@@ -132,12 +177,11 @@ function AimbotTabMod.init(WindowObj, dependencies)
     })
 
     FilterSection:Toggle({
-        Title = "Team Check",
-        Desc = "Ignore players on the same team or crew",
-        Value = (AimbotCore and AimbotCore.TeamCheck) or false,
+        Title = "PvP Check",
+        Desc = "Ignore players with PvP disabled",
+        Value = (AimbotCore and AimbotCore.PvPCheck) or true,
         Callback = function(enabled)
-            if AimbotCore then AimbotCore.TeamCheck = enabled end
-            if SilentAim then SilentAim.TeamCheck = enabled end
+            if AimbotCore then AimbotCore.PvPCheck = enabled end
         end,
     })
 
@@ -155,11 +199,12 @@ function AimbotTabMod.init(WindowObj, dependencies)
     FilterSection:Space()
 
     FilterSection:Toggle({
-        Title = "PvP Check",
-        Desc = "Ignore players who have PvP disabled",
-        Value = (AimbotCore and AimbotCore.PvPCheck) or true,
+        Title = "Team Check",
+        Desc = "Ignore friendly / allied players or crew",
+        Value = (AimbotCore and AimbotCore.TeamCheck) or false,
         Callback = function(enabled)
-            if AimbotCore then AimbotCore.PvPCheck = enabled end
+            if AimbotCore then AimbotCore.TeamCheck = enabled end
+            if SilentAim then SilentAim.TeamCheck = enabled end
         end,
     })
 
@@ -173,8 +218,8 @@ function AimbotTabMod.init(WindowObj, dependencies)
     local fovState = FOV and FOV.getState and FOV.getState() or {}
 
     FovSection:Toggle({
-        Title = "Show FOV Circle",
-        Desc = "Renders field-of-view targeting radius",
+        Title = "FOV Circle",
+        Desc = "Draw field of view circle on screen",
         Value = fovState.enabled or false,
         Callback = function(enabled)
             if FOV and FOV.setVisible then
@@ -190,8 +235,8 @@ function AimbotTabMod.init(WindowObj, dependencies)
         Desc = "Pixel radius around cursor / screen center",
         Step = 5,
         Value = {
-            Min = 30,
-            Max = 500,
+            Min = 20,
+            Max = 600,
             Default = fovState.radius or 120,
         },
         Callback = function(rad)
@@ -204,26 +249,28 @@ function AimbotTabMod.init(WindowObj, dependencies)
     FovSection:Space()
 
     FovSection:Dropdown({
-        Title = "FOV Position",
-        Desc = "Position circle at screen center or mouse cursor",
-        Values = { "Center", "Mouse" },
-        Value = fovState.mode or "Center",
+        Title = "Position",
+        Desc = "Position circle at screen center or cursor",
+        Values = { "Center", "Cursor" },
+        Value = (fovState.mode == "Mouse" and "Cursor") or "Center",
         Callback = function(mode)
+            local m = mode == "Cursor" and "Mouse" or "Center"
             if FOV and FOV.setMode then
-                FOV.setMode(mode)
+                FOV.setMode(m)
             end
         end,
     })
 
     FovSection:Space()
 
-    FovSection:Colorpicker({
-        Title = "FOV Color",
-        Desc = "Color of the FOV circle ring",
-        Default = Color3.fromHex("#FF2A55"),
-        Callback = function(color)
+    FovSection:Dropdown({
+        Title = "FOV Color Preset",
+        Desc = "Select color preset or rainbow animation",
+        Values = { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange" },
+        Value = "Rainbow",
+        Callback = function(colorName)
             if FOV and FOV.setColor then
-                FOV.setColor(color)
+                FOV.setColor(colorName)
             end
         end,
     })
@@ -232,21 +279,32 @@ function AimbotTabMod.init(WindowObj, dependencies)
 
     -- 4. Tracers Section
     local TracerSection = Tab:Section({
-        Title = "Target Tracers",
+        Title = "Tracers",
     })
 
     TracerSection:Toggle({
-        Title = "Enable Tracers",
-        Desc = "Renders lines/beams to your locked target",
+        Title = "Show Tracers",
+        Desc = "Draw indicator lines towards enemies",
         Value = false,
         Callback = function(enabled)
             if Tracers then
-                if enabled then
-                    Tracers.enable()
-                else
-                    Tracers.disable()
-                end
+                if enabled then Tracers.enable() else Tracers.disable() end
             end
+        end,
+    })
+
+    TracerSection:Space()
+
+    TracerSection:Dropdown({
+        Title = "Tracer Mode",
+        Desc = "Hardware 3D beam or 2D screen overlay",
+        Values = { "Both (3D + 2D)", "3D Beam", "2D Line" },
+        Value = "Both (3D + 2D)",
+        Callback = function(opt)
+            local m = "Both"
+            if opt:find("3D") and not opt:find("2D") then m = "3D Beam"
+            elseif opt:find("2D") and not opt:find("3D") then m = "2D Line" end
+            if Tracers and Tracers.setType then Tracers.setType(m) end
         end,
     })
 
@@ -255,38 +313,77 @@ function AimbotTabMod.init(WindowObj, dependencies)
     TracerSection:Dropdown({
         Title = "Tracer Origin",
         Desc = "Starting anchor point of the tracer line",
-        Values = { "Player", "Center", "Bottom", "Mouse" },
+        Values = { "Player", "Bottom", "Center" },
         Value = "Player",
         Callback = function(orig)
-            if Tracers and Tracers.setOrigin then
-                Tracers.setOrigin(orig)
-            end
+            if Tracers and Tracers.setOrigin then Tracers.setOrigin(orig) end
         end,
     })
 
     TracerSection:Space()
 
     TracerSection:Dropdown({
-        Title = "Tracer Type",
-        Desc = "Hardware 3D beam or 2D screen overlay",
-        Values = { "3D Beam", "2D Line", "Both" },
-        Value = "Both",
-        Callback = function(tp)
-            if Tracers and Tracers.setType then
-                Tracers.setType(tp)
+        Title = "Tracer Color Preset",
+        Desc = "Select tracer color scheme",
+        Values = { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple" },
+        Value = "Rainbow",
+        Callback = function(colorName)
+            if Tracers then
+                if colorName == "Rainbow" then
+                    if Tracers.setRainbow then Tracers.setRainbow(true) end
+                else
+                    local cMap = {
+                        White = Color3.fromRGB(255, 255, 255),
+                        Red = Color3.fromRGB(255, 60, 60),
+                        Green = Color3.fromRGB(60, 255, 120),
+                        Blue = Color3.fromRGB(60, 160, 255),
+                        Yellow = Color3.fromRGB(255, 225, 60),
+                        Purple = Color3.fromRGB(180, 80, 255),
+                    }
+                    if Tracers.setColor then Tracers.setColor(cMap[colorName] or Color3.fromRGB(255, 255, 255)) end
+                end
             end
         end,
     })
 
-    TracerSection:Space()
+    Tab:Space()
 
-    TracerSection:Colorpicker({
-        Title = "Tracer Color",
-        Desc = "Color of the tracer lines and beams",
-        Default = Color3.fromHex("#9D00FF"),
-        Callback = function(color)
-            if Tracers and Tracers.setColor then
-                Tracers.setColor(color)
+    -- 5. Skill Blacklist Section
+    local BlacklistSection = Tab:Section({
+        Title = "Skill Blacklist",
+    })
+
+    local allSkills = {
+        "Melee Z", "Melee X", "Melee C",
+        "Sword Z", "Sword X",
+        "Fruit Z", "Fruit X", "Fruit C", "Fruit V", "Fruit F", "Fruit TAP",
+        "Gun Z", "Gun X"
+    }
+
+    BlacklistSection:Dropdown({
+        Title = "Exclude Skills from Aimbot",
+        Desc = "Selected skills will be blacklisted from auto-targeting",
+        Values = allSkills,
+        Multi = true,
+        Callback = function(selectedItems)
+            local selectedMap = {}
+            if type(selectedItems) == "table" then
+                for _, itm in ipairs(selectedItems) do
+                    local name = (type(itm) == "table" and itm.Title) or tostring(itm)
+                    selectedMap[name] = true
+                end
+            end
+
+            for _, skill in ipairs(allSkills) do
+                local cat, key = skill:match("^(%a+)%s+(%a+)$")
+                if cat and key then
+                    local isBl = selectedMap[skill] == true
+                    if Blacklist and Blacklist.set then
+                        Blacklist.set(cat, key, isBl)
+                    elseif AimbotCore and AimbotCore.BlacklistedKeys and AimbotCore.BlacklistedKeys[cat] then
+                        AimbotCore.BlacklistedKeys[cat][key] = isBl
+                    end
+                end
             end
         end,
     })
