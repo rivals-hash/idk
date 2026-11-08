@@ -22,27 +22,27 @@ function Sidebar.create(parentGui, options)
 
     local sidebarFrame = Instance.new("Frame")
     sidebarFrame.Name = "SidebarFrame"
-    sidebarFrame.Size = UDim2.new(0, 154, 0, 316)
-    sidebarFrame.Position = UDim2.new(1, -154, 0, 0)
+    sidebarFrame.Size = UDim2.new(0, 160, 0, 410)
+    sidebarFrame.Position = UDim2.new(1, -160, 0, 0)
     sidebarFrame.BackgroundTransparency = 1
     sidebarFrame.Parent = parentGui
 
-    -- Background Image with Anime Purple Torii Night Sky & Moon Aesthetic
+    -- Background Image with Authentic Smooth Dark Silk Smoke Texture
     local bgImg = Instance.new("ImageLabel")
     bgImg.Name = "SidebarBackground"
     bgImg.Size = UDim2.new(1, 0, 1, 0)
-    bgImg.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
-    bgImg.BackgroundTransparency = 1
-    bgImg.Image = (AssetManager and (AssetManager.get("sidebar_bg_red.png") or AssetManager.get("sidebar_bg_v2.png"))) or ""
+    bgImg.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
+    bgImg.BackgroundTransparency = 0
+    bgImg.Image = (AssetManager and (AssetManager.get("card_bg.png") or AssetManager.get("sidebar_bg_red.png"))) or ""
     bgImg.ScaleType = Enum.ScaleType.Stretch
     bgImg.Parent = sidebarFrame
 
     if AssetManager and AssetManager.bindImage then
-        AssetManager.bindImage(bgImg, "sidebar_bg_red.png", "sidebar_bg_v2.png")
+        AssetManager.bindImage(bgImg, "card_bg.png", "sidebar_bg_red.png")
     end
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 10)
+    corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = bgImg
 
     -- Top Window Controls: Minimize (-) and Close (X)
@@ -184,10 +184,10 @@ function Sidebar.create(parentGui, options)
             local isActive = (id == activeTabId)
 
             if isActive then
-                -- Active Tab: Luminous Crimson Red Capsule with white text/icon (no border)
+                -- Active Tab: Sleek slate capsule with white text/icon (matches media_1794158208773.jpg)
                 TweenService:Create(btnData.Button, TweenInfo.new(0.15), {
-                    BackgroundColor3 = Color3.fromRGB(205, 30, 55),
-                    BackgroundTransparency = 0.1
+                    BackgroundColor3 = Color3.fromRGB(64, 68, 84),
+                    BackgroundTransparency = 0.18
                 }):Play()
                 btnData.Label.Font = Enum.Font.GothamBold
                 TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
@@ -205,20 +205,20 @@ function Sidebar.create(parentGui, options)
             else
                 -- Inactive Tab: Transparent sleek background with soft text and icon
                 TweenService:Create(btnData.Button, TweenInfo.new(0.15), {
-                    BackgroundColor3 = Color3.fromRGB(20, 14, 18),
+                    BackgroundColor3 = Color3.fromRGB(20, 22, 30),
                     BackgroundTransparency = 1
                 }):Play()
                 btnData.Label.Font = Enum.Font.GothamMedium
                 TweenService:Create(btnData.Label, TweenInfo.new(0.15), {
-                    TextColor3 = Color3.fromRGB(205, 195, 205),
+                    TextColor3 = Color3.fromRGB(210, 215, 230),
                     TextTransparency = 0
                 }):Play()
                 TweenService:Create(btnData.Icon, TweenInfo.new(0.15), {
-                    ImageColor3 = Color3.fromRGB(190, 175, 185),
+                    ImageColor3 = Color3.fromRGB(190, 195, 210),
                     ImageTransparency = 0
                 }):Play()
                 TweenService:Create(btnData.Chevron, TweenInfo.new(0.15), {
-                    TextColor3 = Color3.fromRGB(160, 130, 140),
+                    TextColor3 = Color3.fromRGB(140, 145, 160),
                     TextTransparency = 0
                 }):Play()
             end
@@ -298,8 +298,8 @@ function Sidebar.create(parentGui, options)
         tabBtn.MouseEnter:Connect(function()
             if activeTabId ~= tabData.Id then
                 TweenService:Create(tabBtn, TweenInfo.new(0.12), {
-                    BackgroundTransparency = 0.65,
-                    BackgroundColor3 = Color3.fromRGB(180, 25, 45)
+                    BackgroundTransparency = 0.55,
+                    BackgroundColor3 = Color3.fromRGB(48, 52, 68)
                 }):Play()
             end
         end)
@@ -308,7 +308,7 @@ function Sidebar.create(parentGui, options)
             if activeTabId ~= tabData.Id then
                 TweenService:Create(tabBtn, TweenInfo.new(0.12), {
                     BackgroundTransparency = 1,
-                    BackgroundColor3 = Color3.fromRGB(20, 14, 18)
+                    BackgroundColor3 = Color3.fromRGB(20, 22, 30)
                 }):Play()
             end
         end)

@@ -44,88 +44,194 @@ function HomeView.create(parentContainer, dependencies)
     listLayout.Parent = homeScroll
 
     -- Helper to create card frame with texture and solid fallback
-    local function createCard(name, height, layoutOrder, customBg)
+    local function createCard(name, height, layoutOrder)
         local frame = Instance.new("Frame")
         frame.Name = name
-        frame.Size = UDim2.new(0, 406, 0, height)
+        frame.Size = UDim2.new(0, 474, 0, height)
         frame.LayoutOrder = layoutOrder
-        frame.BackgroundColor3 = Color3.fromRGB(18, 14, 20)
-        frame.BackgroundTransparency = 0.08
+        frame.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
+        frame.BackgroundTransparency = 0
         frame.BorderSizePixel = 0
         frame.ClipsDescendants = true
         frame.Parent = homeScroll
 
         local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 10)
+        corner.CornerRadius = UDim.new(0, 12)
         corner.Parent = frame
 
         local bg = Instance.new("ImageLabel")
         bg.Name = "Bg"
         bg.Size = UDim2.new(1, 0, 1, 0)
-        bg.BackgroundTransparency = 1
+        bg.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
+        bg.BackgroundTransparency = 0
         bg.BorderSizePixel = 0
-        bg.Image = (customBg and #customBg > 0) and customBg or ""
+        bg.Image = (AssetManager and AssetManager.get("card_bg.png")) or ""
         bg.ScaleType = Enum.ScaleType.Stretch
         bg.Parent = frame
 
+        if AssetManager and AssetManager.bindImage then
+            AssetManager.bindImage(bg, "card_bg.png")
+        end
+
         local bgCorner = Instance.new("UICorner")
-        bgCorner.CornerRadius = UDim.new(0, 10)
+        bgCorner.CornerRadius = UDim.new(0, 12)
         bgCorner.Parent = bg
 
         return frame, bg
     end
 
     ----------------------------------------------------------------------------
-    -- 1. CARD 1: TOP PROFILE & BRAND CARD (header_profile_panel.png)
+    -- 1. CARD 1: TOP PROFILE & BRAND CARD (474px wide, clean native silk glass)
     ----------------------------------------------------------------------------
-    local card1, bg1 = createCard("TopBrandCard", 126, 1, headerBgAsset)
+    local card1, bg1 = createCard("TopBrandCard", 100, 1)
 
-    -- Card 1 has its complete artwork in header_profile_panel.png:
-    -- Anime girl with headphones, glowing avatar box, title "Monody - Premium" 👑, "By Darling",
-    -- Discord/TikTok/Premium badges, and "Key Time: 25 Hours Left".
-    -- To prevent visual double-rendering (ghost text), we bind invisible click hitboxes
-    -- for the interactive Discord and TikTok buttons over their exact pixel coordinates.
-    local discordHitbox = Instance.new("TextButton")
-    discordHitbox.Name = "DiscordHitbox"
-    discordHitbox.Size = UDim2.new(0, 26, 0, 26)
-    discordHitbox.Position = UDim2.new(0, 14, 0, 92)
-    discordHitbox.BackgroundTransparency = 1
-    discordHitbox.Text = ""
-    discordHitbox.Active = true
-    discordHitbox.ZIndex = 10
-    discordHitbox.Parent = card1
+    -- Left Avatar Box with clean white stroke (matching reference)
+    local avatarFrame = Instance.new("Frame")
+    avatarFrame.Name = "AvatarFrame"
+    avatarFrame.Size = UDim2.new(0, 68, 0, 68)
+    avatarFrame.Position = UDim2.new(0, 16, 0.5, -34)
+    avatarFrame.BackgroundColor3 = Color3.fromRGB(24, 25, 34)
+    avatarFrame.BorderSizePixel = 0
+    avatarFrame.ZIndex = 4
+    avatarFrame.Parent = card1
 
-    discordHitbox.MouseButton1Click:Connect(function()
-        local discordLink = "https://discord.gg/besthub"
-        Utils.setClipboard(discordLink)
-        Utils.toast("Monody", "Discord link copied to clipboard!", 2.0, discordAsset)
-    end)
+    local avCorner = Instance.new("UICorner")
+    avCorner.CornerRadius = UDim.new(0, 10)
+    avCorner.Parent = avatarFrame
 
-    local tiktokHitbox = Instance.new("TextButton")
-    tiktokHitbox.Name = "TikTokHitbox"
-    tiktokHitbox.Size = UDim2.new(0, 26, 0, 26)
-    tiktokHitbox.Position = UDim2.new(0, 42, 0, 92)
-    tiktokHitbox.BackgroundTransparency = 1
-    tiktokHitbox.Text = ""
-    tiktokHitbox.Active = true
-    tiktokHitbox.ZIndex = 10
-    tiktokHitbox.Parent = card1
+    local avStroke = Instance.new("UIStroke")
+    avStroke.Color = Color3.fromRGB(255, 255, 255)
+    avStroke.Thickness = 1.2
+    avStroke.Transparency = 0.2
+    avStroke.Parent = avatarFrame
 
-    tiktokHitbox.MouseButton1Click:Connect(function()
-        local tiktokLink = "https://www.tiktok.com/@besthub"
-        Utils.setClipboard(tiktokLink)
-        Utils.toast("Monody", "TikTok link copied to clipboard!", 2.0, tiktokAsset)
-    end)
+    local avatarImg = Instance.new("ImageLabel")
+    avatarImg.Name = "AvatarImage"
+    avatarImg.Size = UDim2.new(1, 0, 1, 0)
+    avatarImg.BackgroundTransparency = 1
+    avatarImg.Image = (AssetManager and (AssetManager.get("header_avatar.png") or AssetManager.get("avatar.png"))) or ""
+    avatarImg.ScaleType = Enum.ScaleType.Crop
+    avatarImg.ZIndex = 5
+    avatarImg.Parent = avatarFrame
+
+    if AssetManager and AssetManager.bindImage then
+        AssetManager.bindImage(avatarImg, "header_avatar.png", "avatar.png")
+    end
+
+    local avImgCorner = Instance.new("UICorner")
+    avImgCorner.CornerRadius = UDim.new(0, 10)
+    avImgCorner.Parent = avatarImg
+
+    -- Brand Titles
+    local titleLbl = Instance.new("TextLabel")
+    titleLbl.Name = "BrandTitle"
+    titleLbl.Size = UDim2.new(0, 240, 0, 24)
+    titleLbl.Position = UDim2.new(0, 96, 0, 22)
+    titleLbl.BackgroundTransparency = 1
+    titleLbl.Font = Enum.Font.GothamBold
+    titleLbl.Text = "Monody - Premium"
+    titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLbl.TextSize = 18
+    titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    titleLbl.ZIndex = 5
+    titleLbl.Parent = card1
+
+    local subLbl = Instance.new("TextLabel")
+    subLbl.Name = "BrandSubtitle"
+    subLbl.Size = UDim2.new(0, 240, 0, 18)
+    subLbl.Position = UDim2.new(0, 96, 0, 48)
+    subLbl.BackgroundTransparency = 1
+    subLbl.Font = Enum.Font.GothamMedium
+    subLbl.Text = "By Darling"
+    subLbl.TextColor3 = Color3.fromRGB(200, 205, 220)
+    subLbl.TextSize = 12.5
+    subLbl.TextXAlignment = Enum.TextXAlignment.Left
+    subLbl.ZIndex = 5
+    subLbl.Parent = card1
+
+    -- Social Buttons (Discord & TikTok)
+    local socialFrame = Instance.new("Frame")
+    socialFrame.Name = "SocialButtons"
+    socialFrame.Size = UDim2.new(0, 60, 0, 24)
+    socialFrame.Position = UDim2.new(0, 96, 0, 70)
+    socialFrame.BackgroundTransparency = 1
+    socialFrame.ZIndex = 5
+    socialFrame.Parent = card1
+
+    local function createSocialBtn(name, iconId, xPos, url, toastMsg)
+        local btn = Instance.new("ImageButton")
+        btn.Name = name
+        btn.Size = UDim2.new(0, 22, 0, 22)
+        btn.Position = UDim2.new(0, xPos, 0, 0)
+        btn.BackgroundColor3 = Color3.fromRGB(30, 32, 44)
+        btn.BackgroundTransparency = 0.2
+        btn.Image = iconId
+        btn.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        btn.ScaleType = Enum.ScaleType.Fit
+        btn.ZIndex = 6
+        btn.Parent = socialFrame
+
+        local c = Instance.new("UICorner")
+        c.CornerRadius = UDim.new(0, 6)
+        c.Parent = btn
+
+        btn.MouseButton1Click:Connect(function()
+            if Utils and Utils.setClipboard then Utils.setClipboard(url) end
+            if Utils and Utils.toast then Utils.toast("Monody", toastMsg, 1.5, iconId) end
+        end)
+        return btn
+    end
+
+    createSocialBtn("DiscordBtn", discordAsset, 0, "https://discord.gg/besthub", "Discord link copied!")
+    createSocialBtn("TikTokBtn", tiktokAsset, 28, "https://www.tiktok.com/@besthub", "TikTok link copied!")
+
+    -- Key Time Badge on Right (matching media_1794158198928.jpg)
+    local keyTimeLbl = Instance.new("TextLabel")
+    keyTimeLbl.Name = "KeyTimeBadge"
+    keyTimeLbl.Size = UDim2.new(0, 160, 0, 20)
+    keyTimeLbl.Position = UDim2.new(1, -170, 1, -26)
+    keyTimeLbl.BackgroundTransparency = 1
+    keyTimeLbl.Font = Enum.Font.GothamMedium
+    keyTimeLbl.Text = "Key Time: 25 Hours Left"
+    keyTimeLbl.TextColor3 = Color3.fromRGB(180, 185, 205)
+    keyTimeLbl.TextSize = 11
+    keyTimeLbl.TextXAlignment = Enum.TextXAlignment.Right
+    keyTimeLbl.ZIndex = 5
+    keyTimeLbl.Parent = card1
 
     ----------------------------------------------------------------------------
-    -- 2. CARD 2: REAL LIVE STATS CARD WITH AUTHENTIC NEON STATS_PANEL.PNG
+    -- 2. CARD 2: REAL LIVE STATS CARD (474px wide, Symmetrical stats & center avatar)
     ----------------------------------------------------------------------------
-    -- Card 2 renders stats_panel.png with its glowing purple neon crown, glowing ring,
-    -- neon corner swooshes, and glowing icons, with clean dynamic live stats.
-    local card2, bg2 = createCard("CenterStatsCard", 146, 2, statsBgAsset)
+    local card2, bg2 = createCard("CenterStatsCard", 126, 2)
 
-    -- Helper for Left & Right Stats Rows (aligned with glowing icons in stats_panel.png)
-    local function createStatRow(name, text, yPos, xPos, width)
+    -- Circular Avatar in Center (matching media_1794158198928.jpg)
+    local centerAvatar = Instance.new("ImageLabel")
+    centerAvatar.Name = "CenterAvatar"
+    centerAvatar.Size = UDim2.new(0, 76, 0, 76)
+    centerAvatar.Position = UDim2.new(0.5, -38, 0.5, -38)
+    centerAvatar.BackgroundColor3 = Color3.fromRGB(24, 25, 34)
+    centerAvatar.BorderSizePixel = 0
+    centerAvatar.Image = (AssetManager and (AssetManager.get("stats_center_avatar.png") or AssetManager.get("avatar.png"))) or ""
+    centerAvatar.ScaleType = Enum.ScaleType.Crop
+    centerAvatar.ZIndex = 5
+    centerAvatar.Parent = card2
+
+    if AssetManager and AssetManager.bindImage then
+        AssetManager.bindImage(centerAvatar, "stats_center_avatar.png", "avatar.png")
+    end
+
+    local caCorner = Instance.new("UICorner")
+    caCorner.CornerRadius = UDim.new(1, 0)
+    caCorner.Parent = centerAvatar
+
+    local caStroke = Instance.new("UIStroke")
+    caStroke.Color = Color3.fromRGB(255, 255, 255)
+    caStroke.Thickness = 1.2
+    caStroke.Transparency = 0.25
+    caStroke.Parent = centerAvatar
+
+    -- Helper for Left & Right Stats Rows
+    local function createStatRow(name, text, yPos, xPos, width, align)
         local lbl = Instance.new("TextLabel")
         lbl.Name = name
         lbl.Size = UDim2.new(0, width, 0, 20)
@@ -134,67 +240,44 @@ function HomeView.create(parentContainer, dependencies)
         lbl.Font = Enum.Font.GothamMedium
         lbl.Text = text
         lbl.TextSize = 12
-        lbl.TextColor3 = Color3.fromRGB(245, 240, 245)
-        lbl.TextXAlignment = Enum.TextXAlignment.Left
-        lbl.ZIndex = 7
+        lbl.TextColor3 = Color3.fromRGB(235, 240, 250)
+        lbl.TextXAlignment = align or Enum.TextXAlignment.Left
+        lbl.ZIndex = 5
         lbl.Parent = card2
 
         return lbl
     end
 
-    -- Left 4 stats (Player, Game, Bounty, Level) - aligned to icons at x=68
-    local statDarling = createStatRow("StatDarling", "- Loading...", 22, 72, 100)
-    local statGame = createStatRow("StatGame", "- Blox Fruits", 51, 72, 100)
-    local statBounty = createStatRow("StatBounty", "- Bounty 4M", 83, 72, 100)
-    local statLevel = createStatRow("StatLevel", "- Level 2800", 115, 72, 100)
+    -- Left 4 stats (Darling, Blox Fruits, Bounty, Level)
+    local statDarling = createStatRow("StatDarling", "- Darling", 14, 24, 150)
+    local statGame = createStatRow("StatGame", "- Blox Fruits", 39, 24, 150)
+    local statBounty = createStatRow("StatBounty", "- Bounty 4M", 65, 24, 150)
+    local statLevel = createStatRow("StatLevel", "- Level 2800", 91, 24, 150)
 
-    -- Right 4 stats (Session, Ping, FPS, Clock) - aligned to icons at x=316
-    local statClock = createStatRow("StatClock", "- 0:00", 22, 320, 75)
-    local statPing = createStatRow("StatPing", "- 50ms", 51, 320, 75)
-    local statFps = createStatRow("StatFps", "- 60Fps", 83, 320, 75)
-    local statServerTime = createStatRow("StatServerTime", "- 00:00", 115, 320, 75)
+    -- Right 4 stats (Session, Ping, FPS, Server Clock)
+    local statClock = createStatRow("StatClock", "- 0:18", 14, 305, 145)
+    local statPing = createStatRow("StatPing", "- 233ms", 39, 305, 145)
+    local statFps = createStatRow("StatFps", "- 49Fps", 65, 305, 145)
+    local statServerTime = createStatRow("StatServerTime", "- 19:11", 91, 305, 145)
 
     -- Hook dynamic real-time stats updates from StatsService
     if StatsService and StatsService.bind then
         StatsService.bind(function(snap)
-            statDarling.Text = snap.PlayerStr
-            statGame.Text = snap.GameStr
-            statBounty.Text = snap.BountyStr
-            statLevel.Text = snap.LevelStr
-            statClock.Text = snap.SessionTimeStr
-            statPing.Text = snap.PingStr
-            statFps.Text = snap.FpsStr
-            statServerTime.Text = snap.TimeStr
+            statDarling.Text = snap.PlayerStr or "- Darling"
+            statGame.Text = snap.GameStr or "- Blox Fruits"
+            statBounty.Text = snap.BountyStr or "- Bounty 4M"
+            statLevel.Text = snap.LevelStr or "- Level 2800"
+            statClock.Text = "- " .. (snap.SessionTimeStr or "0:00")
+            statPing.Text = "- " .. (snap.PingStr or "50ms")
+            statFps.Text = "- " .. (snap.FpsStr or "60Fps")
+            statServerTime.Text = "- " .. (snap.TimeStr or "00:00")
         end, 0.4)
     end
 
     ----------------------------------------------------------------------------
-    -- 3. CARD 3: REAL INTERACTIVE MUSIC PLAYER (100% Touch & Scrubber Supported)
+    -- 3. CARD 3: REAL INTERACTIVE MUSIC PLAYER (474px wide)
     ----------------------------------------------------------------------------
-    local card3 = Instance.new("Frame")
-    card3.Name = "BottomMusicCard"
-    card3.Size = UDim2.new(0, 406, 0, 78)
-    card3.LayoutOrder = 3
-    card3.BackgroundColor3 = Color3.fromRGB(18, 14, 20)
-    card3.BackgroundTransparency = 0.08
-    card3.BorderSizePixel = 0
-    card3.ClipsDescendants = true
-    card3.Parent = homeScroll
-
-    local corner3 = Instance.new("UICorner")
-    corner3.CornerRadius = UDim.new(0, 10)
-    corner3.Parent = card3
-
-    local grad3 = Instance.new("UIGradient")
-    grad3.Color = ColorSequence.new(Color3.fromRGB(26, 18, 24), Color3.fromRGB(14, 11, 16))
-    grad3.Rotation = 45
-    grad3.Parent = card3
-
-    -- Bind top 2 cards background images safely
-    if AssetManager and AssetManager.bindImage then
-        if bg1 then AssetManager.bindImage(bg1, "header_profile_panel_red.png", "header_profile_panel.png") end
-        if bg2 then AssetManager.bindImage(bg2, "stats_panel_red.png", "stats_panel_v2.png") end
-    end
+    local card3, bg3 = createCard("BottomMusicCard", 80, 3)
 
     -- Mount Real Native Interactive Music Player widget inside Card 3!
     if MusicVisualizer and MusicVisualizer.create then
