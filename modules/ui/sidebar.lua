@@ -43,9 +43,9 @@ function Sidebar.create(parentGui, options)
 
     -- Luminous Purple Neon Rim
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(145, 90, 225)
-    stroke.Thickness = 1.2
-    stroke.Transparency = 0.35
+    stroke.Color = Color3.fromRGB(195, 125, 255)
+    stroke.Thickness = 1.6
+    stroke.Transparency = 0.15
     stroke.Parent = bgImg
 
     -- Top Window Controls: Minimize (-) and Close (X)
@@ -63,9 +63,9 @@ function Sidebar.create(parentGui, options)
     minBtn.Position = UDim2.new(0, 0, 0, 2)
     minBtn.BackgroundColor3 = Color3.fromRGB(30, 22, 44)
     minBtn.BackgroundTransparency = 1
-    minBtn.Text = "—"
+    minBtn.Text = "-"
     minBtn.Font = Enum.Font.GothamBold
-    minBtn.TextSize = 13
+    minBtn.TextSize = 14
     minBtn.TextColor3 = Color3.fromRGB(220, 210, 240)
     minBtn.ZIndex = 51
     minBtn.AutoButtonColor = false
@@ -88,7 +88,7 @@ function Sidebar.create(parentGui, options)
     closeBtn.Position = UDim2.new(1, -24, 0, 2)
     closeBtn.BackgroundColor3 = Color3.fromRGB(48, 18, 28)
     closeBtn.BackgroundTransparency = 1
-    closeBtn.Text = "✕"
+    closeBtn.Text = "X"
     closeBtn.Font = Enum.Font.GothamBold
     closeBtn.TextSize = 13
     closeBtn.TextColor3 = Color3.fromRGB(255, 95, 115)

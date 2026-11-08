@@ -162,12 +162,14 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils, 
         descLbl.Parent = textContainer
     end
 
-    -- Pill Switch Visual (Purple Neon Pill matching toggle_on.png / toggle_off.png)
+    -- Pill Switch Visual (Exact match to reference IMG_9181.jpeg)
+    -- When ON: Radiant white pill with dark knob and neon violet glow rim
+    -- When OFF: Dark muted purple pill with soft knob
     local switchBtn = Instance.new("Frame")
     switchBtn.Name = "SwitchVisual"
     switchBtn.Size = UDim2.new(0, 40, 0, 22)
     switchBtn.Position = UDim2.new(1, -44, 0.5, -11)
-    switchBtn.BackgroundColor3 = state and Color3.fromRGB(195, 115, 255) or Color3.fromRGB(38, 30, 52)
+    switchBtn.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(46, 40, 58)
     switchBtn.BorderSizePixel = 0
     switchBtn.ZIndex = 4
     switchBtn.Parent = row
@@ -177,7 +179,7 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils, 
     swCorner.Parent = switchBtn
 
     local swStroke = Instance.new("UIStroke")
-    swStroke.Color = state and Color3.fromRGB(255, 215, 255) or Color3.fromRGB(80, 65, 110)
+    swStroke.Color = state and Color3.fromRGB(215, 170, 255) or Color3.fromRGB(75, 65, 95)
     swStroke.Thickness = state and 1.6 or 1.2
     swStroke.Parent = switchBtn
 
@@ -185,7 +187,7 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils, 
     thumb.Name = "Thumb"
     thumb.Size = UDim2.new(0, 16, 0, 16)
     thumb.Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
-    thumb.BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(175, 165, 195)
+    thumb.BackgroundColor3 = state and Color3.fromRGB(32, 26, 44) or Color3.fromRGB(145, 138, 168)
     thumb.BorderSizePixel = 0
     thumb.ZIndex = 5
     thumb.Parent = switchBtn
@@ -196,10 +198,10 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils, 
 
     local function updateVisual(anim)
         local dur = anim and 0.15 or 0
-        local targetBg = state and Color3.fromRGB(195, 115, 255) or Color3.fromRGB(38, 30, 52)
-        local targetStroke = state and Color3.fromRGB(255, 215, 255) or Color3.fromRGB(80, 65, 110)
+        local targetBg = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(46, 40, 58)
+        local targetStroke = state and Color3.fromRGB(215, 170, 255) or Color3.fromRGB(75, 65, 95)
         local targetStrokeThick = state and 1.6 or 1.2
-        local targetThumbBg = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(175, 165, 195)
+        local targetThumbBg = state and Color3.fromRGB(32, 26, 44) or Color3.fromRGB(145, 138, 168)
         local targetPos = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
 
         if anim then
@@ -805,12 +807,12 @@ local function createChipGrid(parent, title, desc, chipsList, onToggleChip, Util
 end
 
 -- Helper: Create Feature Card with glowing purple header divider (Pure Native UI - No AI Image Slop)
-local function createFeatureCard(parent, title)
+local function createFeatureCard(parent, title, AssetManager)
     local card = Instance.new("Frame")
     card.Name = "Card_" .. title:gsub("%s+", "")
     card.Size = UDim2.new(0, 396, 0, 36)
-    card.BackgroundColor3 = Color3.fromRGB(20, 16, 28)
-    card.BackgroundTransparency = 0.12
+    card.BackgroundColor3 = Color3.fromRGB(18, 14, 26)
+    card.BackgroundTransparency = 0.08
     card.BorderSizePixel = 0
     card.Parent = parent
 
@@ -820,10 +822,25 @@ local function createFeatureCard(parent, title)
     corner.CornerRadius = UDim.new(0, 10)
     corner.Parent = card
 
+    -- Silky smoke texture from card_bg.png matching reference IMG_9181.jpeg
+    local bgImg = Instance.new("ImageLabel")
+    bgImg.Name = "CardBg"
+    bgImg.Size = UDim2.new(1, 0, 1, 0)
+    bgImg.BackgroundTransparency = 1
+    bgImg.Image = (AssetManager and AssetManager.get("card_bg.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
+    bgImg.ScaleType = Enum.ScaleType.Stretch
+    bgImg.ImageTransparency = 0.55
+    bgImg.ZIndex = 1
+    bgImg.Parent = card
+
+    local bgCorner = Instance.new("UICorner")
+    bgCorner.CornerRadius = UDim.new(0, 10)
+    bgCorner.Parent = bgImg
+
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(145, 90, 225)
-    stroke.Thickness = 1.2
-    stroke.Transparency = 0.35
+    stroke.Color = Color3.fromRGB(195, 125, 255)
+    stroke.Thickness = 1.6
+    stroke.Transparency = 0.15
     stroke.Parent = card
 
     local content = Instance.new("Frame")
@@ -871,7 +888,7 @@ local function createFeatureCard(parent, title)
     neonLine.Name = "NeonLine"
     neonLine.Size = UDim2.new(1, -85, 0, 1.5)
     neonLine.Position = UDim2.new(0, 85, 0.5, 0)
-    neonLine.BackgroundColor3 = Color3.fromRGB(175, 110, 255)
+    neonLine.BackgroundColor3 = Color3.fromRGB(195, 125, 255)
     neonLine.BorderSizePixel = 0
     neonLine.ZIndex = 4
     neonLine.Parent = headerRow
@@ -910,12 +927,12 @@ function TabViews.build(tabName, parentContainer, options)
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Parent = scroll
 
-    -- Top Header Banner Card (Pure Native UI - No AI Image Slop)
+    -- Top Header Banner Card with silky texture and neon rim matching IMG_9181.jpeg
     local banner = Instance.new("Frame")
     banner.Name = "Banner"
     banner.Size = UDim2.new(0, 396, 0, 48)
-    banner.BackgroundColor3 = Color3.fromRGB(24, 18, 36)
-    banner.BackgroundTransparency = 0.1
+    banner.BackgroundColor3 = Color3.fromRGB(22, 16, 32)
+    banner.BackgroundTransparency = 0.08
     banner.BorderSizePixel = 0
     banner.LayoutOrder = 1
     banner.Parent = scroll
@@ -924,10 +941,24 @@ function TabViews.build(tabName, parentContainer, options)
     bCorner.CornerRadius = UDim.new(0, 10)
     bCorner.Parent = banner
 
+    local bBg = Instance.new("ImageLabel")
+    bBg.Name = "BannerBg"
+    bBg.Size = UDim2.new(1, 0, 1, 0)
+    bBg.BackgroundTransparency = 1
+    bBg.Image = (AssetManager and AssetManager.get("card_bg.png", "rbxassetid://139820186687064")) or "rbxassetid://139820186687064"
+    bBg.ScaleType = Enum.ScaleType.Stretch
+    bBg.ImageTransparency = 0.5
+    bBg.ZIndex = 1
+    bBg.Parent = banner
+
+    local bBgCorner = Instance.new("UICorner")
+    bBgCorner.CornerRadius = UDim.new(0, 10)
+    bBgCorner.Parent = bBg
+
     local bStroke = Instance.new("UIStroke")
-    bStroke.Color = Color3.fromRGB(160, 105, 235)
-    bStroke.Thickness = 1.2
-    bStroke.Transparency = 0.35
+    bStroke.Color = Color3.fromRGB(195, 125, 255)
+    bStroke.Thickness = 1.6
+    bStroke.Transparency = 0.15
     bStroke.Parent = banner
 
     -- Circular glowing icon badge on left
@@ -944,8 +975,8 @@ function TabViews.build(tabName, parentContainer, options)
     bibCorner.Parent = bIconBox
 
     local bibStroke = Instance.new("UIStroke")
-    bibStroke.Color = Color3.fromRGB(180, 115, 255)
-    bibStroke.Thickness = 1.4
+    bibStroke.Color = Color3.fromRGB(195, 125, 255)
+    bibStroke.Thickness = 1.5
     bibStroke.Parent = bIconBox
 
     local bibImg = Instance.new("ImageLabel")
@@ -962,9 +993,9 @@ function TabViews.build(tabName, parentContainer, options)
     bTitle.Position = UDim2.new(0, 50, 0, 5)
     bTitle.BackgroundTransparency = 1
     bTitle.Font = Enum.Font.GothamBold
-    bTitle.Text = tabName:upper()
+    bTitle.Text = tabName
     bTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    bTitle.TextSize = 15
+    bTitle.TextSize = 16
     bTitle.TextXAlignment = Enum.TextXAlignment.Left
     bTitle.ZIndex = 3
     bTitle.Parent = banner
@@ -974,15 +1005,15 @@ function TabViews.build(tabName, parentContainer, options)
     bDesc.Position = UDim2.new(0, 50, 0, 26)
     bDesc.BackgroundTransparency = 1
     bDesc.Font = Enum.Font.Gotham
-    bDesc.Text = "System controls and configurations"
-    bDesc.TextColor3 = Color3.fromRGB(190, 175, 225)
-    bDesc.TextSize = 10.5
+    bDesc.Text = tabName:lower()
+    bDesc.TextColor3 = Color3.fromRGB(185, 175, 215)
+    bDesc.TextSize = 11
     bDesc.TextXAlignment = Enum.TextXAlignment.Left
     bDesc.ZIndex = 3
     bDesc.Parent = banner
 
     local function makeCard(title)
-        return createFeatureCard(scroll, title)
+        return createFeatureCard(scroll, title, AssetManager)
     end
 
     -- Populate content based on Tab

@@ -74,9 +74,9 @@ function HomeView.create(parentContainer, dependencies)
         end
 
         local stroke = Instance.new("UIStroke")
-        stroke.Color = Color3.fromRGB(145, 90, 225)
-        stroke.Thickness = 1.2
-        stroke.Transparency = 0.35
+        stroke.Color = Color3.fromRGB(195, 125, 255)
+        stroke.Thickness = 1.6
+        stroke.Transparency = 0.15
         stroke.Parent = frame
 
         return frame, bg
@@ -125,50 +125,39 @@ function HomeView.create(parentContainer, dependencies)
     end)
 
     ----------------------------------------------------------------------------
-    -- 2. CARD 2: REAL LIVE STATS CARD WITH BALANCED SPACING
+    -- 2. CARD 2: REAL LIVE STATS CARD WITH AUTHENTIC NEON STATS_PANEL.PNG
     ----------------------------------------------------------------------------
-    -- Card 2 renders a sleek native card with stats_center_avatar.png in the center
-    -- and real-time live stats on the left and right with balanced spacing (not glued to photo, not pushed too far).
-    local card2 = createCard("CenterStatsCard", 146, 2, nil)
+    -- Card 2 renders stats_panel.png with its glowing purple neon crown, glowing ring,
+    -- neon corner swooshes, and glowing icons, with clean live stats overlays at balanced spacing.
+    local card2, bg2 = createCard("CenterStatsCard", 146, 2, statsBgAsset)
 
-    -- Center Glowing Circular Avatar (Anime girl with duck plushie and crown)
-    local centerAvatar = Instance.new("ImageLabel")
-    centerAvatar.Name = "CenterAvatar"
-    centerAvatar.Size = UDim2.new(0, 84, 0, 84)
-    centerAvatar.AnchorPoint = Vector2.new(0.5, 0.5)
-    centerAvatar.Position = UDim2.new(0.5, 0, 0.5, 0)
-    centerAvatar.BackgroundTransparency = 1
-    centerAvatar.Image = statsAvatarAsset
-    centerAvatar.ScaleType = Enum.ScaleType.Fit
-    centerAvatar.ZIndex = 5
-    centerAvatar.Parent = card2
-
-    -- Helper for Left & Right Stats Rows
-    local function createStatRow(name, iconText, text, yPos, isLeft)
+    -- Helper for Left & Right Stats Rows with clean text backing
+    local function createStatRow(name, text, yPos, isLeft)
         local row = Instance.new("Frame")
         row.Name = name
-        row.Size = UDim2.new(0, 126, 0, 22)
+        row.Size = UDim2.new(0, 116, 0, 22)
         row.BackgroundTransparency = 1
         if isLeft then
-            row.Position = UDim2.new(0.5, -48 - 126, 0, yPos)
+            row.Position = UDim2.new(0.5, -48 - 116, 0, yPos)
         else
             row.Position = UDim2.new(0.5, 48, 0, yPos)
         end
         row.ZIndex = 6
         row.Parent = card2
 
-        local icon = Instance.new("TextLabel")
-        icon.Name = "Icon"
-        icon.Size = UDim2.new(0, 18, 1, 0)
-        icon.Position = UDim2.new(0, 0, 0, 0)
-        icon.BackgroundTransparency = 1
-        icon.Font = Enum.Font.GothamMedium
-        icon.Text = iconText
-        icon.TextSize = 11.5
-        icon.TextColor3 = Color3.fromRGB(215, 175, 255)
-        icon.TextXAlignment = Enum.TextXAlignment.Center
-        icon.ZIndex = 7
-        icon.Parent = row
+        local textBacking = Instance.new("Frame")
+        textBacking.Name = "TextBacking"
+        textBacking.Size = UDim2.new(1, -20, 0, 18)
+        textBacking.Position = UDim2.new(0, 20, 0.5, -9)
+        textBacking.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
+        textBacking.BackgroundTransparency = 0.08
+        textBacking.BorderSizePixel = 0
+        textBacking.ZIndex = 6
+        textBacking.Parent = row
+
+        local tbCorner = Instance.new("UICorner")
+        tbCorner.CornerRadius = UDim.new(0, 4)
+        tbCorner.Parent = textBacking
 
         local lbl = Instance.new("TextLabel")
         lbl.Name = "Label"
@@ -178,7 +167,7 @@ function HomeView.create(parentContainer, dependencies)
         lbl.Font = Enum.Font.GothamMedium
         lbl.Text = text
         lbl.TextSize = 11.5
-        lbl.TextColor3 = Color3.fromRGB(240, 235, 250)
+        lbl.TextColor3 = Color3.fromRGB(245, 240, 255)
         lbl.TextXAlignment = Enum.TextXAlignment.Left
         lbl.ZIndex = 7
         lbl.Parent = row
@@ -187,16 +176,16 @@ function HomeView.create(parentContainer, dependencies)
     end
 
     -- Left 4 stats (Player, Game, Bounty, Level)
-    local statDarling = createStatRow("StatDarling", "👤", "- Loading...", 14, true)
-    local statGame = createStatRow("StatGame", "🎮", "- Blox Fruits", 44, true)
-    local statBounty = createStatRow("StatBounty", "⚔️", "- Bounty 4M", 74, true)
-    local statLevel = createStatRow("StatLevel", "📊", "- Level 2800", 104, true)
+    local statDarling = createStatRow("StatDarling", "- Loading...", 14, true)
+    local statGame = createStatRow("StatGame", "- Blox Fruits", 44, true)
+    local statBounty = createStatRow("StatBounty", "- Bounty 4M", 74, true)
+    local statLevel = createStatRow("StatLevel", "- Level 2800", 104, true)
 
     -- Right 4 stats (Session, Ping, FPS, Clock)
-    local statClock = createStatRow("StatClock", "▶️", "- 0:00", 14, false)
-    local statPing = createStatRow("StatPing", "📶", "- 50ms", 44, false)
-    local statFps = createStatRow("StatFps", "🖥️", "- 60Fps", 74, false)
-    local statServerTime = createStatRow("StatServerTime", "🕒", "- 00:00", 104, false)
+    local statClock = createStatRow("StatClock", "- 0:00", 14, false)
+    local statPing = createStatRow("StatPing", "- 50ms", 44, false)
+    local statFps = createStatRow("StatFps", "- 60Fps", 74, false)
+    local statServerTime = createStatRow("StatServerTime", "- 00:00", 104, false)
 
     -- Hook dynamic real-time stats updates from StatsService
     if StatsService and StatsService.bind then

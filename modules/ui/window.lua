@@ -55,29 +55,48 @@ function Window.create(dependencies)
     pcall(function() ScreenGui.ClipToDeviceSafeArea = true end)
     Utils.safeParent(ScreenGui)
 
-    -- Full-Screen Cinematic Black Backdrop & Lighting Blur
+    -- Cinematic Roblox Lighting Management (Darkens the 3D game world behind the GUI matching original references)
     local Lighting = game:GetService("Lighting")
+    local originalLighting = {
+        ClockTime = Lighting.ClockTime,
+        Brightness = Lighting.Brightness,
+        Ambient = Lighting.Ambient,
+        OutdoorAmbient = Lighting.OutdoorAmbient,
+        ExposureCompensation = Lighting.ExposureCompensation
+    }
+
+    local function setDarkLighting(enable)
+        pcall(function()
+            if enable then
+                Lighting.ClockTime = 0
+                Lighting.Brightness = 0.5
+                Lighting.Ambient = Color3.fromRGB(30, 25, 42)
+                Lighting.OutdoorAmbient = Color3.fromRGB(25, 20, 36)
+                Lighting.ExposureCompensation = -0.2
+            else
+                if originalLighting.ClockTime ~= nil then
+                    Lighting.ClockTime = originalLighting.ClockTime
+                    Lighting.Brightness = originalLighting.Brightness
+                    Lighting.Ambient = originalLighting.Ambient
+                    Lighting.OutdoorAmbient = originalLighting.OutdoorAmbient
+                    Lighting.ExposureCompensation = originalLighting.ExposureCompensation
+                end
+            end
+        end)
+    end
+    setDarkLighting(true)
+
+    -- Soft subtle blur (Size 6: lightweight, 0 FPS lag on mobile)
     local blurEffect = nil
     pcall(function()
         local oldBlur = Lighting:FindFirstChild("Monody_ScreenBlur")
         if oldBlur then oldBlur:Destroy() end
         blurEffect = Instance.new("BlurEffect")
         blurEffect.Name = "Monody_ScreenBlur"
-        blurEffect.Size = 24
+        blurEffect.Size = 6
         blurEffect.Enabled = true
         blurEffect.Parent = Lighting
     end)
-
-    local blackDimFrame = Instance.new("Frame")
-    blackDimFrame.Name = "BlackDimBackdrop"
-    blackDimFrame.Size = UDim2.new(2, 0, 2, 0)
-    blackDimFrame.Position = UDim2.new(-0.5, 0, -0.5, 0)
-    blackDimFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    blackDimFrame.BackgroundTransparency = 0.02 -- Pitch black backdrop for neon pop
-    blackDimFrame.BorderSizePixel = 0
-    blackDimFrame.ZIndex = 1
-    blackDimFrame.Active = false
-    blackDimFrame.Parent = ScreenGui
 
     -- Master Window Frame
     local mainFrame = Instance.new("Frame")
@@ -120,33 +139,32 @@ function Window.create(dependencies)
     contentArea.ClipsDescendants = true
     contentArea.Parent = mainFrame
 
-    -- Toggle Hub Visibility Function with smooth pitch-black backdrop fading
+    -- Toggle Hub Visibility Function with smooth scale and lighting transitions
     local isVisible = true
     local function setWindowVisible(visible)
         isVisible = visible
         if visible then
             mainFrame.Visible = true
-            blackDimFrame.Visible = true
-            TweenService:Create(blackDimFrame, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                BackgroundTransparency = 0.02
-            }):Play()
+            setDarkLighting(true)
             if blurEffect then
                 blurEffect.Enabled = true
-                TweenService:Create(blurEffect, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    Size = 24
+                TweenService:Create(blurEffect, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Size = 6
                 }):Play()
             end
             TweenService:Create(uiScale, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                 Scale = Utils.getOptimalScale()
             }):Play()
         else
-            TweenService:Create(blackDimFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-                BackgroundTransparency = 1
-            }):Play()
+            setDarkLighting(false)
             if blurEffect then
-                TweenService:Create(blurEffect, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                local twB = TweenService:Create(blurEffect, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
                     Size = 0
-                }):Play()
+                })
+                twB:Play()
+                twB.Completed:Connect(function()
+                    if not isVisible and blurEffect then blurEffect.Enabled = false end
+                end)
             end
             local tw = TweenService:Create(uiScale, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
                 Scale = 0.05
@@ -155,8 +173,6 @@ function Window.create(dependencies)
             tw.Completed:Connect(function()
                 if not isVisible then
                     mainFrame.Visible = false
-                    blackDimFrame.Visible = false
-                    if blurEffect then blurEffect.Enabled = false end
                 end
             end)
         end
@@ -265,6 +281,7 @@ function Window.create(dependencies)
                 pcall(function() mobileToggle.Visible = false end)
             end
             Utils.toast("Monody", "Closed completely.", 1.5)
+            setDarkLighting(false)
             task.delay(0.05, function()
                 if mobileToggle and mobileToggle.Parent then
                     pcall(function() mobileToggle:Destroy() end)
