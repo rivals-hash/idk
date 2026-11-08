@@ -82,8 +82,8 @@ local function addCardHeight(parent, h)
     card.Size = UDim2.new(0, 396, 0, newH)
 end
 
--- Helper: Create interactive Toggle with icon in rounded square matching Screenshot 2
-local function createToggle(parent, title, desc, defaultState, onToggle, Utils, customIcon)
+-- Helper: Create interactive Toggle (Pure Native UI matching reference IMG_9181.jpeg)
+local function createToggle(parent, title, desc, defaultState, onToggle, Utils)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local state = defaultState or false
 
@@ -96,40 +96,10 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils, 
 
     addCardHeight(parent, 44)
 
-    -- Left Icon in Rounded Square (Matching Screenshot 2)
-    local iconBox = Instance.new("Frame")
-    iconBox.Name = "IconBox"
-    iconBox.Size = UDim2.new(0, 30, 0, 30)
-    iconBox.Position = UDim2.new(0, 4, 0.5, -15)
-    iconBox.BackgroundColor3 = Color3.fromRGB(32, 26, 48)
-    iconBox.BorderSizePixel = 0
-    iconBox.ZIndex = 4
-    iconBox.Parent = row
-
-    local ibCorner = Instance.new("UICorner")
-    ibCorner.CornerRadius = UDim.new(0, 8)
-    ibCorner.Parent = iconBox
-
-    local ibStroke = Instance.new("UIStroke")
-    ibStroke.Color = Color3.fromRGB(110, 75, 160)
-    ibStroke.Thickness = 1
-    ibStroke.Transparency = 0.35
-    ibStroke.Parent = iconBox
-
-    local iconImg = Instance.new("ImageLabel")
-    iconImg.Name = "Icon"
-    iconImg.Size = UDim2.new(0, 16, 0, 16)
-    iconImg.Position = UDim2.new(0.5, -8, 0.5, -8)
-    iconImg.BackgroundTransparency = 1
-    iconImg.Image = customIcon or ICON_MAP[title] or "rbxassetid://134242818164054"
-    iconImg.ImageColor3 = Color3.fromRGB(225, 215, 245)
-    iconImg.ZIndex = 5
-    iconImg.Parent = iconBox
-
-    -- Center Text (Title + Short Desc)
+    -- Left Text (Title + Short Desc matching IMG_9181.jpeg)
     local textContainer = Instance.new("Frame")
-    textContainer.Size = UDim2.new(1, -94, 1, 0)
-    textContainer.Position = UDim2.new(0, 42, 0, 0)
+    textContainer.Size = UDim2.new(1, -56, 1, 0)
+    textContainer.Position = UDim2.new(0, 8, 0, 0)
     textContainer.BackgroundTransparency = 1
     textContainer.ZIndex = 3
     textContainer.Parent = row
@@ -247,7 +217,8 @@ local function createToggle(parent, title, desc, defaultState, onToggle, Utils, 
 end
 
 -- Helper: Create interactive Dropdown with icon and chevron (e.g. Aim Mode -> Closest v)
-local function createDropdown(parent, title, desc, optionsList, defaultIndex, onSelect, Utils, customIcon)
+-- Helper: Create interactive Dropdown with chevron pill (e.g. Aim Mode -> Closest v)
+local function createDropdown(parent, title, desc, optionsList, defaultIndex, onSelect, Utils)
     local targetContainer = parent:FindFirstChild("Content") or parent
     local curIdx = defaultIndex or 1
     optionsList = (optionsList and #optionsList > 0) and optionsList or { "Default" }
@@ -261,40 +232,10 @@ local function createDropdown(parent, title, desc, optionsList, defaultIndex, on
 
     addCardHeight(parent, 44)
 
-    -- Left Icon in Rounded Square
-    local iconBox = Instance.new("Frame")
-    iconBox.Name = "IconBox"
-    iconBox.Size = UDim2.new(0, 30, 0, 30)
-    iconBox.Position = UDim2.new(0, 4, 0.5, -15)
-    iconBox.BackgroundColor3 = Color3.fromRGB(32, 26, 48)
-    iconBox.BorderSizePixel = 0
-    iconBox.ZIndex = 4
-    iconBox.Parent = row
-
-    local ibCorner = Instance.new("UICorner")
-    ibCorner.CornerRadius = UDim.new(0, 8)
-    ibCorner.Parent = iconBox
-
-    local ibStroke = Instance.new("UIStroke")
-    ibStroke.Color = Color3.fromRGB(110, 75, 160)
-    ibStroke.Thickness = 1
-    ibStroke.Transparency = 0.35
-    ibStroke.Parent = iconBox
-
-    local iconImg = Instance.new("ImageLabel")
-    iconImg.Name = "Icon"
-    iconImg.Size = UDim2.new(0, 16, 0, 16)
-    iconImg.Position = UDim2.new(0.5, -8, 0.5, -8)
-    iconImg.BackgroundTransparency = 1
-    iconImg.Image = customIcon or ICON_MAP[title] or "rbxassetid://134242818164054"
-    iconImg.ImageColor3 = Color3.fromRGB(225, 215, 245)
-    iconImg.ZIndex = 5
-    iconImg.Parent = iconBox
-
-    -- Center Text
+    -- Left Text
     local textContainer = Instance.new("Frame")
-    textContainer.Size = UDim2.new(1, -156, 1, 0)
-    textContainer.Position = UDim2.new(0, 42, 0, 0)
+    textContainer.Size = UDim2.new(1, -120, 1, 0)
+    textContainer.Position = UDim2.new(0, 8, 0, 0)
     textContainer.BackgroundTransparency = 1
     textContainer.ZIndex = 3
     textContainer.Parent = row
@@ -661,7 +602,7 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
     scroll.ScrollBarThickness = 0
-    scroll.CanvasSize = UDim2.new(0, (#colorNames * 66), 0, 0)
+    scroll.CanvasSize = UDim2.new(0, (#colorNames * 76), 0, 0)
     scroll.ScrollingDirection = Enum.ScrollingDirection.X
     scroll.ZIndex = 5
     scroll.Parent = container
@@ -686,12 +627,12 @@ local function createColorPicker(parent, title, desc, colorNames, defaultColorNa
     for idx, cName in ipairs(colorNames) do
         local pill = Instance.new("TextButton")
         pill.Name = "Color_" .. cName
-        pill.Size = UDim2.new(0, 60, 0, 24)
+        pill.Size = UDim2.new(0, 70, 0, 24)
         pill.BackgroundColor3 = (cName == selected) and Color3.fromRGB(115, 55, 185) or Color3.fromRGB(26, 20, 38)
         pill.BorderSizePixel = 0
         pill.Text = cName
         pill.Font = Enum.Font.GothamBold
-        pill.TextSize = 10
+        pill.TextSize = 10.5
         pill.TextColor3 = Color3.fromRGB(255, 255, 255)
         pill.AutoButtonColor = false
         pill.Active = true
@@ -961,36 +902,9 @@ function TabViews.build(tabName, parentContainer, options)
     bStroke.Transparency = 0.15
     bStroke.Parent = banner
 
-    -- Circular glowing icon badge on left
-    local bIconBox = Instance.new("Frame")
-    bIconBox.Name = "BannerIconBox"
-    bIconBox.Size = UDim2.new(0, 32, 0, 32)
-    bIconBox.Position = UDim2.new(0, 10, 0.5, -16)
-    bIconBox.BackgroundColor3 = Color3.fromRGB(34, 24, 52)
-    bIconBox.ZIndex = 3
-    bIconBox.Parent = banner
-
-    local bibCorner = Instance.new("UICorner")
-    bibCorner.CornerRadius = UDim.new(1, 0)
-    bibCorner.Parent = bIconBox
-
-    local bibStroke = Instance.new("UIStroke")
-    bibStroke.Color = Color3.fromRGB(195, 125, 255)
-    bibStroke.Thickness = 1.5
-    bibStroke.Parent = bIconBox
-
-    local bibImg = Instance.new("ImageLabel")
-    bibImg.Size = UDim2.new(0, 18, 0, 18)
-    bibImg.Position = UDim2.new(0.5, -9, 0.5, -9)
-    bibImg.BackgroundTransparency = 1
-    bibImg.Image = ICON_MAP[tabName] or "rbxassetid://134242818164054"
-    bibImg.ImageColor3 = Color3.fromRGB(240, 235, 255)
-    bibImg.ZIndex = 4
-    bibImg.Parent = bIconBox
-
     local bTitle = Instance.new("TextLabel")
-    bTitle.Size = UDim2.new(1, -60, 0, 20)
-    bTitle.Position = UDim2.new(0, 50, 0, 5)
+    bTitle.Size = UDim2.new(1, -28, 0, 20)
+    bTitle.Position = UDim2.new(0, 14, 0, 5)
     bTitle.BackgroundTransparency = 1
     bTitle.Font = Enum.Font.GothamBold
     bTitle.Text = tabName
@@ -1001,8 +915,8 @@ function TabViews.build(tabName, parentContainer, options)
     bTitle.Parent = banner
 
     local bDesc = Instance.new("TextLabel")
-    bDesc.Size = UDim2.new(1, -60, 0, 15)
-    bDesc.Position = UDim2.new(0, 50, 0, 26)
+    bDesc.Size = UDim2.new(1, -28, 0, 15)
+    bDesc.Position = UDim2.new(0, 14, 0, 26)
     bDesc.BackgroundTransparency = 1
     bDesc.Font = Enum.Font.Gotham
     bDesc.Text = tabName:lower()

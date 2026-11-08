@@ -128,41 +128,15 @@ function HomeView.create(parentContainer, dependencies)
     -- 2. CARD 2: REAL LIVE STATS CARD WITH AUTHENTIC NEON STATS_PANEL.PNG
     ----------------------------------------------------------------------------
     -- Card 2 renders stats_panel.png with its glowing purple neon crown, glowing ring,
-    -- neon corner swooshes, and glowing icons, with clean live stats overlays at balanced spacing.
+    -- neon corner swooshes, and glowing icons, with clean dynamic live stats.
     local card2, bg2 = createCard("CenterStatsCard", 146, 2, statsBgAsset)
 
-    -- Helper for Left & Right Stats Rows with clean text backing
-    local function createStatRow(name, text, yPos, isLeft)
-        local row = Instance.new("Frame")
-        row.Name = name
-        row.Size = UDim2.new(0, 116, 0, 22)
-        row.BackgroundTransparency = 1
-        if isLeft then
-            row.Position = UDim2.new(0.5, -48 - 116, 0, yPos)
-        else
-            row.Position = UDim2.new(0.5, 48, 0, yPos)
-        end
-        row.ZIndex = 6
-        row.Parent = card2
-
-        local textBacking = Instance.new("Frame")
-        textBacking.Name = "TextBacking"
-        textBacking.Size = UDim2.new(1, -20, 0, 18)
-        textBacking.Position = UDim2.new(0, 20, 0.5, -9)
-        textBacking.BackgroundColor3 = Color3.fromRGB(16, 12, 24)
-        textBacking.BackgroundTransparency = 0.08
-        textBacking.BorderSizePixel = 0
-        textBacking.ZIndex = 6
-        textBacking.Parent = row
-
-        local tbCorner = Instance.new("UICorner")
-        tbCorner.CornerRadius = UDim.new(0, 4)
-        tbCorner.Parent = textBacking
-
+    -- Helper for Left & Right Stats Rows (aligned with glowing icons in stats_panel.png)
+    local function createStatRow(name, text, yPos, xPos, width)
         local lbl = Instance.new("TextLabel")
-        lbl.Name = "Label"
-        lbl.Size = UDim2.new(1, -22, 1, 0)
-        lbl.Position = UDim2.new(0, 22, 0, 0)
+        lbl.Name = name
+        lbl.Size = UDim2.new(0, width, 0, 20)
+        lbl.Position = UDim2.new(0, xPos, 0, yPos)
         lbl.BackgroundTransparency = 1
         lbl.Font = Enum.Font.GothamMedium
         lbl.Text = text
@@ -170,22 +144,22 @@ function HomeView.create(parentContainer, dependencies)
         lbl.TextColor3 = Color3.fromRGB(245, 240, 255)
         lbl.TextXAlignment = Enum.TextXAlignment.Left
         lbl.ZIndex = 7
-        lbl.Parent = row
+        lbl.Parent = card2
 
         return lbl
     end
 
-    -- Left 4 stats (Player, Game, Bounty, Level)
-    local statDarling = createStatRow("StatDarling", "- Loading...", 14, true)
-    local statGame = createStatRow("StatGame", "- Blox Fruits", 44, true)
-    local statBounty = createStatRow("StatBounty", "- Bounty 4M", 74, true)
-    local statLevel = createStatRow("StatLevel", "- Level 2800", 104, true)
+    -- Left 4 stats (Player, Game, Bounty, Level) - aligned to icons at x=68
+    local statDarling = createStatRow("StatDarling", "- Loading...", 22, 72, 100)
+    local statGame = createStatRow("StatGame", "- Blox Fruits", 51, 72, 100)
+    local statBounty = createStatRow("StatBounty", "- Bounty 4M", 83, 72, 100)
+    local statLevel = createStatRow("StatLevel", "- Level 2800", 115, 72, 100)
 
-    -- Right 4 stats (Session, Ping, FPS, Clock)
-    local statClock = createStatRow("StatClock", "- 0:00", 14, false)
-    local statPing = createStatRow("StatPing", "- 50ms", 44, false)
-    local statFps = createStatRow("StatFps", "- 60Fps", 74, false)
-    local statServerTime = createStatRow("StatServerTime", "- 00:00", 104, false)
+    -- Right 4 stats (Session, Ping, FPS, Clock) - aligned to icons at x=316
+    local statClock = createStatRow("StatClock", "- 0:00", 22, 320, 75)
+    local statPing = createStatRow("StatPing", "- 50ms", 51, 320, 75)
+    local statFps = createStatRow("StatFps", "- 60Fps", 83, 320, 75)
+    local statServerTime = createStatRow("StatServerTime", "- 00:00", 115, 320, 75)
 
     -- Hook dynamic real-time stats updates from StatsService
     if StatsService and StatsService.bind then

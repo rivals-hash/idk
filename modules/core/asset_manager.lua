@@ -15,11 +15,13 @@ local exMakeFolder = makefolder or make_folder or (getgenv and getgenv().makefol
 local exRequest = request or http_request or (syn and syn.request) or (http and http.request)
 
 local BASE_URL = "https://raw.githubusercontent.com/rivals-hash/idk/main/assets/"
-local CACHE_FOLDER = "Monody_Assets_v5"
+local CACHE_FOLDER = "Monody_Assets_v6"
 
 -- Candidate folders to look for already cached files
 local CANDIDATE_FOLDERS = {
     CACHE_FOLDER,
+    "Monody_Assets_v6",
+    "Monody_Assets_v5",
     "Monody_Assets_v4",
     "Monody_Assets_v3",
     "Monody_Assets_v2",

@@ -55,48 +55,44 @@ function Window.create(dependencies)
     pcall(function() ScreenGui.ClipToDeviceSafeArea = true end)
     Utils.safeParent(ScreenGui)
 
-    -- Cinematic Roblox Lighting Management (Darkens the 3D game world behind the GUI matching original references)
+    -- Cinematic Roblox Lighting Management
+    -- Gently dims and tints the 3D game world behind the GUI matching original references (WITHOUT turning the game world pitch black!)
     local Lighting = game:GetService("Lighting")
-    local originalLighting = {
-        ClockTime = Lighting.ClockTime,
-        Brightness = Lighting.Brightness,
-        Ambient = Lighting.Ambient,
-        OutdoorAmbient = Lighting.OutdoorAmbient,
-        ExposureCompensation = Lighting.ExposureCompensation
-    }
-
-    local function setDarkLighting(enable)
-        pcall(function()
-            if enable then
-                Lighting.ClockTime = 0
-                Lighting.Brightness = 0.5
-                Lighting.Ambient = Color3.fromRGB(30, 25, 42)
-                Lighting.OutdoorAmbient = Color3.fromRGB(25, 20, 36)
-                Lighting.ExposureCompensation = -0.2
-            else
-                if originalLighting.ClockTime ~= nil then
-                    Lighting.ClockTime = originalLighting.ClockTime
-                    Lighting.Brightness = originalLighting.Brightness
-                    Lighting.Ambient = originalLighting.Ambient
-                    Lighting.OutdoorAmbient = originalLighting.OutdoorAmbient
-                    Lighting.ExposureCompensation = originalLighting.ExposureCompensation
-                end
-            end
-        end)
-    end
-    setDarkLighting(true)
-
-    -- Soft subtle blur (Size 6: lightweight, 0 FPS lag on mobile)
+    local colorCorrection = nil
     local blurEffect = nil
+
     pcall(function()
+        local oldCC = Lighting:FindFirstChild("Monody_ScreenDim")
+        if oldCC then oldCC:Destroy() end
+        colorCorrection = Instance.new("ColorCorrectionEffect")
+        colorCorrection.Name = "Monody_ScreenDim"
+        colorCorrection.Brightness = -0.06
+        colorCorrection.Contrast = 0.05
+        colorCorrection.Saturation = -0.05
+        colorCorrection.TintColor = Color3.fromRGB(235, 225, 250)
+        colorCorrection.Enabled = true
+        colorCorrection.Parent = Lighting
+
         local oldBlur = Lighting:FindFirstChild("Monody_ScreenBlur")
         if oldBlur then oldBlur:Destroy() end
         blurEffect = Instance.new("BlurEffect")
         blurEffect.Name = "Monody_ScreenBlur"
-        blurEffect.Size = 6
+        blurEffect.Size = 4 -- Subtle depth of field, 0 FPS lag
         blurEffect.Enabled = true
         blurEffect.Parent = Lighting
     end)
+
+    local function setDarkLighting(enable)
+        pcall(function()
+            if colorCorrection then
+                colorCorrection.Enabled = enable
+            end
+            if blurEffect then
+                blurEffect.Enabled = enable
+            end
+        end)
+    end
+    setDarkLighting(true)
 
     -- Master Window Frame
     local mainFrame = Instance.new("Frame")
@@ -149,7 +145,7 @@ function Window.create(dependencies)
             if blurEffect then
                 blurEffect.Enabled = true
                 TweenService:Create(blurEffect, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    Size = 6
+                    Size = 4
                 }):Play()
             end
             TweenService:Create(uiScale, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
