@@ -1,6 +1,6 @@
 --[[
-    Monody Premium - Tracers Module
-    Hardware 3D Beam and 2D Line (Drawing API / ScreenGui fallback).
+    Darling Hub - Tracers Module
+    Hardware 3D Beam (Nameless standard) and 2D Line (Drawing API / ScreenGui fallback).
     Renders visual links from LocalPlayer to active combat targets.
 ]]--
 
@@ -33,7 +33,7 @@ local function makeRainbowSequence(offset)
     return ColorSequence.new(kps)
 end
 
--- 3D Beam Assets
+-- 3D Beam Assets (Nameless implementation)
 local tracerModel = nil
 local tracerAttachment0 = nil
 local tracerAttachment1 = nil
@@ -74,7 +74,7 @@ end
 local function getOverlayGui()
     if overlayGui and overlayGui.Parent then return overlayGui end
     local gui = Instance.new("ScreenGui")
-    gui.Name = "Monody_Tracers_Overlay"
+    gui.Name = "DarlingHub_Tracers_Overlay"
     gui.ResetOnSpawn = false
     gui.IgnoreGuiInset = true
     gui.DisplayOrder = 2147483647
@@ -135,23 +135,17 @@ local function createBeamTracer()
             parentFolder.Parent = Workspace
         end
 
-        local part = Instance.new("Part")
-        part.Name = "TracerAnchor"
-        part.Size = Vector3.zero
-        part.Transparency = 1
-        part.CanCollide = false
-        part.CanTouch = false
-        part.CanQuery = false
-        part.Anchored = true
-        part.Parent = parentFolder
+        local model = Instance.new("Model")
+        model.Name = "SilentAimTracer"
+        model.Parent = parentFolder
 
         local att0 = Instance.new("Attachment")
         att0.Name = "SourceAttachment"
-        att0.Parent = part
+        att0.Parent = model
 
         local att1 = Instance.new("Attachment")
         att1.Name = "TargetAttachment"
-        att1.Parent = part
+        att1.Parent = model
 
         local beam = Instance.new("Beam")
         beam.Name = "TracerBeam"
@@ -166,9 +160,9 @@ local function createBeamTracer()
         beam.Color = ColorSequence.new(currentColor)
         beam.Transparency = NumberSequence.new(0)
         beam.Enabled = false
-        beam.Parent = part
+        beam.Parent = model
 
-        tracerModel = part
+        tracerModel = model
         tracerAttachment0 = att0
         tracerAttachment1 = att1
         tracerBeam = beam
@@ -193,116 +187,64 @@ end
 
 local function resolveTargetPart()
     local env = (getgenv and getgenv()) or _G
-    local core = env.MonodyCombatCore or env.DarlingCombatCore or _G.MonodyCombatCore or _G.DarlingCombatCore
-    local silentAim = env.MonodySilentAim or _G.MonodySilentAim
+    local core = env.DarlingCombatCore or _G.DarlingCombatCore
+    local hub = _G.DarlingHub or (getgenv and getgenv().DarlingHub)
+    local abMod = hub and hub.Modules and hub.Modules["modules/combat/auto_bounty.lua"]
 
-    local isPlayerActive = core and (core.AimbotEnabled or core.PlayerAimEnabled or core.LockPlayer or _G.G_Aimbot or _G.G_PlayerAim or _G.G_PlayerSilentAim)
-    local isNPCActive = core and (core.NPCAimEnabled or _G.G_NPCAimbot or _G.G_NPCSilentAim)
+    -- Tracers only appear when an aimbot or combat targeting system is actively enabled
+    local isTargetingActive = false
+    if core and (core.PlayerAimEnabled or core.NPCAimEnabled or core.LockPlayer) then
+        isTargetingActive = true
+    end
+    if _G.G_SilentAim or _G.G_NPCSilentAim or _G.G_PlayerSilentAim or _G.DarlingSilentAim then
+        isTargetingActive = true
+    end
+    if abMod and abMod.Enabled then
+        isTargetingActive = true
+    end
 
-    local allowPlayers = true
-    local allowNPCs = true
+    if not isTargetingActive then
+        return nil
+    end
 
-    -- Strict filtering: if only NPC is active, block players. If only Player is active, block NPCs.
-    if isNPCActive and not isPlayerActive then
-        allowPlayers = false
-        allowNPCs = true
-    elseif isPlayerActive and not isNPCActive then
-        allowPlayers = true
-        allowNPCs = false
+    local onlyNpc = (core and core.NPCAimEnabled and not core.PlayerAimEnabled and not core.LockPlayer) or (_G.G_NPCSilentAim and not _G.G_PlayerSilentAim)
+    local onlyPlayer = (core and (core.PlayerAimEnabled or core.LockPlayer) and not core.NPCAimEnabled) or (_G.G_PlayerSilentAim and not _G.G_NPCSilentAim)
+
+    local function isTargetTypeAllowed(part)
+        if not part or not part.Parent then return false end
+        local isPlayer = (Players:GetPlayerFromCharacter(part.Parent) ~= nil)
+        if onlyNpc and isPlayer then return false end
+        if onlyPlayer and not isPlayer then return false end
+        return true
     end
 
     -- 1. Shared Aimbot or Core Target Part (NPC or Player)
     if core and core.CurrentTargetPart and core.CurrentTargetPart.Parent then
-        if isAlive(core.CurrentTargetPart.Parent) then
-            local isTargetPlayer = (Players:GetPlayerFromCharacter(core.CurrentTargetPart.Parent) ~= nil)
-            if (isTargetPlayer and allowPlayers) or (not isTargetPlayer and allowNPCs) then
-                return core.CurrentTargetPart
-            end
-        end
-    end
-
-    -- 2. Silent Aim Target
-    if silentAim and silentAim.getTarget and allowPlayers then
-        local st = silentAim.getTarget()
-        if st and st.Parent and isAlive(st.Parent) then
-            local isTargetPlayer = (Players:GetPlayerFromCharacter(st.Parent) ~= nil)
-            if (isTargetPlayer and allowPlayers) or (not isTargetPlayer and allowNPCs) then
-                return st
-            end
+        if isAlive(core.CurrentTargetPart.Parent) and isTargetTypeAllowed(core.CurrentTargetPart) then
+            return core.CurrentTargetPart
         end
     end
 
     if _G.currentSilentAimTarget and _G.currentSilentAimTarget.Parent then
         local parentChar = _G.currentSilentAimTarget.Parent
-        if isAlive(parentChar) then
-            local isTargetPlayer = (Players:GetPlayerFromCharacter(parentChar) ~= nil)
-            if (isTargetPlayer and allowPlayers) or (not isTargetPlayer and allowNPCs) then
-                return _G.currentSilentAimTarget
+        if isAlive(parentChar) and isTargetTypeAllowed(_G.currentSilentAimTarget) then
+            return _G.currentSilentAimTarget
+        end
+    end
+
+    -- 2. AutoBounty Target (only if not restricted to NPC)
+    if not onlyNpc then
+        local abTarget = _G.DarlingAutoBountyTarget or _G.DarlingTarget or (abMod and abMod.CurrentTarget)
+        if abTarget then
+            local char = abTarget.Character or (abTarget:IsA("Model") and abTarget)
+            if isAlive(char) then
+                local p = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Head") or char:FindFirstChild("Torso")
+                if p and isTargetTypeAllowed(p) then return p end
             end
         end
     end
 
-    local lp = Players.LocalPlayer or LocalPlayer
-    local lpChar = lp and lp.Character
-    local lpHRP = lpChar and lpChar:FindFirstChild("HumanoidRootPart")
-    if not lpHRP then return nil end
-
-    -- 3. Fallback: Find closest player on screen/world (Only if players allowed)
-    if allowPlayers then
-        local nearest = nil
-        local minDist = math.huge
-        local teamCheck = (core and core.TeamCheck == true)
-        for _, pl in ipairs(Players:GetPlayers()) do
-            if pl ~= lp and pl.Character and isAlive(pl.Character) then
-                local isEnemy = true
-                if teamCheck and pl.Team and lp.Team and pl.Team == lp.Team then
-                    isEnemy = false
-                end
-                if core and core.isPlayerBlacklisted and core.isPlayerBlacklisted(pl) then
-                    isEnemy = false
-                end
-                if isEnemy then
-                    local hrp = pl.Character:FindFirstChild("HumanoidRootPart") or pl.Character:FindFirstChild("Head")
-                    if hrp then
-                        local d = (hrp.Position - lpHRP.Position).Magnitude
-                        if d < minDist then
-                            minDist = d
-                            nearest = hrp
-                        end
-                    end
-                end
-            end
-        end
-        if nearest then return nearest end
-    end
-
-    -- 4. Fallback: Check nearest NPC in Workspace (Only if NPCs allowed)
-    if allowNPCs then
-        local nearest = nil
-        local minDist = math.huge
-        local folders = {
-            Workspace:FindFirstChild("Enemies"),
-            Workspace:FindFirstChild("Characters"),
-        }
-        for _, f in ipairs(folders) do
-            if f then
-                for _, ent in ipairs(f:GetChildren()) do
-                    if ent:IsA("Model") and isAlive(ent) and not Players:GetPlayerFromCharacter(ent) then
-                        local hrp = ent:FindFirstChild("HumanoidRootPart") or ent:FindFirstChild("Head")
-                        if hrp then
-                            local d = (hrp.Position - lpHRP.Position).Magnitude
-                            if d < minDist and d <= 1200 then
-                                minDist = d
-                                nearest = hrp
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        if nearest then return nearest end
-    end
-
+    -- No fallback loop: if no active target is locked, do not render tracers
     return nil
 end
 
@@ -347,7 +289,7 @@ local function onRender()
     local want3D = (currentType == "3D Beam" or currentType == "Both")
     local want2D = (currentType == "2D Line" or currentType == "Both")
 
-    -- 1. Hardware 3D Beam Update
+    -- 1. Nameless 3D Beam Update
     if want3D then
         if not tracerBeam or not tracerBeam.Parent then
             createBeamTracer()

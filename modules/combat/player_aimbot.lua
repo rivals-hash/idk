@@ -8,19 +8,23 @@ local Core = nil
 local function getCore()
     if Core then return Core end
     local env = (getgenv and getgenv()) or _G
-    if env.MonodyCombatCore then Core = env.MonodyCombatCore return Core end
-    if env.DarlingCombatCore then Core = env.DarlingCombatCore return Core end
-    if _G.MonodyCombatCore then Core = _G.MonodyCombatCore return Core end
-    if _G.DarlingCombatCore then Core = _G.DarlingCombatCore return Core end
-    local hub = env.BestHub or _G.BestHub or env.MonodyHub or _G.MonodyHub or env.DarlingHub or _G.DarlingHub
+    if env.DarlingCombatCore then
+        Core = env.DarlingCombatCore
+        return Core
+    end
+    if _G.DarlingCombatCore then
+        Core = _G.DarlingCombatCore
+        return Core
+    end
+    local hub = env.DarlingHub or _G.DarlingHub
     if hub and hub.Require then
         local ok, res = pcall(function()
             return hub:Require("modules/combat/aimbot_core.lua")
         end)
         if ok and res then
             Core = res
-            env.MonodyCombatCore = Core
-            _G.MonodyCombatCore = Core
+            env.DarlingCombatCore = Core
+            _G.DarlingCombatCore = Core
             return Core
         end
     end
@@ -57,7 +61,7 @@ function PlayerAimbot.disable()
     if not core then return end
     core.PlayerAimEnabled = false
     _G.G_PlayerSilentAim = false
-    if not core.NPCAimEnabled and not core.LockPlayer and not core.AimbotEnabled then
+    if not core.NPCAimEnabled and not core.LockPlayer then
         _G.currentSilentAimTarget = nil
         _G.DarlingSilentAimTarget = nil
     end

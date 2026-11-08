@@ -137,54 +137,28 @@ local function getAimbotTarget()
 end
 SoruEngine.getAimbotTarget = getAimbotTarget
 
-local inHook = false
 local function setupMetamethodHook()
     if SoruEngine.Hooked then return end
-    SoruEngine.Hooked = true
-
-    local core = _G.MonodyCombatCore or _G.DarlingCombatCore
-    if core and core.installHooks then
-        pcall(core.installHooks)
-        return
-    end
-
     if not hookmetamethod then return end
 
     pcall(function()
-        local mouse = LocalPlayer and LocalPlayer:GetMouse()
-        if not mouse then return end
         local oldIndex = nil
         oldIndex = hookmetamethod(game, "__index", newcclosure(function(self, key)
-            if inHook then return oldIndex(self, key) end
-            if checkcaller and checkcaller() then return oldIndex(self, key) end
-
-            if self == mouse and (key == "Hit" or key == "Target") then
+            if not checkcaller() and self == Mouse and (key == "Hit" or key == "Target") then
                 if SoruEngine.AimbotEnabled then
-                    inHook = true
                     local _, targetHRP = getAimbotTarget()
-                    if targetHRP and targetHRP.Parent then
-                        local tp = targetHRP.Position
-                        local cam = Workspace.CurrentCamera
-                        local cp = cam and cam.CFrame.Position
+                    if targetHRP then
                         if key == "Hit" then
-                            inHook = false
-                            if cp then
-                                local look = (tp - cp)
-                                if look.Magnitude > 0.001 then
-                                    return CFrame.lookAt(tp, tp + look.Unit)
-                                end
-                            end
-                            return CFrame.new(tp)
+                            return CFrame.new(targetHRP.Position)
                         elseif key == "Target" then
-                            inHook = false
                             return targetHRP
                         end
                     end
-                    inHook = false
                 end
             end
             return oldIndex(self, key)
         end))
+        SoruEngine.Hooked = true
     end)
 end
 
@@ -471,13 +445,8 @@ end
 SoruEngine.stop = SoruEngine.disable
 
 -- Initial bind
-if LocalPlayer and LocalPlayer.Character then
+if LocalPlayer.Character then
     SoruEngine.bindSkillCombo(LocalPlayer.Character)
-end
-
-_G.MonodySoruEngine = SoruEngine
-if getgenv then
-    pcall(function() getgenv().MonodySoruEngine = SoruEngine end)
 end
 
 return SoruEngine

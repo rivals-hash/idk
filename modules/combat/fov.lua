@@ -1,9 +1,7 @@
 --[[
-    Monody Premium - modules/combat/fov.lua
-    FOV Circle Visualizer
-    Dual-layer rendering: ScreenGui (100% mobile compatibility) + Drawing API.
-    Supports dynamic colors (Rainbow, White, Red, Green, Blue, Yellow, Purple),
-    radius scaling, and Center / Touch positioning.
+    Darling Hub - FOV Circle Module
+    ScreenGui FOV implementation with UIGradient and UIStroke.
+    100% reliable across all executors and platforms (PC, Mobile, Console).
 ]]
 
 local RunService = game:GetService("RunService")
@@ -15,79 +13,100 @@ local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
 local FOV = {}
-
--- State
 local isEnabled = false
-local isRainbow = true
-local currentColor = Color3.fromRGB(255, 255, 255)
-local currentRadius = 120
-local currentThickness = 1.5
-local currentMode = "Center" -- "Center" or "Mouse"
 local renderConnection = nil
 
--- Colors Palette
-FOV.ColorMap = {
-    Rainbow = nil,
-    White = Color3.fromRGB(255, 255, 255),
-    Red = Color3.fromRGB(255, 60, 60),
-    Green = Color3.fromRGB(60, 255, 120),
-    Blue = Color3.fromRGB(60, 160, 255),
-    Yellow = Color3.fromRGB(255, 225, 60),
-    Purple = Color3.fromRGB(180, 80, 255),
-    Cyan = Color3.fromRGB(60, 240, 255),
-    Orange = Color3.fromRGB(255, 140, 40),
-}
-FOV.ColorNames = { "Rainbow", "White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange" }
+-- Configuration State
+local currentRadius = 150
+local currentThickness = 2
+local currentColor = Color3.fromRGB(255, 255, 255)
+local currentMode = "Mouse" -- "Mouse" or "Center"
+local rainbowEnabled = true
 
--- GUI Elements
+-- ScreenGui Element References
 local overlayGui = nil
-local guiFrame = nil
-local guiStroke = nil
+local ringFrame = nil
+local ringStroke = nil
+local ringGradient = nil
 
--- Drawing API Reference
-local drawingCircle = nil
-local hasDrawing = (typeof(Drawing) == "table" and typeof(Drawing.new) == "function")
+local function parentFor()
+    if gethui then
+        local ok, h = pcall(gethui)
+        if ok and h and typeof(h) == "Instance" then return h end
+    end
+    if CoreGui then
+        local okC, core = pcall(function() return CoreGui end)
+        if okC and core then return core end
+    end
+    local lp = LocalPlayer or Players.LocalPlayer
+    if lp then
+        local pg = lp:FindFirstChildOfClass("PlayerGui") or lp:FindFirstChild("PlayerGui")
+        if pg then return pg end
+    end
+    return nil
+end
 
-local function getOverlayGui()
-    if overlayGui and overlayGui.Parent then return overlayGui end
+local function makeRainbowSequence()
+    local kps = {}
+    for i = 0, 6 do
+        kps[#kps + 1] = ColorSequenceKeypoint.new(i / 6, Color3.fromHSV(i / 6, 0.85, 1))
+    end
+    return ColorSequence.new(kps)
+end
+
+local function makeSolidSequence(color)
+    return ColorSequence.new({
+        ColorSequenceKeypoint.new(0, color),
+        ColorSequenceKeypoint.new(1, color),
+    })
+end
+
+local function cleanupGui()
+    if renderConnection then
+        pcall(function() renderConnection:Disconnect() end)
+        renderConnection = nil
+    end
+    if overlayGui then
+        pcall(function() overlayGui:Destroy() end)
+        overlayGui = nil
+    end
+    ringFrame = nil
+    ringStroke = nil
+    ringGradient = nil
+end
+
+local function buildFovGui()
+    if overlayGui and overlayGui.Parent and ringFrame and ringFrame.Parent then
+        return true
+    end
+
+    cleanupGui()
+
+    local parent = parentFor()
+    if not parent then return false end
+
     local gui = Instance.new("ScreenGui")
-    gui.Name = "Monody_FOV_Overlay"
+    gui.Name = "DarlingHub_FOV"
     gui.ResetOnSpawn = false
     gui.IgnoreGuiInset = true
-    gui.DisplayOrder = 2147483000
+    gui.DisplayOrder = 1000000
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    gui.Enabled = true
 
     if syn and syn.protect_gui then
         pcall(syn.protect_gui, gui)
     end
 
-    local parented = false
-    if gethui then
-        parented = pcall(function() gui.Parent = gethui() end)
-    end
-    if not parented then
-        parented = pcall(function() gui.Parent = CoreGui end)
-    end
-    if not parented and LocalPlayer then
-        pcall(function() gui.Parent = LocalPlayer:WaitForChild("PlayerGui") end)
-    end
-
-    overlayGui = gui
-    return overlayGui
-end
-
-local function ensureGuiCircle()
-    if guiFrame and guiFrame.Parent and guiStroke and guiStroke.Parent then
-        return guiFrame
-    end
-    local overlay = getOverlayGui()
-    if not overlay then return nil end
-
     local frame = Instance.new("Frame")
-    frame.Name = "FOVCircle"
+    frame.Name = "Ring"
     frame.AnchorPoint = Vector2.new(0.5, 0.5)
     frame.BackgroundTransparency = 1
-    frame.Visible = false
-    frame.Parent = overlay
+    frame.BorderSizePixel = 0
+    frame.Active = false
+    frame.Size = UDim2.fromOffset(currentRadius * 2, currentRadius * 2)
+    frame.Position = UDim2.fromScale(0.5, 0.5)
+    frame.Visible = true
+    frame.Parent = gui
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(1, 0)
@@ -95,181 +114,166 @@ local function ensureGuiCircle()
 
     local stroke = Instance.new("UIStroke")
     stroke.Thickness = currentThickness
-    stroke.Color = currentColor
+    stroke.Color = Color3.fromRGB(255, 255, 255)
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Transparency = 0
     stroke.Parent = frame
 
-    guiFrame = frame
-    guiStroke = stroke
-    return guiFrame
-end
-
-local function ensureDrawingCircle()
-    if not hasDrawing then return nil end
-    if drawingCircle then return drawingCircle end
-    local ok, c = pcall(function()
-        local circle = Drawing.new("Circle")
-        circle.Thickness = currentThickness
-        circle.NumSides = 64
-        circle.Filled = false
-        circle.Transparency = 1
-        circle.Color = currentColor
-        circle.Visible = false
-        return circle
-    end)
-    if ok and c then
-        drawingCircle = c
-        return drawingCircle
+    local gradient = Instance.new("UIGradient")
+    if rainbowEnabled then
+        gradient.Color = makeRainbowSequence()
+    else
+        gradient.Color = makeSolidSequence(currentColor)
     end
-    return nil
+    gradient.Parent = stroke
+
+    gui.Parent = parent
+
+    overlayGui = gui
+    ringFrame = frame
+    ringStroke = stroke
+    ringGradient = gradient
+    return true
 end
 
 local function onRender()
-    if not isEnabled then return end
+    if not isEnabled or not ringFrame or not ringFrame.Parent then return end
 
-    local camera = Workspace.CurrentCamera
-    if not camera then return end
+    local hub = _G.DarlingHub or (getgenv and getgenv().DarlingHub)
+    local aimMode = (hub and hub.Settings and hub.Settings.Aim and hub.Settings.Aim.Mode)
+        or (_G.DarlingCombatCore and _G.DarlingCombatCore.AimMode)
+        or (getgenv and getgenv().DarlingCombatCore and getgenv().DarlingCombatCore.AimMode)
+        or "360"
 
-    local center
-    if currentMode == "Mouse" then
-        center = UserInputService:GetMouseLocation()
-    else
-        center = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
-    end
-
-    local color = currentColor
-    if isRainbow then
-        color = Color3.fromHSV((tick() * 0.35) % 1, 0.85, 1)
-    end
-
-    -- 1. ScreenGui Circle (Guaranteed visible on mobile touch screens)
-    local frame = ensureGuiCircle()
-    if frame and guiStroke then
-        frame.Position = UDim2.fromOffset(center.X, center.Y)
-        frame.Size = UDim2.fromOffset(currentRadius * 2, currentRadius * 2)
-        guiStroke.Color = color
-        guiStroke.Thickness = currentThickness
-        frame.Visible = true
-    end
-
-    -- 2. Drawing API Circle (if executor supports it)
-    if hasDrawing then
-        local dCircle = ensureDrawingCircle()
-        if dCircle then
-            dCircle.Position = center
-            dCircle.Radius = currentRadius
-            dCircle.Color = color
-            dCircle.Thickness = currentThickness
-            dCircle.Visible = true
+    if aimMode ~= "FOV" then
+        if ringFrame.Visible then
+            ringFrame.Visible = false
         end
+        return
+    end
+
+    if not ringFrame.Visible then
+        ringFrame.Visible = true
+    end
+
+    if rainbowEnabled and ringGradient then
+        ringGradient.Rotation = (os.clock() * 90) % 360
+    end
+
+    if UserInputService.TouchEnabled or currentMode == "Center" then
+        ringFrame.Position = UDim2.fromScale(0.5, 0.5)
+    else
+        local mousePos = UserInputService:GetMouseLocation()
+        ringFrame.Position = UDim2.fromOffset(mousePos.X, mousePos.Y)
     end
 end
 
 function FOV.enable()
+    if isEnabled then return end
     isEnabled = true
-    ensureGuiCircle()
-    if hasDrawing then ensureDrawingCircle() end
+
+    buildFovGui()
+    if ringFrame then
+        ringFrame.Size = UDim2.fromOffset(currentRadius * 2, currentRadius * 2)
+        local hub = _G.DarlingHub or (getgenv and getgenv().DarlingHub)
+        local aimMode = (hub and hub.Settings and hub.Settings.Aim and hub.Settings.Aim.Mode)
+            or (_G.DarlingCombatCore and _G.DarlingCombatCore.AimMode)
+            or (getgenv and getgenv().DarlingCombatCore and getgenv().DarlingCombatCore.AimMode)
+            or "360"
+        ringFrame.Visible = (aimMode == "FOV")
+    end
 
     if not renderConnection then
         renderConnection = RunService.RenderStepped:Connect(onRender)
     end
-    return true
+
+    -- Sincronizar radio con el core de combate
+    pcall(function()
+        local hub = _G.DarlingHub or (getgenv and getgenv().DarlingHub)
+        local core = (_G.DarlingCombatCore) or (getgenv and getgenv().DarlingCombatCore) or (hub and hub.Require and hub:Require("modules/combat/aimbot_core.lua"))
+        if core and core.setFOVRadius then
+            core.setFOVRadius(currentRadius)
+        end
+    end)
 end
 
 function FOV.disable()
     isEnabled = false
-    if renderConnection then
-        renderConnection:Disconnect()
-        renderConnection = nil
-    end
-
-    if guiFrame then
-        guiFrame.Visible = false
-    end
-    if drawingCircle then
-        drawingCircle.Visible = false
-    end
+    cleanupGui()
 end
 
-function FOV.setVisible(state)
+function FOV.toggle(state)
+    if state == nil then state = not isEnabled end
     if state then
         FOV.enable()
     else
         FOV.disable()
     end
+    return isEnabled
 end
 
 function FOV.setRadius(radius)
-    currentRadius = tonumber(radius) or 120
+    currentRadius = math.clamp(tonumber(radius) or 150, 10, 1200)
+    if ringFrame then
+        ringFrame.Size = UDim2.fromOffset(currentRadius * 2, currentRadius * 2)
+    end
+    pcall(function()
+        local hub = _G.DarlingHub or (getgenv and getgenv().DarlingHub)
+        local core = hub and hub.Require and hub:Require("modules/combat/aimbot_core.lua")
+        if core and core.setFOVRadius then
+            core.setFOVRadius(currentRadius)
+        end
+    end)
 end
 
-function FOV.setColor(colorNameOrColor3)
-    if typeof(colorNameOrColor3) == "Color3" then
-        isRainbow = false
-        currentColor = colorNameOrColor3
-    elseif type(colorNameOrColor3) == "string" then
-        if colorNameOrColor3 == "Rainbow" then
-            isRainbow = true
-        elseif FOV.ColorMap[colorNameOrColor3] then
-            isRainbow = false
-            currentColor = FOV.ColorMap[colorNameOrColor3]
+function FOV.setColor(color)
+    if color == "Rainbow" or (typeof(color) == "string" and color:lower() == "rainbow") then
+        FOV.setRainbow(true)
+    elseif typeof(color) == "Color3" then
+        rainbowEnabled = false
+        currentColor = color
+        if ringGradient then
+            ringGradient.Color = makeSolidSequence(color)
+            ringGradient.Rotation = 0
         end
     end
 end
 
-function FOV.setRainbow(state)
-    isRainbow = (state == true)
-end
-
-function FOV.setMode(mode)
-    if mode == "Mouse" or mode == "Touch" then
-        currentMode = "Mouse"
-    else
-        currentMode = "Center"
+function FOV.setThickness(thickness)
+    currentThickness = math.clamp(tonumber(thickness) or 2, 1, 10)
+    if ringStroke then
+        ringStroke.Thickness = currentThickness
     end
 end
 
-function FOV.setThickness(thickness)
-    currentThickness = tonumber(thickness) or 1.5
+function FOV.setMode(mode)
+    if mode == "Center" or mode == "Mouse" then
+        currentMode = mode
+    end
+end
+
+function FOV.setRainbow(enabled)
+    rainbowEnabled = (enabled == true)
+    if ringGradient then
+        if rainbowEnabled then
+            ringGradient.Color = makeRainbowSequence()
+        else
+            ringGradient.Color = makeSolidSequence(currentColor)
+            ringGradient.Rotation = 0
+        end
+    end
 end
 
 function FOV.getRadius()
     return currentRadius
 end
 
-function FOV.getMode()
-    return currentMode
-end
-
-function FOV.getState()
-    return {
-        enabled = isEnabled,
-        rainbow = isRainbow,
-        radius = currentRadius,
-        mode = currentMode,
-        thickness = currentThickness,
-    }
+function FOV.isEnabled()
+    return isEnabled
 end
 
 function FOV.destroy()
     FOV.disable()
-    if guiFrame then
-        pcall(function() guiFrame:Destroy() end)
-        guiFrame = nil
-        guiStroke = nil
-    end
-    if drawingCircle then
-        pcall(function() drawingCircle:Remove() end)
-        drawingCircle = nil
-    end
-    if overlayGui then
-        pcall(function() overlayGui:Destroy() end)
-        overlayGui = nil
-    end
-end
-
-_G.MonodyFOV = FOV
-if getgenv then
-    pcall(function() getgenv().MonodyFOV = FOV end)
 end
 
 return FOV
