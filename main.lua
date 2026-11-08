@@ -1,5 +1,5 @@
 --[[
-    Darling X | Modular UI Foundation
+    Monody | Modular UI Foundation
     Liquid Glass Theme with Dynamic Themes, Static Wallpapers, and Combat Engine
     Author: Darling
     Repository: https://github.com/rivals-hash/idk
@@ -16,7 +16,7 @@ local HttpService = game:GetService("HttpService")
 
 local APP_TITLE = "Monody"
 local APP_VERSION = "v3.3"
-local APP_AUTHOR = "Monody"
+local APP_AUTHOR = "darling"
 local DEFAULT_WALLPAPER_ID = "rbxassetid://103674761222554"
 local DEFAULT_LOGO_ID = "rbxassetid://109687263098821"
 local GITHUB_REPO_RAW = "https://raw.githubusercontent.com/rivals-hash/idk/main"
@@ -41,7 +41,7 @@ local function ConnectButton(button, callback)
             task.spawn(function()
                 local ok, err = pcall(callback)
                 if not ok then
-                    warn("[Darling X] Button callback error: " .. tostring(err))
+                    warn("[Monody] Button callback error: " .. tostring(err))
                 end
             end)
         end
@@ -295,24 +295,16 @@ end
 local CachedLogoAsset = nil
 local function GetLogoAsset()
     if CachedLogoAsset then return CachedLogoAsset end
+
+    -- 1. Try local custom user logo first
     local userCustomLogo = ResolveCustomAsset("assets/logo.jpg", nil)
     if userCustomLogo then
         CachedLogoAsset = userCustomLogo
         return userCustomLogo
     end
 
-    local localLogo = ResolveCustomAsset("assets/darling_logo.png", nil)
-    if localLogo then
-        CachedLogoAsset = localLogo
-        return localLogo
-    end
-    local localAnime = ResolveCustomAsset("assets/darling_logo_v14_anime.png", nil)
-    if localAnime then
-        CachedLogoAsset = localAnime
-        return localAnime
-    end
-
-    local cachedPath = "DarlingX/cache/darling_logo.png"
+    -- 2. Check local executor cache
+    local cachedPath = "Monody/cache/user_logo.jpg"
     if exIsFile and exGetCustomAsset then
         local okCheck, exists = pcall(exIsFile, cachedPath)
         if okCheck and exists then
@@ -324,20 +316,24 @@ local function GetLogoAsset()
         end
     end
 
+    -- 3. Download from repository
     if exWriteFile and exGetCustomAsset then
-        task.spawn(function()
+        local logoUrl = GITHUB_REPO_RAW .. "/assets/logo.jpg"
+        local body = SafeHttpGet(logoUrl)
+        if body and #body > 50 then
             pcall(function()
                 if exMakeFolder then
-                    pcall(exMakeFolder, "DarlingX")
-                    pcall(exMakeFolder, "DarlingX/cache")
+                    pcall(exMakeFolder, "Monody")
+                    pcall(exMakeFolder, "Monody/cache")
                 end
-                local logoUrl = GITHUB_REPO_RAW .. "/assets/darling_logo.png"
-                local body = SafeHttpGet(logoUrl)
-                if body and #body > 50 then
-                    exWriteFile(cachedPath, body)
-                end
+                exWriteFile(cachedPath, body)
             end)
-        end)
+            local okAsset, asset = pcall(exGetCustomAsset, cachedPath)
+            if okAsset and type(asset) == "string" and #asset > 0 then
+                CachedLogoAsset = asset
+                return asset
+            end
+        end
     end
 
     CachedLogoAsset = DEFAULT_LOGO_ID
@@ -532,16 +528,25 @@ task.spawn(function()
 end)
 
 local WINDUI_LUCIDE_FALLBACK = {
-    Home     = "rbxassetid://98755624629571",   -- Lucide: house
-    Aimbot   = "rbxassetid://134242818164054",  -- Lucide: crosshair
-    PvP      = "rbxassetid://81872698913435",   -- Lucide: swords
-    Macro    = "rbxassetid://80451686744860",   -- Lucide: bot
-    Soru     = "rbxassetid://130551565616516",  -- Lucide: zap
-    Esp      = "rbxassetid://100033680381365",  -- Lucide: eye
-    Config   = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
-    Misc     = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
-    Settings = "rbxassetid://86350350950064",   -- Lucide: palette
-    Themes   = "rbxassetid://86350350950064",   -- Lucide: palette
+    Home       = "rbxassetid://98755624629571",   -- Lucide: house
+    Aimbot     = "rbxassetid://134242818164054",  -- Lucide: crosshair
+    Players    = "rbxassetid://10747373176",      -- Lucide: users
+    PvP        = "rbxassetid://81872698913435",   -- Lucide: swords
+    Soru       = "rbxassetid://130551565616516",  -- Lucide: zap
+    AutoBounty = "rbxassetid://10747372167",      -- Lucide: skull
+    Dungeon    = "rbxassetid://10709769508",      -- Lucide: flame
+    Teleport   = "rbxassetid://10723346959",      -- Lucide: map-pin
+    HUD        = "rbxassetid://10734950309",      -- Lucide: layout-dashboard
+    Macro      = "rbxassetid://80451686744860",   -- Lucide: bot
+    Visuals    = "rbxassetid://100033680381365",  -- Lucide: eye
+    Esp        = "rbxassetid://100033680381365",  -- Lucide: eye
+    Skins      = "rbxassetid://10709789810",      -- Lucide: shirt
+    Music      = "rbxassetid://10709797151",      -- Lucide: music
+    Animations = "rbxassetid://10709782497",      -- Lucide: sparkles
+    Config     = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
+    Misc       = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
+    Settings   = "rbxassetid://86350350950064",   -- Lucide: palette
+    Themes     = "rbxassetid://86350350950064",   -- Lucide: palette
 }
 
 local function ApplyTabIcon(imageLabel, tabKey, lucideName)
@@ -751,9 +756,9 @@ function InlineLoader.show(logoAsset)
 
     local title = Instance.new("TextLabel")
     title.Name = "Title"
-    title.Size = UDim2.new(1, -40, 0, 24)
+    title.Size = UDim2.new(1, -40, 0, 22)
     title.AnchorPoint = Vector2.new(0.5, 0)
-    title.Position = UDim2.new(0.5, 0, 0, 96)
+    title.Position = UDim2.new(0.5, 0, 0, 92)
     title.BackgroundTransparency = 1
     title.TextTransparency = 1
     title.BorderSizePixel = 0
@@ -763,11 +768,25 @@ function InlineLoader.show(logoAsset)
     title.TextSize = 19
     title.Parent = card
 
+    local subTitle = Instance.new("TextLabel")
+    subTitle.Name = "SubTitle"
+    subTitle.Size = UDim2.new(1, -40, 0, 14)
+    subTitle.AnchorPoint = Vector2.new(0.5, 0)
+    subTitle.Position = UDim2.new(0.5, 0, 0, 114)
+    subTitle.BackgroundTransparency = 1
+    subTitle.TextTransparency = 1
+    subTitle.BorderSizePixel = 0
+    subTitle.Font = Enum.Font.GothamMedium
+    subTitle.Text = "by darling"
+    subTitle.TextColor3 = Color3.fromRGB(190, 185, 205)
+    subTitle.TextSize = 11
+    subTitle.Parent = card
+
     local status = Instance.new("TextLabel")
     status.Name = "Status"
     status.Size = UDim2.new(1, -40, 0, 16)
     status.AnchorPoint = Vector2.new(0.5, 0)
-    status.Position = UDim2.new(0.5, 0, 0, 122)
+    status.Position = UDim2.new(0.5, 0, 0, 130)
     status.BackgroundTransparency = 1
     status.TextTransparency = 1
     status.BorderSizePixel = 0
@@ -837,6 +856,7 @@ function InlineLoader.show(logoAsset)
     local tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
     TweenService:Create(logo, tweenInfo, { ImageTransparency = 0 }):Play()
     TweenService:Create(title, tweenInfo, { TextTransparency = 0 }):Play()
+    TweenService:Create(subTitle, tweenInfo, { TextTransparency = 0 }):Play()
     TweenService:Create(status, tweenInfo, { TextTransparency = 0 }):Play()
     TweenService:Create(track, tweenInfo, { BackgroundTransparency = 0.45 }):Play()
     TweenService:Create(fill, tweenInfo, { BackgroundTransparency = 0 }):Play()
@@ -1292,7 +1312,7 @@ end
 
 -- Top-Left Real-time FPS & Ping Telemetry Overlay
 local FPSPingOverlay = Instance.new("Frame", ScreenGui)
-FPSPingOverlay.Name = "DarlingX_FPSPingOverlay"
+FPSPingOverlay.Name = "Monody_FPSPingOverlay"
 FPSPingOverlay.Size = UDim2.new(0, 150, 0, 24)
 FPSPingOverlay.Position = UDim2.new(0, 15, 0, 55)
 FPSPingOverlay.BackgroundColor3 = Color3.fromRGB(12, 10, 18)
@@ -1402,7 +1422,7 @@ Instance.new("UICorner", FloatingOpen).CornerRadius = UDim.new(0, 8)
 
 -- Main Window (Liquid Glass Compact 440x300)
 Main = Instance.new("Frame", ScreenGui)
-Main.Name = "DarlingX_MainWindow"
+Main.Name = "Monody_MainWindow"
 Main.Visible = false
 Main.Size = UDim2.new(0, 0, 0, 0)
 Main.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -1689,7 +1709,7 @@ local function fullCloseUI()
             end
         end
     end)
-    print("[Darling X] Closed completely.")
+    print("[Monody] Closed completely.")
 end
 
 createHeaderBtn("-", -60, Color3.fromRGB(255, 255, 255), minimizeUI)
@@ -1771,26 +1791,44 @@ local TabOrderCounter = 0
 
 -- Tab Manifest: Defines all hub tabs up-front for instant batch creation
 local TABS_MANIFEST = {
-    { id = "Home",     name = "Home",     icon = "house" },
-    { id = "Aimbot",   name = "Aimbot",   icon = "crosshair" },
-    { id = "PvP",      name = "PvP",      icon = "swords" },
-    { id = "Macro",    name = "Macro",    icon = "bot" },
-    { id = "Soru",     name = "Soru",     icon = "zap" },
-    { id = "Esp",      name = "Visuals",  icon = "eye" },
-    { id = "Config",   name = "Config",   icon = "sliders-horizontal" },
-    { id = "Themes",   name = "Themes",   icon = "palette" },
+    { id = "Home",       name = "Home",       icon = "house" },
+    { id = "Aimbot",     name = "Aimbot",     icon = "crosshair" },
+    { id = "Players",    name = "Players",    icon = "users" },
+    { id = "PvP",        name = "PvP",        icon = "swords" },
+    { id = "Soru",       name = "Soru",       icon = "zap" },
+    { id = "AutoBounty", name = "AutoBounty", icon = "skull" },
+    { id = "Dungeon",    name = "Dungeon",    icon = "flame" },
+    { id = "Teleport",   name = "Teleport",   icon = "map-pin" },
+    { id = "HUD",        name = "HUD",        icon = "layout-dashboard" },
+    { id = "Macro",      name = "Macro",      icon = "bot" },
+    { id = "Visuals",    name = "Visuals",    icon = "eye" },
+    { id = "Skins",      name = "Skins",      icon = "shirt" },
+    { id = "Music",      name = "Music",      icon = "music" },
+    { id = "Animations", name = "Animations", icon = "sparkles" },
+    { id = "Config",     name = "Config",     icon = "sliders-horizontal" },
+    { id = "Themes",     name = "Themes",     icon = "palette" },
 }
 
 local TAB_MIN_CANVAS = {
     Home = 950,
     Aimbot = 1450,
+    Players = 600,
     PvP = 1350,
-    Macro = 1100,
     Soru = 900,
+    AutoBounty = 600,
+    Dungeon = 600,
+    Teleport = 600,
+    HUD = 600,
+    Macro = 1100,
+    Visuals = 950,
     Esp = 950,
+    Skins = 600,
+    Music = 600,
+    Animations = 600,
     Config = 1050,
     Misc = 1050,
-    Themes = 1500
+    Themes = 1500,
+    Settings = 1500,
 }
 
 local function UpdatePageCanvas(page)
@@ -3488,12 +3526,12 @@ local function ApplyLanguage(lang)
 end
 
 local CONFIG_PATHS = {
-    "DarlingX_Config.json",
+    "Monody_Config.json",
     "darling_config.json",
     "darling_hub_config.json",
     "darling_hub/config.json"
 }
-local CONFIG_FILE = "DarlingX_Config.json"
+local CONFIG_FILE = "Monody_Config.json"
 local CONFIG_FALLBACK = "darling_config.json"
 local autoSaveThread = nil
 local suspendSave = false
@@ -3713,6 +3751,8 @@ end
 
 if Pages["Config"] then Pages["Misc"] = Pages["Config"] end
 if Pages["Themes"] then Pages["Settings"] = Pages["Themes"] end
+if Pages["Visuals"] then Pages["Esp"] = Pages["Visuals"] end
+if Pages["Esp"] then Pages["Visuals"] = Pages["Esp"] end
 
 _G.DarlingX.Pages = Pages
 _G.DarlingX.SelectTab = SelectTabById
@@ -3721,6 +3761,7 @@ _G.DarlingX.SelectTab = SelectTabById
 local function RegisterTab(tabId, tabName, lucideName)
     if tabId == "Settings" then tabId = "Themes" end
     if tabId == "Misc" then tabId = "Config" end
+    if tabId == "Esp" then tabId = "Visuals" end
     if Pages[tabId] then
         return Pages[tabId]
     end
@@ -4420,9 +4461,9 @@ SaveConfigProfile = function(force)
         local json = HttpService:JSONEncode(cfg)
         local wOk, wErr = safeWriteFile(json)
         if wOk then
-            print("[Darling X] Config auto-saved successfully.")
+            print("[Monody] Config auto-saved successfully.")
         else
-            warn("[Darling X] Config save notice: " .. tostring(wErr))
+            warn("[Monody] Config save notice: " .. tostring(wErr))
         end
     end)
     return ok, err
@@ -4594,7 +4635,7 @@ LoadConfigProfile = function()
             end
         end
 
-        print("[Darling X] Config profile fully loaded.")
+        print("[Monody] Config profile fully loaded.")
         return true
     end)
     suspendSave = false
@@ -4841,7 +4882,7 @@ task.spawn(function() pcall(getClientTweaks) end)
         end
 
         Notify("Config", "Configuration profile reset to defaults.", 2.5, true)
-        print("[Darling X] Configuration profile completely reset to defaults.")
+        print("[Monody] Configuration profile completely reset to defaults.")
         return true
     end)
 
@@ -5029,6 +5070,34 @@ end
 -- ============================================================
 
 -- 1. HOME TAB (LUXURY GLASS DASHBOARD WITH SLEEK HEALTH & ENERGY CAPSULES)
+-- New Darling Hub Modular Tabs (Structure ready for step-by-step feature addition)
+local placeholderTabs = {
+    { id = "Players",    title = "Players",      desc = "Módulo de gestión y visualización de jugadores." },
+    { id = "AutoBounty", title = "Auto Bounty",  desc = "Módulo de caza automática de recompensas." },
+    { id = "Dungeon",    title = "Dungeon",      desc = "Módulo de incursiones y mazmorras automáticas." },
+    { id = "Teleport",   title = "Teleport",     desc = "Módulo de teletransporte a islas y zonas." },
+    { id = "HUD",        title = "HUD Controls", desc = "Módulo de widgets y controles en pantalla." },
+    { id = "Skins",      title = "Skins",        desc = "Módulo de personalización visual de armas y aspectos." },
+    { id = "Music",      title = "Music Player", desc = "Módulo de reproductor y visualizador de música." },
+    { id = "Animations", title = "Animations",   desc = "Módulo de animaciones personalizadas." },
+}
+
+for _, t in ipairs(placeholderTabs) do
+    local page = RegisterTab(t.id, t.id)
+    if page then
+        local card = CreateCard(page, t.title)
+        local desc = Instance.new("TextLabel", card)
+        desc.Size = UDim2.new(1, 0, 0, 20)
+        desc.BackgroundTransparency = 1
+        desc.Font = Enum.Font.GothamMedium
+        desc.TextSize = 10
+        desc.TextColor3 = Color3.fromRGB(160, 155, 175)
+        desc.TextXAlignment = Enum.TextXAlignment.Left
+        desc.Text = t.desc
+        desc.ZIndex = 12
+    end
+end
+
 local HomePage = RegisterTab("Home", "Home", "house")
 pcall(function()
     -- Player Profile Identity Card
@@ -5124,7 +5193,7 @@ pcall(function()
     end
     makeMicroBadge("UID: " .. (lp and tostring(lp.UserId) or "0"))
     makeMicroBadge("AGE: " .. (lp and tostring(lp.AccountAge) or "0") .. "d")
-    makeMicroBadge("DARLING X " .. APP_VERSION)
+    makeMicroBadge("MONODY " .. APP_VERSION)
 
     -- Quick Actions Card (Replaces Non-Working Health & Energy HUD)
     local quickCard = CreateCard(HomePage, "Quick Actions")
@@ -5813,7 +5882,7 @@ local okAimbot, errAimbot = pcall(function()
     UpdateCardGeometry(blCard)
 end)
 if not okAimbot then
-    warn("[Darling X] Failed to initialize AimbotPage: " .. tostring(errAimbot))
+    warn("[Monody] Failed to initialize AimbotPage: " .. tostring(errAimbot))
 end
 
 -- 3. PVP COMBAT & MOVEMENT TAB
@@ -5975,7 +6044,7 @@ local okPvP, errPvP = pcall(function()
     end)
 end)
 if not okPvP then
-    warn("[Darling X] Failed to initialize PvPPage: " .. tostring(errPvP))
+    warn("[Monody] Failed to initialize PvPPage: " .. tostring(errPvP))
 end
 -- 4. MACRO TAB (SMART COMBO SUITE)
 local MacroPage = RegisterTab("Macro", "Macro", "bot")
@@ -5993,7 +6062,7 @@ local okMacro, errMacro = pcall(function()
     end
 end)
 if not okMacro then
-    warn("[Darling X] Failed to initialize MacroPage: " .. tostring(errMacro))
+    warn("[Monody] Failed to initialize MacroPage: " .. tostring(errMacro))
 end
 
 -- 5. SORU TAB (FLASHSTEP INTEGRATION)
@@ -6061,7 +6130,7 @@ local okSoru, errSoru = pcall(function()
     end)
 end)
 if not okSoru then
-    warn("[Darling X] Failed to initialize SoruPage: " .. tostring(errSoru))
+    warn("[Monody] Failed to initialize SoruPage: " .. tostring(errSoru))
 end
 
 -- 6. ESP TAB (STRICTLY PVP COMBAT RADAR)
@@ -6207,7 +6276,7 @@ local okESP, errESP = pcall(function()
     end)
 end)
 if not okESP then
-    warn("[Darling X] Failed to initialize ESPPage: " .. tostring(errESP))
+    warn("[Monody] Failed to initialize ESPPage: " .. tostring(errESP))
 end
 -- 6. CONFIG TAB
 local ConfigPage = RegisterTab("Config", "Config", "sliders-horizontal")
@@ -6402,7 +6471,7 @@ local okMisc, errMisc = pcall(function()
     UpdateCardGeometry(creditsCard)
 end)
 if not okMisc then
-    warn("[Darling X] Failed to initialize MiscPage: " .. tostring(errMisc))
+    warn("[Monody] Failed to initialize MiscPage: " .. tostring(errMisc))
 end
 -- 7. THEMES & CUSTOMIZATION STUDIO (FULL LUXURY ENGINE)
 local ThemesPage = RegisterTab("Themes", "Themes", "palette")
@@ -6724,7 +6793,7 @@ local okThemes, errThemes = pcall(function()
     end)
 end)
 if not okThemes then
-    warn("[Darling X] Failed to initialize ThemesPage: " .. tostring(errThemes))
+    warn("[Monody] Failed to initialize ThemesPage: " .. tostring(errThemes))
 end
 
 -- ============================================================
