@@ -875,6 +875,10 @@ local function getAvatarEngine()
         local ok, mod = pcall(function() return hub:Require("modules/visuals/avatar_changer.lua") end)
         if ok and mod then return mod end
     end
+    if _G.RequireModule then
+        local ok, mod = pcall(function() return _G.RequireModule("modules/visuals/avatar_changer.lua") end)
+        if ok and mod then return mod end
+    end
     for _, p in ipairs({ "modules/visuals/avatar_changer.lua", "darling-hub/modules/visuals/avatar_changer.lua" }) do
         if isfile and isfile(p) then
             local ok, mod = pcall(function() return loadstring(readfile(p))() end)

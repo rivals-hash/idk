@@ -533,10 +533,12 @@ _G.DarlingX = {
     end
 }
 _G.DarlingHub = _G.DarlingX
+_G.RequireModule = RequireModule
 if getgenv then
     pcall(function()
         getgenv().DarlingX = _G.DarlingX
         getgenv().DarlingHub = _G.DarlingX
+        getgenv().RequireModule = RequireModule
     end)
 end
 
@@ -1534,7 +1536,7 @@ rainContainer.Active = false
 rainContainer.ZIndex = 2
 Instance.new("UICorner", rainContainer).CornerRadius = UDim.new(0, 22)
 
-local RainEnabled = true
+local RainEnabled = false
 local MaxRainDrops = 14
 local RainPoolCapacity = 30
 local rainPool = {}
@@ -1788,11 +1790,11 @@ do
         if MonodyMusic.Sound then MonodyMusic.Sound.Looped = l end
     end
 
-    -- Top Music Bar on UI Header (Wide Full Header Span, No Buttons, 0.7 Pill, Dynamic Equalizer)
+    -- Top Music Bar on UI Header (Full Span across header, No Buttons, 0.7 Pill, Dynamic Equalizer)
     local TopMusicBar = Instance.new("Frame", Header)
     TopMusicBar.Name = "TopMusicBar"
-    TopMusicBar.Size = UDim2.new(1, -210, 0, 24)
-    TopMusicBar.Position = UDim2.new(0, 130, 0.5, -12)
+    TopMusicBar.Size = UDim2.new(1, -245, 0, 24)
+    TopMusicBar.Position = UDim2.new(0, 175, 0.5, -12)
     TopMusicBar.BackgroundColor3 = Color3.fromRGB(15, 12, 24)
     TopMusicBar.BackgroundTransparency = 0.45
     TopMusicBar.ZIndex = 16
@@ -1804,22 +1806,11 @@ do
     RegisterThemeStroke(topMusicStroke)
     MonodyMusic.TopBarFrame = TopMusicBar
 
-    -- Spinning Disc Icon
-    local DiscIcon = Instance.new("ImageLabel", TopMusicBar)
-    DiscIcon.Name = "DiscIcon"
-    DiscIcon.Size = UDim2.new(0, 14, 0, 14)
-    DiscIcon.Position = UDim2.new(0, 8, 0.5, -7)
-    DiscIcon.BackgroundTransparency = 1
-    DiscIcon.Image = "rbxassetid://101908120120777"
-    DiscIcon.ImageColor3 = CurrentAccent
-    DiscIcon.ZIndex = 17
-    RegisterThemeImage(DiscIcon)
-
-    -- Track Title Label (Spanning across header)
+    -- Track Title Label (Full span across bar)
     local TopMusicTitle = Instance.new("TextLabel", TopMusicBar)
     TopMusicTitle.Name = "TrackTitle"
-    TopMusicTitle.Size = UDim2.new(1, -66, 1, 0)
-    TopMusicTitle.Position = UDim2.new(0, 28, 0, 0)
+    TopMusicTitle.Size = UDim2.new(1, -50, 1, 0)
+    TopMusicTitle.Position = UDim2.new(0, 14, 0, 0)
     TopMusicTitle.BackgroundTransparency = 1
     TopMusicTitle.Font = Enum.Font.GothamBold
     TopMusicTitle.TextSize = 8.5
@@ -1827,13 +1818,13 @@ do
     TopMusicTitle.TextXAlignment = Enum.TextXAlignment.Left
     TopMusicTitle.ClipsDescendants = true
     TopMusicTitle.TextTruncate = Enum.TextTruncate.AtEnd
-    TopMusicTitle.Text = "No Track"
+    TopMusicTitle.Text = ""
     TopMusicTitle.ZIndex = 17
 
     -- Animated Multi-Bar Equalizer on the right side of the bar
     local EqContainer = Instance.new("Frame", TopMusicBar)
     EqContainer.Name = "EqContainer"
-    EqContainer.Size = UDim2.new(0, 32, 0, 14)
+    EqContainer.Size = UDim2.new(0, 30, 0, 14)
     EqContainer.Position = UDim2.new(1, -38, 0.5, -7)
     EqContainer.BackgroundTransparency = 1
     EqContainer.ZIndex = 17
@@ -1842,8 +1833,8 @@ do
     for i = 1, 6 do
         local bar = Instance.new("Frame", EqContainer)
         bar.Name = "EqBar" .. i
-        bar.Size = UDim2.new(0, 2.5, 0, 4)
-        bar.Position = UDim2.new(0, (i - 1) * 5, 1, -4)
+        bar.Size = UDim2.new(0, 2.5, 0, 2)
+        bar.Position = UDim2.new(0, (i - 1) * 5, 1, -2)
         bar.BackgroundColor3 = CurrentAccent
         bar.ZIndex = 18
         Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
@@ -1864,8 +1855,6 @@ do
         else
             if MonodyMusic.Sound and MonodyMusic.Sound.SoundId ~= "" then
                 MonodyMusic.Resume()
-            else
-                MonodyMusic.Play("1843588265", "Montagem Bailao")
             end
         end
     end)
@@ -1874,7 +1863,6 @@ do
     RunService.RenderStepped:Connect(function()
         if MonodyMusic.IsPlaying then
             eqAnimStep = eqAnimStep + 0.18
-            DiscIcon.Rotation = (DiscIcon.Rotation + 2.0) % 360
             for i, bar in ipairs(eqBars) do
                 local h = math.clamp(4 + math.abs(math.sin(eqAnimStep + i * 0.75)) * 10, 3, 14)
                 bar.Size = UDim2.new(0, 2.5, 0, h)
@@ -1882,14 +1870,14 @@ do
             end
         else
             for i, bar in ipairs(eqBars) do
-                bar.Size = UDim2.new(0, 2.5, 0, 4)
-                bar.Position = UDim2.new(0, (i - 1) * 5, 1, -4)
+                bar.Size = UDim2.new(0, 2.5, 0, 2)
+                bar.Position = UDim2.new(0, (i - 1) * 5, 1, -2)
             end
         end
     end)
 
     MonodyMusic.OnStateChanged = function()
-        TopMusicTitle.Text = MonodyMusic.CurrentTrackName or "No Track"
+        TopMusicTitle.Text = MonodyMusic.IsPlaying and (MonodyMusic.CurrentTrackName or "") or ""
     end
 end
 
@@ -5306,7 +5294,7 @@ local DEFAULT_TOGGLES = {
     ["Player Silent Aim"] = false,
     ["NPC Silent Aim"] = false,
     ["Show FOV Circle"] = false,
-    ["Enable Target Prediction"] = true,
+    ["Enable Target Prediction"] = false,
     ["Show Tracers"] = false,
     ["Auto Buso Haki"] = false,
     ["Auto Race V3"] = false,
@@ -5321,18 +5309,18 @@ local DEFAULT_TOGGLES = {
     ["Soru Aimbot"] = false,
     ["Auto Skill on Soru"] = false,
     ["Master ESP"] = false,
-    ["Player 2D Boxes"] = true,
-    ["Player Names"] = true,
-    ["Player Health Status"] = true,
-    ["Distance Indicator"] = true,
-    ["Equipped Tool / Weapon"] = true,
-    ["Devil Fruit Tracker"] = true,
-    ["Player Bounty Tracker"] = true,
-    ["Player Level Display"] = true,
-    ["Combat PvP Status"] = true,
+    ["Player 2D Boxes"] = false,
+    ["Player Names"] = false,
+    ["Player Health Status"] = false,
+    ["Distance Indicator"] = false,
+    ["Equipped Tool / Weapon"] = false,
+    ["Devil Fruit Tracker"] = false,
+    ["Player Bounty Tracker"] = false,
+    ["Player Level Display"] = false,
+    ["Combat PvP Status"] = false,
     ["Player Chams (Highlight)"] = false,
     ["Player Tracers"] = false,
-    ["Neon Rain Layer"] = true,
+    ["Neon Rain Layer"] = false,
     ["Show FPS & Ping"] = false,
     ["Ignore Allies"] = false,
     ["Ignore PvP Off"] = false,
@@ -5341,9 +5329,9 @@ local DEFAULT_TOGGLES = {
     ["Macro Enabled"] = false,
     ["Loop Sequence"] = false,
     ["Macro Floating Widget"] = false,
-    ["Block 1 Enabled"] = true,
-    ["Block 2 Enabled"] = true,
-    ["Block 3 Enabled"] = true,
+    ["Block 1 Enabled"] = false,
+    ["Block 2 Enabled"] = false,
+    ["Block 3 Enabled"] = false,
     ["Block 4 Enabled"] = false,
     ["Block 5 Enabled"] = false,
     ["Block 6 Enabled"] = false,
@@ -5685,7 +5673,7 @@ local function ResetUIConfig()
     UpdateMobileScale()
     if WallpaperDimOverlay then WallpaperDimOverlay.BackgroundTransparency = 0.35 end
     MaxRainDrops = 14
-    RainEnabled = true
+    RainEnabled = false
     RainbowSpeed = 0.4
     ResetTheme()
     for _, frame in ipairs(GlassFrames) do
@@ -7791,376 +7779,310 @@ do
 end
 
 -- ============================================================
--- 6. HUD TAB (CONTROLS LAYOUT & DRAG CUSTOMIZATION)
+-- 6. HUD TAB (DARLING HUB CONTROLS LAYOUT ENGINE)
 -- ============================================================
 do
     pcall(function()
         local HUDPage = RegisterTab("HUD", "HUD", "layout-dashboard")
-        local hudCard1 = CreateCard(HUDPage, "Controls Layout Editor")
-        
-        local isEditingHUD = false
-        local activeDragBoxes = {}
-        local savedOffsets = {}
-        local originalPositions = {}
+        local hudCard1 = CreateCard(HUDPage, "Blox Fruits Controls HUD")
 
-        local function GetCandidateHUDButtons()
-            local found = {}
-            local pGui = lp and lp:FindFirstChildOfClass("PlayerGui")
-            if not pGui then return found end
-
-            -- Only target Blox Fruits skill action buttons, never core TouchGui thumbstick!
-            local keywords = { "action", "skill", "slot", "touchaction" }
-            for _, scr in ipairs(pGui:GetChildren()) do
-                if scr:IsA("ScreenGui") and scr.Name ~= "Monody_UI" and scr.Name ~= "Monody_LoadingScreen" and scr.Name ~= "Monody_KeySystem" and scr.Name ~= "Monody_HUD_DragOverlay" and scr.Name ~= "TouchGui" then
-                    for _, obj in ipairs(scr:GetDescendants()) do
-                        if (obj:IsA("ImageButton") or obj:IsA("TextButton")) and obj.Visible and obj.AbsoluteSize.X > 20 and obj.AbsoluteSize.Y > 20 then
-                            local n = obj.Name:lower()
-                            for _, kw in ipairs(keywords) do
-                                if n:find(kw) then
-                                    table.insert(found, obj)
-                                    break
-                                end
-                            end
-                        end
-                    end
-                end
+        local hudMod = nil
+        local function getHUDMod()
+            if not hudMod then
+                hudMod = RequireModule("modules/ui/controls_hud.lua")
             end
-            return found
+            return hudMod
         end
 
-        local function ClearDragHandles()
-            for _, box in ipairs(activeDragBoxes) do
-                pcall(function() box:Destroy() end)
-            end
-            activeDragBoxes = {}
-        end
-
-        local function SpawnDragHandles()
-            ClearDragHandles()
-            local buttons = GetCandidateHUDButtons()
-            if #buttons == 0 then
-                Notify("HUD Editor", "No customizable action buttons detected.")
-                return
-            end
-
-            local overlayGui = Instance.new("ScreenGui")
-            overlayGui.Name = "Monody_HUD_DragOverlay"
-            overlayGui.ResetOnSpawn = false
-            overlayGui.DisplayOrder = 999999
-            pcall(function() overlayGui.Parent = parentGui or (lp and lp:FindFirstChildOfClass("PlayerGui")) or CoreGui end)
-            table.insert(activeDragBoxes, overlayGui)
-
-            for _, targetBtn in ipairs(buttons) do
-                pcall(function()
-                    if not originalPositions[targetBtn] then
-                        originalPositions[targetBtn] = targetBtn.Position
-                    end
-
-                    local box = Instance.new("Frame", overlayGui)
-                    box.Size = UDim2.new(0, targetBtn.AbsoluteSize.X + 8, 0, targetBtn.AbsoluteSize.Y + 8)
-                    box.Position = UDim2.new(0, targetBtn.AbsolutePosition.X - 4, 0, targetBtn.AbsolutePosition.Y - 4)
-                    box.BackgroundColor3 = CurrentAccent
-                    box.BackgroundTransparency = 0.65
-                    box.BorderSizePixel = 0
-                    box.Active = true
-                    box.Draggable = true
-                    box.ZIndex = 100
-                    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 8)
-                    local str = Instance.new("UIStroke", box)
-                    str.Color = CurrentAccent
-                    str.Thickness = 1.2
-                    RegisterThemeStroke(str)
-
-                    local lbl = Instance.new("TextLabel", box)
-                    lbl.Size = UDim2.new(1, 0, 1, 0)
-                    lbl.BackgroundTransparency = 1
-                    lbl.Text = targetBtn.Name:sub(1, 8)
-                    lbl.Font = Enum.Font.GothamBold
-                    lbl.TextSize = 8.5
-                    lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-                    box:GetPropertyChangedSignal("Position"):Connect(function()
-                        pcall(function()
-                            local parent = targetBtn.Parent
-                            local parentPos = (parent and parent:IsA("GuiObject")) and parent.AbsolutePosition or Vector2.new(0, 0)
-                            local relX = box.AbsolutePosition.X - parentPos.X + 4
-                            local relY = box.AbsolutePosition.Y - parentPos.Y + 4
-                            targetBtn.Position = UDim2.new(0, relX, 0, relY)
-                            savedOffsets[targetBtn] = targetBtn.Position
-                        end)
-                    end)
-                end)
-            end
-            Notify("HUD Editor", "Unlocked " .. #buttons .. " buttons. Drag to reposition.")
-        end
-
-        AddToggle(hudCard1, "Unlock Drag (Edit HUD)", "Creates draggable bounding boxes over skill buttons", false, function(v)
-            isEditingHUD = v
-            if v then
-                SpawnDragHandles()
-            else
-                ClearDragHandles()
-                Notify("HUD Editor", "Controls locked into place.")
+        local editToggle = nil
+        editToggle = AddToggle(hudCard1, "Unlock Dragging (Edit Controls)", "Allows dragging skill buttons (Z, X, C, V, F), dash, jump, and hotbar", false, function(v)
+            local mod = getHUDMod()
+            if mod then
+                mod.SetEditMode(v)
             end
         end)
+
+        local mod = getHUDMod()
+        if mod then
+            mod.OnModeChanged = function(active, reason)
+                if editToggle and editToggle.set then
+                    pcall(function() editToggle.set(active == true, true) end)
+                end
+            end
+        end
 
         AddButton(hudCard1, "Save & Lock Custom Layout", function()
-            isEditingHUD = false
-            ClearDragHandles()
-            Notify("HUD Editor", "Custom button layout saved.")
+            local m = getHUDMod()
+            if m then
+                m.SetEditMode(false)
+                Notify("HUD Editor", "Controls layout saved successfully.")
+            end
         end)
 
-        AddButton(hudCard1, "Reset Default Layout", function()
-            ClearDragHandles()
-            for btn, orig in pairs(originalPositions) do
-                if btn and btn.Parent then
-                    pcall(function() btn.Position = orig end)
-                end
+        AddButton(hudCard1, "Discard Changes", function()
+            local m = getHUDMod()
+            if m then
+                m.CancelEdit()
+                Notify("HUD Editor", "Changes discarded. Restored last layout.")
             end
-            -- Also ensure any unwanted UIScale is cleaned from PlayerGui
-            pcall(function()
-                local pGui = lp and lp:FindFirstChildOfClass("PlayerGui")
-                if pGui then
-                    for _, g in ipairs(pGui:GetChildren()) do
-                        if g:IsA("ScreenGui") and g.Name ~= "Monody_UI" then
-                            for _, s in ipairs(g:GetDescendants()) do
-                                if s:IsA("UIScale") then pcall(function() s:Destroy() end) end
-                            end
-                        end
-                    end
-                end
-            end)
-            Notify("HUD Editor", "Controls restored to default game layout.")
+        end)
+
+        AddButton(hudCard1, "Reset to Default Layout", function()
+            local m = getHUDMod()
+            if m then
+                m.ResetLayout()
+                Notify("HUD Editor", "Controls restored to default game positions.")
+            end
         end)
     end)
 end
 
 -- ============================================================
--- 7. SKINS TAB (MONODY VFX & CHARACTER SKIN CHANGER)
+-- 7. SKINS TAB (DARLING HUB ENGINE: MONODY VFX, TOOL SKINS, AVATAR CLONER)
 -- ============================================================
 do
     pcall(function()
         local SkinsPage = RegisterTab("Skins", "Skins", "gem")
 
-        local SKIN_PRESETS = {
-            ["White"]    = Color3.fromRGB(255, 255, 255),
-            ["Black"]    = Color3.fromRGB(20, 20, 24),
-            ["Purple"]   = Color3.fromRGB(165, 80, 235),
-            ["Red"]      = Color3.fromRGB(235, 45, 65),
-            ["Blue"]     = Color3.fromRGB(40, 120, 255),
-            ["Cyan"]     = Color3.fromRGB(0, 220, 245),
-            ["Green"]    = Color3.fromRGB(50, 220, 120),
-            ["Gold"]     = Color3.fromRGB(245, 195, 45),
-            ["Pink"]     = Color3.fromRGB(255, 105, 180),
-            ["Orange"]   = Color3.fromRGB(255, 140, 30),
-            ["Crimson"]  = Color3.fromRGB(180, 20, 35),
-            ["Lime"]     = Color3.fromRGB(130, 255, 50),
-            ["Magenta"]  = Color3.fromRGB(255, 30, 140),
-            ["Midnight"] = Color3.fromRGB(35, 35, 48),
-            ["Silver"]   = Color3.fromRGB(215, 225, 245),
+        local skinsMod = nil
+        local function getSkinsMod()
+            if not skinsMod then
+                skinsMod = RequireModule("modules/visuals/skins_system.lua")
+            end
+            return skinsMod
+        end
+
+        local VFX_PRESET_NAMES = {
+            "Purple", "Red", "Blue", "Cyan", "Green", "Gold",
+            "Pink", "Magenta", "White", "Black", "Midnight", "Orange",
+            "Crimson", "Lime", "Silver", "Teal", "Ice Blue"
         }
-        local PRESET_NAMES = {
+
+        local TOOL_CATALOG_NAMES = {
             "Purple", "Red", "Blue", "Cyan", "Green", "Gold",
             "Pink", "White", "Black", "Crimson", "Lime", "Magenta",
             "Midnight", "Silver", "Orange"
         }
 
-        local vfxEnabled = false
-        local activeVFXColor = SKIN_PRESETS["Purple"]
-        local affectSkills = false
-        local affectSwords = false
-        local affectTransform = false
+        local CHAR_TONE_NAMES = {
+            "Darling Pink", "White", "Black", "Gold", "Cyan",
+            "Crimson", "Green", "Purple", "Silver", "Orange"
+        }
 
-        local charSkinEnabled = false
-        local selectedCharTone = "Pink"
-        local selectedCharMat = Enum.Material.SmoothPlastic
-        local charAuraActive = false
-        local charHighlightObj = nil
+        local CHAR_MATERIALS = { "SmoothPlastic", "Neon", "ForceField", "Glass" }
+        local TOOL_CATEGORIES = { "Fruits", "Swords", "Guns", "Melee" }
 
-        local origCharColors = {}
-        local origCharMaterials = {}
+        local selectedVFXPreset = "Purple"
+        local selectedToolCategory = "Fruits"
+        local selectedToolPreset = "Purple"
+        local selectedCharTone = "Darling Pink"
+        local selectedCharMaterial = "SmoothPlastic"
+        local avatarCloneInput = ""
 
-        local function RecolorVFXInDescendants(rootObj, col)
-            if not rootObj then return end
-            for _, item in ipairs(rootObj:GetDescendants()) do
-                if item:IsA("ParticleEmitter") then
-                    item.Color = ColorSequence.new(col)
-                elseif item:IsA("Trail") then
-                    item.Color = ColorSequence.new(col)
-                elseif item:IsA("Beam") then
-                    item.Color = ColorSequence.new(col)
-                elseif item:IsA("Highlight") and item ~= charHighlightObj then
-                    item.FillColor = col
-                    item.OutlineColor = col
-                end
-            end
-        end
-
-        local function RefreshAllCombatVFX()
-            if not vfxEnabled then return end
-            local char = lp.Character
-            if char then
-                if affectSkills or affectSwords then RecolorVFXInDescendants(char, activeVFXColor) end
-                for _, t in ipairs(char:GetChildren()) do
-                    if t:IsA("Tool") and affectSwords then RecolorVFXInDescendants(t, activeVFXColor) end
-                end
-            end
-        end
-
-        -- SECTION 1: MONODY VFX
+        -- ----------------------------------------------------
+        -- SECTION 1: MONODY VFX ENGINE
+        -- ----------------------------------------------------
         local vfxCard = CreateCard(SkinsPage, "Monody VFX Engine")
         AddToggle(vfxCard, "Monody VFX Engine", "Dynamically recolors combat particles, fruit emitters and slashes", false, function(v)
-            vfxEnabled = v
-            if v then
-                RefreshAllCombatVFX()
-                Notify("VFX Engine", "Monody VFX Enabled")
-            else
-                Notify("VFX Engine", "Monody VFX Disabled")
+            local mod = getSkinsMod()
+            if mod then
+                mod.setVFXEnabled(v)
+                Notify("VFX Engine", v and "Monody VFX Enabled" or "Monody VFX Disabled")
             end
         end)
-        AddChoice(vfxCard, "VFX Color Preset", PRESET_NAMES, 1, function(preset)
-            activeVFXColor = SKIN_PRESETS[preset] or SKIN_PRESETS["Purple"]
-            if vfxEnabled then RefreshAllCombatVFX() end
-            Notify("VFX Color", "VFX Color set to " .. preset)
+
+        AddChoice(vfxCard, "VFX Color Preset", VFX_PRESET_NAMES, 1, function(preset)
+            selectedVFXPreset = preset
+            local mod = getSkinsMod()
+            if mod then
+                local col = mod.Presets and mod.Presets[preset] or Color3.fromRGB(165, 80, 235)
+                mod.setVFXColor(col)
+                Notify("VFX Color", "VFX Color set to " .. preset)
+            end
         end)
+
         AddToggle(vfxCard, "Affect Skills", "Recolors fruit and fighting style particle emitters", false, function(v)
-            affectSkills = v
-            if vfxEnabled then RefreshAllCombatVFX() end
+            local mod = getSkinsMod()
+            if mod then
+                mod.VFX.AffectSkills = v
+                if mod.VFX.Enabled then mod.refreshAllVFX() end
+            end
         end)
+
         AddToggle(vfxCard, "Affect Swords", "Recolors sword slash highlights and trails", false, function(v)
-            affectSwords = v
-            if vfxEnabled then RefreshAllCombatVFX() end
+            local mod = getSkinsMod()
+            if mod then
+                mod.VFX.AffectSwords = v
+                if mod.VFX.Enabled then mod.refreshAllVFX() end
+            end
         end)
+
         AddToggle(vfxCard, "Affect Transform", "Recolors Buddha, Dragon and Race V4 auras", false, function(v)
-            affectTransform = v
-            if vfxEnabled then RefreshAllCombatVFX() end
+            local mod = getSkinsMod()
+            if mod then
+                mod.VFX.AffectTransform = v
+                if mod.VFX.Enabled then mod.refreshAllVFX() end
+            end
         end)
+
+        AddToggle(vfxCard, "Affect Environment", "Recolors world origin ground and ambient effects", false, function(v)
+            local mod = getSkinsMod()
+            if mod then
+                mod.VFX.AffectEnvironment = v
+                if mod.VFX.Enabled then mod.refreshAllVFX() end
+            end
+        end)
+
         AddButton(vfxCard, "Reset Original VFX", function()
-            vfxEnabled = false
-            Notify("VFX Engine", "All combat particles restored to default colors.")
+            local mod = getSkinsMod()
+            if mod then
+                mod.setVFXEnabled(false)
+                mod.resetOriginalVFX()
+                Notify("VFX Engine", "All combat particles restored to default colors.")
+            end
         end)
 
-        -- SECTION 2: CHARACTER SKIN CHANGER (PORTED FROM DARLING HUB)
-        local charCard = CreateCard(SkinsPage, "Character Skin Changer")
+        -- ----------------------------------------------------
+        -- SECTION 2: TOOL SKINS & HOTBAR
+        -- ----------------------------------------------------
+        local toolCard = CreateCard(SkinsPage, "Tool Skins & Hotbar")
 
-        local function ApplyCharacterSkin(presetName, mat)
-            local col = SKIN_PRESETS[presetName] or Color3.fromRGB(255, 105, 180)
-            local char = lp.Character
-            if not char then return end
+        AddChoice(toolCard, "Equipment Category", TOOL_CATEGORIES, 1, function(cat)
+            selectedToolCategory = cat
+            local mod = getSkinsMod()
+            if mod then mod.Tools.SelectedCategory = cat end
+        end)
 
-            for _, part in ipairs(char:GetDescendants()) do
-                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                    if not origCharColors[part] then
-                        origCharColors[part] = part.Color
-                        origCharMaterials[part] = part.Material
-                    end
-                    part.Color = col
-                    if mat then
-                        part.Material = mat
-                    end
-                end
+        AddChoice(toolCard, "Skin Preset Catalog", TOOL_CATALOG_NAMES, 1, function(preset)
+            selectedToolPreset = preset
+        end)
+
+        AddInput(toolCard, "Custom Asset ID (Optional)", "rbxassetid://... or image asset", "", function(val)
+            local mod = getSkinsMod()
+            if mod then mod.Tools.CustomAssetId = val or "" end
+        end)
+
+        AddButton(toolCard, "Apply Skin to Category", function()
+            local mod = getSkinsMod()
+            if mod then
+                local cat = tostring(selectedToolCategory or "Fruits")
+                local pr = tostring(selectedToolPreset or "Purple")
+                mod.applyToolSkin(cat, pr)
+                Notify(cat .. " Skin", pr .. " applied to " .. cat .. " and hotbar!")
             end
+        end)
 
-            if charAuraActive then
-                if not charHighlightObj or not charHighlightObj.Parent then
-                    local hl = Instance.new("Highlight")
-                    hl.Name = "MonodyCharacterAura"
-                    hl.FillColor = col
-                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-                    hl.FillTransparency = 0.4
-                    hl.OutlineTransparency = 0.1
-                    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                    hl.Parent = char
-                    charHighlightObj = hl
+        AddButton(toolCard, "Apply Skin to All Hotbar Slots & Tools", function()
+            local mod = getSkinsMod()
+            if mod then
+                local pr = tostring(selectedToolPreset or "Purple")
+                local count = mod.recolorAllHotbarSlots(pr)
+                Notify("Hotbar & Tools Skin", pr .. " applied to " .. tostring(count) .. " slots and inventory!")
+            end
+        end)
+
+        AddButton(toolCard, "Reset Category Skin", function()
+            local mod = getSkinsMod()
+            if mod then
+                mod.resetCategoryToolSkin(selectedToolCategory)
+                Notify(selectedToolCategory .. " Skin", selectedToolCategory .. " skin reset to default.")
+            end
+        end)
+
+        AddButton(toolCard, "Reset All Tool Skins", function()
+            local mod = getSkinsMod()
+            if mod then
+                mod.resetAllToolSkins()
+                Notify("Skins Reset", "All weapon skins and hotbar slots reset to default.")
+            end
+        end)
+
+        -- ----------------------------------------------------
+        -- SECTION 3: CHARACTER APPEARANCE
+        -- ----------------------------------------------------
+        local charCard = CreateCard(SkinsPage, "Character Appearance")
+
+        AddToggle(charCard, "Enable Character Skin Changer", "Recolors avatar body parts with the selected skin preset", false, function(v)
+            local mod = getSkinsMod()
+            if mod then
+                if v then
+                    mod.applyCharacterSkin(selectedCharTone)
+                    Notify("Character Skin", "Skin applied: " .. tostring(selectedCharTone))
                 else
-                    charHighlightObj.FillColor = col
+                    mod.resetCharacterSkin()
+                    Notify("Character Skin", "Character appearance restored.")
                 end
             end
-        end
+        end)
 
-        local function ResetCharacterSkin()
-            charSkinEnabled = false
-            local char = lp.Character
-            if char then
-                for part, origCol in pairs(origCharColors) do
-                    if part and part.Parent then
-                        pcall(function()
-                            part.Color = origCol
-                            if origCharMaterials[part] then
-                                part.Material = origCharMaterials[part]
-                            end
-                        end)
-                    end
+        AddChoice(charCard, "Character Tone Preset", CHAR_TONE_NAMES, 1, function(preset)
+            selectedCharTone = preset
+            local mod = getSkinsMod()
+            if mod and mod.Character and mod.Character.Enabled then
+                mod.applyCharacterSkin(preset)
+            end
+        end)
+
+        AddChoice(charCard, "Character Material", CHAR_MATERIALS, 1, function(matName)
+            selectedCharMaterial = matName
+            local mod = getSkinsMod()
+            if mod then
+                mod.Character.Material = Enum.Material[matName] or Enum.Material.SmoothPlastic
+                if mod.Character.Enabled then
+                    mod.applyCharacterSkin(selectedCharTone)
                 end
             end
-            table.clear(origCharColors)
-            table.clear(origCharMaterials)
+        end)
 
-            if charHighlightObj and charHighlightObj.Parent then
-                pcall(function() charHighlightObj:Destroy() end)
-            end
-            charHighlightObj = nil
-        end
-
-        AddToggle(charCard, "Enable Character Skin Changer", "Recolors your avatar body parts with the selected skin preset", false, function(v)
-            charSkinEnabled = v
-            if v then
-                ApplyCharacterSkin(selectedCharTone, selectedCharMat)
-                Notify("Character Skin", "Skin applied: " .. selectedCharTone)
-            else
-                ResetCharacterSkin()
-                Notify("Character Skin", "Appearance restored.")
+        AddToggle(charCard, "Character Particle Aura", "Adds holographic glowing outline aura to avatar", false, function(v)
+            local mod = getSkinsMod()
+            if mod then
+                mod.setAuraEnabled(v)
             end
         end)
 
-        AddChoice(charCard, "Character Tone Preset", PRESET_NAMES, 7, function(v)
-            selectedCharTone = v
-            if charSkinEnabled then ApplyCharacterSkin(selectedCharTone, selectedCharMat) end
-        end)
-
-        AddChoice(charCard, "Character Material", {"SmoothPlastic", "Neon", "ForceField", "Glass", "Granite", "Marble", "Foil", "Metal"}, 1, function(matName)
-            selectedCharMat = Enum.Material[matName] or Enum.Material.SmoothPlastic
-            if charSkinEnabled then ApplyCharacterSkin(selectedCharTone, selectedCharMat) end
-        end)
-
-        AddToggle(charCard, "Character Glowing Aura", "Adds holographic glowing outline aura to avatar", false, function(v)
-            charAuraActive = v
-            if v then
-                if charSkinEnabled then
-                    ApplyCharacterSkin(selectedCharTone, selectedCharMat)
-                else
-                    local char = lp.Character
-                    if char and not charHighlightObj then
-                        local col = SKIN_PRESETS[selectedCharTone] or Color3.fromRGB(255, 105, 180)
-                        local hl = Instance.new("Highlight")
-                        hl.Name = "MonodyCharacterAura"
-                        hl.FillColor = col
-                        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-                        hl.FillTransparency = 0.4
-                        hl.OutlineTransparency = 0.1
-                        hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                        hl.Parent = char
-                        charHighlightObj = hl
-                    end
-                end
-            else
-                if charHighlightObj and charHighlightObj.Parent then
-                    pcall(function() charHighlightObj:Destroy() end)
-                end
-                charHighlightObj = nil
+        AddButton(charCard, "Reset Character Appearance", function()
+            local mod = getSkinsMod()
+            if mod then
+                mod.resetCharacterSkin()
+                Notify("Character Skin", "Appearance restored to original game character.")
             end
         end)
 
-        AddButton(charCard, "Reset Character Skin", function()
-            ResetCharacterSkin()
-            Notify("Character Skin", "Skin reset to default appearance.")
+        -- ----------------------------------------------------
+        -- SECTION 4: AVATAR CLONER (CHARACTER SKIN / ASSET / USER)
+        -- ----------------------------------------------------
+        local clonerCard = CreateCard(SkinsPage, "Avatar Cloner (Character Changer)")
+
+        AddButton(clonerCard, "Clone Nearest Player", function()
+            local mod = getSkinsMod()
+            if mod then
+                local ok, msg = mod.cloneNearestPlayer()
+                Notify("Avatar Cloner", msg or (ok and "Cloned nearest player avatar!" or "Failed to clone avatar"))
+            end
         end)
 
-        -- Respawn listener to reapply skin
-        lp.CharacterAdded:Connect(function(char)
-            task.wait(0.5)
-            if charSkinEnabled then
-                ApplyCharacterSkin(selectedCharTone, selectedCharMat)
+        AddInput(clonerCard, "Player Name or User ID", "e.g. 12345678 or Roblox username...", "", function(val)
+            avatarCloneInput = val or ""
+        end)
+
+        AddButton(clonerCard, "Clone by Name / User ID", function()
+            if avatarCloneInput == "" then
+                Notify("Avatar Cloner", "Please enter a valid Username or User ID first.")
+                return
+            end
+            local mod = getSkinsMod()
+            if mod then
+                local ok, msg = mod.cloneByUserId(avatarCloneInput)
+                Notify("Avatar Cloner", msg or (ok and "Target avatar applied!" or "Failed to load avatar"))
+            end
+        end)
+
+        AddButton(clonerCard, "Restore Original Avatar", function()
+            local mod = getSkinsMod()
+            if mod and mod.resetClonedAvatar then
+                local ok, msg = mod.resetClonedAvatar()
+                Notify("Avatar Cloner", msg or (ok and "Restored original avatar appearance!" or "Avatar restored"))
             end
         end)
     end)
