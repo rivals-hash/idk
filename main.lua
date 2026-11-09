@@ -1845,21 +1845,6 @@ do
         table.insert(eqBars, bar)
     end
 
-    -- Track Title Label (Clean crisp text centered across the full bar)
-    local TopMusicTitle = Instance.new("TextLabel", TopMusicBar)
-    TopMusicTitle.Name = "TrackTitle"
-    TopMusicTitle.Size = UDim2.new(1, -24, 1, 0)
-    TopMusicTitle.Position = UDim2.new(0, 12, 0, 0)
-    TopMusicTitle.BackgroundTransparency = 1
-    TopMusicTitle.Font = Enum.Font.GothamBold
-    TopMusicTitle.TextSize = 8.5
-    TopMusicTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TopMusicTitle.TextXAlignment = Enum.TextXAlignment.Center
-    TopMusicTitle.ClipsDescendants = true
-    TopMusicTitle.TextTruncate = Enum.TextTruncate.AtEnd
-    TopMusicTitle.Text = ""
-    TopMusicTitle.ZIndex = 18
-
     -- Click TopMusicBar to toggle playback
     local clickOverlay = Instance.new("TextButton", TopMusicBar)
     clickOverlay.Name = "ClickOverlay"
@@ -1895,10 +1880,6 @@ do
             end
         end
     end)
-
-    MonodyMusic.OnStateChanged = function()
-        TopMusicTitle.Text = MonodyMusic.IsPlaying and (MonodyMusic.CurrentTrackName or "") or ""
-    end
 end
 
 -- Window Controls (Minimize & Close)
@@ -2684,6 +2665,10 @@ local TRANSLATIONS_DICT = {
         ["Start Combo Sequence"] = "Iniciar Secuencia de Combo",
         ["Stop Combo Sequence"] = "Detener Secuencia de Combo",
         ["Trigger Key (PC)"] = "Tecla de Activacion (PC)",
+        ["YouTube & External Players"] = "Reproductores Externos y YouTube",
+        ["Launch Universal YouTube Player"] = "Lanzar Reproductor Universal de YouTube",
+        ["Launch Audio Library Player"] = "Lanzar Biblioteca de Audio",
+        ["Roblox Audio Player"] = "Reproductor de Audio Roblox",
     },
     ["Portuguese"] = {
         ["Player Management"] = "Gerenciamento de Jogadores",
@@ -3146,6 +3131,10 @@ local TRANSLATIONS_DICT = {
         ["Start Combo Sequence"] = "Iniciar Sequencia de Combo",
         ["Stop Combo Sequence"] = "Parar Sequencia de Combo",
         ["Trigger Key (PC)"] = "Tecla de Ativacao (PC)",
+        ["YouTube & External Players"] = "Players Externos e YouTube",
+        ["Launch Universal YouTube Player"] = "Inicie o Reprodutor Universal do YouTube",
+        ["Launch Audio Library Player"] = "Iniciar Biblioteca de Áudio",
+        ["Roblox Audio Player"] = "Reprodutor de Áudio Roblox",
     },
     ["French"] = {
         ["Player Management"] = "Gestion des Joueurs",
@@ -3608,6 +3597,10 @@ local TRANSLATIONS_DICT = {
         ["Start Combo Sequence"] = "Demarrer Sequence de Combo",
         ["Stop Combo Sequence"] = "Arreter Sequence de Combo",
         ["Trigger Key (PC)"] = "Touche d'Activation (PC)",
+        ["YouTube & External Players"] = "Lecteurs Externes et YouTube",
+        ["Launch Universal YouTube Player"] = "Lancez le Lecteur YouTube Universel",
+        ["Launch Audio Library Player"] = "Lancer la Bibliothèque Audio",
+        ["Roblox Audio Player"] = "Lecteur Audio Roblox",
     },
     ["Vietnamese"] = {
         ["Player Management"] = "Quan ly Nguoi choi",
@@ -4070,6 +4063,10 @@ local TRANSLATIONS_DICT = {
         ["Start Combo Sequence"] = "Bat dau chuoi Combo",
         ["Stop Combo Sequence"] = "Dung chuoi Combo",
         ["Trigger Key (PC)"] = "Phim kich hoat (PC)",
+        ["YouTube & External Players"] = "Trình phát Ngoài & YouTube",
+        ["Launch Universal YouTube Player"] = "Khởi chạy Trình phát YouTube Phổ quát",
+        ["Launch Audio Library Player"] = "Khởi chạy Thư viện Âm thanh",
+        ["Roblox Audio Player"] = "Trình phát Âm thanh Roblox",
     },
 }local TranslatableLabels = {}
 local CurrentLanguage = "English"
@@ -8173,65 +8170,77 @@ do
     end)
 end
 
--- 8. MUSIC TAB (GENRES, PRESETS & AUDIO CONTROLS)
+-- 8. MUSIC TAB (AUDIO CONTROLS & DARLING YOUTUBE MUSIC)
 -- ============================================================
 do
     pcall(function()
         local MusicPage = RegisterTab("Music", "Music", "headphones")
-        local mCard1 = CreateCard(MusicPage, "Music Player")
-        
-        local genres = {
-            ["Phonk"] = {
-                {"Montagem Bailao", "1843588265"},
-                {"Phonk Killer", "1843588265"},
-                {"Drift Tokyo", "9042554737"}
-            },
-            ["Lo-Fi Chill"] = {
-                {"Darling Chill", "90089940136467"},
-                {"Rainy Nights", "7024220379"},
-                {"Coffee Shop", "6825487739"}
-            },
-            ["Anime OST"] = {
-                {"Anime Vibes", "6825487739"},
-                {"Gurenge Synth", "1843588265"},
-                {"Tokyo Beat", "7024220379"}
-            },
-            ["Synthwave"] = {
-                {"Night Drive", "7024220379"},
-                {"Neon City", "90089940136467"},
-                {"Retrowave", "1843588265"}
-            },
-            ["Gaming Beats"] = {
-                {"Combat Anthem", "1843588265"},
-                {"Boss Arena", "90089940136467"},
-                {"Victory Flow", "7024220379"}
-            }
-        }
-        
-        local currentGenre = "Phonk"
-        local currentPreset = genres["Phonk"][1]
-        local customIdInput = ""
 
-        AddChoice(mCard1, "Genre / Category", {"Phonk", "Lo-Fi Chill", "Anime OST", "Synthwave", "Gaming Beats"}, 1, function(v)
-            currentGenre = v
-            if genres[v] and genres[v][1] then
-                currentPreset = genres[v][1]
-            end
+        -- 1. YouTube & External Players (Darling Hub Suite)
+        local ytCard = CreateCard(MusicPage, "YouTube & External Players")
+
+        AddButton(ytCard, "Launch Universal YouTube Player", function()
+            Notify("YouTube Player", "Launching Universal YouTube Music Player...")
+            task.spawn(function()
+                local ok, err = pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Dan41/Roblox-Scripts/refs/heads/main/Youtube%20Music%20Player/YoutubeMusicPlayer.lua", true))()
+                end)
+                if not ok then
+                    Notify("YouTube Player", "Failed to launch: " .. tostring(err))
+                end
+            end)
         end)
 
-        AddChoice(mCard1, "Track Preset", {"Montagem Bailao", "Phonk Killer", "Drift Tokyo", "Darling Chill", "Rainy Nights", "Anime Vibes", "Night Drive", "Combat Anthem"}, 1, function(v)
-            for _, gList in pairs(genres) do
-                for _, t in ipairs(gList) do
-                    if t[1] == v then
-                        currentPreset = t
-                        break
-                    end
+        AddButton(ytCard, "Launch Audio Library Player", function()
+            Notify("Audio Library", "Loading external audio library...")
+            task.spawn(function()
+                local ok, err = pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/DevAuroraX/DevPlayMusic/refs/heads/aliinax/lua"))()
+                end)
+                if not ok then
+                    Notify("Audio Library", "Failed to load: " .. tostring(err))
+                end
+            end)
+        end)
+
+        -- 2. Roblox Audio Player & Visualizer Controls
+        local mCard1 = CreateCard(MusicPage, "Roblox Audio Player")
+        local customIdInput = ""
+
+        AddInput(mCard1, "Custom Sound ID", "Enter Roblox Asset ID (e.g. 1843588265)...", "", function(v)
+            customIdInput = tostring(v or "")
+        end)
+
+        AddButton(mCard1, "Play", function()
+            if _G.MonodyMusic then
+                if customIdInput and #customIdInput > 0 then
+                    _G.MonodyMusic.Play(customIdInput, "")
+                    Notify("Music Player", "Playing audio: " .. customIdInput)
+                else
+                    Notify("Music Player", "Enter a Sound ID first or launch YouTube player above.")
                 end
             end
         end)
 
-        AddInput(mCard1, "Custom Sound ID", "Enter Roblox Asset ID...", "", function(v)
-            customIdInput = tostring(v or "")
+        AddButton(mCard1, "Pause", function()
+            if _G.MonodyMusic then
+                _G.MonodyMusic.Pause()
+                Notify("Music Player", "Playback paused")
+            end
+        end)
+
+        AddButton(mCard1, "Resume", function()
+            if _G.MonodyMusic then
+                _G.MonodyMusic.Resume()
+                Notify("Music Player", "Playback resumed")
+            end
+        end)
+
+        AddButton(mCard1, "Stop", function()
+            if _G.MonodyMusic then
+                _G.MonodyMusic.Stop()
+                Notify("Music Player", "Playback stopped")
+            end
         end)
 
         AddSlider(mCard1, "Volume", 0, 100, 50, 5, function(v)
@@ -8246,32 +8255,10 @@ do
             if _G.MonodyMusic then _G.MonodyMusic.SetLooped(v) end
         end)
 
-        AddToggle(mCard1, "Show Top Music Bar", "Displays the audio player on the top header", false, function(v)
+        AddToggle(mCard1, "Show Top Music Bar", "Displays the audio player on the top header", true, function(v)
             if _G.MonodyMusic and _G.MonodyMusic.TopBarFrame then
                 _G.MonodyMusic.TopBarFrame.Visible = v
             end
-        end)
-
-        AddButton(mCard1, "Play", function()
-            if _G.MonodyMusic then
-                if customIdInput and #customIdInput > 3 then
-                    _G.MonodyMusic.Play(customIdInput, "Custom Track")
-                elseif currentPreset then
-                    _G.MonodyMusic.Play(currentPreset[2], currentPreset[1])
-                end
-            end
-        end)
-
-        AddButton(mCard1, "Pause", function()
-            if _G.MonodyMusic then _G.MonodyMusic.Pause() end
-        end)
-
-        AddButton(mCard1, "Resume", function()
-            if _G.MonodyMusic then _G.MonodyMusic.Resume() end
-        end)
-
-        AddButton(mCard1, "Stop", function()
-            if _G.MonodyMusic then _G.MonodyMusic.Stop() end
         end)
     end)
 end
