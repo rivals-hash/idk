@@ -1330,18 +1330,18 @@ end
 
 local function startMonodyBoot()
     InlineLoader.show(GetLogoAsset())
-    InlineLoader.update(0.15, "Checking modules...")
+    InlineLoader.update(0.3, "Checking modules...")
 
     task.spawn(function()
         local elapsed = 0
-        while not uiReadyToOpen and elapsed < 4 do
-            task.wait(0.1)
-            elapsed = elapsed + 0.1
-            InlineLoader.update(0.15 + math.min(elapsed / 4 * 0.75, 0.75), "Loading components...")
+        while not uiReadyToOpen and elapsed < 1.0 do
+            task.wait(0.04)
+            elapsed = elapsed + 0.04
+            InlineLoader.update(0.3 + math.min(elapsed / 1.0 * 0.7, 0.7), "Loading components...")
         end
 
         InlineLoader.update(1.0, "Ready")
-        task.wait(0.22)
+        task.wait(0.1)
         InlineLoader.finish(function()
             introCompleted = true
             triggerUIOpen()
@@ -1350,8 +1350,15 @@ local function startMonodyBoot()
 end
 
 task.spawn(function()
+    -- 1. Instant bypass if already verified by AuroraX Sentinel V5 Loader
+    local genv = (type(getgenv) == "function" and getgenv()) or _G or {}
+    if AX_LinkedDiscordID or genv.AX_USER or genv.AuroraX_Authenticated then
+        startMonodyBoot()
+        return
+    end
+
     local AuroraX = getAuroraX()
-    local providedKey = script_key or (getgenv and (getgenv().script_key or getgenv().Key))
+    local providedKey = script_key or genv.script_key or genv.Key
     local savedKey = (AuroraX and AuroraX.GetSavedKey and AuroraX.GetSavedKey()) or ""
     local candidate = (providedKey and #providedKey >= 6 and providedKey) or (savedKey and #savedKey >= 6 and savedKey) or nil
 
