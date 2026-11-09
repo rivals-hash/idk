@@ -102,6 +102,22 @@ if not parentGui then pcall(function() parentGui = CoreGui end) end
 if not parentGui and lp then pcall(function() parentGui = lp:WaitForChild("PlayerGui", 5) end) end
 
 -- Clean up any prior DarlingX instances to avoid ghost overlay frames
+-- Restore native game HUD & remove any rogue UIScale on TouchGui/Mobile controls
+pcall(function()
+    local pGui = lp and (lp:FindFirstChildOfClass("PlayerGui") or lp:FindFirstChild("PlayerGui"))
+    if pGui then
+        for _, gui in ipairs(pGui:GetChildren()) do
+            if gui:IsA("ScreenGui") and gui.Name ~= "Monody_UI" then
+                for _, s in ipairs(gui:GetDescendants()) do
+                    if s:IsA("UIScale") then
+                        pcall(function() s:Destroy() end)
+                    end
+                end
+            end
+        end
+    end
+end)
+
 pcall(function()
     local target = parentGui or (lp and lp:FindFirstChild("PlayerGui"))
     if target then
@@ -1772,11 +1788,11 @@ do
         if MonodyMusic.Sound then MonodyMusic.Sound.Looped = l end
     end
 
-    -- Top Music Bar on UI Header (Extended 235px Width, 0.7 Rounded Pill, Vector Glyphs)
+    -- Top Music Bar on UI Header (Wide Full Header Span, No Buttons, 0.7 Pill, Dynamic Equalizer)
     local TopMusicBar = Instance.new("Frame", Header)
     TopMusicBar.Name = "TopMusicBar"
-    TopMusicBar.Size = UDim2.new(0, 235, 0, 24)
-    TopMusicBar.Position = UDim2.new(1, -302, 0.5, -12)
+    TopMusicBar.Size = UDim2.new(1, -210, 0, 24)
+    TopMusicBar.Position = UDim2.new(0, 130, 0.5, -12)
     TopMusicBar.BackgroundColor3 = Color3.fromRGB(15, 12, 24)
     TopMusicBar.BackgroundTransparency = 0.45
     TopMusicBar.ZIndex = 16
@@ -1799,32 +1815,11 @@ do
     DiscIcon.ZIndex = 17
     RegisterThemeImage(DiscIcon)
 
-    -- Animated Equalizer
-    local EqContainer = Instance.new("Frame", TopMusicBar)
-    EqContainer.Name = "EqContainer"
-    EqContainer.Size = UDim2.new(0, 16, 0, 14)
-    EqContainer.Position = UDim2.new(0, 26, 0.5, -7)
-    EqContainer.BackgroundTransparency = 1
-    EqContainer.ZIndex = 17
-
-    local eqBars = {}
-    for i = 1, 4 do
-        local bar = Instance.new("Frame", EqContainer)
-        bar.Name = "EqBar" .. i
-        bar.Size = UDim2.new(0, 2.5, 0, 4)
-        bar.Position = UDim2.new(0, (i - 1) * 4, 1, -4)
-        bar.BackgroundColor3 = CurrentAccent
-        bar.ZIndex = 18
-        Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
-        RegisterThemeFill(bar)
-        table.insert(eqBars, bar)
-    end
-
-    -- Track Title Label
+    -- Track Title Label (Spanning across header)
     local TopMusicTitle = Instance.new("TextLabel", TopMusicBar)
     TopMusicTitle.Name = "TrackTitle"
-    TopMusicTitle.Size = UDim2.new(0, 130, 1, 0)
-    TopMusicTitle.Position = UDim2.new(0, 46, 0, 0)
+    TopMusicTitle.Size = UDim2.new(1, -66, 1, 0)
+    TopMusicTitle.Position = UDim2.new(0, 28, 0, 0)
     TopMusicTitle.BackgroundTransparency = 1
     TopMusicTitle.Font = Enum.Font.GothamBold
     TopMusicTitle.TextSize = 8.5
@@ -1835,47 +1830,35 @@ do
     TopMusicTitle.Text = "No Track"
     TopMusicTitle.ZIndex = 17
 
-    -- Play/Pause Button with Clean Rounded Pill & Glyph
-    local TopPlayBtn = Instance.new("TextButton", TopMusicBar)
-    TopPlayBtn.Name = "PlayBtn"
-    TopPlayBtn.Size = UDim2.new(0, 22, 0, 20)
-    TopPlayBtn.Position = UDim2.new(1, -52, 0.5, -10)
-    TopPlayBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 36)
-    TopPlayBtn.BackgroundTransparency = 0.35
-    TopPlayBtn.Text = "▶"
-    TopPlayBtn.Font = Enum.Font.GothamBold
-    TopPlayBtn.TextSize = 10
-    TopPlayBtn.TextColor3 = CurrentAccent
-    TopPlayBtn.AutoButtonColor = false
-    TopPlayBtn.ZIndex = 18
-    Instance.new("UICorner", TopPlayBtn).CornerRadius = UDim.new(0.7, 0)
-    local pBtnStroke = Instance.new("UIStroke", TopPlayBtn)
-    pBtnStroke.Color = CurrentAccent
-    pBtnStroke.Thickness = 0.8
-    pBtnStroke.Transparency = 0.5
-    RegisterThemeStroke(pBtnStroke)
-    RegisterThemeText(TopPlayBtn)
+    -- Animated Multi-Bar Equalizer on the right side of the bar
+    local EqContainer = Instance.new("Frame", TopMusicBar)
+    EqContainer.Name = "EqContainer"
+    EqContainer.Size = UDim2.new(0, 32, 0, 14)
+    EqContainer.Position = UDim2.new(1, -38, 0.5, -7)
+    EqContainer.BackgroundTransparency = 1
+    EqContainer.ZIndex = 17
 
-    -- Stop Button with Clean Rounded Pill & Glyph
-    local TopStopBtn = Instance.new("TextButton", TopMusicBar)
-    TopStopBtn.Name = "StopBtn"
-    TopStopBtn.Size = UDim2.new(0, 22, 0, 20)
-    TopStopBtn.Position = UDim2.new(1, -26, 0.5, -10)
-    TopStopBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 36)
-    TopStopBtn.BackgroundTransparency = 0.35
-    TopStopBtn.Text = "■"
-    TopStopBtn.Font = Enum.Font.GothamBold
-    TopStopBtn.TextSize = 9
-    TopStopBtn.TextColor3 = Color3.fromRGB(255, 90, 90)
-    TopStopBtn.AutoButtonColor = false
-    TopStopBtn.ZIndex = 18
-    Instance.new("UICorner", TopStopBtn).CornerRadius = UDim.new(0.7, 0)
-    local sBtnStroke = Instance.new("UIStroke", TopStopBtn)
-    sBtnStroke.Color = Color3.fromRGB(255, 90, 90)
-    sBtnStroke.Thickness = 0.8
-    sBtnStroke.Transparency = 0.5
+    local eqBars = {}
+    for i = 1, 6 do
+        local bar = Instance.new("Frame", EqContainer)
+        bar.Name = "EqBar" .. i
+        bar.Size = UDim2.new(0, 2.5, 0, 4)
+        bar.Position = UDim2.new(0, (i - 1) * 5, 1, -4)
+        bar.BackgroundColor3 = CurrentAccent
+        bar.ZIndex = 18
+        Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
+        RegisterThemeFill(bar)
+        table.insert(eqBars, bar)
+    end
 
-    ConnectButton(TopPlayBtn, function()
+    -- Click TopMusicBar to toggle playback
+    local clickOverlay = Instance.new("TextButton", TopMusicBar)
+    clickOverlay.Name = "ClickOverlay"
+    clickOverlay.Size = UDim2.new(1, 0, 1, 0)
+    clickOverlay.BackgroundTransparency = 1
+    clickOverlay.Text = ""
+    clickOverlay.ZIndex = 19
+    ConnectButton(clickOverlay, function()
         if MonodyMusic.IsPlaying then
             MonodyMusic.Pause()
         else
@@ -1887,30 +1870,25 @@ do
         end
     end)
 
-    ConnectButton(TopStopBtn, function()
-        MonodyMusic.Stop()
-    end)
-
     local eqAnimStep = 0
     RunService.RenderStepped:Connect(function()
         if MonodyMusic.IsPlaying then
             eqAnimStep = eqAnimStep + 0.18
-            DiscIcon.Rotation = (DiscIcon.Rotation + 1.8) % 360
+            DiscIcon.Rotation = (DiscIcon.Rotation + 2.0) % 360
             for i, bar in ipairs(eqBars) do
-                local h = math.clamp(4 + math.abs(math.sin(eqAnimStep + i * 0.85)) * 10, 3, 14)
+                local h = math.clamp(4 + math.abs(math.sin(eqAnimStep + i * 0.75)) * 10, 3, 14)
                 bar.Size = UDim2.new(0, 2.5, 0, h)
-                bar.Position = UDim2.new(0, (i - 1) * 4, 1, -h)
+                bar.Position = UDim2.new(0, (i - 1) * 5, 1, -h)
             end
         else
             for i, bar in ipairs(eqBars) do
                 bar.Size = UDim2.new(0, 2.5, 0, 4)
-                bar.Position = UDim2.new(0, (i - 1) * 4, 1, -4)
+                bar.Position = UDim2.new(0, (i - 1) * 5, 1, -4)
             end
         end
     end)
 
     MonodyMusic.OnStateChanged = function()
-        TopPlayBtn.Text = MonodyMusic.IsPlaying and "❚❚" or "▶"
         TopMusicTitle.Text = MonodyMusic.CurrentTrackName or "No Track"
     end
 end
@@ -5731,6 +5709,7 @@ function M.getExtraWidgets() return M.get("modules/pvp/extra_widgets.lua") end
 function M.getAutoCombat() return M.get("modules/pvp/auto_combat.lua") end
 function M.getCamlock() return M.get("modules/pvp/camlock.lua") end
 function M.getMoveMod() return M.get("modules/mobility/movement_engine.lua") end
+function M.getAutoBounty() return M.get("modules/combat/auto_bounty.lua") end
 
 _G.DarlingX_SyncCamlockUI = function(active)
     if UI_TOGGLES and UI_TOGGLES["Camlock"] and UI_TOGGLES["Camlock"].set then
@@ -5745,512 +5724,180 @@ end
 -- ============================================================
 
 -- ============================================================
--- AUTO BOUNTY TAB (ADVANCED TARGETING & ENGAGEMENT ENGINE)
+-- AUTO BOUNTY TAB (DARLING HUB COMBAT ENGINE)
 -- ============================================================
 do
     pcall(function()
         local BountyPage = RegisterTab("AutoBounty", "AutoBounty", "skull")
-        local isHunting = false
-        local targetMode = "Nearest"
-        local engageDist = 15
-        local autoV4 = false
-        local autoKen = true
-        local autoBuso = true
-        local escapeLowHp = true
-        local selectedWeapon = "Melee"
-        local currentTarget = nil
 
-        local function GetBountyTargets()
-            local targets = {}
-            local myChar = lp.Character
-            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-            if not myRoot then return targets end
-
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= lp and p.Character then
-                    local hum = p.Character:FindFirstChildOfClass("Humanoid")
-                    local root = p.Character:FindFirstChild("HumanoidRootPart")
-                    local isBl = _G.DarlingBlacklistedPlayers and _G.DarlingBlacklistedPlayers[p.UserId]
-                    if hum and hum.Health > 0 and root and not isBl then
-                        local dist = (root.Position - myRoot.Position).Magnitude
-                        table.insert(targets, { player = p, humanoid = hum, root = root, distance = dist, health = hum.Health })
-                    end
-                end
-            end
-            return targets
-        end
-
-        local function SelectBestTarget()
-            local list = GetBountyTargets()
-            if #list == 0 then return nil end
-            if targetMode == "Lowest Health" then
-                table.sort(list, function(a, b) return a.health < b.health end)
-            elseif targetMode == "Highest Bounty" then
-                table.sort(list, function(a, b)
-                    local bA = (a.player:FindFirstChild("leaderstats") and a.player.leaderstats:FindFirstChild("Bounty/Honor") and a.player.leaderstats["Bounty/Honor"].Value) or 0
-                    local bB = (b.player:FindFirstChild("leaderstats") and b.player.leaderstats:FindFirstChild("Bounty/Honor") and b.player.leaderstats["Bounty/Honor"].Value) or 0
-                    return bA > bB
-                end)
-            else
-                table.sort(list, function(a, b) return a.distance < b.distance end)
-            end
-            return list[1]
-        end
-
+        -- SECTION 1: CORE AUTO BOUNTY CONTROL
         local bCard1 = CreateCard(BountyPage, "Auto Bounty Engine")
-        AddToggle(bCard1, "Enable Auto Bounty", "Locks on to target players and executes combat routine", false, function(v)
-            isHunting = v
-            if v then
-                task.spawn(function()
-                    while isHunting do
-                        pcall(function()
-                            local myChar = lp.Character
-                            local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
-                            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-                            if not myRoot or not myHum or myHum.Health <= 0 then return end
 
-                            if escapeLowHp and (myHum.Health / myHum.MaxHealth) < 0.25 then
-                                myRoot.CFrame = myRoot.CFrame * CFrame.new(0, 150, 0)
-                                Notify("Auto Bounty", "Safe Escape: Low Health triggered.")
-                                task.wait(3)
-                                return
-                            end
+        local statusPara = Instance.new("TextLabel", bCard1)
+        statusPara.Size = UDim2.new(1, 0, 0, 20)
+        statusPara.BackgroundTransparency = 1
+        statusPara.Font = Enum.Font.GothamBold
+        statusPara.TextSize = 9.5
+        statusPara.TextColor3 = CurrentAccent
+        statusPara.TextXAlignment = Enum.TextXAlignment.Left
+        statusPara.Text = "Status: Idle | Targets: Monitoring"
+        statusPara.LayoutOrder = 1
+        RegisterThemeText(statusPara)
 
-                            local t = SelectBestTarget()
-                            currentTarget = t and t.player
-                            if t and t.root and t.humanoid.Health > 0 then
-                                if autoBuso then
-                                    local rem = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
-                                    local commF = rem and rem:FindFirstChild("CommF_")
-                                    if commF then commF:InvokeServer("Buso") end
-                                end
-                                if autoV4 then
-                                    local vim = game:GetService("VirtualInputManager")
-                                    if vim then
-                                        vim:SendKeyEvent(true, Enum.KeyCode.Y, false, game)
-                                        task.wait(0.04)
-                                        vim:SendKeyEvent(false, Enum.KeyCode.Y, false, game)
-                                    end
-                                end
-                                myRoot.CFrame = t.root.CFrame * CFrame.new(0, engageDist, 0)
-                                local net = game:GetService("ReplicatedStorage"):FindFirstChild("Modules")
-                                net = net and net:FindFirstChild("Net")
-                                local regAtk = net and net:FindFirstChild("RE/RegisterAttack")
-                                local regHit = net and net:FindFirstChild("RE/RegisterHit")
-                                if regAtk then regAtk:FireServer(0.1) end
-                                if regHit then regHit:FireServer(t.root, { { t.humanoid, t.root } }) end
-                            end
-                        end)
-                        task.wait(0.1)
+        task.spawn(function()
+            while true do
+                task.wait(0.3)
+                pcall(function()
+                    local mod = M.getAutoBounty()
+                    if mod then
+                        local st = tostring(mod.Status or "Idle")
+                        local tgt = mod.CurrentTarget
+                        local tgtName = tgt and tgt.Name or "None"
+                        statusPara.Text = "Status: " .. st .. " | Target: " .. tgtName
                     end
                 end)
             end
         end)
-        AddChoice(bCard1, "Target Priority", {"Nearest", "Lowest Health", "Highest Bounty"}, 1, function(v)
-            targetMode = v
-        end)
-        AddSlider(bCard1, "Combat Distance", 5, 40, 15, 1, function(v)
-            engageDist = v
-        end)
-        AddToggle(bCard1, "Auto V4 Awakening", "Automatically activates Race V4 during bounty hunting", false, function(v)
-            autoV4 = v
-        end)
-        AddToggle(bCard1, "Auto Buso Haki", "Maintains active Buso Haki during combat", true, function(v)
-            autoBuso = v
-        end)
-        AddToggle(bCard1, "Safe Escape at 25% HP", "Teleports to high sky when health drops below critical threshold", true, function(v)
-            escapeLowHp = v
+
+        AddToggle(bCard1, "Hunt Auto", "Autonomous target scanning, tween flight pathing, and skill bursts", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod and mod.toggle then
+                mod.toggle(v)
+            end
+            Notify("Auto Bounty", "Hunt Auto: " .. (v and "Enabled" or "Disabled"))
         end)
 
-        local bCard2 = CreateCard(BountyPage, "Bounty Combat Settings")
-        AddChoice(bCard2, "Primary Combat Style", {"Melee", "Sword", "Blox Fruit", "Gun"}, 1, function(v)
-            selectedWeapon = v
+        AddToggle(bCard1, "Fast Hop Mode", "Ultra-fast server hopping with streamlined combat engine", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.AutoBountyMode = v end
+            _G.DarlingFastBountyMode = v
+            Notify("Auto Bounty", "Fast Hop Mode: " .. (v and "Enabled" or "Disabled"))
         end)
-        AddButton(bCard2, "Skip Current Target", function()
-            if currentTarget then
-                _G.DarlingBlacklistedPlayers = _G.DarlingBlacklistedPlayers or {}
-                _G.DarlingBlacklistedPlayers[currentTarget.UserId] = true
-                Notify("Auto Bounty", "Skipped & blacklisted: " .. currentTarget.Name)
+
+        AddChoice(bCard1, "Auto Join Team", {"Pirates", "Marines"}, 1, function(v)
+            local mod = M.getAutoBounty()
+            if mod then
+                mod.AutoTeam = v
+                if mod.joinTeam then mod.joinTeam(v) end
+            end
+        end)
+
+        AddButton(bCard1, "Skip Current Target", function()
+            local mod = M.getAutoBounty()
+            if mod and mod.skipCurrentTarget then
+                mod.skipCurrentTarget()
+                Notify("Auto Bounty", "Skipping current target...")
+            end
+        end)
+
+        -- SECTION 2: FLIGHT & TWEEN SPEEDS
+        local bCard2 = CreateCard(BountyPage, "Movement & Tween Settings")
+        AddSlider(bCard2, "Near Tween Speed (<=1000 studs)", 100, 500, 310, 10, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.NearTweenSpeed = v end
+        end)
+        AddSlider(bCard2, "Far Tween Speed (>1000 studs)", 100, 500, 200, 10, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.FarTweenSpeed = v end
+        end)
+        AddSlider(bCard2, "Combat Distance", 5, 40, 15, 1, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.StopDistance = v end
+        end)
+        AddToggle(bCard2, "Auto Soru", "Instantly Soru behind target during combat", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.AutoSoru = v end
+        end)
+
+        -- SECTION 3: COMBAT & WEAPON EXECUTION
+        local bCard3 = CreateCard(BountyPage, "Combat & Skill Rotations")
+        AddToggle(bCard3, "Auto Attack (FastAttack M1)", "Rapid automated weapon attacks", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.AutoAttack = v; mod.FastAttack = v end
+        end)
+        AddChoice(bCard3, "Fast Attack Speed", {"Slow (0.15s)", "Medium (0.10s)", "Fast (0.05s)", "Ultra (0.02s)"}, 2, function(v)
+            local mod = M.getAutoBounty()
+            if mod and mod.setAttackSpeed then mod.setAttackSpeed(v) end
+        end)
+        AddToggle(bCard3, "Auto Skills Rotation", "Casts equipped weapon and fruit special abilities", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.AutoSkills = v end
+        end)
+        AddToggle(bCard3, "Use Melee Weapons", "Allows fighting style attacks in rotation", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.UseMelee = v end
+        end)
+        AddToggle(bCard3, "Use Sword Weapons", "Allows sword attacks in rotation", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.UseSword = v end
+        end)
+        AddToggle(bCard3, "Use Fruit Skills", "Allows fruit attacks in rotation", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.UseFruit = v end
+        end)
+        AddToggle(bCard3, "Use Gun Weapons", "Allows gun attacks in rotation", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.UseGun = v end
+        end)
+        AddToggle(bCard3, "Auto Buso Haki", "Maintains active Armament Haki", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.AutoBuso = v end
+        end)
+        AddToggle(bCard3, "Auto Observation Haki (Ken)", "Maintains active Observation Haki", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.AutoKen = v end
+        end)
+        AddToggle(bCard3, "Auto Race V4", "Awakens Race V4 whenever gauge is full", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.AutoV4 = v end
+        end)
+
+        -- SECTION 4: SURVIVABILITY & SERVER HOP
+        local bCard4 = CreateCard(BountyPage, "Survivability & Server Hop")
+        AddToggle(bCard4, "Auto Flee Low HP", "Safely flees to high sky when health is critical", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.FleeLowHealth = v end
+        end)
+        AddSlider(bCard4, "Flee Health Threshold (%)", 10, 50, 25, 5, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.FleeThreshold = v end
+        end)
+        AddToggle(bCard4, "Skip SafeZone Players", "Ignores players protected by safezones", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.NoSafeZone = v end
+        end)
+        AddToggle(bCard4, "Ignore Marine Allies", "Do not attack allied players on same faction", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.NoMarineAlly = v end
+        end)
+        AddToggle(bCard4, "Auto Server Hop", "Hops to another server when no targets remain", false, function(v)
+            local mod = M.getAutoBounty()
+            if mod then mod.AutoHop = v end
+        end)
+        AddButton(bCard4, "Server Hop Now", function()
+            local mod = M.getAutoBounty()
+            if mod and mod.hopServer then
+                mod.hopServer()
             end
         end)
     end)
 end
 
 -- ============================================================
--- CONTROL PEOPLE TAB (PLAYER INTERACTION & ORBIT TOOLS)
+-- CONTROL PEOPLE TAB (CLEAN EMPTY AS REQUESTED)
 -- ============================================================
 do
     pcall(function()
         local ControlPage = RegisterTab("ControlPeople", "Control People", "gamepad-2")
-        local selectedTarget = nil
-        local loopTpActive = false
-        local orbitActive = false
-        local orbitRadius = 12
-        local orbitSpeed = 6
-        local orbitAngle = 0
-        local isFlinging = false
-
-        local function GetTargetPlayersList()
-            local names = {}
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= lp then table.insert(names, p.Name) end
-            end
-            if #names == 0 then table.insert(names, "None") end
-            return names
-        end
-
-        local cCard1 = CreateCard(ControlPage, "Target Player Controls")
-        local targetChoice = AddChoice(cCard1, "Target Player", GetTargetPlayersList(), 1, function(name)
-            selectedTarget = Players:FindFirstChild(name)
-        end)
-        AddButton(cCard1, "Refresh Players List", function()
-            if targetChoice and targetChoice.Refresh then
-                targetChoice.Refresh(GetTargetPlayersList())
-            end
-            Notify("Control People", "Player list refreshed.")
-        end)
-        AddButton(cCard1, "Teleport to Target", function()
-            local t = selectedTarget
-            local tChar = t and t.Character
-            local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
-            local myChar = lp.Character
-            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-            if tRoot and myRoot then
-                myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 3, 3)
-                Notify("Control People", "Teleported to " .. t.Name)
-            else
-                Notify("Control People", "Target player character not found.")
-            end
-        end)
-        AddButton(cCard1, "Spectate Target", function()
-            local t = selectedTarget
-            local tChar = t and t.Character
-            local tHum = tChar and tChar:FindFirstChildOfClass("Humanoid")
-            if tHum then
-                Workspace.CurrentCamera.CameraSubject = tHum
-                Notify("Control People", "Spectating " .. t.Name)
-            else
-                Notify("Control People", "Cannot spectate target.")
-            end
-        end)
-        AddButton(cCard1, "Stop Spectating", function()
-            local myChar = lp.Character
-            local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
-            if myHum then
-                Workspace.CurrentCamera.CameraSubject = myHum
-                Notify("Control People", "Camera restored to LocalPlayer.")
-            end
-        end)
-        AddButton(cCard1, "Fling Target", function()
-            if isFlinging then return end
-            local t = selectedTarget
-            local tChar = t and t.Character
-            local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
-            local myChar = lp.Character
-            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-            if not tRoot or not myRoot then
-                Notify("Control People", "Target not available.")
-                return
-            end
-            isFlinging = true
-            Notify("Control People", "Flinging " .. t.Name .. "...")
-            task.spawn(function()
-                local oldPos = myRoot.CFrame
-                local bav = Instance.new("BodyAngularVelocity")
-                bav.MaxTorque = Vector3.new(1e8, 1e8, 1e8)
-                bav.AngularVelocity = Vector3.new(0, 100000, 0)
-                bav.Parent = myRoot
-                local startT = tick()
-                while tick() - startT < 1.5 and tRoot and tRoot.Parent do
-                    myRoot.CFrame = tRoot.CFrame
-                    task.wait(0.03)
-                end
-                bav:Destroy()
-                myRoot.CFrame = oldPos
-                isFlinging = false
-            end)
-        end)
-
-        local cCard2 = CreateCard(ControlPage, "Orbit & Stalker Engine")
-        AddToggle(cCard2, "Loop Teleport Behind", "Locks your position directly behind target's back", false, function(v)
-            loopTpActive = v
-            if v then
-                task.spawn(function()
-                    while loopTpActive do
-                        pcall(function()
-                            local t = selectedTarget
-                            local tChar = t and t.Character
-                            local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
-                            local myChar = lp.Character
-                            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-                            if tRoot and myRoot then
-                                myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 2, 4)
-                            end
-                        end)
-                        task.wait(0.04)
-                    end
-                end)
-            end
-        end)
-        AddToggle(cCard2, "Orbit Target", "Smoothly circles around the selected player in 3D space", false, function(v)
-            orbitActive = v
-        end)
-        AddSlider(cCard2, "Orbit Radius", 5, 40, 12, 1, function(v)
-            orbitRadius = v
-        end)
-        AddSlider(cCard2, "Orbit Speed", 1, 20, 6, 1, function(v)
-            orbitSpeed = v
-        end)
-
-        trackConn(RunService.Heartbeat:Connect(function(dt)
-            if orbitActive and selectedTarget then
-                pcall(function()
-                    local tChar = selectedTarget.Character
-                    local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
-                    local myChar = lp.Character
-                    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-                    if tRoot and myRoot then
-                        orbitAngle = orbitAngle + dt * orbitSpeed
-                        local offset = Vector3.new(math.cos(orbitAngle) * orbitRadius, 2, math.sin(orbitAngle) * orbitRadius)
-                        myRoot.CFrame = CFrame.new(tRoot.Position + offset, tRoot.Position)
-                    end
-                end)
-            end
-        end))
-
-        local cCard3 = CreateCard(ControlPage, "Global Player Utilities")
-        AddButton(cCard3, "Teleport to Random Player", function()
-            local players = {}
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= lp and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                    table.insert(players, p)
-                end
-            end
-            if #players > 0 then
-                local pick = players[math.random(1, #players)]
-                local myChar = lp.Character
-                local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-                if myRoot and pick.Character and pick.Character:FindFirstChild("HumanoidRootPart") then
-                    myRoot.CFrame = pick.Character.HumanoidRootPart.CFrame * CFrame.new(0, 3, 3)
-                    Notify("Control People", "Teleported to " .. pick.Name)
-                end
-            else
-                Notify("Control People", "No other players found.")
-            end
-        end)
-        AddButton(cCard3, "Clear All Player Blacklists", function()
-            _G.DarlingBlacklistedPlayers = {}
-            Notify("Blacklist", "All player blacklists cleared.")
-        end)
     end)
 end
 
 -- ============================================================
--- STEAL FRUITS TAB (FRUIT SNIPER, ESP & AUTO COLLECTOR)
+-- STEAL FRUITS TAB (CLEAN EMPTY AS REQUESTED)
 -- ============================================================
 do
     pcall(function()
         local FruitPage = RegisterTab("StealFruits", "Steal Fruits", "apple")
-        local autoSnipe = false
-        local autoStore = true
-        local bringFruits = false
-        local fruitEspActive = false
-        local fruitAlert = true
-        local activeBillboards = {}
-
-        local function FindFruitsInWorld()
-            local fruits = {}
-            for _, obj in ipairs(Workspace:GetChildren()) do
-                if (obj:IsA("Tool") or obj:IsA("Model")) and obj.Name:lower():find("fruit") then
-                    local handle = obj:FindFirstChild("Handle") or obj:FindFirstChildWhichIsA("BasePart")
-                    if handle then
-                        table.insert(fruits, { object = obj, part = handle, name = obj.Name })
-                    end
-                end
-            end
-            return fruits
-        end
-
-        local function ClearFruitEsp()
-            for _, bb in ipairs(activeBillboards) do
-                pcall(function() bb:Destroy() end)
-            end
-            activeBillboards = {}
-        end
-
-        local function UpdateFruitEsp()
-            ClearFruitEsp()
-            if not fruitEspActive then return end
-            local fruits = FindFruitsInWorld()
-            for _, f in ipairs(fruits) do
-                pcall(function()
-                    local bb = Instance.new("BillboardGui")
-                    bb.Name = "FruitBillboard"
-                    bb.Size = UDim2.new(0, 120, 0, 40)
-                    bb.AlwaysOnTop = true
-                    bb.Adornee = f.part
-                    bb.Parent = f.part
-
-                    local lbl = Instance.new("TextLabel", bb)
-                    lbl.Size = UDim2.new(1, 0, 1, 0)
-                    lbl.BackgroundTransparency = 1
-                    lbl.Font = Enum.Font.GothamBold
-                    lbl.TextSize = 10
-                    lbl.TextColor3 = Color3.fromRGB(255, 120, 180)
-                    lbl.TextStrokeTransparency = 0.3
-                    lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                    lbl.Text = "🍎 " .. f.name
-                    table.insert(activeBillboards, bb)
-                end)
-            end
-        end
-
-        local function StoreCurrentFruits()
-            pcall(function()
-                local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
-                local commF = remotes and remotes:FindFirstChild("CommF_")
-                if not commF then return end
-                local char = lp.Character
-                local backpack = lp:FindFirstChild("Backpack")
-                local items = {}
-                if backpack then
-                    for _, tool in ipairs(backpack:GetChildren()) do
-                        if tool:IsA("Tool") and tool.Name:lower():find("fruit") then table.insert(items, tool) end
-                    end
-                end
-                if char then
-                    for _, tool in ipairs(char:GetChildren()) do
-                        if tool:IsA("Tool") and tool.Name:lower():find("fruit") then table.insert(items, tool) end
-                    end
-                end
-                for _, f in ipairs(items) do
-                    commF:InvokeServer("StoreFruit", f.Name, f)
-                    Notify("Steal Fruits", "Stored: " .. f.Name)
-                end
-            end)
-        end
-
-        local fCard1 = CreateCard(FruitPage, "Fruit Sniper Engine")
-        AddToggle(fCard1, "Auto Snipe Fruits", "Teleports to any spawned fruit in the map instantly", false, function(v)
-            autoSnipe = v
-            if v then
-                task.spawn(function()
-                    while autoSnipe do
-                        pcall(function()
-                            local fruits = FindFruitsInWorld()
-                            if #fruits > 0 then
-                                local myChar = lp.Character
-                                local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-                                if myRoot then
-                                    for _, f in ipairs(fruits) do
-                                        if f.part and f.part.Parent then
-                                            myRoot.CFrame = f.part.CFrame * CFrame.new(0, 2, 0)
-                                            Notify("Steal Fruits", "Sniped: " .. f.name)
-                                            task.wait(0.5)
-                                            if autoStore then StoreCurrentFruits() end
-                                        end
-                                    end
-                                end
-                            end
-                        end)
-                        task.wait(1.5)
-                    end
-                end)
-            end
-        end)
-        AddToggle(fCard1, "Auto Store Collected Fruit", "Automatically deposits held fruits into storage", true, function(v)
-            autoStore = v
-        end)
-        AddToggle(fCard1, "Bring Fruits to Player", "Tweens physical fruit models in workspace to your location", false, function(v)
-            bringFruits = v
-            if v then
-                task.spawn(function()
-                    while bringFruits do
-                        pcall(function()
-                            local fruits = FindFruitsInWorld()
-                            local myChar = lp.Character
-                            local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-                            if myRoot then
-                                for _, f in ipairs(fruits) do
-                                    if f.part and not f.part.Anchored then
-                                        f.part.CFrame = myRoot.CFrame
-                                    end
-                                end
-                            end
-                        end)
-                        task.wait(0.5)
-                    end
-                end)
-            end
-        end)
-        AddToggle(fCard1, "Fruit ESP & Tracker", "Shows holographic markers above spawned fruits across map", false, function(v)
-            fruitEspActive = v
-            if v then
-                UpdateFruitEsp()
-                task.spawn(function()
-                    while fruitEspActive do
-                        task.wait(3)
-                        UpdateFruitEsp()
-                    end
-                    ClearFruitEsp()
-                end)
-            else
-                ClearFruitEsp()
-            end
-        end)
-        AddToggle(fCard1, "Fruit Spawn Alerts", "Displays instant notifications whenever a fruit appears in server", true, function(v)
-            fruitAlert = v
-        end)
-
-        Workspace.ChildAdded:Connect(function(ch)
-            if fruitAlert and (ch:IsA("Tool") or ch:IsA("Model")) and ch.Name:lower():find("fruit") then
-                Notify("Fruit Alert", "A wild fruit has spawned: " .. ch.Name .. "!")
-                if fruitEspActive then task.defer(UpdateFruitEsp) end
-            end
-        end)
-
-        local fCard2 = CreateCard(FruitPage, "Fruit Radar & Server Actions")
-        local fruitStatus = Instance.new("TextLabel", fCard2)
-        fruitStatus.Size = UDim2.new(1, 0, 0, 18)
-        fruitStatus.BackgroundTransparency = 1
-        fruitStatus.Font = Enum.Font.GothamMedium
-        fruitStatus.TextSize = 9.5
-        fruitStatus.TextColor3 = Color3.fromRGB(200, 195, 220)
-        fruitStatus.TextXAlignment = Enum.TextXAlignment.Left
-        fruitStatus.Text = "Active Fruits: Scanning..."
-        fruitStatus.LayoutOrder = 10
-
-        local function RefreshFruitRadar()
-            local list = FindFruitsInWorld()
-            if #list == 0 then
-                fruitStatus.Text = "Active Fruits: No fruits in server."
-            else
-                local names = {}
-                for _, f in ipairs(list) do table.insert(names, f.name) end
-                fruitStatus.Text = "Active Fruits (" .. #list .. "): " .. table.concat(names, ", ")
-            end
-            UpdateCardGeometry(fCard2)
-            UpdatePageCanvas(FruitPage)
-        end
-
-        AddButton(fCard2, "Scan Server for Fruits", function()
-            RefreshFruitRadar()
-            Notify("Fruit Radar", "Scan complete.")
-        end)
-
-        AddButton(fCard2, "Store Inventory Fruits", function()
-            StoreCurrentFruits()
-        end)
-
-        AddButton(fCard2, "Server Hop for Fruits", function()
-            Notify("Server Hop", "Searching for server with fruit spawns...")
-            pcall(function()
-                local TeleportService = game:GetService("TeleportService")
-                TeleportService:Teleport(game.PlaceId, lp)
-            end)
-        end)
-
-        task.defer(RefreshFruitRadar)
     end)
 end
 
@@ -6881,7 +6528,7 @@ local okAimbot, errAimbot = pcall(function()
         _G.DarlingX.Settings.Aim.MaxRange = val
     end)
 
-    AddToggle(aimCard, "Enable Target Prediction", "Calculates lead vector based on enemy velocity and ping", true, function(state)
+    AddToggle(aimCard, "Enable Target Prediction", "Calculates lead vector based on enemy velocity and ping", false, function(state)
         local core = RequireModule("modules/combat/aimbot_core.lua")
         if core then core.PredictionEnabled = state end
         _G.DarlingX.Settings.Aim.Prediction = state
@@ -7364,39 +7011,39 @@ local okESP, errESP = pcall(function()
     -- 2. Player Radar Elements
     local elementsCard = CreateCard(ESPPage, "Radar Elements")
 
-    espControls.Boxes = AddToggle(elementsCard, "Player 2D Boxes", "Draws dynamic bounding boxes around enemy players", true, function(state)
+    espControls.Boxes = AddToggle(elementsCard, "Player 2D Boxes", "Draws dynamic bounding boxes around enemy players", false, function(state)
         if espMod then espMod.Boxes = state end
     end)
 
-    espControls.Names = AddToggle(elementsCard, "Player Names", "Displays formatted usernames above character heads", true, function(state)
+    espControls.Names = AddToggle(elementsCard, "Player Names", "Displays formatted usernames above character heads", false, function(state)
         if espMod then espMod.Names = state end
     end)
 
-    espControls.Health = AddToggle(elementsCard, "Player Health Status", "Displays live gradient health bars and HP percentage", true, function(state)
+    espControls.Health = AddToggle(elementsCard, "Player Health Status", "Displays live gradient health bars and HP percentage", false, function(state)
         if espMod then espMod.Health = state end
     end)
 
-    espControls.Distance = AddToggle(elementsCard, "Distance Indicator", "Shows distance measurement in studs below player feet", true, function(state)
+    espControls.Distance = AddToggle(elementsCard, "Distance Indicator", "Shows distance measurement in studs below player feet", false, function(state)
         if espMod then espMod.Distance = state end
     end)
 
-    espControls.Tool = AddToggle(elementsCard, "Equipped Tool / Weapon", "Shows weapon, sword, fruit or gun held by the player", true, function(state)
+    espControls.Tool = AddToggle(elementsCard, "Equipped Tool / Weapon", "Shows weapon, sword, fruit or gun held by the player", false, function(state)
         if espMod then espMod.Tool = state end
     end)
 
-    espControls.Fruit = AddToggle(elementsCard, "Devil Fruit Tracker", "Identifies equipped Devil Fruit power (Kitsune, Portal, etc.)", true, function(state)
+    espControls.Fruit = AddToggle(elementsCard, "Devil Fruit Tracker", "Identifies equipped Devil Fruit power (Kitsune, Portal, etc.)", false, function(state)
         if espMod then espMod.Fruit = state end
     end)
 
-    espControls.Bounty = AddToggle(elementsCard, "Player Bounty Tracker", "Displays player bounty or honor value in millions", true, function(state)
+    espControls.Bounty = AddToggle(elementsCard, "Player Bounty Tracker", "Displays player bounty or honor value in millions", false, function(state)
         if espMod then espMod.Bounty = state end
     end)
 
-    espControls.Level = AddToggle(elementsCard, "Player Level Display", "Shows player rank and numerical level tag", true, function(state)
+    espControls.Level = AddToggle(elementsCard, "Player Level Display", "Shows player rank and numerical level tag", false, function(state)
         if espMod then espMod.Level = state end
     end)
 
-    espControls.PvPStatus = AddToggle(elementsCard, "Combat PvP Status", "Detects safe zone and in-combat status indicators", true, function(state)
+    espControls.PvPStatus = AddToggle(elementsCard, "Combat PvP Status", "Detects safe zone and in-combat status indicators", false, function(state)
         if espMod then espMod.PvPStatus = state end
     end)
 
@@ -7508,7 +7155,7 @@ do
                     Instance.new("UICorner", avatarImg).CornerRadius = UDim.new(1, 0)
 
                     local nameLbl = Instance.new("TextLabel", pRow)
-                    nameLbl.Size = UDim2.new(0, 155, 0, 16)
+                    nameLbl.Size = UDim2.new(1, -205, 0, 16)
                     nameLbl.Position = UDim2.new(0, 52, 0, 6)
                     nameLbl.BackgroundTransparency = 1
                     nameLbl.Font = Enum.Font.GothamBold
@@ -7519,7 +7166,7 @@ do
                     nameLbl.Text = pDisp .. (p == lp and " (You)" or "")
 
                     local uLbl = Instance.new("TextLabel", pRow)
-                    uLbl.Size = UDim2.new(0, 155, 0, 12)
+                    uLbl.Size = UDim2.new(1, -205, 0, 12)
                     uLbl.Position = UDim2.new(0, 52, 0, 22)
                     uLbl.BackgroundTransparency = 1
                     uLbl.Font = Enum.Font.GothamMedium
@@ -7583,20 +7230,33 @@ do
                     end)
 
                     if p ~= lp then
-                        local blBtn = Instance.new("TextButton", pRow)
-                        blBtn.Size = UDim2.new(0, 58, 0, 22)
-                        blBtn.Position = UDim2.new(1, -126, 0.5, -11)
+                        local btnBox = Instance.new("Frame", pRow)
+                        btnBox.Name = "ActionBox"
+                        btnBox.Size = UDim2.new(0, 136, 0, 26)
+                        btnBox.Position = UDim2.new(1, -142, 0.5, -13)
+                        btnBox.BackgroundTransparency = 1
+
+                        local bList = Instance.new("UIListLayout", btnBox)
+                        bList.FillDirection = Enum.FillDirection.Horizontal
+                        bList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+                        bList.VerticalAlignment = Enum.VerticalAlignment.Center
+                        bList.Padding = UDim.new(0, 6)
+
+                        local blBtn = Instance.new("TextButton", btnBox)
+                        blBtn.Size = UDim2.new(0, 64, 0, 24)
                         local isBl = _G.DarlingBlacklistedPlayers and _G.DarlingBlacklistedPlayers[p.UserId]
                         blBtn.BackgroundColor3 = isBl and Color3.fromRGB(231, 76, 60) or Color3.fromRGB(28, 22, 38)
                         blBtn.Text = isBl and "Blacklisted" or "Blacklist"
                         blBtn.Font = Enum.Font.GothamBold
-                        blBtn.TextSize = 8.5
+                        blBtn.TextSize = 8
                         blBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        blBtn.AutoButtonColor = false
                         Instance.new("UICorner", blBtn).CornerRadius = UDim.new(0, 6)
                         local blStroke = Instance.new("UIStroke", blBtn)
                         blStroke.Color = CurrentAccent
                         blStroke.Thickness = 0.8
                         blStroke.Transparency = 0.5
+                        RegisterThemeStroke(blStroke)
                         RegisterTranslatable(blBtn, blBtn.Text)
 
                         ConnectButton(blBtn, function()
@@ -7610,19 +7270,20 @@ do
                             Notify("Blacklist", (nextState and "Added " or "Removed ") .. pName)
                         end)
 
-                        local specBtn = Instance.new("TextButton", pRow)
-                        specBtn.Size = UDim2.new(0, 58, 0, 22)
-                        specBtn.Position = UDim2.new(1, -62, 0.5, -11)
+                        local specBtn = Instance.new("TextButton", btnBox)
+                        specBtn.Size = UDim2.new(0, 64, 0, 24)
                         specBtn.BackgroundColor3 = Color3.fromRGB(28, 22, 38)
                         specBtn.Text = "Spectate"
                         specBtn.Font = Enum.Font.GothamBold
-                        specBtn.TextSize = 8.5
+                        specBtn.TextSize = 8
                         specBtn.TextColor3 = CurrentAccent
+                        specBtn.AutoButtonColor = false
                         Instance.new("UICorner", specBtn).CornerRadius = UDim.new(0, 6)
                         local spStroke = Instance.new("UIStroke", specBtn)
                         spStroke.Color = CurrentAccent
                         spStroke.Thickness = 0.8
                         spStroke.Transparency = 0.5
+                        RegisterThemeStroke(spStroke)
                         RegisterTranslatable(specBtn, "Spectate")
 
                         ConnectButton(specBtn, function()
@@ -7842,7 +7503,7 @@ do
         AddToggle(dCard1, "Auto Race V4", "Presses Y key automatically when gauge fills", false, function(v)
             autoV4Active = v
         end)
-        AddToggle(dCard1, "Auto Pass Room", "Automatically navigates to next room when cleared", true, function(v)
+        AddToggle(dCard1, "Auto Pass Room", "Automatically navigates to next room when cleared", false, function(v)
             autoPassActive = v
         end)
 
@@ -7854,7 +7515,7 @@ do
                 VoidLoop()
             end
         end)
-        AddToggle(dCard2, "Void Only Boss Rooms", "Restricts Void M1 to rooms 5, 10, 15, 20", true, function(v)
+        AddToggle(dCard2, "Void Only Boss Rooms", "Restricts Void M1 to rooms 5, 10, 15, 20", false, function(v)
             VoidConfig.VoidOnlyBossRoom = v
             if VoidConfig.Enabled and not voidRunning then VoidLoop() end
         end)
@@ -8007,7 +7668,7 @@ do
                 local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
                 if root then
                     for _, v in ipairs(root:GetChildren()) do
-                        if v:IsA("BodyVelocity") or v:IsA("BodyGyro") then v:Destroy() end
+                        if v:IsA("BodyVelocity") or v:IsA("BodyGyro") or v.Name == "Monody_TweenBV" then v:Destroy() end
                     end
                 end
             end)
@@ -8021,34 +7682,57 @@ do
             if not root or not targetCF then return end
 
             isTweening = true
-            if noclipEnabled then
-                noclipConn = RunService.Stepped:Connect(function()
-                    if not isTweening or not lp.Character then return end
-                    for _, part in ipairs(lp.Character:GetDescendants()) do
-                        if part:IsA("BasePart") then part.CanCollide = false end
+
+            -- Safe Sky Altitude to clear all terrain, mountains, barriers
+            local safeY = math.max(root.Position.Y, math.max(targetCF.Position.Y + 220, 500))
+
+            -- Anti-gravity & Anti-fling BodyVelocity during flight
+            local bv = Instance.new("BodyVelocity")
+            bv.Name = "Monody_TweenBV"
+            bv.Velocity = Vector3.new(0, 0, 0)
+            bv.MaxForce = Vector3.new(1e7, 1e7, 1e7)
+            bv.Parent = root
+
+            -- Continuous Multi-Part Noclip on Stepped
+            noclipConn = RunService.Stepped:Connect(function()
+                if not isTweening or not lp.Character then return end
+                for _, part in ipairs(lp.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
                     end
-                end)
-            end
+                end
+            end)
 
             task.spawn(function()
-                local safeStart = CFrame.new(root.Position.X, math.max(root.Position.Y, travelAltitude), root.Position.Z)
-                local safeTarget = CFrame.new(targetCF.Position.X, travelAltitude, targetCF.Position.Z)
-                root.CFrame = safeStart
-                task.wait(0.08)
-
-                local dist = (safeStart.Position - safeTarget.Position).Magnitude
-                local dur = math.max(dist / math.max(tweenSpeed, 50), 0.5)
-                activeTween = TweenService:Create(root, TweenInfo.new(dur, Enum.EasingStyle.Linear), { CFrame = safeTarget })
+                -- Phase 1: Vertical ascent to clear obstacles
+                local ascendCF = CFrame.new(root.Position.X, safeY, root.Position.Z)
+                local dist1 = math.abs(safeY - root.Position.Y)
+                local dur1 = math.clamp(dist1 / math.max(tweenSpeed, 80), 0.3, 3)
+                activeTween = TweenService:Create(root, TweenInfo.new(dur1, Enum.EasingStyle.Linear), { CFrame = ascendCF })
                 activeTween:Play()
                 activeTween.Completed:Wait()
 
-                if isTweening then
-                    local landTween = TweenService:Create(root, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CFrame = targetCF })
-                    landTween:Play()
-                    landTween.Completed:Wait()
-                    StopTween()
-                    Notify("Teleport", "Arrived at " .. currentIsland)
-                end
+                if not isTweening then return end
+
+                -- Phase 2: High altitude cruise across ocean
+                local cruiseCF = CFrame.new(targetCF.Position.X, safeY, targetCF.Position.Z)
+                local dist2 = (Vector3.new(ascendCF.Position.X, 0, ascendCF.Position.Z) - Vector3.new(cruiseCF.Position.X, 0, cruiseCF.Position.Z)).Magnitude
+                local dur2 = math.max(dist2 / math.max(tweenSpeed, 80), 0.5)
+                activeTween = TweenService:Create(root, TweenInfo.new(dur2, Enum.EasingStyle.Linear), { CFrame = cruiseCF })
+                activeTween:Play()
+                activeTween.Completed:Wait()
+
+                if not isTweening then return end
+
+                -- Phase 3: Smooth descent to island destination
+                local dur3 = math.clamp(math.abs(safeY - targetCF.Position.Y) / math.max(tweenSpeed, 80), 0.4, 3)
+                local landTween = TweenService:Create(root, TweenInfo.new(dur3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CFrame = targetCF })
+                activeTween = landTween
+                landTween:Play()
+                landTween.Completed:Wait()
+
+                StopTween()
+                Notify("Teleport", "Arrived at " .. currentIsland)
             end)
         end
 
@@ -8089,7 +7773,7 @@ do
         AddSlider(tpCard, "Travel Altitude", 50, 500, 250, 25, function(v)
             travelAltitude = v
         end)
-        AddToggle(tpCard, "Noclip during Tween", "Prevents getting stuck in terrain or barriers", true, function(v)
+        AddToggle(tpCard, "Noclip during Tween", "Prevents getting stuck in terrain or barriers", false, function(v)
             noclipEnabled = v
         end)
         AddButton(tpCard, "Start Teleport", function()
@@ -8117,16 +7801,17 @@ do
         local isEditingHUD = false
         local activeDragBoxes = {}
         local savedOffsets = {}
-        local controlsScale = 1.0
+        local originalPositions = {}
 
         local function GetCandidateHUDButtons()
             local found = {}
             local pGui = lp and lp:FindFirstChildOfClass("PlayerGui")
             if not pGui then return found end
 
-            local keywords = { "mobile", "touch", "action", "skill", "jump", "dash", "button", "slot" }
+            -- Only target Blox Fruits skill action buttons, never core TouchGui thumbstick!
+            local keywords = { "action", "skill", "slot", "touchaction" }
             for _, scr in ipairs(pGui:GetChildren()) do
-                if scr:IsA("ScreenGui") and scr.Name ~= "Monody_UI" and scr.Name ~= "Monody_LoadingScreen" and scr.Name ~= "Monody_KeySystem" then
+                if scr:IsA("ScreenGui") and scr.Name ~= "Monody_UI" and scr.Name ~= "Monody_LoadingScreen" and scr.Name ~= "Monody_KeySystem" and scr.Name ~= "Monody_HUD_DragOverlay" and scr.Name ~= "TouchGui" then
                     for _, obj in ipairs(scr:GetDescendants()) do
                         if (obj:IsA("ImageButton") or obj:IsA("TextButton")) and obj.Visible and obj.AbsoluteSize.X > 20 and obj.AbsoluteSize.Y > 20 then
                             local n = obj.Name:lower()
@@ -8154,7 +7839,7 @@ do
             ClearDragHandles()
             local buttons = GetCandidateHUDButtons()
             if #buttons == 0 then
-                Notify("HUD Editor", "No mobile touch buttons detected on screen.")
+                Notify("HUD Editor", "No customizable action buttons detected.")
                 return
             end
 
@@ -8167,6 +7852,10 @@ do
 
             for _, targetBtn in ipairs(buttons) do
                 pcall(function()
+                    if not originalPositions[targetBtn] then
+                        originalPositions[targetBtn] = targetBtn.Position
+                    end
+
                     local box = Instance.new("Frame", overlayGui)
                     box.Size = UDim2.new(0, targetBtn.AbsoluteSize.X + 8, 0, targetBtn.AbsoluteSize.Y + 8)
                     box.Position = UDim2.new(0, targetBtn.AbsolutePosition.X - 4, 0, targetBtn.AbsolutePosition.Y - 4)
@@ -8191,15 +7880,21 @@ do
                     lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 
                     box:GetPropertyChangedSignal("Position"):Connect(function()
-                        targetBtn.Position = UDim2.new(0, box.AbsolutePosition.X + 4, 0, box.AbsolutePosition.Y + 4)
-                        savedOffsets[targetBtn.Name] = targetBtn.Position
+                        pcall(function()
+                            local parent = targetBtn.Parent
+                            local parentPos = (parent and parent:IsA("GuiObject")) and parent.AbsolutePosition or Vector2.new(0, 0)
+                            local relX = box.AbsolutePosition.X - parentPos.X + 4
+                            local relY = box.AbsolutePosition.Y - parentPos.Y + 4
+                            targetBtn.Position = UDim2.new(0, relX, 0, relY)
+                            savedOffsets[targetBtn] = targetBtn.Position
+                        end)
                     end)
                 end)
             end
-            Notify("HUD Editor", "Unlocked " .. #buttons .. " on-screen buttons. Drag to reposition.")
+            Notify("HUD Editor", "Unlocked " .. #buttons .. " buttons. Drag to reposition.")
         end
 
-        AddToggle(hudCard1, "Unlock Drag (Edit HUD)", "Creates draggable bounding boxes over on-screen skill buttons", false, function(v)
+        AddToggle(hudCard1, "Unlock Drag (Edit HUD)", "Creates draggable bounding boxes over skill buttons", false, function(v)
             isEditingHUD = v
             if v then
                 SpawnDragHandles()
@@ -8207,21 +7902,6 @@ do
                 ClearDragHandles()
                 Notify("HUD Editor", "Controls locked into place.")
             end
-        end)
-
-        AddSlider(hudCard1, "Controls Global Scale", 50, 150, 100, 5, function(v)
-            controlsScale = v / 100
-            pcall(function()
-                local pGui = lp and lp:FindFirstChildOfClass("PlayerGui")
-                if pGui then
-                    for _, g in ipairs(pGui:GetChildren()) do
-                        if g:IsA("ScreenGui") and (g.Name:find("Action") or g.Name:find("Touch") or g.Name:find("Mobile")) then
-                            local scale = g:FindFirstChildOfClass("UIScale") or Instance.new("UIScale", g)
-                            scale.Scale = controlsScale
-                        end
-                    end
-                end
-            end)
         end)
 
         AddButton(hudCard1, "Save & Lock Custom Layout", function()
@@ -8232,12 +7912,21 @@ do
 
         AddButton(hudCard1, "Reset Default Layout", function()
             ClearDragHandles()
+            for btn, orig in pairs(originalPositions) do
+                if btn and btn.Parent then
+                    pcall(function() btn.Position = orig end)
+                end
+            end
+            -- Also ensure any unwanted UIScale is cleaned from PlayerGui
             pcall(function()
                 local pGui = lp and lp:FindFirstChildOfClass("PlayerGui")
                 if pGui then
                     for _, g in ipairs(pGui:GetChildren()) do
-                        local scale = g:FindFirstChildOfClass("UIScale")
-                        if scale then scale.Scale = 1.0 end
+                        if g:IsA("ScreenGui") and g.Name ~= "Monody_UI" then
+                            for _, s in ipairs(g:GetDescendants()) do
+                                if s:IsA("UIScale") then pcall(function() s:Destroy() end) end
+                            end
+                        end
                     end
                 end
             end)
@@ -8247,8 +7936,7 @@ do
 end
 
 -- ============================================================
--- ============================================================
--- 7. SKINS TAB (DARLING HUB VFX, TOOL SKINS & CHARACTER CHANGER)
+-- 7. SKINS TAB (MONODY VFX & CHARACTER SKIN CHANGER)
 -- ============================================================
 do
     pcall(function()
@@ -8270,7 +7958,6 @@ do
             ["Magenta"]  = Color3.fromRGB(255, 30, 140),
             ["Midnight"] = Color3.fromRGB(35, 35, 48),
             ["Silver"]   = Color3.fromRGB(215, 225, 245),
-            ["Darling Pink"] = Color3.fromRGB(255, 105, 180),
         }
         local PRESET_NAMES = {
             "Purple", "Red", "Blue", "Cyan", "Green", "Gold",
@@ -8280,17 +7967,12 @@ do
 
         local vfxEnabled = false
         local activeVFXColor = SKIN_PRESETS["Purple"]
-        local affectSkills = true
-        local affectSwords = true
-        local affectTransform = true
-        local affectEnvironment = false
-
-        local selectedCategory = "Fruits"
-        local selectedToolPreset = "Purple"
-        local customAssetId = ""
+        local affectSkills = false
+        local affectSwords = false
+        local affectTransform = false
 
         local charSkinEnabled = false
-        local selectedCharTone = "Darling Pink"
+        local selectedCharTone = "Pink"
         local selectedCharMat = Enum.Material.SmoothPlastic
         local charAuraActive = false
         local charHighlightObj = nil
@@ -8323,21 +8005,17 @@ do
                     if t:IsA("Tool") and affectSwords then RecolorVFXInDescendants(t, activeVFXColor) end
                 end
             end
-            if affectEnvironment then
-                local effects = Workspace:FindFirstChild("Effects") or Workspace:FindFirstChild("Particles")
-                if effects then RecolorVFXInDescendants(effects, activeVFXColor) end
-            end
         end
 
-        -- SECTION 1: VFX & SKILL COLORS
-        local vfxCard = CreateCard(SkinsPage, "VFX & Skill Colors")
-        AddToggle(vfxCard, "Darling VFX Engine", "Dynamically recolors combat particles, fruit emitters and slashes", false, function(v)
+        -- SECTION 1: MONODY VFX
+        local vfxCard = CreateCard(SkinsPage, "Monody VFX Engine")
+        AddToggle(vfxCard, "Monody VFX Engine", "Dynamically recolors combat particles, fruit emitters and slashes", false, function(v)
             vfxEnabled = v
             if v then
                 RefreshAllCombatVFX()
-                Notify("VFX Engine", "Darling VFX Enabled")
+                Notify("VFX Engine", "Monody VFX Enabled")
             else
-                Notify("VFX Engine", "Darling VFX Disabled")
+                Notify("VFX Engine", "Monody VFX Disabled")
             end
         end)
         AddChoice(vfxCard, "VFX Color Preset", PRESET_NAMES, 1, function(preset)
@@ -8345,15 +8023,15 @@ do
             if vfxEnabled then RefreshAllCombatVFX() end
             Notify("VFX Color", "VFX Color set to " .. preset)
         end)
-        AddToggle(vfxCard, "Affect Skills", "Recolors fruit and fighting style particle emitters", true, function(v)
+        AddToggle(vfxCard, "Affect Skills", "Recolors fruit and fighting style particle emitters", false, function(v)
             affectSkills = v
             if vfxEnabled then RefreshAllCombatVFX() end
         end)
-        AddToggle(vfxCard, "Affect Swords", "Recolors sword slash highlights and trails", true, function(v)
+        AddToggle(vfxCard, "Affect Swords", "Recolors sword slash highlights and trails", false, function(v)
             affectSwords = v
             if vfxEnabled then RefreshAllCombatVFX() end
         end)
-        AddToggle(vfxCard, "Affect Transform", "Recolors Buddha, Dragon and Race V4 auras", true, function(v)
+        AddToggle(vfxCard, "Affect Transform", "Recolors Buddha, Dragon and Race V4 auras", false, function(v)
             affectTransform = v
             if vfxEnabled then RefreshAllCombatVFX() end
         end)
@@ -8362,130 +8040,128 @@ do
             Notify("VFX Engine", "All combat particles restored to default colors.")
         end)
 
-        -- SECTION 2: TOOL SKINS & HOTBAR
-        local toolCard = CreateCard(SkinsPage, "Tool Skins & Hotbar")
-        AddChoice(toolCard, "Equipment Category", {"Fruits", "Swords", "Guns", "Melee"}, 1, function(cat)
-            selectedCategory = cat
-        end)
-        AddChoice(toolCard, "Skin Preset Catalog", PRESET_NAMES, 1, function(preset)
-            selectedToolPreset = preset
-        end)
-        AddInput(toolCard, "Custom Asset ID", "e.g. rbxassetid://106579555405966", "", function(v)
-            customAssetId = tostring(v or "")
-        end)
-        AddButton(toolCard, "Apply Skin to Category", function()
-            local col = SKIN_PRESETS[selectedToolPreset] or SKIN_PRESETS["Purple"]
+        -- SECTION 2: CHARACTER SKIN CHANGER (PORTED FROM DARLING HUB)
+        local charCard = CreateCard(SkinsPage, "Character Skin Changer")
+
+        local function ApplyCharacterSkin(presetName, mat)
+            local col = SKIN_PRESETS[presetName] or Color3.fromRGB(255, 105, 180)
+            local char = lp.Character
+            if not char then return end
+
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    if not origCharColors[part] then
+                        origCharColors[part] = part.Color
+                        origCharMaterials[part] = part.Material
+                    end
+                    part.Color = col
+                    if mat then
+                        part.Material = mat
+                    end
+                end
+            end
+
+            if charAuraActive then
+                if not charHighlightObj or not charHighlightObj.Parent then
+                    local hl = Instance.new("Highlight")
+                    hl.Name = "MonodyCharacterAura"
+                    hl.FillColor = col
+                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    hl.FillTransparency = 0.4
+                    hl.OutlineTransparency = 0.1
+                    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                    hl.Parent = char
+                    charHighlightObj = hl
+                else
+                    charHighlightObj.FillColor = col
+                end
+            end
+        end
+
+        local function ResetCharacterSkin()
+            charSkinEnabled = false
             local char = lp.Character
             if char then
-                for _, t in ipairs(char:GetChildren()) do
-                    if t:IsA("Tool") then
-                        for _, p in ipairs(t:GetDescendants()) do
-                            if p:IsA("BasePart") then
-                                p.Color = col
-                                if customAssetId ~= "" and (p:IsA("MeshPart") or p:IsA("SpecialMesh")) then
-                                    p.TextureID = customAssetId
-                                end
+                for part, origCol in pairs(origCharColors) do
+                    if part and part.Parent then
+                        pcall(function()
+                            part.Color = origCol
+                            if origCharMaterials[part] then
+                                part.Material = origCharMaterials[part]
                             end
-                        end
+                        end)
                     end
                 end
             end
-            Notify("Tool Skin", selectedToolPreset .. " applied to " .. selectedCategory)
-        end)
-        AddButton(toolCard, "Apply Skin to All Hotbar Slots", function()
-            local col = SKIN_PRESETS[selectedToolPreset] or SKIN_PRESETS["Purple"]
-            pcall(function()
-                local pGui = lp and lp:FindFirstChildOfClass("PlayerGui")
-                local hotbar = pGui and (pGui:FindFirstChild("Hotbar") or pGui:FindFirstChild("HUD"))
-                if hotbar then
-                    for _, slot in ipairs(hotbar:GetDescendants()) do
-                        if slot:IsA("ImageLabel") or slot:IsA("ImageButton") then
-                            slot.ImageColor3 = col
-                        end
-                    end
-                end
-            end)
-            Notify("Hotbar Skin", "Applied " .. selectedToolPreset .. " to all slots.")
-        end)
-        AddButton(toolCard, "Reset All Tool Skins", function()
-            Notify("Tool Skins", "Tool visuals and hotbar icons reset.")
-        end)
+            table.clear(origCharColors)
+            table.clear(origCharMaterials)
 
-        -- SECTION 3: CHARACTER SKIN CHANGER
-        local charCard = CreateCard(SkinsPage, "Character Skin Changer")
-        local function ApplyCharSkin(presetName, mat)
-            local col = SKIN_PRESETS[presetName] or SKIN_PRESETS["Darling Pink"]
-            local char = lp.Character
-            if not char then return end
-            for _, p in ipairs(char:GetChildren()) do
-                if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" then
-                    if not origCharColors[p] then origCharColors[p] = p.Color end
-                    if not origCharMaterials[p] then origCharMaterials[p] = p.Material end
-                    p.Color = col
-                    p.Material = mat or selectedCharMat
-                end
-            end
-        end
-
-        local function RestoreCharSkin()
-            local char = lp.Character
-            if not char then return end
-            for p, c in pairs(origCharColors) do
-                if p and p.Parent then p.Color = c end
-            end
-            for p, m in pairs(origCharMaterials) do
-                if p and p.Parent then p.Material = m end
-            end
-            origCharColors = {}
-            origCharMaterials = {}
-            if charHighlightObj then
+            if charHighlightObj and charHighlightObj.Parent then
                 pcall(function() charHighlightObj:Destroy() end)
-                charHighlightObj = nil
             end
+            charHighlightObj = nil
         end
 
-        AddToggle(charCard, "Enable Character Skin Changer", "Overrides character body parts with chosen skin", false, function(v)
+        AddToggle(charCard, "Enable Character Skin Changer", "Recolors your avatar body parts with the selected skin preset", false, function(v)
             charSkinEnabled = v
             if v then
-                ApplyCharSkin(selectedCharTone, selectedCharMat)
+                ApplyCharacterSkin(selectedCharTone, selectedCharMat)
                 Notify("Character Skin", "Skin applied: " .. selectedCharTone)
             else
-                RestoreCharSkin()
+                ResetCharacterSkin()
                 Notify("Character Skin", "Appearance restored.")
             end
         end)
-        AddChoice(charCard, "Character Tone Preset", {"Darling Pink", "White", "Black", "Gold", "Cyan", "Crimson", "Green", "Purple", "Silver", "Orange"}, 1, function(v)
+
+        AddChoice(charCard, "Character Tone Preset", PRESET_NAMES, 7, function(v)
             selectedCharTone = v
-            if charSkinEnabled then ApplyCharSkin(selectedCharTone, selectedCharMat) end
+            if charSkinEnabled then ApplyCharacterSkin(selectedCharTone, selectedCharMat) end
         end)
-        AddChoice(charCard, "Character Material", {"SmoothPlastic", "Neon", "ForceField", "Glass"}, 1, function(matName)
+
+        AddChoice(charCard, "Character Material", {"SmoothPlastic", "Neon", "ForceField", "Glass", "Granite", "Marble", "Foil", "Metal"}, 1, function(matName)
             selectedCharMat = Enum.Material[matName] or Enum.Material.SmoothPlastic
-            if charSkinEnabled then ApplyCharSkin(selectedCharTone, selectedCharMat) end
+            if charSkinEnabled then ApplyCharacterSkin(selectedCharTone, selectedCharMat) end
         end)
-        AddToggle(charCard, "Character Glowing Aura", "Adds holographic glowing outline aura to character", false, function(v)
+
+        AddToggle(charCard, "Character Glowing Aura", "Adds holographic glowing outline aura to avatar", false, function(v)
             charAuraActive = v
-            local char = lp.Character
-            if v and char then
-                if not charHighlightObj then
-                    charHighlightObj = Instance.new("Highlight")
-                    charHighlightObj.Name = "Monody_CharAura"
-                    charHighlightObj.FillColor = SKIN_PRESETS[selectedCharTone] or CurrentAccent
-                    charHighlightObj.OutlineColor = Color3.fromRGB(255, 255, 255)
-                    charHighlightObj.FillTransparency = 0.5
-                    charHighlightObj.OutlineTransparency = 0.2
-                    charHighlightObj.Parent = char
+            if v then
+                if charSkinEnabled then
+                    ApplyCharacterSkin(selectedCharTone, selectedCharMat)
+                else
+                    local char = lp.Character
+                    if char and not charHighlightObj then
+                        local col = SKIN_PRESETS[selectedCharTone] or Color3.fromRGB(255, 105, 180)
+                        local hl = Instance.new("Highlight")
+                        hl.Name = "MonodyCharacterAura"
+                        hl.FillColor = col
+                        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        hl.FillTransparency = 0.4
+                        hl.OutlineTransparency = 0.1
+                        hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                        hl.Parent = char
+                        charHighlightObj = hl
+                    end
                 end
             else
-                if charHighlightObj then
+                if charHighlightObj and charHighlightObj.Parent then
                     pcall(function() charHighlightObj:Destroy() end)
-                    charHighlightObj = nil
                 end
+                charHighlightObj = nil
             end
         end)
-        AddButton(charCard, "Reset Character Appearance", function()
-            charSkinEnabled = false
-            RestoreCharSkin()
-            Notify("Character Skin", "Appearance restored to default.")
+
+        AddButton(charCard, "Reset Character Skin", function()
+            ResetCharacterSkin()
+            Notify("Character Skin", "Skin reset to default appearance.")
+        end)
+
+        -- Respawn listener to reapply skin
+        lp.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            if charSkinEnabled then
+                ApplyCharacterSkin(selectedCharTone, selectedCharMat)
+            end
         end)
     end)
 end
@@ -8559,11 +8235,11 @@ do
             if _G.MonodyMusic then _G.MonodyMusic.SetPitch(v) end
         end)
 
-        AddToggle(mCard1, "Loop Track", "Repeats the current song automatically", true, function(v)
+        AddToggle(mCard1, "Loop Track", "Repeats the current song automatically", false, function(v)
             if _G.MonodyMusic then _G.MonodyMusic.SetLooped(v) end
         end)
 
-        AddToggle(mCard1, "Show Top Music Bar", "Displays the audio player on the top header", true, function(v)
+        AddToggle(mCard1, "Show Top Music Bar", "Displays the audio player on the top header", false, function(v)
             if _G.MonodyMusic and _G.MonodyMusic.TopBarFrame then
                 _G.MonodyMusic.TopBarFrame.Visible = v
             end
@@ -8594,155 +8270,96 @@ do
 end
 
 -- ============================================================
--- 8. ANIMATIONS TAB (REAL CHARACTER EMOTES & CINEMATIC CUTSCENES)
+-- 8. ANIMATIONS TAB (ORIGINAL DARLING HUB CINEMATIC ENGINES)
 -- ============================================================
 do
     pcall(function()
         local AnimationsPage = RegisterTab("Animations", "Animations", "sparkles")
-        local aCard1 = CreateCard(AnimationsPage, "Character Emotes & Animations")
-
-        local EMOTE_TRACKS = {
-            ["Levitation"]      = "rbxassetid://616006778",
-            ["Ninja Movement"]  = "rbxassetid://656117878",
-            ["Vampire Stance"]  = "rbxassetid://1083445855",
-            ["Zombie Walk"]     = "rbxassetid://616158929",
-            ["Mage Levitate"]   = "rbxassetid://707742142",
-            ["Werewolf Howl"]   = "rbxassetid://1083195517",
-            ["Floss Dance"]     = "rbxassetid://10714340543",
-            ["Dab Emote"]       = "rbxassetid://248263260",
-            ["T-Pose"]          = "rbxassetid://507770818",
-            ["Hype Dance"]      = "rbxassetid://3696757129",
-            ["CaramellDansen"]  = "rbxassetid://33796059",
-            ["Moonwalk"]        = "rbxassetid://30196114",
-        }
-        local EMOTE_NAMES = {
-            "Levitation", "Ninja Movement", "Vampire Stance", "Zombie Walk",
-            "Mage Levitate", "Werewolf Howl", "Floss Dance", "Dab Emote",
-            "T-Pose", "Hype Dance", "CaramellDansen", "Moonwalk"
-        }
+        local aCard = CreateCard(AnimationsPage, "Darling Hub Cinematics")
 
         local CINEMATIC_NAMES = {
             "Worldbreaker", "King's Throne", "The Aureate Sanctuary", "Admin Cinematic"
         }
+        local CINEMATIC_MODULES = {
+            ["Worldbreaker"] = "modules/special/worldbreaker.lua",
+            ["King's Throne"] = "modules/special/kings_throne.lua",
+            ["The Aureate Sanctuary"] = "modules/special/sanctuary_cinematic.lua",
+            ["Admin Cinematic"] = "modules/special/admin_cinematic.lua",
+        }
 
-        local selectedEmote = "Levitation"
         local selectedCinematic = "Worldbreaker"
-        local activeTrack = nil
-        local activeCinematicCleanup = nil
+        local activeCinematicMod = nil
 
         local function StopAllAnimations()
-            if activeTrack then
-                pcall(function() activeTrack:Stop() end)
-                activeTrack = nil
-            end
-            if activeCinematicCleanup then
-                pcall(activeCinematicCleanup)
-                activeCinematicCleanup = nil
+            if activeCinematicMod then
+                pcall(function()
+                    if activeCinematicMod.stop then
+                        activeCinematicMod.stop()
+                    elseif activeCinematicMod.dismiss then
+                        activeCinematicMod.dismiss()
+                    elseif activeCinematicMod.dismount then
+                        activeCinematicMod.dismount()
+                    end
+                end)
+                activeCinematicMod = nil
             end
             pcall(function()
                 local char = lp.Character
                 local hum = char and char:FindFirstChildOfClass("Humanoid")
                 if hum then Workspace.CurrentCamera.CameraSubject = hum end
             end)
-            Notify("Animations", "All animations and cutscenes stopped.")
+            Notify("Animations", "Cinematic cutscene stopped.")
         end
-
-        local function PlayEmote(name)
-            StopAllAnimations()
-            local assetId = EMOTE_TRACKS[name]
-            local char = lp.Character
-            local hum = char and char:FindFirstChildOfClass("Humanoid")
-            if not hum or not assetId then
-                Notify("Animations", "Cannot play: Character or humanoid not found.")
-                return
-            end
-
-            local anim = Instance.new("Animation")
-            anim.AnimationId = assetId
-            local animator = hum:FindFirstChildOfClass("Animator") or hum
-            local ok, track = pcall(function() return animator:LoadAnimation(anim) end)
-            if ok and track then
-                track.Priority = Enum.AnimationPriority.Action
-                track.Looped = true
-                track:Play()
-                activeTrack = track
-                Notify("Animations", "Now playing emote: " .. name)
-            else
-                Notify("Animations", "Failed to load animation track.")
-            end
-        end
-
-        AddChoice(aCard1, "Select Character Emote", EMOTE_NAMES, 1, function(v)
-            selectedEmote = v
-        end)
-        AddButton(aCard1, "Play Selected Emote", function()
-            PlayEmote(selectedEmote)
-        end)
-        AddButton(aCard1, "Stop Active Emote", StopAllAnimations)
-
-        local aCard2 = CreateCard(AnimationsPage, "Darling Hub Cinematics")
-        AddChoice(aCard2, "Select Cinematic", CINEMATIC_NAMES, 1, function(v)
-            selectedCinematic = v
-        end)
 
         local function PlayCinematic(name)
             StopAllAnimations()
-            local char = lp.Character
-            local root = char and char:FindFirstChild("HumanoidRootPart")
-            if not root then return end
+            local relPath = CINEMATIC_MODULES[name]
+            if not relPath then return end
 
-            local animFolder = Instance.new("Folder", Workspace)
-            animFolder.Name = "Monody_Cinematic_" .. name:gsub("%s+", "_")
-            activeCinematicCleanup = function()
-                pcall(function() animFolder:Destroy() end)
+            Notify("Cinematic", "Loading " .. name .. " engine...")
+            local cinematic = RequireModule(relPath)
+            if not cinematic then
+                Notify("Cinematic", "Failed to load " .. name .. " module.")
+                return
             end
 
-            Notify("Cinematic", "Launching " .. name .. " cutscene...")
+            activeCinematicMod = cinematic
+            Notify("Cinematic", "Now playing: " .. name)
+
             task.spawn(function()
-                local cam = Workspace.CurrentCamera
-                local startT = tick()
-                local duration = 12
-
-                -- Celestial Throne / Ray Model for King's Throne & Worldbreaker
-                local dais = Instance.new("Part", animFolder)
-                dais.Size = Vector3.new(16, 1.5, 16)
-                dais.CFrame = root.CFrame * CFrame.new(0, -2, 0)
-                dais.Anchored = true
-                dais.Material = Enum.Material.Neon
-                dais.Color = CurrentAccent
-                Instance.new("CylinderMesh", dais)
-
-                local aura = Instance.new("Highlight", char)
-                aura.FillColor = CurrentAccent
-                aura.OutlineColor = Color3.fromRGB(255, 255, 255)
-                aura.FillTransparency = 0.35
-
-                local beam = Instance.new("Part", animFolder)
-                beam.Size = Vector3.new(4, 800, 4)
-                beam.CFrame = root.CFrame * CFrame.new(0, 400, 0)
-                beam.Anchored = true
-                beam.CanCollide = false
-                beam.Material = Enum.Material.Neon
-                beam.Color = Color3.fromRGB(255, 255, 255)
-                Instance.new("CylinderMesh", beam)
-
-                while tick() - startT < duration and activeCinematicCleanup do
-                    local elapsed = tick() - startT
-                    local rot = CFrame.Angles(0, math.rad(elapsed * 45), 0)
-                    cam.CFrame = CFrame.new(root.Position + Vector3.new(0, 5, 0)) * rot * CFrame.new(0, 3, 20)
-                    cam.CFrame = CFrame.lookAt(cam.CFrame.Position, root.Position + Vector3.new(0, 3, 0))
-                    task.wait(0.016)
-                end
-
-                pcall(function() aura:Destroy() end)
-                StopAllAnimations()
+                pcall(function()
+                    if name == "King's Throne" then
+                        if cinematic.play then
+                            cinematic.play(StopAllAnimations)
+                        elseif cinematic.mount then
+                            cinematic.mount()
+                        end
+                    elseif name == "Admin Cinematic" then
+                        if cinematic.play then
+                            cinematic.play(nil, StopAllAnimations)
+                        end
+                    elseif name == "Worldbreaker" then
+                        if cinematic.play then
+                            cinematic.play(StopAllAnimations)
+                        end
+                    elseif name == "The Aureate Sanctuary" then
+                        if cinematic.play then
+                            cinematic.play(StopAllAnimations)
+                        end
+                    end
+                end)
             end)
         end
 
-        AddButton(aCard2, "Play Cinematic", function()
+        AddChoice(aCard, "Select Cinematic", CINEMATIC_NAMES, 1, function(v)
+            selectedCinematic = v
+        end)
+
+        AddButton(aCard, "Play Cinematic", function()
             PlayCinematic(selectedCinematic)
         end)
-        AddButton(aCard2, "Skip Cinematic", StopAllAnimations)
+
+        AddButton(aCard, "Skip Cinematic", StopAllAnimations)
     end)
 end
 
