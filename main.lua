@@ -1816,9 +1816,11 @@ do
     _G.MonodyMusic = MonodyMusic
 
     local function getSoundParent()
-        local pGui = (lp and lp:FindFirstChildOfClass("PlayerGui"))
-        if pGui then return pGui end
-        return soundService
+        -- In Roblox, 2D ambient and UI audio MUST be parented to SoundService or Workspace
+        -- Parenting to PlayerGui makes sound completely INAUDIBLE/SILENT.
+        if soundService then return soundService end
+        if Workspace and Workspace.CurrentCamera then return Workspace.CurrentCamera end
+        return Workspace
     end
 
     local function resolveSoundSource(identifier)
@@ -1826,7 +1828,17 @@ do
         local str = tostring(identifier):gsub("^%s+", ""):gsub("%s+$", "")
         if str == "" then return nil end
 
-        -- 1. Check custom local asset files in executor
+        -- 1. Check if already a custom asset or roblox asset URI (MUST NOT extract digits from custom asset paths!)
+        if str:find("^rbxasset://") or str:find("^asset://") or str:find("^rbxthumb://") or str:find("^https?://localhost") then
+            return str
+        end
+
+        -- 2. Direct rbxassetid://
+        if str:find("^rbxassetid://") then
+            return str
+        end
+
+        -- 3. Check executor local file
         if type(isfile) == "function" and type(getcustomasset) == "function" then
             local candidates = {
                 str,
@@ -1847,17 +1859,18 @@ do
             end
         end
 
-        -- 2. If it's a direct web url (e.g. mp3 hosted on raw github), auto-download and getcustomasset
+        -- 4. Direct web url (.mp3, .ogg)
         if str:find("^https?://") then
-            if type(isfile) == "function" and type(writefile) == "function" and type(getcustomasset) == "function" then
-                local hName = "monody_stream_" .. tostring(#str) .. ".mp3"
-                if not isfile(hName) then
+            if (str:find("%.mp3") or str:find("%.ogg") or str:find("%.wav")) and type(writefile) == "function" and type(getcustomasset) == "function" then
+                local hName = "monody_audio_" .. tostring(#str) .. ".mp3"
+                local exIsFile = isfile or is_file
+                if type(exIsFile) == "function" and not exIsFile(hName) then
                     local ok, d = pcall(function() return game:HttpGet(str) end)
                     if ok and d and #d > 500 then
                         pcall(writefile, hName, d)
                     end
                 end
-                if isfile(hName) then
+                if type(exIsFile) == "function" and exIsFile(hName) then
                     local okA, a = pcall(getcustomasset, hName)
                     if okA and a and #a > 0 then return a end
                 end
@@ -1866,14 +1879,10 @@ do
             if d and #d > 0 then return "rbxassetid://" .. d end
         end
 
-        -- 3. Extract digits from numbers, roblox URLs, or rbxassetid://
+        -- 5. Extract numeric ID from string
         local digits = str:match("(%d%d%d%d+)")
         if digits and #digits > 0 then
             return "rbxassetid://" .. digits
-        end
-
-        if str:find("rbxassetid://") or str:find("rbxasset://") then
-            return str
         end
 
         return "rbxassetid://7025810761"
@@ -1882,8 +1891,15 @@ do
     local function InitMusicSound()
         local parent = getSoundParent()
         local snd = MonodyMusic.Sound
-        if not snd or not snd.Parent or (snd.Parent ~= parent and snd.Parent ~= soundService) then
-            local existing = parent:FindFirstChild("MonodyBGM") or soundService:FindFirstChild("MonodyBGM")
+        if not snd or not snd.Parent or snd.Parent ~= parent then
+            -- Clean up old silent sounds placed in PlayerGui or Workspace
+            pcall(function()
+                if lp and lp:FindFirstChildOfClass("PlayerGui") then
+                    local oldP = lp.PlayerGui:FindFirstChild("MonodyBGM")
+                    if oldP then oldP:Destroy() end
+                end
+            end)
+            local existing = parent:FindFirstChild("MonodyBGM")
             if existing and existing:IsA("Sound") then
                 snd = existing
             else
@@ -1891,10 +1907,12 @@ do
                 snd.Name = "MonodyBGM"
                 snd.Parent = parent
             end
-            snd.Volume = MonodyMusic.Volume
-            snd.PlaybackSpeed = MonodyMusic.Pitch
-            snd.Looped = MonodyMusic.Looped
+            snd.Volume = MonodyMusic.Volume or 1.0
+            snd.PlaybackSpeed = MonodyMusic.Pitch or 1.0
+            snd.Looped = (MonodyMusic.Looped ~= false)
             snd.SoundGroup = nil
+            snd.RollOffMaxDistance = 10000000
+            snd.RollOffMinDistance = 10000000
             snd.Ended:Connect(function()
                 if not MonodyMusic.Looped then
                     MonodyMusic.IsPlaying = false
@@ -1907,7 +1925,10 @@ do
     end
 
     function MonodyMusic.Play(soundId, trackName)
-        local source = resolveSoundSource(soundId)
+        local source = soundId
+        if not (type(soundId) == "string" and (soundId:find("^rbxasset://") or soundId:find("^asset://") or soundId:find("^rbxthumb://"))) then
+            source = resolveSoundSource(soundId)
+        end
         if not source or source == "" then
             return false, "Invalid Sound ID"
         end
@@ -1916,14 +1937,16 @@ do
         pcall(function() snd:Stop() end)
         snd.TimePosition = 0
         snd.SoundId = source
-        snd.Volume = MonodyMusic.Volume
-        snd.PlaybackSpeed = MonodyMusic.Pitch
-        snd.Looped = MonodyMusic.Looped
+        snd.Volume = MonodyMusic.Volume or 1.0
+        snd.PlaybackSpeed = MonodyMusic.Pitch or 1.0
+        snd.Looped = (MonodyMusic.Looped ~= false)
         snd.SoundGroup = nil
+        snd.RollOffMaxDistance = 10000000
 
-        local okPlay = pcall(function() snd:Play() end)
+        pcall(function() snd:Play() end)
+        pcall(function() snd.Playing = true end)
 
-        MonodyMusic.CurrentSoundId = soundId
+        MonodyMusic.CurrentSoundId = tostring(soundId)
         MonodyMusic.CurrentTrackName = (trackName and trackName ~= "") and trackName or ("Track " .. tostring(soundId))
         MonodyMusic.IsPlaying = true
         if MonodyMusic.OnStateChanged then pcall(MonodyMusic.OnStateChanged) end
@@ -1953,29 +1976,34 @@ do
         local exWriteFile = writefile
         local exGetCustomAsset = getcustomasset
 
-        if type(exIsFile) == "function" and type(exWriteFile) == "function" and type(exGetCustomAsset) == "function" then
-            task.spawn(function()
-                if not exIsFile(filename) then
-                    Notify("Music Player", "Downloading audio file for local bypass...")
+        task.spawn(function()
+            if type(exWriteFile) == "function" and type(exGetCustomAsset) == "function" then
+                local exists = false
+                if type(exIsFile) == "function" then
+                    local ok, e = pcall(function() return exIsFile(filename) end)
+                    exists = ok and e
+                end
+                if not exists then
+                    Notify("Music Player", "Downloading " .. (trackName or "audio") .. "...")
                     local ok, data = pcall(function() return game:HttpGet(url) end)
                     if ok and data and #data > 500 then
                         pcall(exWriteFile, filename, data)
+                        exists = true
                     end
                 end
-                if exIsFile(filename) then
+                if exists or (type(exIsFile) == "function" and exIsFile(filename)) then
                     local okAsset, asset = pcall(exGetCustomAsset, filename)
                     if okAsset and asset and #asset > 0 then
-                        MonodyMusic.Play(asset, trackName)
-                        Notify("Music Player", "Now playing: " .. trackName)
+                        MonodyMusic.Play(asset, trackName or "Local Track")
+                        Notify("Music Player", "Now playing: " .. (trackName or "Local Track"))
                         return
                     end
                 end
-                -- Fallback to Blox Fruits native OST
-                MonodyMusic.Play("7025810761", trackName)
-            end)
-        else
-            MonodyMusic.Play("7025810761", trackName)
-        end
+            end
+            -- Fallback to Blox Fruits native OST if getcustomasset is unsupported
+            MonodyMusic.Play("7025810761", trackName or "Blox Fruits Theme")
+            Notify("Music Player", "Playing Blox Fruits Theme (OST)")
+        end)
     end
 
     function MonodyMusic.Pause()
@@ -2429,6 +2457,7 @@ local TRANSLATIONS_DICT = {
         ["Total Players"] = "Total de Jugadores",
         ["Auto Dungeon Engine"] = "Motor Auto Dungeon",
         ["Start Auto Dungeon"] = "Iniciar Auto Dungeon",
+        ["Auto Buso"] = "Auto Buso",
         ["Selected Weapon"] = "Arma Seleccionada",
         ["Sword"] = "Espada",
         ["Melee"] = "Cuerpo a Cuerpo",
@@ -2895,6 +2924,7 @@ local TRANSLATIONS_DICT = {
         ["Total Players"] = "Total de Jogadores",
         ["Auto Dungeon Engine"] = "Motor de Auto Dungeon",
         ["Start Auto Dungeon"] = "Iniciar Auto Dungeon",
+        ["Auto Buso"] = "Auto Buso",
         ["Selected Weapon"] = "Arma Selecionada",
         ["Sword"] = "Espada",
         ["Melee"] = "Combate",
@@ -5273,6 +5303,7 @@ SaveConfigProfile = function(force)
         
         -- Additional Features Sync
         cfg.StartAutoDungeon = cfg.Toggles["Start Auto Dungeon"]
+        cfg.AutoBuso = cfg.Toggles["Auto Buso"]
         cfg.AutoRaceV4 = cfg.Toggles["Auto Race V4"]
         cfg.AutoPassRoom = cfg.Toggles["Auto Pass Room"]
         cfg.EnableVoidM1 = cfg.Toggles["Enable Void M1"]
@@ -5443,6 +5474,9 @@ LoadConfigProfile = function()
         end
         if cfg.StartAutoDungeon ~= nil and UI_TOGGLES["Start Auto Dungeon"] then
             pcall(function() UI_TOGGLES["Start Auto Dungeon"].set(cfg.StartAutoDungeon == true, true) end)
+        end
+        if cfg.AutoBuso ~= nil and UI_TOGGLES["Auto Buso"] then
+            pcall(function() UI_TOGGLES["Auto Buso"].set(cfg.AutoBuso == true, true) end)
         end
         if cfg.AutoRaceV4 ~= nil and UI_TOGGLES["Auto Race V4"] then
             pcall(function() UI_TOGGLES["Auto Race V4"].set(cfg.AutoRaceV4 == true, true) end)
@@ -7620,19 +7654,32 @@ end
 do
     pcall(function()
         local DungeonPage = RegisterTab("Dungeon", "Dungeon", "flame")
-        
-        local autoDungeonActive = false
-        local autoV4Active = false
-        local autoPassActive = true
-        local selectedWeapon = "Sword"
-        local attackHeight = 40
-        local VoidConfig = {
-            Enabled = false,
-            VoidOnlyBossRoom = true,
-            Interval = 0.08
-        }
-        local AutoLoad = false
-        local voidRunning = false
+
+        local Players = game:GetService("Players")
+        local Workspace = game:GetService("Workspace")
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local VirtualInputManager = game:GetService("VirtualInputManager")
+        local TweenService = game:GetService("TweenService")
+        local localPlayer = lp or Players.LocalPlayer
+
+        local character = localPlayer.Character
+        local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
+
+        local justDied = false
+        localPlayer.CharacterAdded:Connect(function(newCharacter)
+            character = newCharacter
+            humanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart", 5)
+            justDied = true
+        end)
+
+        local netFolder = ReplicatedStorage:WaitForChild("Modules", 5)
+        netFolder = netFolder and netFolder:WaitForChild("Net", 5)
+        local registerAttack = netFolder and netFolder:WaitForChild("RE/RegisterAttack", 5)
+        local registerHit = netFolder and netFolder:WaitForChild("RE/RegisterHit", 5)
+        local enemiesFolder = Workspace:FindFirstChild("Enemies") or Workspace
+        local remotesFolder = ReplicatedStorage:WaitForChild("Remotes", 5)
+        local commF = remotesFolder and remotesFolder:WaitForChild("CommF_", 5)
+
         local BOSS_ROOMS = { [5] = true, [10] = true, [15] = true, [20] = true }
 
         local function GetDungeonRooms()
@@ -7650,37 +7697,163 @@ do
         end
 
         local function GetCurrentRoomNumber()
+            local hrp = humanoidRootPart or (localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart"))
+            if not hrp then return 0 end
             local rooms = GetDungeonRooms()
-            if #rooms == 0 then return -1 end
-            local char = lp.Character
-            local root = char and char:FindFirstChild("HumanoidRootPart")
-            if not root then return -1 end
-            for _, room in ipairs(rooms) do
-                local rPart = room:FindFirstChildWhichIsA("BasePart")
-                if rPart and (rPart.Position - root.Position).Magnitude < 400 then
-                    local num = tonumber(string.match(room.Name, "%d+"))
-                    if num then return num end
+            if #rooms == 0 then return 0 end
+            local myPos = hrp.Position
+            local currentRoomIdx = 1
+            local minDist = math.huge
+            for i, room in ipairs(rooms) do
+                local roomPart = room:FindFirstChildOfClass("Part")
+                    or room:FindFirstChildOfClass("MeshPart")
+                    or room:FindFirstChild("Floor")
+                if roomPart then
+                    local dist = (roomPart.Position - myPos).Magnitude
+                    if dist < minDist then
+                        minDist = dist
+                        currentRoomIdx = i
+                    end
                 end
             end
-            return -1
+            local room = rooms[currentRoomIdx]
+            if not room then return currentRoomIdx end
+            return tonumber(string.match(room.Name, "%d+")) or currentRoomIdx
         end
 
-        local function IsBossModel(model)
-            if not model or not model:IsA("Model") then return false end
-            local name = model.Name:lower()
-            return name:find("boss") or name:find("captain") or name:find("admiral")
+        local function IsBossModel(obj)
+            if not obj then return false end
+            local n = string.lower(obj.Name or "")
+            if string.find(n, "shadow", 1, true) or string.find(n, "sombra", 1, true) then return false end
+            if string.find(n, "buddy", 1, true) or string.find(n, "clone", 1, true) then return false end
+            if string.find(n, "fruit", 1, true) then return false end
+            if string.find(n, "summon", 1, true) or string.find(n, "ally", 1, true) then return false end
+            if string.find(n, "ancient beast", 1, true) then return true end
+            if string.find(n, "ancient", 1, true) and string.find(n, "beast", 1, true) then return true end
+            if string.find(n, "kitsune lord", 1, true) then return true end
+            if string.find(n, "kitsune", 1, true) and string.find(n, "lord", 1, true) then return true end
+            if string.find(n, "gas knight", 1, true) then return true end
+            if string.find(n, "gas", 1, true) and string.find(n, "knight", 1, true) then return true end
+            if n == "zero" or string.find(n, "zero", 1, true) then return true end
+            if string.find(n, "boss", 1, true) then return true end
+            return false
         end
 
         local function GetAliveBoss()
-            local enemies = Workspace:FindFirstChild("Enemies")
-            if not enemies then return nil end
-            for _, enemy in ipairs(enemies:GetChildren()) do
-                if IsBossModel(enemy) then
-                    local hum = enemy:FindFirstChildOfClass("Humanoid")
-                    if hum and hum.Health > 0 then return enemy end
+            local sourceFolder = Workspace:FindFirstChild("Enemies") or enemiesFolder
+            if not sourceFolder then return nil end
+            local best, bestDist = nil, math.huge
+            local hrp = humanoidRootPart or (localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart"))
+            if not hrp then return nil end
+            for _, obj in ipairs(sourceFolder:GetChildren()) do
+                if obj:IsA("Model") and IsBossModel(obj) then
+                    local hum = obj:FindFirstChildOfClass("Humanoid")
+                    local root = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Head")
+                    if hum and hum.Health > 0 and root then
+                        local d = (root.Position - hrp.Position).Magnitude
+                        if d < bestDist then
+                            bestDist = d
+                            best = obj
+                        end
+                    end
+                end
+            end
+            return best
+        end
+
+        local function HasAliveBoss()
+            return GetAliveBoss() ~= nil
+        end
+
+        local currentTarget = nil
+        local lastTarget = nil
+
+        local VoidConfig = {
+            Enabled = false,
+            Interval = 0.08,
+            VoidOnlyBossRoom = true,
+        }
+
+        local AutoLoad = false
+
+        local function GetPlayerFruit()
+            local char = localPlayer.Character
+            if char then
+                for _, tool in ipairs(char:GetChildren()) do
+                    if tool:IsA("Tool") and tool.ToolTip == "Blox Fruit" then
+                        return tool
+                    end
+                end
+            end
+            local backpack = localPlayer:FindFirstChildOfClass("Backpack") or localPlayer:FindFirstChild("Backpack")
+            if backpack then
+                for _, tool in ipairs(backpack:GetChildren()) do
+                    if tool:IsA("Tool") and tool.ToolTip == "Blox Fruit" then
+                        return tool
+                    end
                 end
             end
             return nil
+        end
+
+        local function GetMaxCombo(tool)
+            if not tool then return 5 end
+            local n = tool.Name
+            if n == "T-Rex-T-Rex" then return 4 end
+            if n == "Blade-Blade" then return 2 end
+            if n == "Pain-Pain" then return 4 end
+            if n == "Control-Control" then return 4 end
+            if n == "Gas-Gas" then return 5 end
+            if n == "Kitsune-Kitsune" then return 5 end
+            if n == "Magma-Magma" then return 5 end
+            if n == "Dragon-Dragon" then
+                local char = localPlayer.Character
+                return (char and char:FindFirstChild("DragonHybrid")) and 5 or 3
+            end
+            return 5
+        end
+
+        local voidRunning = false
+        local lastRoomNum = -1
+
+        local function IsAllyModel_Safe(object)
+            if not object then return true end
+            local n = string.lower(object.Name or "")
+            if string.find(n, "shadow", 1, true) or string.find(n, "sombra", 1, true) then return true end
+            if string.find(n, "buddy", 1, true) or string.find(n, "clone", 1, true) then return true end
+            if string.find(n, "summon", 1, true) or string.find(n, "ally", 1, true) then return true end
+            if Players:GetPlayerFromCharacter(object) then return true end
+            return false
+        end
+
+        local function CanUseVoidNow()
+            if not VoidConfig.Enabled then return false end
+
+            local roomNum = GetCurrentRoomNumber()
+            if VoidConfig.VoidOnlyBossRoom then
+                if not BOSS_ROOMS[roomNum] then
+                    return false
+                end
+            end
+
+            if HasAliveBoss() then
+                return true
+            end
+
+            if BOSS_ROOMS[roomNum] then
+                local folder = Workspace:FindFirstChild("Enemies") or enemiesFolder
+                if folder then
+                    for _, obj in ipairs(folder:GetChildren()) do
+                        if obj:IsA("Model") and not IsAllyModel_Safe(obj) then
+                            local hum = obj:FindFirstChildOfClass("Humanoid")
+                            if hum and hum.Health > 0 and hum.MaxHealth >= 50000 then
+                                return true
+                            end
+                        end
+                    end
+                end
+            end
+            return false
         end
 
         local function VoidLoop()
@@ -7689,27 +7862,75 @@ do
             task.spawn(function()
                 while VoidConfig.Enabled do
                     pcall(function()
-                        local rNum = GetCurrentRoomNumber()
-                        if not VoidConfig.VoidOnlyBossRoom or BOSS_ROOMS[rNum] or GetAliveBoss() then
-                            local net = game:GetService("ReplicatedStorage"):FindFirstChild("Modules")
-                            net = net and net:FindFirstChild("Net")
-                            local regHit = net and net:FindFirstChild("RE/RegisterHit")
-                            local enemies = Workspace:FindFirstChild("Enemies")
-                            if regHit and enemies then
-                                for _, e in ipairs(enemies:GetChildren()) do
-                                    local hum = e:FindFirstChildOfClass("Humanoid")
-                                    local root = e:FindFirstChild("HumanoidRootPart")
-                                    if hum and hum.Health > 0 and root then
-                                        regHit:FireServer(root, { { hum, root } })
-                                    end
-                                end
-                            end
+                        local roomNum = GetCurrentRoomNumber()
+                        if roomNum ~= lastRoomNum then
+                            lastRoomNum = roomNum
                         end
+
+                        if not CanUseVoidNow() then return end
+
+                        local fruit = GetPlayerFruit()
+                        if not fruit then return end
+                        local remote = fruit:FindFirstChild("LeftClickRemote")
+                        if not remote then return end
+
+                        local char = localPlayer.Character
+                        if char and fruit.Parent ~= char then
+                            local hum = char:FindFirstChildOfClass("Humanoid")
+                            if hum then pcall(function() hum:EquipTool(fruit) end) end
+                        end
+
+                        local maxCombo = GetMaxCombo(fruit)
+                        remote:FireServer(Vector3.new(9e30, 9e30, 9e30), maxCombo, true)
                     end)
-                    task.wait(VoidConfig.Interval or 0.08)
+                    task.wait(tonumber(VoidConfig.Interval) or 0.08)
                 end
                 voidRunning = false
+                lastRoomNum = -1
             end)
+        end
+
+        local attackHeight = 40
+        local selectedWeapon = "Sword"
+        local weaponOptions = { "Sword", "Melee", "Blox Fruit" }
+        local autoDungeonActive = false
+        local autoV4Active = false
+        local autoBusoActive = false
+        local autoPassActive = true
+
+        local function GetWeaponInBackpack(weaponName)
+            local backpack = localPlayer:FindFirstChildOfClass("Backpack") or localPlayer:FindFirstChild("Backpack")
+            if not backpack then return nil end
+            for _, tool in ipairs(backpack:GetChildren()) do
+                if string.find(string.lower(tool.Name), string.lower(weaponName), 1, true) or tool.ToolTip == weaponName then
+                    return tool
+                end
+            end
+            return nil
+        end
+
+        local function EquipSelectedWeapon()
+            local char = localPlayer.Character
+            if not char or not autoDungeonActive then return end
+            if VoidConfig.Enabled and CanUseVoidNow() then
+                local fruit = GetPlayerFruit()
+                if fruit then
+                    local hum = char:FindFirstChildOfClass("Humanoid")
+                    if hum and fruit.Parent ~= char then
+                        pcall(function() hum:EquipTool(fruit) end)
+                    end
+                    return
+                end
+            end
+            local currentTool = char:FindFirstChildOfClass("Tool")
+            if currentTool and (string.find(string.lower(currentTool.Name), string.lower(selectedWeapon), 1, true) or currentTool.ToolTip == selectedWeapon) then
+                return
+            end
+            local toolToEquip = GetWeaponInBackpack(selectedWeapon)
+            if toolToEquip then
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid then humanoid:EquipTool(toolToEquip) end
+            end
         end
 
         local function hasBusoActive(char)
@@ -7728,91 +7949,208 @@ do
             return false
         end
 
-        local function EquipWeaponCategory(cat)
-            cat = tostring(cat or selectedWeapon or "Sword")
-            local char = lp.Character
-            if not char then return nil end
-            local hum = char:FindFirstChildOfClass("Humanoid")
-            if not hum then return nil end
-
-            local toolMap = {
-                ["Sword"] = "Sword",
-                ["Melee"] = "Melee",
-                ["Blox Fruit"] = "Blox Fruit"
-            }
-            local targetType = toolMap[cat] or cat
-
-            -- Check if currently equipped tool matches
-            local current = char:FindFirstChildOfClass("Tool")
-            if current and (current.ToolTip == targetType or current.Name:lower():find(cat:lower())) then
-                return current
-            end
-
-            -- Check in Backpack
-            local bp = lp:FindFirstChildOfClass("Backpack") or lp:FindFirstChild("Backpack")
-            if bp then
-                for _, tool in ipairs(bp:GetChildren()) do
-                    if tool:IsA("Tool") and (tool.ToolTip == targetType or tool.Name:lower():find(cat:lower())) then
-                        pcall(function() hum:EquipTool(tool) end)
-                        return tool
-                    end
-                end
-            end
-            return nil
-        end
-
-        local function TriggerRaceV4Safe()
-            pcall(function()
-                local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
-                local commE = remotes and remotes:FindFirstChild("CommE")
-                if commE and commE:IsA("RemoteEvent") then
-                    commE:FireServer("ActivateAwakening", true)
-                end
-                local events = game:GetService("ReplicatedStorage"):FindFirstChild("Events")
-                local v4Event = events and events:FindFirstChild("ActivateRaceV4")
-                if v4Event and v4Event:IsA("BindableEvent") then
-                    v4Event:Fire()
-                end
-                local awk = remotes and remotes:FindFirstChild("Awakening")
-                if awk and awk:IsA("RemoteFunction") then
-                    awk:InvokeServer(true)
-                end
-            end)
-            local uis = game:GetService("UserInputService")
-            -- NEVER send keyboard events with VirtualInputManager on touch/mobile devices!
-            -- This was what caused Blox Fruits to convert the mobile HUD into PC HUD!
-            if not uis.TouchEnabled and uis.KeyboardEnabled then
+        local function ForceActivateHaki()
+            local char = localPlayer.Character
+            if not char or not autoDungeonActive or not autoBusoActive then return end
+            if not hasBusoActive(char) then
                 pcall(function()
-                    local vim = game:GetService("VirtualInputManager")
-                    if vim then
-                        vim:SendKeyEvent(true, Enum.KeyCode.Y, false, game)
-                        task.wait(0.04)
-                        vim:SendKeyEvent(false, Enum.KeyCode.Y, false, game)
-                    end
+                    if commF then commF:InvokeServer("Buso") end
                 end)
             end
         end
 
+        local function TriggerRaceV4()
+            if not autoV4Active or not autoDungeonActive then return end
+            pcall(function()
+                local commE = remotesFolder and remotesFolder:FindFirstChild("CommE")
+                if commE and commE:IsA("RemoteEvent") then commE:FireServer("ActivateAwakening", true) end
+                local events = ReplicatedStorage:FindFirstChild("Events")
+                local v4Event = events and events:FindFirstChild("ActivateRaceV4")
+                if v4Event and v4Event:IsA("BindableEvent") then v4Event:Fire() end
+                local awk = remotesFolder and remotesFolder:FindFirstChild("Awakening")
+                if awk and awk:IsA("RemoteFunction") then awk:InvokeServer(true) end
+            end)
+            local uis = game:GetService("UserInputService")
+            -- NEVER send keyboard events on touch devices to avoid switching HUD to PC mode!
+            if not uis.TouchEnabled and uis.KeyboardEnabled then
+                pcall(function()
+                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Y, false, game)
+                    task.wait(0.04)
+                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Y, false, game)
+                end)
+            end
+        end
+
+        local function StartAutoBuffs()
+            task.spawn(function()
+                while autoDungeonActive do
+                    EquipSelectedWeapon()
+                    task.wait(0.3)
+                end
+            end)
+            task.spawn(function()
+                while autoDungeonActive do
+                    if autoBusoActive then
+                        ForceActivateHaki()
+                    end
+                    task.wait(0.5)
+                end
+            end)
+            task.spawn(function()
+                while autoDungeonActive do
+                    if autoV4Active then
+                        TriggerRaceV4()
+                    end
+                    task.wait(1.5)
+                end
+            end)
+        end
+
+        local function IsAllyModel(object)
+            return IsAllyModel_Safe(object)
+        end
+
+        local function IsValidEnemy(object, currentCharacter, jefeVivo)
+            if not object or not object:IsA("Model") then return false end
+            if object == currentCharacter then return false end
+            if IsAllyModel(object) then return false end
+            if object.Name == "PropHitboxPlaceholder" and not jefeVivo then return false end
+            local humanoid = object:FindFirstChildOfClass("Humanoid")
+            local root = object:FindFirstChild("HumanoidRootPart") or object:FindFirstChild("Head")
+            if not humanoid or humanoid.Health <= 0 or not root or not object.Parent then return false end
+            return true
+        end
+
+        local function GetClosestEnemy()
+            if justDied then return nil end
+            local currentCharacter = localPlayer.Character
+            if not currentCharacter or not currentCharacter:FindFirstChild("HumanoidRootPart") then return nil end
+
+            local myPos = currentCharacter.HumanoidRootPart.Position
+            local sourceFolder = Workspace:FindFirstChild("Enemies") or enemiesFolder
+            if not sourceFolder then return nil end
+
+            local jefeVivo = HasAliveBoss()
+
+            local closestEnemy, shortestDistance = nil, math.huge
+            for _, object in ipairs(sourceFolder:GetChildren()) do
+                if IsValidEnemy(object, currentCharacter, jefeVivo) then
+                    local root = object:FindFirstChild("HumanoidRootPart") or object:FindFirstChild("Head")
+                    local distance = (root.Position - myPos).Magnitude
+                    if IsBossModel(object) then
+                        distance = distance - 80
+                    end
+                    if distance < shortestDistance then
+                        shortestDistance = distance
+                        closestEnemy = object
+                    end
+                end
+            end
+            return closestEnemy
+        end
+
+        local function EnemyStillAlive(enemy)
+            if not enemy or not enemy.Parent then return false end
+            local hum = enemy:FindFirstChildOfClass("Humanoid")
+            return hum and hum.Health > 0
+        end
+
+        local TP_BYPASS_RANGE = 320
+        local TWEEN_SPEED = 900
+        local lastHpWatch = {}
+
+        local function TweenNearEnemy(enemyRoot)
+            local char = localPlayer.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if not hrp or not enemyRoot then return end
+            local dest = enemyRoot.Position + Vector3.new(0, attackHeight, 0)
+            local dist = (hrp.Position - dest).Magnitude
+            if dist <= 35 then
+                hrp.CFrame = CFrame.new(dest)
+                return
+            end
+            local approach = math.min(dist, TP_BYPASS_RANGE * 0.85)
+            local alpha = math.clamp(approach / dist, 0.35, 0.92)
+            local mid = hrp.Position:Lerp(dest, alpha)
+            mid = Vector3.new(mid.X, dest.Y, mid.Z)
+            local t = math.clamp(dist / TWEEN_SPEED, 0.04, 0.55)
+            local tw = TweenService:Create(hrp, TweenInfo.new(t, Enum.EasingStyle.Linear), {
+                CFrame = CFrame.new(mid)
+            })
+            tw:Play()
+            tw.Completed:Wait()
+            if enemyRoot.Parent and hrp.Parent then
+                pcall(function()
+                    hrp.CFrame = enemyRoot.CFrame * CFrame.new(0, attackHeight, 0)
+                end)
+            end
+        end
+
+        local function TeleportToEnemy(enemy)
+            local char = localPlayer.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if not enemy or not enemy.Parent or not hrp then return false end
+            local enemyRoot = enemy:FindFirstChild("HumanoidRootPart") or enemy:FindFirstChild("Head")
+            if not enemyRoot then return false end
+
+            local dist = (hrp.Position - enemyRoot.Position).Magnitude
+            local hum = enemy:FindFirstChildOfClass("Humanoid")
+            local key = tostring(enemy)
+            local prevHp = lastHpWatch[key]
+            local curHp = hum and hum.Health or nil
+            local noDamage = false
+            if prevHp and curHp and curHp >= prevHp - 0.5 and dist > 55 then
+                noDamage = true
+            end
+            if curHp then lastHpWatch[key] = curHp end
+
+            if dist > TP_BYPASS_RANGE or noDamage then
+                TweenNearEnemy(enemyRoot)
+                return true
+            end
+
+            local success = pcall(function()
+                hrp.CFrame = enemyRoot.CFrame * CFrame.new(0, attackHeight, 0)
+            end)
+            if not success then
+                TweenNearEnemy(enemyRoot)
+            end
+            return true
+        end
+
+        local function AttackEnemy(enemy)
+            if not enemy or not enemy.Parent then return end
+            local enemyHead = enemy:FindFirstChild("Head") or enemy:FindFirstChild("HumanoidRootPart")
+            local enemyHumanoid = enemy:FindFirstChildOfClass("Humanoid")
+            if not enemyHead or not enemyHumanoid then return end
+            local char = localPlayer.Character
+            local tool = char and char:FindFirstChildOfClass("Tool")
+            if tool then tool:Activate() end
+            pcall(function()
+                if registerAttack then registerAttack:FireServer(0) end
+                if registerHit then registerHit:FireServer(enemyHead, { { enemy, enemyHead } }) end
+            end)
+        end
+
         local function AutoPassRoom()
-            if not autoDungeonActive then return false end
             local rooms = GetDungeonRooms()
             if #rooms == 0 then return false end
             local currentRoomIdx = 1
-            local char = lp.Character
+            local char = localPlayer.Character
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            if not hrp then return false end
-
-            local myPos = hrp.Position
-            local minDistanceToRoomCenter = math.huge
-            for i, room in ipairs(rooms) do
-                local roomPart = room:FindFirstChildOfClass("Part")
-                    or room:FindFirstChildOfClass("MeshPart")
-                    or room:FindFirstChild("Floor")
-                if roomPart then
-                    local dist = (roomPart.Position - myPos).Magnitude
-                    if dist < minDistanceToRoomCenter then
-                        minDistanceToRoomCenter = dist
-                        currentRoomIdx = i
+            if hrp then
+                local myPos = hrp.Position
+                local minDistanceToRoomCenter = math.huge
+                for i, room in ipairs(rooms) do
+                    local roomPart = room:FindFirstChildOfClass("Part")
+                        or room:FindFirstChildOfClass("MeshPart")
+                        or room:FindFirstChild("Floor")
+                    if roomPart then
+                        local dist = (roomPart.Position - myPos).Magnitude
+                        if dist < minDistanceToRoomCenter then
+                            minDistanceToRoomCenter = dist
+                            currentRoomIdx = i
+                        end
                     end
                 end
             end
@@ -7821,7 +8159,7 @@ do
             local teleporter = activeRoom:FindFirstChild("ExitTeleporter")
             if not teleporter then return false end
             local rootPart = teleporter:FindFirstChild("Root")
-            if not rootPart or not rootPart:IsA("BasePart") then return false end
+            if not rootPart or not rootPart:IsA("BasePart") or not hrp then return false end
             hrp.CFrame = rootPart.CFrame
             task.wait(0.12)
             if firetouchinterest then
@@ -7831,130 +8169,127 @@ do
                     firetouchinterest(hrp, rootPart, 1)
                 end)
             end
+            if justDied then justDied = false end
             return true
-        end
-
-        local function StartAutoBuffs()
-            task.spawn(function()
-                while autoDungeonActive do
-                    pcall(function()
-                        local char = lp.Character
-                        -- Only activate Haki if it is NOT currently active, preventing accidental shutoff
-                        if char and not hasBusoActive(char) then
-                            local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
-                            local commF = remotes and remotes:FindFirstChild("CommF_")
-                            if commF then
-                                commF:InvokeServer("Buso")
-                            end
-                        end
-                        if autoV4Active then
-                            TriggerRaceV4Safe()
-                        end
-                    end)
-                    task.wait(2.5)
-                end
-            end)
         end
 
         local function RotateTargets()
             while autoDungeonActive do
-                pcall(function()
-                    -- Ensure weapon stays equipped according to dropdown selection
-                    EquipWeaponCategory(selectedWeapon)
-
-                    -- Protect mobile HUD from switching to PC
-                    local uis = game:GetService("UserInputService")
-                    if uis.TouchEnabled then
-                        local pGui = lp:FindFirstChildOfClass("PlayerGui")
-                        if pGui then
-                            local tg = pGui:FindFirstChild("TouchGui")
-                            if tg and not tg.Enabled then tg.Enabled = true end
-                            local main = pGui:FindFirstChild("Main")
-                            if main then
-                                local pcSkills = main:FindFirstChild("Skills")
-                                if pcSkills and pcSkills.Visible and pGui:FindFirstChild("ContextActionGui") then
-                                    pcSkills.Visible = false
-                                end
+                -- Safeguard mobile HUD from switching to PC
+                local uis = game:GetService("UserInputService")
+                if uis.TouchEnabled then
+                    local pGui = localPlayer:FindFirstChildOfClass("PlayerGui")
+                    if pGui then
+                        local tg = pGui:FindFirstChild("TouchGui")
+                        if tg and not tg.Enabled then tg.Enabled = true end
+                        local main = pGui:FindFirstChild("Main")
+                        if main then
+                            local pcSkills = main:FindFirstChild("Skills")
+                            if pcSkills and pcSkills.Visible and pGui:FindFirstChild("ContextActionGui") then
+                                pcSkills.Visible = false
                             end
                         end
                     end
+                end
 
-                    local char = lp.Character
-                    local root = char and char:FindFirstChild("HumanoidRootPart")
-                    local enemies = Workspace:FindFirstChild("Enemies")
-                    if root and enemies then
-                        local closest = nil
-                        local minDist = 99999
-                        for _, e in ipairs(enemies:GetChildren()) do
-                            local hum = e:FindFirstChildOfClass("Humanoid")
-                            local eRoot = e:FindFirstChild("HumanoidRootPart")
-                            if hum and hum.Health > 0 and eRoot then
-                                local dist = (eRoot.Position - root.Position).Magnitude
-                                if dist < minDist then
-                                    minDist = dist
-                                    closest = e
-                                end
-                            end
+                if justDied then
+                    local attempts = 0
+                    while autoDungeonActive and justDied and attempts < 10 do
+                        if AutoPassRoom() then
+                            justDied = false
+                            break
                         end
-                        if closest then
-                            local eRoot = closest:FindFirstChild("HumanoidRootPart")
-                            if eRoot then
-                                root.CFrame = eRoot.CFrame * CFrame.new(0, attackHeight, 0)
-                                local net = game:GetService("ReplicatedStorage"):FindFirstChild("Modules")
-                                net = net and net:FindFirstChild("Net")
-                                local regAtk = net and net:FindFirstChild("RE/RegisterAttack")
-                                local regHit = net and net:FindFirstChild("RE/RegisterHit")
-                                if regAtk then regAtk:FireServer(0.1) end
-                                if regHit then regHit:FireServer(eRoot, { { closest:FindFirstChildOfClass("Humanoid"), eRoot } }) end
-                            end
+                        attempts = attempts + 1
+                        task.wait(0.5)
+                    end
+                    if attempts >= 10 then justDied = false end
+                else
+                    if not EnemyStillAlive(currentTarget) or IsAllyModel(currentTarget) then
+                        currentTarget = nil
+                        local roomNum = GetCurrentRoomNumber()
+                        if BOSS_ROOMS[roomNum] then
+                            currentTarget = GetAliveBoss() or GetClosestEnemy()
                         else
-                            -- Room cleared! Navigate to next room if Auto Pass is enabled
-                            if autoDungeonActive and autoPassActive then
-                                AutoPassRoom()
+                            currentTarget = GetClosestEnemy()
+                        end
+                        lastTarget = currentTarget
+                    end
+
+                    if currentTarget and EnemyStillAlive(currentTarget) and not IsAllyModel(currentTarget) then
+                        while autoDungeonActive and not justDied
+                            and EnemyStillAlive(currentTarget) and not IsAllyModel(currentTarget) do
+                            TeleportToEnemy(currentTarget)
+                            AttackEnemy(currentTarget)
+                            task.wait(0.03)
+                        end
+                        currentTarget = nil
+                    else
+                        task.wait(0.4)
+                        if autoPassActive then
+                            if not AutoPassRoom() then
+                                task.wait(0.3)
                             end
                         end
                     end
-                end)
-                task.wait(0.12)
+                end
             end
         end
 
         local dCard1 = CreateCard(DungeonPage, "Auto Dungeon Engine")
         AddToggle(dCard1, "Start Auto Dungeon", "Automatically clears dungeon mobs and bosses", false, function(v)
             autoDungeonActive = v
-            autoPassActive = v -- Auto Pass Room activates automatically when Dungeon is enabled!
+            autoPassActive = v
             if v then
-                EquipWeaponCategory(selectedWeapon)
+                justDied = false
+                currentTarget = nil
+                lastTarget = nil
+                EquipSelectedWeapon()
                 StartAutoBuffs()
                 task.spawn(RotateTargets)
+            else
+                currentTarget = nil
+                lastTarget = nil
+                justDied = false
             end
         end)
-        AddChoice(dCard1, "Selected Weapon", {"Sword", "Melee", "Blox Fruit"}, 1, function(v)
+        AddChoice(dCard1, "Selected Weapon", weaponOptions, 1, function(v)
             selectedWeapon = v
-            EquipWeaponCategory(v)
+            EquipSelectedWeapon()
             Notify("Dungeon Weapon", "Equipped " .. tostring(v))
         end)
         AddSlider(dCard1, "Attack Height", 10, 100, 40, 5, function(v)
             attackHeight = v
         end)
+        AddToggle(dCard1, "Auto Buso", "Automatically activates Buso Haki", false, function(v)
+            autoBusoActive = v
+            if v and autoDungeonActive then
+                ForceActivateHaki()
+            end
+        end)
         AddToggle(dCard1, "Auto Race V4", "Activates Race Awakening automatically without affecting HUD", false, function(v)
             autoV4Active = v
+            if v and autoDungeonActive then
+                TriggerRaceV4()
+            end
         end)
-        AddToggle(dCard1, "Auto Pass Room", "Automatically navigates to next room (linked to Dungeon)", false, function(v)
+        AddToggle(dCard1, "Auto Pass Room", "Automatically navigates to next room when cleared", false, function(v)
             autoPassActive = v
         end)
 
         local dCard2 = CreateCard(DungeonPage, "Void M1 Engine")
         AddToggle(dCard2, "Enable Void M1", "Executes high-speed fruit attack loop", false, function(v)
-            VoidConfig.Enabled = v
-            if v then
+            VoidConfig.Enabled = v and true or false
+            if VoidConfig.Enabled then
                 voidRunning = false
                 VoidLoop()
             end
         end)
-        AddToggle(dCard2, "Void Only Boss Rooms", "Restricts Void M1 to rooms 5, 10, 15, 20", false, function(v)
-            VoidConfig.VoidOnlyBossRoom = v
-            if VoidConfig.Enabled and not voidRunning then VoidLoop() end
+        AddToggle(dCard2, "Void Only Boss Rooms", "Restricts Void M1 to rooms 5, 10, 15, 20", true, function(v)
+            VoidConfig.VoidOnlyBossRoom = v and true or false
+            lastRoomNum = -1
+            if VoidConfig.Enabled and not voidRunning then
+                VoidLoop()
+            end
         end)
         AddSlider(dCard2, "Void Interval (s)", 0.05, 0.50, 0.08, 0.01, function(v)
             VoidConfig.Interval = v
@@ -7998,7 +8333,6 @@ do
 
         task.defer(function()
             task.wait(1)
-            -- Never auto-start dungeon on script load unless user explicitly enabled Auto Dungeon
             if AutoLoad and autoDungeonActive then
                 StartAutoBuffs()
                 task.spawn(RotateTargets)
@@ -8006,7 +8340,6 @@ do
         end)
     end)
 end
-
 -- ============================================================
 -- 5. TELEPORT TAB (49 ISLANDS & SPOOKY TWEEN CONTROLLER)
 -- ============================================================
@@ -8556,22 +8889,22 @@ do
 
         -- 2. Roblox Audio Player & Visualizer Controls
         local mCard1 = CreateCard(MusicPage, "Roblox Audio Player")
-        local customIdInput = "1843588265"
+        local customIdInput = "7025810761"
 
-        local soundInputObj = AddInput(mCard1, "Custom Sound ID", "Enter Roblox Asset ID (e.g. 1843588265)...", "1843588265", function(v)
+        local soundInputObj = AddInput(mCard1, "Custom Sound ID", "Enter Roblox Asset ID (e.g. 7025810761)...", "7025810761", function(v)
             customIdInput = tostring(v or "")
         end)
 
         AddButton(mCard1, "Play", function()
-            local raw = (soundInputObj and soundInputObj.GetText and soundInputObj.GetText()) or customIdInput or "1843588265"
+            local raw = (soundInputObj and soundInputObj.GetText and soundInputObj.GetText()) or customIdInput or "7025810761"
             local trimmed = tostring(raw):gsub("^%s+", ""):gsub("%s+$", "")
             if _G.MonodyMusic then
                 if #trimmed > 0 then
                     _G.MonodyMusic.Play(trimmed, "")
                     Notify("Music Player", "Playing audio: " .. trimmed)
                 else
-                    _G.MonodyMusic.Play("1843588265", "Montagem Ceita")
-                    Notify("Music Player", "Playing default audio: 1843588265")
+                    _G.MonodyMusic.Play("7025810761", "Blox Fruits Main Theme")
+                    Notify("Music Player", "Playing Blox Fruits Theme (7025810761)")
                 end
             end
         end)
