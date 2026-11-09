@@ -993,174 +993,145 @@ local function showKeyModal(AuroraX, onSuccess)
 
     if syn and syn.protect_gui then pcall(syn.protect_gui, gui) end
 
-    -- Backdrop (Deep luxury dark glass overlay)
+    -- Backdrop (Clean dark glass overlay)
     local backdrop = Instance.new("Frame")
     backdrop.Name = "Backdrop"
     backdrop.Size = UDim2.new(1, 0, 1, 0)
-    backdrop.BackgroundColor3 = Color3.fromRGB(6, 4, 12)
-    backdrop.BackgroundTransparency = 0.3
+    backdrop.BackgroundColor3 = Color3.fromRGB(8, 6, 12)
+    backdrop.BackgroundTransparency = 0.45
     backdrop.BorderSizePixel = 0
     backdrop.Parent = gui
 
-    -- Ambient purple glow in center behind modal
-    local ambientGlow = Instance.new("ImageLabel", backdrop)
-    ambientGlow.Name = "AmbientGlow"
-    ambientGlow.Size = UDim2.new(0, 560, 0, 420)
-    ambientGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-    ambientGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
-    ambientGlow.BackgroundTransparency = 1
-    ambientGlow.Image = "rbxassetid://1316045217"
-    ambientGlow.ImageColor3 = Color3.fromRGB(147, 51, 234)
-    ambientGlow.ImageTransparency = 0.72
-
-    -- Modal Container (Luxury acrylic glass card with gradient neon stroke)
+    -- Modal Container (Clean dark slate glass card - zero neon highlights)
     local modal = Instance.new("Frame")
     modal.Name = "Modal"
-    modal.Size = UDim2.new(0, 360, 0, 230)
+    modal.Size = UDim2.new(0, 380, 0, 240)
     modal.AnchorPoint = Vector2.new(0.5, 0.5)
     modal.Position = UDim2.new(0.5, 0, 0.5, 0)
-    modal.BackgroundColor3 = Color3.fromRGB(14, 11, 22)
-    modal.BackgroundTransparency = 0.15
+    modal.BackgroundColor3 = Color3.fromRGB(18, 14, 22)
+    modal.BackgroundTransparency = 0
     modal.BorderSizePixel = 0
-    modal.ClipsDescendants = true
     modal.Parent = gui
 
     local modalCorner = Instance.new("UICorner")
-    modalCorner.CornerRadius = UDim.new(0, 16)
+    modalCorner.CornerRadius = UDim.new(0, 14)
     modalCorner.Parent = modal
 
-    -- Gradient Border
+    -- Neutral slate border (clean and subtle, zero gaudy gradients)
     local modalStroke = Instance.new("UIStroke")
     modalStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    modalStroke.Color = Color3.fromRGB(168, 85, 247)
+    modalStroke.Color = Color3.fromRGB(55, 55, 65)
     modalStroke.Thickness = 1.2
     modalStroke.Parent = modal
 
-    local strokeGrad = Instance.new("UIGradient", modalStroke)
-    strokeGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(192, 132, 252)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(147, 51, 234)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(99, 102, 241))
-    })
-    strokeGrad.Rotation = 45
+    -- Responsive Mobile / Viewport Scaling
+    local modalScale = Instance.new("UIScale", modal)
+    local function updateKeyScale()
+        local cam = Workspace and Workspace.CurrentCamera
+        if cam and cam.ViewportSize then
+            local vp = cam.ViewportSize
+            modalScale.Scale = math.clamp(math.min(vp.X / 420, vp.Y / 300), 0.65, 1.0)
+        end
+    end
+    updateKeyScale()
+    if Workspace and Workspace.CurrentCamera then
+        Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateKeyScale)
+    end
 
-    -- Top Accent Glow Line
-    local topGlow = Instance.new("Frame", modal)
-    topGlow.Name = "TopGlow"
-    topGlow.Size = UDim2.new(0.65, 0, 0, 2)
-    topGlow.AnchorPoint = Vector2.new(0.5, 0)
-    topGlow.Position = UDim2.new(0.5, 0, 0, 1)
-    topGlow.BackgroundColor3 = Color3.fromRGB(192, 132, 252)
-    topGlow.BorderSizePixel = 0
-    local topGlowGrad = Instance.new("UIGradient", topGlow)
-    topGlowGrad.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 1),
-        NumberSequenceKeypoint.new(0.5, 0),
-        NumberSequenceKeypoint.new(1, 1)
-    })
-
-    -- Header Icon & Badge
-    local logoBadge = Instance.new("Frame", modal)
-    logoBadge.Name = "LogoBadge"
-    logoBadge.Size = UDim2.new(0, 48, 0, 48)
-    logoBadge.AnchorPoint = Vector2.new(0.5, 0)
-    logoBadge.Position = UDim2.new(0.5, 0, 0, 16)
-    logoBadge.BackgroundColor3 = Color3.fromRGB(24, 18, 38)
-    logoBadge.BackgroundTransparency = 0.3
-    Instance.new("UICorner", logoBadge).CornerRadius = UDim.new(0, 13)
-
-    local lbStroke = Instance.new("UIStroke", logoBadge)
-    lbStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    lbStroke.Color = Color3.fromRGB(147, 51, 234)
-    lbStroke.Thickness = 1
-
-    local logo = Instance.new("ImageLabel", logoBadge)
+    -- Header Icon (Crisp Monody Anime Logo)
+    local logo = Instance.new("ImageLabel")
     logo.Name = "Logo"
-    logo.Size = UDim2.new(1, -10, 1, -10)
-    logo.AnchorPoint = Vector2.new(0.5, 0.5)
-    logo.Position = UDim2.new(0.5, 0, 0.5, 0)
+    logo.Size = UDim2.new(0, 48, 0, 48)
+    logo.AnchorPoint = Vector2.new(0.5, 0)
+    logo.Position = UDim2.new(0.5, 0, 0, 16)
     logo.BackgroundTransparency = 1
+    logo.BorderSizePixel = 0
     logo.Image = GetLogoAsset()
     logo.ScaleType = Enum.ScaleType.Fit
-    Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 9)
+    logo.Parent = modal
+
+    local logoCorner = Instance.new("UICorner")
+    logoCorner.CornerRadius = UDim.new(0, 12)
+    logoCorner.Parent = logo
 
     -- Title
-    local title = Instance.new("TextLabel", modal)
+    local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, -30, 0, 22)
-    title.Position = UDim2.new(0, 15, 0, 70)
+    title.Position = UDim2.new(0, 15, 0, 68)
     title.BackgroundTransparency = 1
     title.Font = Enum.Font.GothamBold
     title.Text = APP_TITLE
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.TextSize = 19
+    title.TextSize = 18
     title.TextXAlignment = Enum.TextXAlignment.Center
+    title.Parent = modal
 
-    -- Security Pill Subtitle
-    local sub = Instance.new("TextLabel", modal)
+    -- Subtitle (Clean & authentic)
+    local sub = Instance.new("TextLabel")
     sub.Size = UDim2.new(1, -30, 0, 16)
-    sub.Position = UDim2.new(0, 15, 0, 94)
+    sub.Position = UDim2.new(0, 15, 0, 90)
     sub.BackgroundTransparency = 1
     sub.Font = Enum.Font.GothamMedium
-    sub.Text = "MONODY LICENSE AUTHENTICATION"
-    sub.TextColor3 = Color3.fromRGB(192, 132, 252)
-    sub.TextSize = 9.5
+    sub.Text = "Introduce tu clave de licencia para continuar"
+    sub.TextColor3 = Color3.fromRGB(160, 155, 170)
+    sub.TextSize = 11
     sub.TextXAlignment = Enum.TextXAlignment.Center
+    sub.Parent = modal
 
-    -- Key Input Container (Glass Capsule with Key Icon and Paste Button)
-    local inputContainer = Instance.new("Frame", modal)
-    inputContainer.Size = UDim2.new(1, -40, 0, 38)
-    inputContainer.AnchorPoint = Vector2.new(0.5, 0)
-    inputContainer.Position = UDim2.new(0.5, 0, 0, 120)
-    inputContainer.BackgroundColor3 = Color3.fromRGB(22, 17, 34)
-    inputContainer.BackgroundTransparency = 0.35
-    Instance.new("UICorner", inputContainer).CornerRadius = UDim.new(0, 9)
+    -- Key Input Container (Neutral dark capsule)
+    local inputContainer = Instance.new("Frame")
+    inputContainer.Size = UDim2.new(1, -30, 0, 36)
+    inputContainer.Position = UDim2.new(0, 15, 0, 114)
+    inputContainer.BackgroundColor3 = Color3.fromRGB(26, 22, 32)
+    inputContainer.BorderSizePixel = 0
+    inputContainer.Parent = modal
 
-    local inStroke = Instance.new("UIStroke", inputContainer)
+    local inCorner = Instance.new("UICorner")
+    inCorner.CornerRadius = UDim.new(0, 8)
+    inCorner.Parent = inputContainer
+
+    local inStroke = Instance.new("UIStroke")
     inStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    inStroke.Color = Color3.fromRGB(85, 65, 120)
+    inStroke.Color = Color3.fromRGB(50, 48, 60)
     inStroke.Thickness = 1
+    inStroke.Parent = inputContainer
 
-    local keyIcon = Instance.new("ImageLabel", inputContainer)
-    keyIcon.Size = UDim2.new(0, 18, 0, 18)
-    keyIcon.Position = UDim2.new(0, 10, 0.5, -9)
-    keyIcon.BackgroundTransparency = 1
-    keyIcon.Image = "rbxassetid://130551565616516"
-    keyIcon.ImageColor3 = Color3.fromRGB(192, 132, 252)
-
-    local keyBox = Instance.new("TextBox", inputContainer)
-    keyBox.Size = UDim2.new(1, -78, 1, 0)
-    keyBox.Position = UDim2.new(0, 32, 0, 0)
+    local keyBox = Instance.new("TextBox")
+    keyBox.Size = UDim2.new(1, -70, 1, 0)
+    keyBox.Position = UDim2.new(0, 10, 0, 0)
     keyBox.BackgroundTransparency = 1
     keyBox.Font = Enum.Font.GothamMedium
     keyBox.Text = (AuroraX and AuroraX.GetSavedKey and AuroraX.GetSavedKey()) or ""
-    keyBox.PlaceholderText = "Paste your license key here..."
-    keyBox.PlaceholderColor3 = Color3.fromRGB(130, 120, 150)
-    keyBox.TextColor3 = Color3.fromRGB(245, 245, 255)
+    keyBox.PlaceholderText = "Pega tu clave aquí (script_key)..."
+    keyBox.PlaceholderColor3 = Color3.fromRGB(120, 115, 130)
+    keyBox.TextColor3 = Color3.fromRGB(240, 240, 250)
     keyBox.TextSize = 11.5
     keyBox.ClearTextOnFocus = false
     keyBox.TextXAlignment = Enum.TextXAlignment.Left
+    keyBox.Parent = inputContainer
 
-    local pasteBtn = Instance.new("TextButton", inputContainer)
+    -- Subtle Paste Button for mobile convenience
+    local pasteBtn = Instance.new("TextButton")
     pasteBtn.Name = "PasteBtn"
-    pasteBtn.Size = UDim2.new(0, 42, 0, 24)
-    pasteBtn.Position = UDim2.new(1, -48, 0.5, -12)
-    pasteBtn.BackgroundColor3 = Color3.fromRGB(35, 26, 52)
-    pasteBtn.Text = ""
+    pasteBtn.Size = UDim2.new(0, 50, 0, 24)
+    pasteBtn.Position = UDim2.new(1, -56, 0.5, -12)
+    pasteBtn.BackgroundColor3 = Color3.fromRGB(36, 30, 46)
+    pasteBtn.Text = "Pegar"
+    pasteBtn.TextColor3 = Color3.fromRGB(200, 195, 215)
+    pasteBtn.Font = Enum.Font.GothamMedium
+    pasteBtn.TextSize = 10
     pasteBtn.AutoButtonColor = false
-    Instance.new("UICorner", pasteBtn).CornerRadius = UDim.new(0, 6)
+    pasteBtn.Parent = inputContainer
 
-    local pbStroke = Instance.new("UIStroke", pasteBtn)
+    local pbCorner = Instance.new("UICorner")
+    pbCorner.CornerRadius = UDim.new(0, 6)
+    pbCorner.Parent = pasteBtn
+
+    local pbStroke = Instance.new("UIStroke")
     pbStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    pbStroke.Color = Color3.fromRGB(120, 90, 170)
+    pbStroke.Color = Color3.fromRGB(60, 52, 75)
     pbStroke.Thickness = 0.8
-
-    local pbLbl = Instance.new("TextLabel", pasteBtn)
-    pbLbl.Size = UDim2.new(1, 0, 1, 0)
-    pbLbl.BackgroundTransparency = 1
-    pbLbl.Font = Enum.Font.GothamBold
-    pbLbl.Text = "Paste"
-    pbLbl.TextColor3 = Color3.fromRGB(216, 180, 254)
-    pbLbl.TextSize = 9.5
+    pbStroke.Parent = pasteBtn
 
     pasteBtn.MouseButton1Click:Connect(function()
         local getcb = getclipboard or get_clipboard
@@ -1173,46 +1144,45 @@ local function showKeyModal(AuroraX, onSuccess)
     end)
 
     -- Status Feedback Label
-    local feedback = Instance.new("TextLabel", modal)
-    feedback.Size = UDim2.new(1, -40, 0, 16)
-    feedback.AnchorPoint = Vector2.new(0.5, 0)
-    feedback.Position = UDim2.new(0.5, 0, 0, 166)
+    local feedback = Instance.new("TextLabel")
+    feedback.Size = UDim2.new(1, -30, 0, 16)
+    feedback.Position = UDim2.new(0, 15, 0, 154)
     feedback.BackgroundTransparency = 1
     feedback.Font = Enum.Font.GothamMedium
-    feedback.Text = "Awaiting license key verification..."
-    feedback.TextColor3 = Color3.fromRGB(165, 155, 185)
-    feedback.TextSize = 10.5
+    feedback.Text = ""
+    feedback.TextColor3 = Color3.fromRGB(220, 180, 100)
+    feedback.TextSize = 11
     feedback.TextXAlignment = Enum.TextXAlignment.Center
+    feedback.Parent = modal
 
     -- Buttons Frame
-    local btnRow = Instance.new("Frame", modal)
-    btnRow.Size = UDim2.new(1, -40, 0, 36)
-    btnRow.AnchorPoint = Vector2.new(0.5, 0)
-    btnRow.Position = UDim2.new(0.5, 0, 0, 192)
+    local btnRow = Instance.new("Frame")
+    btnRow.Size = UDim2.new(1, -30, 0, 36)
+    btnRow.Position = UDim2.new(0, 15, 0, 178)
     btnRow.BackgroundTransparency = 1
+    btnRow.Parent = modal
 
     -- 1. Get Key Button
-    local getKeyBtn = Instance.new("TextButton", btnRow)
+    local getKeyBtn = Instance.new("TextButton")
     getKeyBtn.Size = UDim2.new(0.48, 0, 1, 0)
     getKeyBtn.Position = UDim2.new(0, 0, 0, 0)
-    getKeyBtn.BackgroundColor3 = Color3.fromRGB(28, 22, 42)
-    getKeyBtn.BackgroundTransparency = 0.25
-    getKeyBtn.Text = ""
+    getKeyBtn.BackgroundColor3 = Color3.fromRGB(32, 28, 40)
+    getKeyBtn.Font = Enum.Font.GothamBold
+    getKeyBtn.Text = "Obtener Key"
+    getKeyBtn.TextColor3 = Color3.fromRGB(220, 215, 235)
+    getKeyBtn.TextSize = 12
     getKeyBtn.AutoButtonColor = false
-    Instance.new("UICorner", getKeyBtn).CornerRadius = UDim.new(0, 9)
+    getKeyBtn.Parent = btnRow
 
-    local gkStroke = Instance.new("UIStroke", getKeyBtn)
+    local gkCorner = Instance.new("UICorner")
+    gkCorner.CornerRadius = UDim.new(0, 8)
+    gkCorner.Parent = getKeyBtn
+
+    local gkStroke = Instance.new("UIStroke")
     gkStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    gkStroke.Color = Color3.fromRGB(105, 80, 150)
+    gkStroke.Color = Color3.fromRGB(55, 50, 68)
     gkStroke.Thickness = 1
-
-    local gkLbl = Instance.new("TextLabel", getKeyBtn)
-    gkLbl.Size = UDim2.new(1, 0, 1, 0)
-    gkLbl.BackgroundTransparency = 1
-    gkLbl.Font = Enum.Font.GothamBold
-    gkLbl.Text = "Get Key"
-    gkLbl.TextColor3 = Color3.fromRGB(220, 205, 245)
-    gkLbl.TextSize = 11.5
+    gkStroke.Parent = getKeyBtn
 
     getKeyBtn.MouseButton1Click:Connect(function()
         pcall(function()
@@ -1223,37 +1193,31 @@ local function showKeyModal(AuroraX, onSuccess)
                 if setcb then setcb("https://dev.aurorax.site/getkey/1b56de61f463fc8d4cd4d1dca6e26660") end
             end
         end)
-        feedback.TextColor3 = Color3.fromRGB(130, 240, 170)
-        feedback.Text = "Link copied! Complete verification in your browser."
+        feedback.TextColor3 = Color3.fromRGB(100, 230, 150)
+        feedback.Text = "Enlace copiado al portapapeles! Complétalo en tu navegador."
     end)
 
-    -- 2. Verify Key Button (Glowing Gradient Button)
-    local verifyBtn = Instance.new("TextButton", btnRow)
+    -- 2. Verify Key Button
+    local verifyBtn = Instance.new("TextButton")
     verifyBtn.Size = UDim2.new(0.48, 0, 1, 0)
     verifyBtn.Position = UDim2.new(0.52, 0, 0, 0)
-    verifyBtn.BackgroundColor3 = Color3.fromRGB(147, 51, 234)
-    verifyBtn.Text = ""
+    verifyBtn.BackgroundColor3 = Color3.fromRGB(50, 42, 68)
+    verifyBtn.Font = Enum.Font.GothamBold
+    verifyBtn.Text = "Verificar"
+    verifyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    verifyBtn.TextSize = 12
     verifyBtn.AutoButtonColor = false
-    Instance.new("UICorner", verifyBtn).CornerRadius = UDim.new(0, 9)
+    verifyBtn.Parent = btnRow
 
-    local vbGrad = Instance.new("UIGradient", verifyBtn)
-    vbGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(168, 85, 247)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(126, 34, 206))
-    })
+    local vCorner = Instance.new("UICorner")
+    vCorner.CornerRadius = UDim.new(0, 8)
+    vCorner.Parent = verifyBtn
 
-    local vStroke = Instance.new("UIStroke", verifyBtn)
+    local vStroke = Instance.new("UIStroke")
     vStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    vStroke.Color = Color3.fromRGB(216, 180, 254)
+    vStroke.Color = Color3.fromRGB(80, 68, 105)
     vStroke.Thickness = 1
-
-    local vLbl = Instance.new("TextLabel", verifyBtn)
-    vLbl.Size = UDim2.new(1, 0, 1, 0)
-    vLbl.BackgroundTransparency = 1
-    vLbl.Font = Enum.Font.GothamBold
-    vLbl.Text = "Verify Key"
-    vLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-    vLbl.TextSize = 12
+    vStroke.Parent = verifyBtn
 
     local isChecking = false
     verifyBtn.MouseButton1Click:Connect(function()
@@ -1262,13 +1226,13 @@ local function showKeyModal(AuroraX, onSuccess)
         local entered = keyBox.Text:gsub("^%s+", ""):gsub("%s+$", "")
         if #entered < 4 then
             feedback.TextColor3 = Color3.fromRGB(255, 120, 120)
-            feedback.Text = "Please enter a valid license key."
+            feedback.Text = "Introduce una clave válida."
             isChecking = false
             return
         end
 
-        feedback.TextColor3 = Color3.fromRGB(216, 180, 254)
-        feedback.Text = "Verifying with Monody..."
+        feedback.TextColor3 = Color3.fromRGB(200, 200, 220)
+        feedback.Text = "Verificando clave..."
 
         task.spawn(function()
             local valid = false
@@ -1281,8 +1245,8 @@ local function showKeyModal(AuroraX, onSuccess)
 
             if valid then
                 feedback.TextColor3 = Color3.fromRGB(100, 230, 150)
-                feedback.Text = "Key verified! Starting " .. APP_TITLE .. "..."
-                task.wait(0.5)
+                feedback.Text = "Clave verificada! Iniciando " .. APP_TITLE .. "..."
+                task.wait(0.4)
                 TweenService:Create(modal, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
                     Size = UDim2.new(0, 0, 0, 0),
                     BackgroundTransparency = 1
@@ -1292,7 +1256,7 @@ local function showKeyModal(AuroraX, onSuccess)
                 if onSuccess then onSuccess() end
             else
                 feedback.TextColor3 = Color3.fromRGB(255, 110, 110)
-                feedback.Text = (info and info.message) or "Invalid or expired key."
+                feedback.Text = (info and info.message) or "Clave inválida o expirada."
                 isChecking = false
             end
         end)
@@ -1300,10 +1264,10 @@ local function showKeyModal(AuroraX, onSuccess)
 
     gui.Parent = parent
 
-    -- Smooth Spring Entrance Animation
-    TweenService:Create(modal, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0, 410, 0, 250),
-        BackgroundTransparency = 0.15
+    -- Smooth subtle fade-in animation
+    modal.BackgroundTransparency = 0.5
+    TweenService:Create(modal, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        BackgroundTransparency = 0
     }):Play()
 end
 
