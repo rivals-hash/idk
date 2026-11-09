@@ -1815,6 +1815,12 @@ do
     }
     _G.MonodyMusic = MonodyMusic
 
+    local function getSoundParent()
+        local pGui = (lp and lp:FindFirstChildOfClass("PlayerGui"))
+        if pGui then return pGui end
+        return soundService
+    end
+
     local function resolveSoundSource(identifier)
         if not identifier or identifier == "" then return nil end
         local str = tostring(identifier):gsub("^%s+", ""):gsub("%s+$", "")
@@ -1841,7 +1847,26 @@ do
             end
         end
 
-        -- 2. Extract digits from numbers, roblox URLs, or rbxassetid://
+        -- 2. If it's a direct web url (e.g. mp3 hosted on raw github), auto-download and getcustomasset
+        if str:find("^https?://") then
+            if type(isfile) == "function" and type(writefile) == "function" and type(getcustomasset) == "function" then
+                local hName = "monody_stream_" .. tostring(#str) .. ".mp3"
+                if not isfile(hName) then
+                    local ok, d = pcall(function() return game:HttpGet(str) end)
+                    if ok and d and #d > 500 then
+                        pcall(writefile, hName, d)
+                    end
+                end
+                if isfile(hName) then
+                    local okA, a = pcall(getcustomasset, hName)
+                    if okA and a and #a > 0 then return a end
+                end
+            end
+            local d = str:match("(%d%d%d%d+)")
+            if d and #d > 0 then return "rbxassetid://" .. d end
+        end
+
+        -- 3. Extract digits from numbers, roblox URLs, or rbxassetid://
         local digits = str:match("(%d%d%d%d+)")
         if digits and #digits > 0 then
             return "rbxassetid://" .. digits
@@ -1851,19 +1876,20 @@ do
             return str
         end
 
-        return "rbxassetid://1843588265"
+        return "rbxassetid://7025810761"
     end
 
     local function InitMusicSound()
+        local parent = getSoundParent()
         local snd = MonodyMusic.Sound
-        if not snd or not snd.Parent or snd.Parent ~= soundService then
-            local existing = soundService:FindFirstChild("MonodyBGM")
+        if not snd or not snd.Parent or (snd.Parent ~= parent and snd.Parent ~= soundService) then
+            local existing = parent:FindFirstChild("MonodyBGM") or soundService:FindFirstChild("MonodyBGM")
             if existing and existing:IsA("Sound") then
                 snd = existing
             else
                 snd = Instance.new("Sound")
                 snd.Name = "MonodyBGM"
-                snd.Parent = soundService
+                snd.Parent = parent
             end
             snd.Volume = MonodyMusic.Volume
             snd.PlaybackSpeed = MonodyMusic.Pitch
@@ -1914,12 +1940,42 @@ do
             end
             if MonodyMusic.IsPlaying and snd.SoundId == source and snd.TimeLength == 0 and not snd.IsLoaded then
                 pcall(function()
-                    Notify("Music Player", "Audio could not load. Roblox might have privatized this asset ID.")
+                    Notify("Music Player", "Notice: If inaudible, this ID may be privatized. Use 'Play Montagem Phonk' for local bypass!")
                 end)
             end
         end)
 
         return true, "Playing " .. MonodyMusic.CurrentTrackName
+    end
+
+    function MonodyMusic.PlayLocalBypass(url, filename, trackName)
+        local exIsFile = isfile or is_file
+        local exWriteFile = writefile
+        local exGetCustomAsset = getcustomasset
+
+        if type(exIsFile) == "function" and type(exWriteFile) == "function" and type(exGetCustomAsset) == "function" then
+            task.spawn(function()
+                if not exIsFile(filename) then
+                    Notify("Music Player", "Downloading audio file for local bypass...")
+                    local ok, data = pcall(function() return game:HttpGet(url) end)
+                    if ok and data and #data > 500 then
+                        pcall(exWriteFile, filename, data)
+                    end
+                end
+                if exIsFile(filename) then
+                    local okAsset, asset = pcall(exGetCustomAsset, filename)
+                    if okAsset and asset and #asset > 0 then
+                        MonodyMusic.Play(asset, trackName)
+                        Notify("Music Player", "Now playing: " .. trackName)
+                        return
+                    end
+                end
+                -- Fallback to Blox Fruits native OST
+                MonodyMusic.Play("7025810761", trackName)
+            end)
+        else
+            MonodyMusic.Play("7025810761", trackName)
+        end
     end
 
     function MonodyMusic.Pause()
@@ -7672,6 +7728,112 @@ do
             return false
         end
 
+        local function EquipWeaponCategory(cat)
+            cat = tostring(cat or selectedWeapon or "Sword")
+            local char = lp.Character
+            if not char then return nil end
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if not hum then return nil end
+
+            local toolMap = {
+                ["Sword"] = "Sword",
+                ["Melee"] = "Melee",
+                ["Blox Fruit"] = "Blox Fruit"
+            }
+            local targetType = toolMap[cat] or cat
+
+            -- Check if currently equipped tool matches
+            local current = char:FindFirstChildOfClass("Tool")
+            if current and (current.ToolTip == targetType or current.Name:lower():find(cat:lower())) then
+                return current
+            end
+
+            -- Check in Backpack
+            local bp = lp:FindFirstChildOfClass("Backpack") or lp:FindFirstChild("Backpack")
+            if bp then
+                for _, tool in ipairs(bp:GetChildren()) do
+                    if tool:IsA("Tool") and (tool.ToolTip == targetType or tool.Name:lower():find(cat:lower())) then
+                        pcall(function() hum:EquipTool(tool) end)
+                        return tool
+                    end
+                end
+            end
+            return nil
+        end
+
+        local function TriggerRaceV4Safe()
+            pcall(function()
+                local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
+                local commE = remotes and remotes:FindFirstChild("CommE")
+                if commE and commE:IsA("RemoteEvent") then
+                    commE:FireServer("ActivateAwakening", true)
+                end
+                local events = game:GetService("ReplicatedStorage"):FindFirstChild("Events")
+                local v4Event = events and events:FindFirstChild("ActivateRaceV4")
+                if v4Event and v4Event:IsA("BindableEvent") then
+                    v4Event:Fire()
+                end
+                local awk = remotes and remotes:FindFirstChild("Awakening")
+                if awk and awk:IsA("RemoteFunction") then
+                    awk:InvokeServer(true)
+                end
+            end)
+            local uis = game:GetService("UserInputService")
+            -- NEVER send keyboard events with VirtualInputManager on touch/mobile devices!
+            -- This was what caused Blox Fruits to convert the mobile HUD into PC HUD!
+            if not uis.TouchEnabled and uis.KeyboardEnabled then
+                pcall(function()
+                    local vim = game:GetService("VirtualInputManager")
+                    if vim then
+                        vim:SendKeyEvent(true, Enum.KeyCode.Y, false, game)
+                        task.wait(0.04)
+                        vim:SendKeyEvent(false, Enum.KeyCode.Y, false, game)
+                    end
+                end)
+            end
+        end
+
+        local function AutoPassRoom()
+            if not autoDungeonActive then return false end
+            local rooms = GetDungeonRooms()
+            if #rooms == 0 then return false end
+            local currentRoomIdx = 1
+            local char = lp.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if not hrp then return false end
+
+            local myPos = hrp.Position
+            local minDistanceToRoomCenter = math.huge
+            for i, room in ipairs(rooms) do
+                local roomPart = room:FindFirstChildOfClass("Part")
+                    or room:FindFirstChildOfClass("MeshPart")
+                    or room:FindFirstChild("Floor")
+                if roomPart then
+                    local dist = (roomPart.Position - myPos).Magnitude
+                    if dist < minDistanceToRoomCenter then
+                        minDistanceToRoomCenter = dist
+                        currentRoomIdx = i
+                    end
+                end
+            end
+            local activeRoom = rooms[currentRoomIdx]
+            if not activeRoom then return false end
+            local teleporter = activeRoom:FindFirstChild("ExitTeleporter")
+            if not teleporter then return false end
+            local rootPart = teleporter:FindFirstChild("Root")
+            if not rootPart or not rootPart:IsA("BasePart") then return false end
+            hrp.CFrame = rootPart.CFrame
+            task.wait(0.12)
+            if firetouchinterest then
+                pcall(function()
+                    firetouchinterest(hrp, rootPart, 0)
+                    task.wait(0.1)
+                    firetouchinterest(hrp, rootPart, 1)
+                end)
+            end
+            return true
+        end
+
         local function StartAutoBuffs()
             task.spawn(function()
                 while autoDungeonActive do
@@ -7686,12 +7848,7 @@ do
                             end
                         end
                         if autoV4Active then
-                            local vim = game:GetService("VirtualInputManager")
-                            if vim then
-                                vim:SendKeyEvent(true, Enum.KeyCode.Y, false, game)
-                                task.wait(0.05)
-                                vim:SendKeyEvent(false, Enum.KeyCode.Y, false, game)
-                            end
+                            TriggerRaceV4Safe()
                         end
                     end)
                     task.wait(2.5)
@@ -7702,6 +7859,26 @@ do
         local function RotateTargets()
             while autoDungeonActive do
                 pcall(function()
+                    -- Ensure weapon stays equipped according to dropdown selection
+                    EquipWeaponCategory(selectedWeapon)
+
+                    -- Protect mobile HUD from switching to PC
+                    local uis = game:GetService("UserInputService")
+                    if uis.TouchEnabled then
+                        local pGui = lp:FindFirstChildOfClass("PlayerGui")
+                        if pGui then
+                            local tg = pGui:FindFirstChild("TouchGui")
+                            if tg and not tg.Enabled then tg.Enabled = true end
+                            local main = pGui:FindFirstChild("Main")
+                            if main then
+                                local pcSkills = main:FindFirstChild("Skills")
+                                if pcSkills and pcSkills.Visible and pGui:FindFirstChild("ContextActionGui") then
+                                    pcSkills.Visible = false
+                                end
+                            end
+                        end
+                    end
+
                     local char = lp.Character
                     local root = char and char:FindFirstChild("HumanoidRootPart")
                     local enemies = Workspace:FindFirstChild("Enemies")
@@ -7730,6 +7907,11 @@ do
                                 if regAtk then regAtk:FireServer(0.1) end
                                 if regHit then regHit:FireServer(eRoot, { { closest:FindFirstChildOfClass("Humanoid"), eRoot } }) end
                             end
+                        else
+                            -- Room cleared! Navigate to next room if Auto Pass is enabled
+                            if autoDungeonActive and autoPassActive then
+                                AutoPassRoom()
+                            end
                         end
                     end
                 end)
@@ -7740,21 +7922,25 @@ do
         local dCard1 = CreateCard(DungeonPage, "Auto Dungeon Engine")
         AddToggle(dCard1, "Start Auto Dungeon", "Automatically clears dungeon mobs and bosses", false, function(v)
             autoDungeonActive = v
+            autoPassActive = v -- Auto Pass Room activates automatically when Dungeon is enabled!
             if v then
+                EquipWeaponCategory(selectedWeapon)
                 StartAutoBuffs()
                 task.spawn(RotateTargets)
             end
         end)
         AddChoice(dCard1, "Selected Weapon", {"Sword", "Melee", "Blox Fruit"}, 1, function(v)
             selectedWeapon = v
+            EquipWeaponCategory(v)
+            Notify("Dungeon Weapon", "Equipped " .. tostring(v))
         end)
         AddSlider(dCard1, "Attack Height", 10, 100, 40, 5, function(v)
             attackHeight = v
         end)
-        AddToggle(dCard1, "Auto Race V4", "Presses Y key automatically when gauge fills", false, function(v)
+        AddToggle(dCard1, "Auto Race V4", "Activates Race Awakening automatically without affecting HUD", false, function(v)
             autoV4Active = v
         end)
-        AddToggle(dCard1, "Auto Pass Room", "Automatically navigates to next room when cleared", false, function(v)
+        AddToggle(dCard1, "Auto Pass Room", "Automatically navigates to next room (linked to Dungeon)", false, function(v)
             autoPassActive = v
         end)
 
@@ -8411,12 +8597,29 @@ do
             end
         end)
 
-        -- Quick Verified Preset Tracks
-        AddButton(mCard1, "Play Montagem Phonk (1843588265)", function()
-            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("1843588265") end
+        -- Quick Guaranteed & Local Bypass Audio Tracks
+        AddButton(mCard1, "Play Montagem Phonk (Local Bypass)", function()
+            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("https://raw.githubusercontent.com/rivals-hash/idk/main/assets/audio/phonk.mp3") end
+            if _G.MonodyMusic and _G.MonodyMusic.PlayLocalBypass then
+                _G.MonodyMusic.PlayLocalBypass("https://raw.githubusercontent.com/rivals-hash/idk/main/assets/audio/phonk.mp3", "monody_phonk.mp3", "Montagem Phonk")
+            elseif _G.MonodyMusic then
+                _G.MonodyMusic.Play("7025810761", "Montagem Phonk")
+            end
+        end)
+
+        AddButton(mCard1, "Play Blox Fruits Theme (7025810761)", function()
+            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("7025810761") end
             if _G.MonodyMusic then
-                _G.MonodyMusic.Play("1843588265", "Montagem Ceita Phonk")
-                Notify("Music Player", "Now playing: Montagem Phonk")
+                _G.MonodyMusic.Play("7025810761", "Blox Fruits Main Theme")
+                Notify("Music Player", "Now playing: Blox Fruits Theme")
+            end
+        end)
+
+        AddButton(mCard1, "Play One Piece Overtaken (6948625906)", function()
+            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("6948625906") end
+            if _G.MonodyMusic then
+                _G.MonodyMusic.Play("6948625906", "One Piece Overtaken")
+                Notify("Music Player", "Now playing: One Piece Overtaken")
             end
         end)
 
@@ -8425,14 +8628,6 @@ do
             if _G.MonodyMusic then
                 _G.MonodyMusic.Play("9114223171", "Spooky Theme")
                 Notify("Music Player", "Now playing: Spooky Theme")
-            end
-        end)
-
-        AddButton(mCard1, "Play Fearless Phonk (90089940136467)", function()
-            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("90089940136467") end
-            if _G.MonodyMusic then
-                _G.MonodyMusic.Play("90089940136467", "Montagem Fearless")
-                Notify("Music Player", "Now playing: Montagem Fearless")
             end
         end)
 
