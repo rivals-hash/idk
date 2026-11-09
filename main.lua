@@ -1725,14 +1725,22 @@ do
     }
     _G.MonodyMusic = MonodyMusic
 
+    local function getSoundParent()
+        return Workspace.CurrentCamera or game:GetService("SoundService") or CoreGui
+    end
+
     local function InitMusicSound()
-        if not MonodyMusic.Sound then
+        local parent = getSoundParent()
+        if not MonodyMusic.Sound or not MonodyMusic.Sound.Parent then
             local snd = Instance.new("Sound")
             snd.Name = "MonodyBGM"
             snd.Volume = MonodyMusic.Volume
             snd.PlaybackSpeed = MonodyMusic.Pitch
             snd.Looped = MonodyMusic.Looped
-            pcall(function() snd.Parent = game:GetService("SoundService") end)
+            snd.RollOffMaxDistance = 10000000
+            snd.RollOffMinDistance = 10000000
+            snd.SoundGroup = nil
+            pcall(function() snd.Parent = parent end)
             snd.Ended:Connect(function()
                 if not MonodyMusic.Looped then
                     MonodyMusic.IsPlaying = false
@@ -1740,28 +1748,72 @@ do
                 end
             end)
             MonodyMusic.Sound = snd
+        else
+            pcall(function()
+                if MonodyMusic.Sound.Parent ~= parent then
+                    MonodyMusic.Sound.Parent = parent
+                end
+            end)
         end
         return MonodyMusic.Sound
     end
 
+    pcall(function()
+        Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+            pcall(function()
+                if MonodyMusic.Sound and Workspace.CurrentCamera then
+                    MonodyMusic.Sound.Parent = Workspace.CurrentCamera
+                end
+            end)
+        end)
+    end)
+
     function MonodyMusic.Play(soundId, trackName)
         local snd = InitMusicSound()
         if soundId and soundId ~= "" then
-            local formatted = tostring(soundId)
-            if not formatted:find("rbxassetid://") then
-                local cleanDigits = formatted:gsub("%D", "")
-                if #cleanDigits > 0 then
-                    formatted = "rbxassetid://" .. cleanDigits
+            local str = tostring(soundId):gsub("%s+", "")
+            local source = str
+
+            -- check custom asset bypass
+            if type(isfile) == "function" and type(getcustomasset) == "function" then
+                local candidates = { str, "darling_hub/" .. str, str .. ".mp3", "darling_hub/" .. str .. ".mp3" }
+                for _, path in ipairs(candidates) do
+                    local okC, exists = pcall(function() return isfile(path) end)
+                    if okC and exists then
+                        local okA, asset = pcall(function() return getcustomasset(path) end)
+                        if okA and asset then source = asset; break end
+                    end
                 end
             end
-            snd.SoundId = formatted
+
+            if not source:find("rbxassetid://") and not source:find("rbxasset://") and not source:find("http") then
+                local cleanDigits = source:match("%d+")
+                if cleanDigits and #cleanDigits > 0 then
+                    source = "rbxassetid://" .. cleanDigits
+                end
+            end
+
+            snd.SoundId = source
             MonodyMusic.CurrentSoundId = soundId
         end
         if trackName then MonodyMusic.CurrentTrackName = trackName end
         snd.Volume = MonodyMusic.Volume
         snd.PlaybackSpeed = MonodyMusic.Pitch
         snd.Looped = MonodyMusic.Looped
-        pcall(function() snd:Play() end)
+
+        task.spawn(function()
+            pcall(function()
+                game:GetService("ContentProvider"):PreloadAsync({ snd })
+            end)
+            pcall(function()
+                snd:Stop()
+                snd.TimePosition = 0
+                snd:Play()
+            end)
+            pcall(function()
+                game:GetService("SoundService"):PlayLocalSound(snd)
+            end)
+        end)
         MonodyMusic.IsPlaying = true
         if MonodyMusic.OnStateChanged then pcall(MonodyMusic.OnStateChanged) end
     end
@@ -4978,6 +5030,11 @@ local function AddInput(parentCard, titleText, placeholderText, defaultVal, call
     }
 
     pcall(function()
+        tb:GetPropertyChangedSignal("Text"):Connect(function()
+            if callback then
+                pcall(callback, tb.Text, false)
+            end
+        end)
         tb.FocusLost:Connect(function(enterPressed)
             if callback then
                 callback(tb.Text, enterPressed)
@@ -8191,31 +8248,21 @@ do
             end)
         end)
 
-        AddButton(ytCard, "Launch Audio Library Player", function()
-            Notify("Audio Library", "Loading external audio library...")
-            task.spawn(function()
-                local ok, err = pcall(function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/DevAuroraX/DevPlayMusic/refs/heads/aliinax/lua"))()
-                end)
-                if not ok then
-                    Notify("Audio Library", "Failed to load: " .. tostring(err))
-                end
-            end)
-        end)
-
         -- 2. Roblox Audio Player & Visualizer Controls
         local mCard1 = CreateCard(MusicPage, "Roblox Audio Player")
         local customIdInput = ""
 
-        AddInput(mCard1, "Custom Sound ID", "Enter Roblox Asset ID (e.g. 1843588265)...", "", function(v)
+        local soundInputObj = AddInput(mCard1, "Custom Sound ID", "Enter Roblox Asset ID (e.g. 1843588265)...", "", function(v)
             customIdInput = tostring(v or "")
         end)
 
         AddButton(mCard1, "Play", function()
+            local raw = (soundInputObj and soundInputObj.GetText and soundInputObj.GetText()) or customIdInput or ""
+            local trimmed = tostring(raw):gsub("^%s+", ""):gsub("%s+$", "")
             if _G.MonodyMusic then
-                if customIdInput and #customIdInput > 0 then
-                    _G.MonodyMusic.Play(customIdInput, "")
-                    Notify("Music Player", "Playing audio: " .. customIdInput)
+                if #trimmed > 0 then
+                    _G.MonodyMusic.Play(trimmed, "")
+                    Notify("Music Player", "Playing audio: " .. trimmed)
                 else
                     Notify("Music Player", "Enter a Sound ID first or launch YouTube player above.")
                 end
@@ -8243,7 +8290,7 @@ do
             end
         end)
 
-        AddSlider(mCard1, "Volume", 0, 100, 50, 5, function(v)
+        AddSlider(mCard1, "Volume", 0, 100, 100, 5, function(v)
             if _G.MonodyMusic then _G.MonodyMusic.SetVolume(v / 100) end
         end)
 
