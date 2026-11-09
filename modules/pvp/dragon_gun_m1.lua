@@ -153,10 +153,9 @@ local function GetClosestTarget()
     return closest
 end
 
--- RenderStepped attack loop
-RunService.RenderStepped:Connect(function()
-    if not _G.G_DragonGunM1 then return end
-    
+local attackConn = nil
+
+local function stepAttack()
     local char = LocalPlayer.Character
     local tool = char and char:FindFirstChildOfClass("Tool")
     
@@ -178,7 +177,16 @@ RunService.RenderStepped:Connect(function()
             end
         end
     end
-end)
+end
+
+local function setAttackLoopState(enabled)
+    if enabled and not attackConn then
+        attackConn = RunService.RenderStepped:Connect(stepAttack)
+    elseif not enabled and attackConn then
+        pcall(function() attackConn:Disconnect() end)
+        attackConn = nil
+    end
+end
 
 local function getWidgets()
     if rawget(_G, "DarlingX_ExtraWidgets") then
@@ -202,6 +210,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.KeyCode == Enum.KeyCode.G and _G.DarlingX_DragonM1Enabled then
         _G.G_DragonGunM1 = not _G.G_DragonGunM1
+        setAttackLoopState(_G.G_DragonGunM1)
         local widgets = getWidgets()
         if widgets and widgets.UpdateDragonM1Visual then
             widgets.UpdateDragonM1Visual(_G.G_DragonGunM1)
@@ -212,6 +221,7 @@ end)
 local DragonGunModule = {
     SetEnabled = function(state)
         _G.G_DragonGunM1 = (state == true)
+        setAttackLoopState(_G.G_DragonGunM1)
         local widgets = getWidgets()
         if widgets and widgets.UpdateDragonM1Visual then
             widgets.UpdateDragonM1Visual(_G.G_DragonGunM1)

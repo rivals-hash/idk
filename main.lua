@@ -1532,7 +1532,7 @@ local function RejoinServer()
     if qot then
         pcall(function()
             qot([[
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/main.lua?t=" .. tostring(os.time())))()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/loader.lua?t=" .. tostring(os.time())))()
             ]])
         end)
     end
@@ -2110,8 +2110,10 @@ do
     end)
 
     local eqAnimStep = 0
-    RunService.RenderStepped:Connect(function()
+    local wasPlaying = false
+    RunService.Heartbeat:Connect(function()
         if MonodyMusic.IsPlaying then
+            wasPlaying = true
             eqAnimStep = eqAnimStep + 0.16
             for i, bar in ipairs(eqBars) do
                 local h = math.clamp(3 + math.abs(math.sin(eqAnimStep + i * 0.45)) * 11, 2, 14)
@@ -2119,7 +2121,8 @@ do
                 bar.Position = UDim2.new((i - 1) / totalBars, 0, 1, -h)
                 bar.BackgroundTransparency = 0.35
             end
-        else
+        elseif wasPlaying then
+            wasPlaying = false
             for i, bar in ipairs(eqBars) do
                 bar.Size = UDim2.new(0, 2.5, 0, 2)
                 bar.Position = UDim2.new((i - 1) / totalBars, 0, 1, -2)
@@ -6025,17 +6028,21 @@ do
         statusPara.Text = "Status: Idle | Targets: Monitoring"
         statusPara.LayoutOrder = 1
         RegisterThemeText(statusPara)
-
         task.spawn(function()
+            local lastText = ""
             while true do
-                task.wait(0.3)
+                task.wait(1.0)
                 pcall(function()
-                    local mod = M.getAutoBounty()
-                    if mod then
+                    local mod = M.cache["modules/combat/auto_bounty.lua"]
+                    if mod and mod.Enabled then
                         local st = tostring(mod.Status or "Idle")
                         local tgt = mod.CurrentTarget
                         local tgtName = tgt and tgt.Name or "None"
-                        statusPara.Text = "Status: " .. st .. " | Target: " .. tgtName
+                        local newText = "Status: " .. st .. " | Target: " .. tgtName
+                        if newText ~= lastText then
+                            lastText = newText
+                            statusPara.Text = newText
+                        end
                     end
                 end)
             end
@@ -6546,7 +6553,7 @@ pcall(function()
         local fpsCount = 0
         local lastFpsCheck = os.clock()
         local fpsConn = nil
-        fpsConn = RunService.RenderStepped:Connect(function()
+        fpsConn = RunService.Heartbeat:Connect(function()
             fpsCount = fpsCount + 1
             if os.clock() - lastFpsCheck >= 1 then
                 if itemFps and itemFps.Parent then
@@ -6988,18 +6995,6 @@ end
 -- 3. PVP COMBAT & MOVEMENT TAB
 local PvPPage = RegisterTab("PvP", "PvP", "swords")
 local okPvP, errPvP = pcall(function()
-    task.spawn(function()
-        pcall(function()
-            M.getFastAttack()
-            M.getDragonGun()
-            M.getSanguineBoost()
-            M.getExtraWidgets()
-            M.getAutoCombat()
-            M.getCamlock()
-            M.getMoveMod()
-        end)
-    end)
-
     -- 1. Combat Passives & Auto Skills
     local combatCard = CreateCard(PvPPage, "Auto Combat")
 
