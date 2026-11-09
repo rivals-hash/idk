@@ -209,8 +209,10 @@ local function UpdateThemeColors()
 end
 
 local function RegisterThemeStroke(stroke)
+    if not stroke then return end
     table.insert(ThemeStrokes, stroke)
     stroke.Color = CurrentAccent
+    pcall(function() stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border end)
 end
 
 local function RegisterThemeText(label)
@@ -1110,18 +1112,24 @@ local function showKeyModal(AuroraX, onSuccess)
     getKeyBtn.Size = UDim2.new(0.48, 0, 1, 0)
     getKeyBtn.Position = UDim2.new(0, 0, 0, 0)
     getKeyBtn.BackgroundColor3 = Color3.fromRGB(32, 28, 40)
-    getKeyBtn.Font = Enum.Font.GothamBold
-    getKeyBtn.Text = "Get Key"
-    getKeyBtn.TextColor3 = Color3.fromRGB(220, 215, 235)
-    getKeyBtn.TextSize = 12
+    getKeyBtn.Text = ""
     getKeyBtn.AutoButtonColor = false
     getKeyBtn.Parent = btnRow
+
+    local gkLbl = Instance.new("TextLabel", getKeyBtn)
+    gkLbl.Size = UDim2.new(1, 0, 1, 0)
+    gkLbl.BackgroundTransparency = 1
+    gkLbl.Font = Enum.Font.GothamBold
+    gkLbl.Text = "Get Key"
+    gkLbl.TextColor3 = Color3.fromRGB(220, 215, 235)
+    gkLbl.TextSize = 12
 
     local gkCorner = Instance.new("UICorner")
     gkCorner.CornerRadius = UDim.new(0, 8)
     gkCorner.Parent = getKeyBtn
 
     local gkStroke = Instance.new("UIStroke")
+    gkStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     gkStroke.Color = Color3.fromRGB(55, 50, 68)
     gkStroke.Thickness = 1
     gkStroke.Parent = getKeyBtn
@@ -1144,18 +1152,24 @@ local function showKeyModal(AuroraX, onSuccess)
     verifyBtn.Size = UDim2.new(0.48, 0, 1, 0)
     verifyBtn.Position = UDim2.new(0.52, 0, 0, 0)
     verifyBtn.BackgroundColor3 = Color3.fromRGB(50, 42, 68)
-    verifyBtn.Font = Enum.Font.GothamBold
-    verifyBtn.Text = "Verify"
-    verifyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    verifyBtn.TextSize = 12
+    verifyBtn.Text = ""
     verifyBtn.AutoButtonColor = false
     verifyBtn.Parent = btnRow
+
+    local vLbl = Instance.new("TextLabel", verifyBtn)
+    vLbl.Size = UDim2.new(1, 0, 1, 0)
+    vLbl.BackgroundTransparency = 1
+    vLbl.Font = Enum.Font.GothamBold
+    vLbl.Text = "Verify"
+    vLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    vLbl.TextSize = 12
 
     local vCorner = Instance.new("UICorner")
     vCorner.CornerRadius = UDim.new(0, 8)
     vCorner.Parent = verifyBtn
 
     local vStroke = Instance.new("UIStroke")
+    vStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     vStroke.Color = Color3.fromRGB(80, 68, 105)
     vStroke.Thickness = 1
     vStroke.Parent = verifyBtn
@@ -1658,8 +1672,8 @@ Header.ZIndex = 15
 -- Logo Badge
 local LogoBadge = Instance.new("ImageLabel", Header)
 LogoBadge.Name = "HeaderLogo"
-LogoBadge.Size = UDim2.new(0, 24, 0, 24)
-LogoBadge.Position = UDim2.new(0, 14, 0.5, -12)
+LogoBadge.Size = UDim2.new(0, 22, 0, 22)
+LogoBadge.Position = UDim2.new(0, 10, 0.5, -11)
 LogoBadge.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 LogoBadge.BackgroundTransparency = 0
 LogoBadge.Image = GetLogoAsset()
@@ -1667,29 +1681,30 @@ LogoBadge.ScaleType = Enum.ScaleType.Crop
 LogoBadge.ZIndex = 16
 Instance.new("UICorner", LogoBadge).CornerRadius = UDim.new(0, 6)
 local lStroke = Instance.new("UIStroke", LogoBadge)
+lStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 lStroke.Color = CurrentAccent
-lStroke.Thickness = 1
+lStroke.Thickness = 0.8
 RegisterThemeStroke(lStroke)
 
 local Title = Instance.new("TextLabel", Header)
-Title.Position = UDim2.new(0, 46, 0, 6)
-Title.Size = UDim2.new(0, 180, 0, 16)
+Title.Position = UDim2.new(0, 36, 0, 6)
+Title.Size = UDim2.new(0, 48, 0, 16)
 Title.BackgroundTransparency = 1
-Title.Text = APP_TITLE .. "  •  " .. APP_VERSION
+Title.Text = APP_TITLE
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 13
+Title.TextSize = 12
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.ZIndex = 16
 
 local SubTitle = Instance.new("TextLabel", Header)
-SubTitle.Position = UDim2.new(0, 46, 0, 22)
-SubTitle.Size = UDim2.new(0, 140, 0, 12)
+SubTitle.Position = UDim2.new(0, 36, 0, 22)
+SubTitle.Size = UDim2.new(0, 48, 0, 12)
 SubTitle.BackgroundTransparency = 1
-SubTitle.Text = "by " .. APP_AUTHOR
+SubTitle.Text = APP_VERSION
 SubTitle.Font = Enum.Font.GothamMedium
-SubTitle.TextSize = 8.5
-SubTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+SubTitle.TextSize = 8
+SubTitle.TextColor3 = Color3.fromRGB(180, 175, 200)
 SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 SubTitle.ZIndex = 16
 
@@ -1790,57 +1805,60 @@ do
         if MonodyMusic.Sound then MonodyMusic.Sound.Looped = l end
     end
 
-    -- Top Music Bar on UI Header (Full Span across header, No Buttons, 0.7 Pill, Dynamic Equalizer)
+    -- Top Music Bar on UI Header (Full Span across header, 24-bar Dynamic Equalizer, 0.7 Pill)
     local TopMusicBar = Instance.new("Frame", Header)
     TopMusicBar.Name = "TopMusicBar"
-    TopMusicBar.Size = UDim2.new(1, -245, 0, 24)
-    TopMusicBar.Position = UDim2.new(0, 175, 0.5, -12)
+    TopMusicBar.Size = UDim2.new(1, -150, 0, 24)
+    TopMusicBar.Position = UDim2.new(0, 88, 0.5, -12)
     TopMusicBar.BackgroundColor3 = Color3.fromRGB(15, 12, 24)
     TopMusicBar.BackgroundTransparency = 0.45
     TopMusicBar.ZIndex = 16
     Instance.new("UICorner", TopMusicBar).CornerRadius = UDim.new(0.7, 0)
     local topMusicStroke = Instance.new("UIStroke", TopMusicBar)
+    topMusicStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     topMusicStroke.Color = CurrentAccent
     topMusicStroke.Thickness = 0.8
     topMusicStroke.Transparency = 0.5
     RegisterThemeStroke(topMusicStroke)
     MonodyMusic.TopBarFrame = TopMusicBar
 
-    -- Track Title Label (Full span across bar)
-    local TopMusicTitle = Instance.new("TextLabel", TopMusicBar)
-    TopMusicTitle.Name = "TrackTitle"
-    TopMusicTitle.Size = UDim2.new(1, -50, 1, 0)
-    TopMusicTitle.Position = UDim2.new(0, 14, 0, 0)
-    TopMusicTitle.BackgroundTransparency = 1
-    TopMusicTitle.Font = Enum.Font.GothamBold
-    TopMusicTitle.TextSize = 8.5
-    TopMusicTitle.TextColor3 = Color3.fromRGB(240, 235, 255)
-    TopMusicTitle.TextXAlignment = Enum.TextXAlignment.Left
-    TopMusicTitle.ClipsDescendants = true
-    TopMusicTitle.TextTruncate = Enum.TextTruncate.AtEnd
-    TopMusicTitle.Text = ""
-    TopMusicTitle.ZIndex = 17
-
-    -- Animated Multi-Bar Equalizer on the right side of the bar
+    -- Animated Multi-Bar Equalizer across the whole width of the bar
     local EqContainer = Instance.new("Frame", TopMusicBar)
     EqContainer.Name = "EqContainer"
-    EqContainer.Size = UDim2.new(0, 30, 0, 14)
-    EqContainer.Position = UDim2.new(1, -38, 0.5, -7)
+    EqContainer.Size = UDim2.new(1, -20, 0, 14)
+    EqContainer.Position = UDim2.new(0, 10, 0.5, -7)
     EqContainer.BackgroundTransparency = 1
     EqContainer.ZIndex = 17
 
     local eqBars = {}
-    for i = 1, 6 do
+    local totalBars = 24
+    for i = 1, totalBars do
         local bar = Instance.new("Frame", EqContainer)
         bar.Name = "EqBar" .. i
         bar.Size = UDim2.new(0, 2.5, 0, 2)
-        bar.Position = UDim2.new(0, (i - 1) * 5, 1, -2)
+        bar.Position = UDim2.new((i - 1) / totalBars, 0, 1, -2)
         bar.BackgroundColor3 = CurrentAccent
-        bar.ZIndex = 18
+        bar.BackgroundTransparency = 0.8
+        bar.ZIndex = 17
         Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
         RegisterThemeFill(bar)
         table.insert(eqBars, bar)
     end
+
+    -- Track Title Label (Clean crisp text centered across the full bar)
+    local TopMusicTitle = Instance.new("TextLabel", TopMusicBar)
+    TopMusicTitle.Name = "TrackTitle"
+    TopMusicTitle.Size = UDim2.new(1, -24, 1, 0)
+    TopMusicTitle.Position = UDim2.new(0, 12, 0, 0)
+    TopMusicTitle.BackgroundTransparency = 1
+    TopMusicTitle.Font = Enum.Font.GothamBold
+    TopMusicTitle.TextSize = 8.5
+    TopMusicTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TopMusicTitle.TextXAlignment = Enum.TextXAlignment.Center
+    TopMusicTitle.ClipsDescendants = true
+    TopMusicTitle.TextTruncate = Enum.TextTruncate.AtEnd
+    TopMusicTitle.Text = ""
+    TopMusicTitle.ZIndex = 18
 
     -- Click TopMusicBar to toggle playback
     local clickOverlay = Instance.new("TextButton", TopMusicBar)
@@ -1862,16 +1880,18 @@ do
     local eqAnimStep = 0
     RunService.RenderStepped:Connect(function()
         if MonodyMusic.IsPlaying then
-            eqAnimStep = eqAnimStep + 0.18
+            eqAnimStep = eqAnimStep + 0.16
             for i, bar in ipairs(eqBars) do
-                local h = math.clamp(4 + math.abs(math.sin(eqAnimStep + i * 0.75)) * 10, 3, 14)
+                local h = math.clamp(3 + math.abs(math.sin(eqAnimStep + i * 0.45)) * 11, 2, 14)
                 bar.Size = UDim2.new(0, 2.5, 0, h)
-                bar.Position = UDim2.new(0, (i - 1) * 5, 1, -h)
+                bar.Position = UDim2.new((i - 1) / totalBars, 0, 1, -h)
+                bar.BackgroundTransparency = 0.35
             end
         else
             for i, bar in ipairs(eqBars) do
                 bar.Size = UDim2.new(0, 2.5, 0, 2)
-                bar.Position = UDim2.new(0, (i - 1) * 5, 1, -2)
+                bar.Position = UDim2.new((i - 1) / totalBars, 0, 1, -2)
+                bar.BackgroundTransparency = 0.85
             end
         end
     end)
@@ -1884,21 +1904,30 @@ end
 -- Window Controls (Minimize & Close)
 local function createHeaderBtn(symbol, offsetRight, color, callback)
     local btn = Instance.new("TextButton", Header)
-    btn.Size = UDim2.new(0, 24, 0, 24)
-    btn.Position = UDim2.new(1, offsetRight, 0.5, -12)
+    btn.Size = UDim2.new(0, 22, 0, 22)
+    btn.Position = UDim2.new(1, offsetRight, 0.5, -11)
     btn.BackgroundColor3 = Color3.fromRGB(15, 12, 22)
     btn.BackgroundTransparency = 0.5
-    btn.Text = symbol
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 12
-    btn.TextColor3 = color
+    btn.Text = ""
     btn.AutoButtonColor = false
     btn.Active = true
     btn.ZIndex = 16
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 7)
     local str = Instance.new("UIStroke", btn)
+    str.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     str.Color = color
-    str.Thickness = 1
+    str.Thickness = 0.8
+    
+    local lbl = Instance.new("TextLabel", btn)
+    lbl.Size = UDim2.new(1, 0, 1, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = symbol
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 11
+    lbl.TextColor3 = color
+    lbl.Active = false
+    lbl.ZIndex = 17
+
     ConnectButton(btn, callback)
     return btn
 end
@@ -1947,8 +1976,8 @@ local function fullCloseUI()
     print("[Monody] Closed completely.")
 end
 
-createHeaderBtn("-", -60, Color3.fromRGB(255, 255, 255), minimizeUI)
-createHeaderBtn("X", -30, Color3.fromRGB(255, 75, 75), fullCloseUI)
+createHeaderBtn("-", -54, Color3.fromRGB(255, 255, 255), minimizeUI)
+createHeaderBtn("X", -28, Color3.fromRGB(255, 75, 75), fullCloseUI)
 ConnectButton(FloatingOpen, maximizeUI)
 
 -- Dragging Support
@@ -4225,6 +4254,7 @@ local function BuildTabEntity(tabId, tabName, lucideName, orderIndex)
     Instance.new("UICorner", dockBtn).CornerRadius = UDim.new(0, 8)
 
     local btnStroke = Instance.new("UIStroke", dockBtn)
+    btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     btnStroke.Color = Color3.fromRGB(48, 42, 68)
     btnStroke.Thickness = 0.8
     btnStroke.Transparency = 0.4
@@ -4400,11 +4430,7 @@ local function AddButton(parentCard, btnText, callback)
     btn.Size = UDim2.new(1, 0, 0, 28)
     btn.BackgroundColor3 = Color3.fromRGB(22, 18, 32)
     btn.BackgroundTransparency = 0.45
-    btn.Text = btnText
-    RegisterTranslatable(btn, btnText)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 9.5
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Text = ""
     btn.AutoButtonColor = false
     btn.Active = true
     btn.Selectable = true
@@ -4412,10 +4438,23 @@ local function AddButton(parentCard, btnText, callback)
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
 
     local bStroke = Instance.new("UIStroke", btn)
+    bStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     bStroke.Color = CurrentAccent
-    bStroke.Thickness = 1
+    bStroke.Thickness = 0.8
     bStroke.Transparency = 0.5
     RegisterThemeStroke(bStroke)
+
+    local btnLbl = Instance.new("TextLabel", btn)
+    btnLbl.Name = "Label"
+    btnLbl.Size = UDim2.new(1, 0, 1, 0)
+    btnLbl.BackgroundTransparency = 1
+    btnLbl.Text = btnText
+    RegisterTranslatable(btnLbl, btnText)
+    btnLbl.Font = Enum.Font.GothamBold
+    btnLbl.TextSize = 9.5
+    btnLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnLbl.Active = false
+    btnLbl.ZIndex = 13
 
     ConnectButton(btn, function()
         TweenService:Create(btn, TweenInfo.new(0.1), { BackgroundTransparency = 0.15 }):Play()
@@ -6083,20 +6122,27 @@ pcall(function()
         local btn = Instance.new("TextButton", navRowHome)
         btn.BackgroundColor3 = Color3.fromRGB(22, 18, 32)
         btn.BackgroundTransparency = 0.45
-        btn.Text = txt
-        btn.Font = Enum.Font.GothamBold
-        btn.TextSize = 8.5
-        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Text = ""
         btn.AutoButtonColor = false
         btn.Active = true
         btn.Selectable = true
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
         local bStr = Instance.new("UIStroke", btn)
+        bStr.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         bStr.Color = CurrentAccent
         bStr.Thickness = 0.8
         bStr.Transparency = 0.5
         RegisterThemeStroke(bStr)
-        RegisterTranslatable(btn, txt)
+
+        local btnLbl = Instance.new("TextLabel", btn)
+        btnLbl.Size = UDim2.new(1, 0, 1, 0)
+        btnLbl.BackgroundTransparency = 1
+        btnLbl.Font = Enum.Font.GothamBold
+        btnLbl.Text = txt
+        btnLbl.TextSize = 8.5
+        btnLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+        RegisterTranslatable(btnLbl, txt)
+
         ConnectButton(btn, callback)
         return btn
     end
@@ -6642,22 +6688,30 @@ local okAimbot, errAimbot = pcall(function()
         bBtn.Name = "BL_" .. s.name:gsub("%s+", "_")
         bBtn.BackgroundColor3 = Color3.fromRGB(22, 18, 30)
         bBtn.BackgroundTransparency = 0.5
-        bBtn.Text = s.name .. ": ALLOWED"
-        bBtn.TextColor3 = Color3.fromRGB(200, 195, 215)
-        bBtn.Font = Enum.Font.GothamBold
-        bBtn.TextSize = 8
+        bBtn.Text = ""
+        bBtn.AutoButtonColor = false
         bBtn.Active = true
         bBtn.Selectable = true
         bBtn.ZIndex = 12
         Instance.new("UICorner", bBtn).CornerRadius = UDim.new(0, 6)
         local stroke = Instance.new("UIStroke", bBtn)
+        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         stroke.Thickness = 0.8
         stroke.Color = Color3.fromRGB(55, 50, 75)
 
+        local bLbl = Instance.new("TextLabel", bBtn)
+        bLbl.Size = UDim2.new(1, 0, 1, 0)
+        bLbl.BackgroundTransparency = 1
+        bLbl.Font = Enum.Font.GothamBold
+        bLbl.TextSize = 8
+        bLbl.TextColor3 = Color3.fromRGB(200, 195, 215)
+        bLbl.Text = s.name .. ": ALLOWED"
+        bLbl.ZIndex = 13
+
         ConnectButton(bBtn, function()
             isBlacklisted = not isBlacklisted
-            bBtn.Text = s.name .. ": " .. (isBlacklisted and "EXCLUDED" or "ALLOWED")
-            bBtn.TextColor3 = isBlacklisted and Color3.fromRGB(239, 68, 68) or Color3.fromRGB(200, 195, 215)
+            bLbl.Text = s.name .. ": " .. (isBlacklisted and "EXCLUDED" or "ALLOWED")
+            bLbl.TextColor3 = isBlacklisted and Color3.fromRGB(239, 68, 68) or Color3.fromRGB(200, 195, 215)
             stroke.Color = isBlacklisted and Color3.fromRGB(239, 68, 68) or Color3.fromRGB(55, 50, 75)
 
             local blMod = RequireModule("modules/combat/blacklist.lua")
@@ -6960,21 +7014,28 @@ local okESP, errESP = pcall(function()
         local btn = Instance.new("TextButton", quickRow)
         btn.BackgroundColor3 = Color3.fromRGB(22, 18, 32)
         btn.BackgroundTransparency = 0.45
-        btn.Text = txt
-        btn.Font = Enum.Font.GothamBold
-        btn.TextSize = 8.5
-        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Text = ""
         btn.AutoButtonColor = false
         btn.Active = true
         btn.Selectable = true
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
         local bStr = Instance.new("UIStroke", btn)
+        bStr.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         bStr.Color = CurrentAccent
         bStr.Thickness = 0.8
         bStr.Transparency = 0.5
         RegisterThemeStroke(bStr)
+
+        local bLbl = Instance.new("TextLabel", btn)
+        bLbl.Size = UDim2.new(1, 0, 1, 0)
+        bLbl.BackgroundTransparency = 1
+        bLbl.Font = Enum.Font.GothamBold
+        bLbl.TextSize = 8.5
+        bLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+        bLbl.Text = txt
+        RegisterTranslatable(bLbl, txt)
+
         ConnectButton(btn, callback)
-        RegisterTranslatable(btn, txt)
         return btn
     end
 
@@ -7091,16 +7152,23 @@ do
         StopSpecBtn.Position = UDim2.new(0.5, -70, 0, 15)
         StopSpecBtn.BackgroundColor3 = Color3.fromRGB(20, 16, 28)
         StopSpecBtn.BackgroundTransparency = 0.3
-        StopSpecBtn.Text = "Stop Spectating"
-        StopSpecBtn.Font = Enum.Font.GothamBold
-        StopSpecBtn.TextSize = 10
-        StopSpecBtn.TextColor3 = Color3.fromRGB(255, 90, 90)
+        StopSpecBtn.Text = ""
+        StopSpecBtn.AutoButtonColor = false
         StopSpecBtn.Visible = false
         Instance.new("UICorner", StopSpecBtn).CornerRadius = UDim.new(0, 8)
         local specStroke = Instance.new("UIStroke", StopSpecBtn)
+        specStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         specStroke.Color = Color3.fromRGB(255, 90, 90)
         specStroke.Thickness = 1
-        RegisterTranslatable(StopSpecBtn, "Stop Spectating")
+
+        local specLbl = Instance.new("TextLabel", StopSpecBtn)
+        specLbl.Size = UDim2.new(1, 0, 1, 0)
+        specLbl.BackgroundTransparency = 1
+        specLbl.Font = Enum.Font.GothamBold
+        specLbl.TextSize = 10
+        specLbl.TextColor3 = Color3.fromRGB(255, 90, 90)
+        specLbl.Text = "Stop Spectating"
+        RegisterTranslatable(specLbl, "Stop Spectating")
 
         local currentSpectating = nil
         local function StopSpectate()
@@ -7128,45 +7196,50 @@ do
                 if filterText == "" or pName:lower():find(filterText:lower(), 1, true) or pDisp:lower():find(filterText:lower(), 1, true) then
                     local pRow = Instance.new("Frame", pCard)
                     pRow.Name = "PlayerRow_" .. p.UserId
-                    pRow.Size = UDim2.new(1, 0, 0, 54)
-                    pRow.BackgroundColor3 = Color3.fromRGB(18, 14, 26)
-                    pRow.BackgroundTransparency = 0.45
+                    pRow.Size = UDim2.new(1, 0, 0, 48)
+                    pRow.BackgroundColor3 = Color3.fromRGB(15, 12, 22)
+                    pRow.BackgroundTransparency = 0.75
                     pRow.BorderSizePixel = 0
                     pRow.LayoutOrder = 10 + idx
                     Instance.new("UICorner", pRow).CornerRadius = UDim.new(0, 8)
+                    local rStroke = Instance.new("UIStroke", pRow)
+                    rStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                    rStroke.Color = Color3.fromRGB(45, 40, 60)
+                    rStroke.Thickness = 0.8
+                    rStroke.Transparency = 0.6
 
                     local avatarImg = Instance.new("ImageLabel", pRow)
-                    avatarImg.Size = UDim2.new(0, 38, 0, 38)
-                    avatarImg.Position = UDim2.new(0, 8, 0.5, -19)
+                    avatarImg.Size = UDim2.new(0, 32, 0, 32)
+                    avatarImg.Position = UDim2.new(0, 8, 0.5, -16)
                     avatarImg.BackgroundColor3 = Color3.fromRGB(25, 20, 35)
                     avatarImg.Image = "rbxthumb://type=AvatarHeadShot&id=" .. p.UserId .. "&w=150&h=150"
                     Instance.new("UICorner", avatarImg).CornerRadius = UDim.new(1, 0)
 
                     local nameLbl = Instance.new("TextLabel", pRow)
-                    nameLbl.Size = UDim2.new(1, -205, 0, 16)
-                    nameLbl.Position = UDim2.new(0, 52, 0, 6)
+                    nameLbl.Size = UDim2.new(1, -178, 0, 15)
+                    nameLbl.Position = UDim2.new(0, 46, 0, 6)
                     nameLbl.BackgroundTransparency = 1
                     nameLbl.Font = Enum.Font.GothamBold
-                    nameLbl.TextSize = 10.5
+                    nameLbl.TextSize = 10
                     nameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
                     nameLbl.TextXAlignment = Enum.TextXAlignment.Left
                     nameLbl.TextTruncate = Enum.TextTruncate.AtEnd
                     nameLbl.Text = pDisp .. (p == lp and " (You)" or "")
 
                     local uLbl = Instance.new("TextLabel", pRow)
-                    uLbl.Size = UDim2.new(1, -205, 0, 12)
-                    uLbl.Position = UDim2.new(0, 52, 0, 22)
+                    uLbl.Size = UDim2.new(1, -178, 0, 11)
+                    uLbl.Position = UDim2.new(0, 46, 0, 20)
                     uLbl.BackgroundTransparency = 1
                     uLbl.Font = Enum.Font.GothamMedium
-                    uLbl.TextSize = 8.5
+                    uLbl.TextSize = 8
                     uLbl.TextColor3 = Color3.fromRGB(180, 175, 200)
                     uLbl.TextXAlignment = Enum.TextXAlignment.Left
                     uLbl.TextTruncate = Enum.TextTruncate.AtEnd
                     uLbl.Text = "@" .. pName
 
                     local hpTrack = Instance.new("Frame", pRow)
-                    hpTrack.Size = UDim2.new(0, 120, 0, 5)
-                    hpTrack.Position = UDim2.new(0, 52, 0, 38)
+                    hpTrack.Size = UDim2.new(0, 75, 0, 4)
+                    hpTrack.Position = UDim2.new(0, 46, 0, 33)
                     hpTrack.BackgroundColor3 = Color3.fromRGB(30, 26, 42)
                     Instance.new("UICorner", hpTrack).CornerRadius = UDim.new(1, 0)
 
@@ -7176,11 +7249,11 @@ do
                     Instance.new("UICorner", hpFill).CornerRadius = UDim.new(1, 0)
 
                     local hpLbl = Instance.new("TextLabel", pRow)
-                    hpLbl.Size = UDim2.new(0, 50, 0, 12)
-                    hpLbl.Position = UDim2.new(0, 176, 0, 34)
+                    hpLbl.Size = UDim2.new(0, 35, 0, 10)
+                    hpLbl.Position = UDim2.new(0, 125, 0, 30)
                     hpLbl.BackgroundTransparency = 1
                     hpLbl.Font = Enum.Font.GothamMedium
-                    hpLbl.TextSize = 8
+                    hpLbl.TextSize = 7.5
                     hpLbl.TextColor3 = Color3.fromRGB(210, 205, 225)
                     hpLbl.TextXAlignment = Enum.TextXAlignment.Left
                     hpLbl.Text = "100%"
@@ -7220,32 +7293,38 @@ do
                     if p ~= lp then
                         local btnBox = Instance.new("Frame", pRow)
                         btnBox.Name = "ActionBox"
-                        btnBox.Size = UDim2.new(0, 136, 0, 26)
-                        btnBox.Position = UDim2.new(1, -142, 0.5, -13)
+                        btnBox.Size = UDim2.new(0, 124, 0, 24)
+                        btnBox.Position = UDim2.new(1, -128, 0.5, -12)
                         btnBox.BackgroundTransparency = 1
 
                         local bList = Instance.new("UIListLayout", btnBox)
                         bList.FillDirection = Enum.FillDirection.Horizontal
                         bList.HorizontalAlignment = Enum.HorizontalAlignment.Right
                         bList.VerticalAlignment = Enum.VerticalAlignment.Center
-                        bList.Padding = UDim.new(0, 6)
+                        bList.Padding = UDim.new(0, 5)
 
                         local blBtn = Instance.new("TextButton", btnBox)
-                        blBtn.Size = UDim2.new(0, 64, 0, 24)
+                        blBtn.Size = UDim2.new(0, 58, 0, 24)
                         local isBl = _G.DarlingBlacklistedPlayers and _G.DarlingBlacklistedPlayers[p.UserId]
                         blBtn.BackgroundColor3 = isBl and Color3.fromRGB(231, 76, 60) or Color3.fromRGB(28, 22, 38)
-                        blBtn.Text = isBl and "Blacklisted" or "Blacklist"
-                        blBtn.Font = Enum.Font.GothamBold
-                        blBtn.TextSize = 8
-                        blBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        blBtn.Text = ""
                         blBtn.AutoButtonColor = false
                         Instance.new("UICorner", blBtn).CornerRadius = UDim.new(0, 6)
                         local blStroke = Instance.new("UIStroke", blBtn)
+                        blStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                         blStroke.Color = CurrentAccent
                         blStroke.Thickness = 0.8
                         blStroke.Transparency = 0.5
                         RegisterThemeStroke(blStroke)
-                        RegisterTranslatable(blBtn, blBtn.Text)
+
+                        local blLbl = Instance.new("TextLabel", blBtn)
+                        blLbl.Size = UDim2.new(1, 0, 1, 0)
+                        blLbl.BackgroundTransparency = 1
+                        blLbl.Font = Enum.Font.GothamBold
+                        blLbl.TextSize = 8
+                        blLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        blLbl.Text = isBl and "Blacklisted" or "Blacklist"
+                        RegisterTranslatable(blLbl, blLbl.Text)
 
                         ConnectButton(blBtn, function()
                             _G.DarlingBlacklistedPlayers = _G.DarlingBlacklistedPlayers or {}
@@ -7253,26 +7332,32 @@ do
                             _G.DarlingBlacklistedPlayers[p.UserId] = nextState
                             _G.DarlingBlacklistedPlayers[p.Name] = nextState
                             blBtn.BackgroundColor3 = nextState and Color3.fromRGB(231, 76, 60) or Color3.fromRGB(28, 22, 38)
-                            blBtn.Text = nextState and "Blacklisted" or "Blacklist"
-                            RegisterTranslatable(blBtn, blBtn.Text)
+                            blLbl.Text = nextState and "Blacklisted" or "Blacklist"
+                            RegisterTranslatable(blLbl, blLbl.Text)
                             Notify("Blacklist", (nextState and "Added " or "Removed ") .. pName)
                         end)
 
                         local specBtn = Instance.new("TextButton", btnBox)
-                        specBtn.Size = UDim2.new(0, 64, 0, 24)
+                        specBtn.Size = UDim2.new(0, 58, 0, 24)
                         specBtn.BackgroundColor3 = Color3.fromRGB(28, 22, 38)
-                        specBtn.Text = "Spectate"
-                        specBtn.Font = Enum.Font.GothamBold
-                        specBtn.TextSize = 8
-                        specBtn.TextColor3 = CurrentAccent
+                        specBtn.Text = ""
                         specBtn.AutoButtonColor = false
                         Instance.new("UICorner", specBtn).CornerRadius = UDim.new(0, 6)
                         local spStroke = Instance.new("UIStroke", specBtn)
+                        spStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                         spStroke.Color = CurrentAccent
                         spStroke.Thickness = 0.8
                         spStroke.Transparency = 0.5
                         RegisterThemeStroke(spStroke)
-                        RegisterTranslatable(specBtn, "Spectate")
+
+                        local spLbl = Instance.new("TextLabel", specBtn)
+                        spLbl.Size = UDim2.new(1, 0, 1, 0)
+                        spLbl.BackgroundTransparency = 1
+                        spLbl.Font = Enum.Font.GothamBold
+                        spLbl.TextSize = 8
+                        spLbl.TextColor3 = CurrentAccent
+                        spLbl.Text = "Spectate"
+                        RegisterTranslatable(spLbl, "Spectate")
 
                         ConnectButton(specBtn, function()
                             if currentSpectating == p then
@@ -8508,17 +8593,26 @@ local okThemes, errThemes = pcall(function()
         local tBtn = Instance.new("TextButton", tGrid)
         tBtn.Name = "ThemeBtn_" .. name
         tBtn.BackgroundColor3 = col
-        tBtn.Text = name
-        tBtn.TextColor3 = (name == "White") and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
-        tBtn.Font = Enum.Font.GothamBold
-        tBtn.TextSize = 7.5
+        tBtn.Text = ""
+        tBtn.AutoButtonColor = false
         tBtn.Active = true
         tBtn.Selectable = true
         tBtn.ZIndex = 12
         Instance.new("UICorner", tBtn).CornerRadius = UDim.new(0, 6)
         local btnStr = Instance.new("UIStroke", tBtn)
+        btnStr.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         btnStr.Color = (name == CurrentThemeName) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(40, 35, 55)
         btnStr.Thickness = (name == CurrentThemeName) and 1.5 or 0.8
+
+        local tLbl = Instance.new("TextLabel", tBtn)
+        tLbl.Size = UDim2.new(1, 0, 1, 0)
+        tLbl.BackgroundTransparency = 1
+        tLbl.Font = Enum.Font.GothamBold
+        tLbl.TextSize = 7.5
+        tLbl.TextColor3 = (name == "White") and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
+        tLbl.Text = name
+        tLbl.ZIndex = 13
+
         ThemeButtons[name] = tBtn
         ConnectButton(tBtn, function()
             ApplyTheme(name)
@@ -8569,20 +8663,29 @@ local okThemes, errThemes = pcall(function()
     applyBtn.Name = "ApplyWpBtn"
     applyBtn.BackgroundColor3 = Color3.fromRGB(24, 20, 36)
     applyBtn.BackgroundTransparency = 0.4
-    applyBtn.Text = "Apply Wallpaper"
-    applyBtn.Font = Enum.Font.GothamBold
-    applyBtn.TextSize = 8.5
-    applyBtn.TextColor3 = CurrentAccent
+    applyBtn.Text = ""
+    applyBtn.AutoButtonColor = false
     applyBtn.Active = true
     applyBtn.Selectable = true
     applyBtn.ZIndex = 12
-    RegisterThemeText(applyBtn)
     Instance.new("UICorner", applyBtn).CornerRadius = UDim.new(0, 6)
     local aStr = Instance.new("UIStroke", applyBtn)
+    aStr.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     aStr.Color = CurrentAccent
     aStr.Thickness = 0.8
     RegisterThemeStroke(aStr)
-    RegisterTranslatable(applyBtn, "Apply Wallpaper")
+
+    local aLbl = Instance.new("TextLabel", applyBtn)
+    aLbl.Size = UDim2.new(1, 0, 1, 0)
+    aLbl.BackgroundTransparency = 1
+    aLbl.Font = Enum.Font.GothamBold
+    aLbl.TextSize = 8.5
+    aLbl.TextColor3 = CurrentAccent
+    aLbl.Text = "Apply Wallpaper"
+    aLbl.ZIndex = 13
+    RegisterThemeText(aLbl)
+    RegisterTranslatable(aLbl, "Apply Wallpaper")
+
     ConnectButton(applyBtn, function()
         ApplyCustomWallpaper(customInput.GetText())
     end)
@@ -8591,18 +8694,27 @@ local okThemes, errThemes = pcall(function()
     clearBtn.Name = "ClearWpBtn"
     clearBtn.BackgroundColor3 = Color3.fromRGB(24, 20, 36)
     clearBtn.BackgroundTransparency = 0.4
-    clearBtn.Text = "Clear / Dark Glass"
-    clearBtn.Font = Enum.Font.GothamBold
-    clearBtn.TextSize = 8.5
-    clearBtn.TextColor3 = Color3.fromRGB(200, 195, 215)
+    clearBtn.Text = ""
+    clearBtn.AutoButtonColor = false
     clearBtn.Active = true
     clearBtn.Selectable = true
     clearBtn.ZIndex = 12
-    RegisterTranslatable(clearBtn, "Clear / Dark Glass")
     Instance.new("UICorner", clearBtn).CornerRadius = UDim.new(0, 6)
     local cStr = Instance.new("UIStroke", clearBtn)
+    cStr.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     cStr.Color = Color3.fromRGB(60, 55, 80)
     cStr.Thickness = 0.8
+
+    local cLbl = Instance.new("TextLabel", clearBtn)
+    cLbl.Size = UDim2.new(1, 0, 1, 0)
+    cLbl.BackgroundTransparency = 1
+    cLbl.Font = Enum.Font.GothamBold
+    cLbl.TextSize = 8.5
+    cLbl.TextColor3 = Color3.fromRGB(200, 195, 215)
+    cLbl.Text = "Clear / Dark Glass"
+    cLbl.ZIndex = 13
+    RegisterTranslatable(cLbl, "Clear / Dark Glass")
+
     ConnectButton(clearBtn, function()
         ApplyCustomWallpaper("none")
     end)
@@ -8657,21 +8769,29 @@ local okThemes, errThemes = pcall(function()
         btn.Name = "NavBtn_" .. txt:sub(1, 6):gsub("[^%w_]+", "_")
         btn.BackgroundColor3 = Color3.fromRGB(22, 18, 32)
         btn.BackgroundTransparency = 0.45
-        btn.Text = txt
-        btn.Font = Enum.Font.GothamBold
-        btn.TextSize = 8.5
-        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Text = ""
         btn.AutoButtonColor = false
         btn.Active = true
         btn.Selectable = true
         btn.ZIndex = 12
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
         local bStr = Instance.new("UIStroke", btn)
+        bStr.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         bStr.Color = CurrentAccent
         bStr.Thickness = 0.8
         bStr.Transparency = 0.5
         RegisterThemeStroke(bStr)
-        RegisterTranslatable(btn, txt)
+
+        local bLbl = Instance.new("TextLabel", btn)
+        bLbl.Size = UDim2.new(1, 0, 1, 0)
+        bLbl.BackgroundTransparency = 1
+        bLbl.Font = Enum.Font.GothamBold
+        bLbl.TextSize = 8.5
+        bLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+        bLbl.Text = txt
+        bLbl.ZIndex = 13
+        RegisterTranslatable(bLbl, txt)
+
         ConnectButton(btn, callback)
         return btn
     end
@@ -8712,18 +8832,27 @@ local okThemes, errThemes = pcall(function()
         pBtn.Name = "WpBtn_" .. tostring(i)
         pBtn.BackgroundColor3 = Color3.fromRGB(20, 16, 28)
         pBtn.BackgroundTransparency = 0.55
-        pBtn.Text = string.format("[%02d] %s", i, wp.name:sub(1, 16))
-        pBtn.Font = Enum.Font.GothamBold
-        pBtn.TextSize = 7.5
-        pBtn.TextColor3 = Color3.fromRGB(220, 215, 240)
-        pBtn.TextXAlignment = Enum.TextXAlignment.Center
+        pBtn.Text = ""
+        pBtn.AutoButtonColor = false
         pBtn.Active = true
         pBtn.Selectable = true
         pBtn.ZIndex = 12
         Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0, 5)
         local pStr = Instance.new("UIStroke", pBtn)
+        pStr.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         pStr.Color = (i == currentBgIdx) and CurrentAccent or Color3.fromRGB(45, 40, 60)
         pStr.Thickness = 0.8
+
+        local pLbl = Instance.new("TextLabel", pBtn)
+        pLbl.Size = UDim2.new(1, 0, 1, 0)
+        pLbl.BackgroundTransparency = 1
+        pLbl.Font = Enum.Font.GothamBold
+        pLbl.TextSize = 7.5
+        pLbl.TextColor3 = Color3.fromRGB(220, 215, 240)
+        pLbl.Text = string.format("[%02d] %s", i, wp.name:sub(1, 16))
+        pLbl.TextXAlignment = Enum.TextXAlignment.Center
+        pLbl.ZIndex = 13
+
         ConnectButton(pBtn, function()
             SetWallpaper(i)
         end)

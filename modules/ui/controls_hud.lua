@@ -281,6 +281,7 @@ local function setEditControlsMode(enabled)
         barCorner.Parent = bar
 
         local barStroke = Instance.new("UIStroke")
+        barStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         barStroke.Color = Color3.fromRGB(60, 60, 80)
         barStroke.Thickness = 1.2
         barStroke.Parent = bar
@@ -302,17 +303,24 @@ local function setEditControlsMode(enabled)
         cancelBtn.Size = UDim2.new(0, 100, 0, 28)
         cancelBtn.Position = UDim2.new(1, -220, 0, 7)
         cancelBtn.BackgroundColor3 = Color3.fromRGB(36, 26, 32)
-        cancelBtn.Text = "Discard"
-        cancelBtn.TextColor3 = Color3.fromRGB(255, 200, 210)
-        cancelBtn.Font = Enum.Font.GothamBold
-        cancelBtn.TextSize = 11
+        cancelBtn.Text = ""
+        cancelBtn.AutoButtonColor = false
         cancelBtn.Parent = bar
+
+        local cLbl = Instance.new("TextLabel", cancelBtn)
+        cLbl.Size = UDim2.new(1, 0, 1, 0)
+        cLbl.BackgroundTransparency = 1
+        cLbl.Font = Enum.Font.GothamBold
+        cLbl.Text = "Discard"
+        cLbl.TextColor3 = Color3.fromRGB(255, 200, 210)
+        cLbl.TextSize = 11
 
         local cCorner = Instance.new("UICorner")
         cCorner.CornerRadius = UDim.new(0, 6)
         cCorner.Parent = cancelBtn
 
         local cStroke = Instance.new("UIStroke")
+        cStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         cStroke.Color = Color3.fromRGB(80, 45, 55)
         cStroke.Thickness = 1
         cStroke.Parent = cancelBtn
@@ -324,17 +332,24 @@ local function setEditControlsMode(enabled)
         doneBtn.Size = UDim2.new(0, 105, 0, 28)
         doneBtn.Position = UDim2.new(1, -114, 0, 7)
         doneBtn.BackgroundColor3 = Color3.fromRGB(26, 28, 38)
-        doneBtn.Text = "Save & Lock"
-        doneBtn.TextColor3 = Color3.fromRGB(240, 245, 255)
-        doneBtn.Font = Enum.Font.GothamBold
-        doneBtn.TextSize = 11
+        doneBtn.Text = ""
+        doneBtn.AutoButtonColor = false
         doneBtn.Parent = bar
+
+        local dLbl = Instance.new("TextLabel", doneBtn)
+        dLbl.Size = UDim2.new(1, 0, 1, 0)
+        dLbl.BackgroundTransparency = 1
+        dLbl.Font = Enum.Font.GothamBold
+        dLbl.Text = "Save & Lock"
+        dLbl.TextColor3 = Color3.fromRGB(240, 245, 255)
+        dLbl.TextSize = 11
 
         local dCorner = Instance.new("UICorner")
         dCorner.CornerRadius = UDim.new(0, 6)
         dCorner.Parent = doneBtn
 
         local dStroke = Instance.new("UIStroke")
+        dStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         dStroke.Color = Color3.fromRGB(180, 195, 230)
         dStroke.Thickness = 1
         dStroke.Parent = doneBtn
@@ -409,6 +424,7 @@ local function setEditControlsMode(enabled)
         ovCorner.Parent = ov
 
         local ovStroke = Instance.new("UIStroke")
+        ovStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         ovStroke.Color = Color3.fromRGB(160, 175, 215)
         ovStroke.Thickness = 1.2
         ovStroke.Parent = ov
