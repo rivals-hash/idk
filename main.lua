@@ -1101,7 +1101,7 @@ local function showKeyModal(AuroraX, onSuccess)
     sub.Position = UDim2.new(0, 15, 0, 94)
     sub.BackgroundTransparency = 1
     sub.Font = Enum.Font.GothamMedium
-    sub.Text = "AURORA X LICENSE AUTHENTICATION"
+    sub.Text = "MONODY LICENSE AUTHENTICATION"
     sub.TextColor3 = Color3.fromRGB(192, 132, 252)
     sub.TextSize = 9.5
     sub.TextXAlignment = Enum.TextXAlignment.Center
@@ -1268,7 +1268,7 @@ local function showKeyModal(AuroraX, onSuccess)
         end
 
         feedback.TextColor3 = Color3.fromRGB(216, 180, 254)
-        feedback.Text = "Verifying with Aurora X..."
+        feedback.Text = "Verifying with Monody..."
 
         task.spawn(function()
             local valid = false
