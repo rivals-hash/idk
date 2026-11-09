@@ -1,10 +1,3 @@
---[[
-    ============================================================
-    MONODY - OFFICIAL CLIENT KEY LOADER (AuroraX Protected)
-    Project: Monody (1b56de61f463fc8d4cd4d1dca6e26660)
-    ============================================================
-]]--
-
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
@@ -15,18 +8,11 @@ local lp = Players.LocalPlayer
 
 local APP_TITLE = "Monody"
 local DEFAULT_LOGO_ID = "rbxassetid://109687263098821"
-local GITHUB_REPO_RAW = "https://raw.githubusercontent.com/rivals-hash/idk/main"
 
 local exIsFile = isfile or is_file
 local exWriteFile = writefile or write_file
 local exMakeFolder = makefolder or make_folder
 local exGetCustomAsset = getcustomasset or getsynasset
-
-local function SafeHttpGet(url)
-    local ok, res = pcall(function() return game:HttpGet(url, true) end)
-    if ok and type(res) == "string" and #res > 50 then return res end
-    return nil
-end
 
 local function ResolveCustomAsset(relativePath, fallbackAssetId)
     if not exGetCustomAsset or not exIsFile then
@@ -76,25 +62,6 @@ local function GetLogoAsset()
         end
     end
 
-    if exWriteFile and exGetCustomAsset then
-        local logoUrl = GITHUB_REPO_RAW .. "/assets/logo.jpg"
-        local body = SafeHttpGet(logoUrl)
-        if body and #body > 50 then
-            pcall(function()
-                if exMakeFolder then
-                    pcall(exMakeFolder, "Monody")
-                    pcall(exMakeFolder, "Monody/cache")
-                end
-                exWriteFile(cachedPath, body)
-            end)
-            local okAsset, asset = pcall(exGetCustomAsset, cachedPath)
-            if okAsset and type(asset) == "string" and #asset > 0 then
-                CachedLogoAsset = asset
-                return asset
-            end
-        end
-    end
-
     CachedLogoAsset = DEFAULT_LOGO_ID
     return DEFAULT_LOGO_ID
 end
@@ -104,18 +71,15 @@ pcall(function() if gethui then parentGui = gethui() end end)
 if not parentGui then pcall(function() parentGui = CoreGui end) end
 if not parentGui and lp then pcall(function() parentGui = lp:WaitForChild("PlayerGui", 5) end) end
 
--- 1. Load AuroraX Client SDK
 local okSdk, AuroraX = pcall(function()
     return loadstring(game:HttpGet("https://dev.aurorax.site/api/sdk/1b56de61f463fc8d4cd4d1dca6e26660.lua", true))()
 end)
 
 if not okSdk or not AuroraX then
-    warn("[Monody Loader] Failed to load AuroraX SDK. Launching protected fallback...")
     loadstring(game:HttpGet("https://api.aurorax.site/files/v5/loaders/1b56de61f463fc8d4cd4d1dca6e26660", true))()
     return
 end
 
--- 2. Check if a valid license key is already present in memory or disk
 local genv = (type(getgenv) == "function" and getgenv()) or _G or {}
 local providedKey = script_key or genv.script_key or genv.Key
 local savedKey = (AuroraX.GetSavedKey and AuroraX.GetSavedKey()) or ""
@@ -129,7 +93,6 @@ if candidate then
     end
 end
 
--- 3. Exact Luxury Monody Key Authentication Modal (c785678)
 local function showKeyModal(AuroraX, onSuccess)
     local parent = parentGui or (gethui and gethui()) or (CoreGui) or (lp and lp:FindFirstChildOfClass("PlayerGui"))
     if not parent then
@@ -147,7 +110,6 @@ local function showKeyModal(AuroraX, onSuccess)
 
     if syn and syn.protect_gui then pcall(syn.protect_gui, gui) end
 
-    -- Backdrop (Deep luxury dark glass overlay)
     local backdrop = Instance.new("Frame")
     backdrop.Name = "Backdrop"
     backdrop.Size = UDim2.new(1, 0, 1, 0)
@@ -156,7 +118,6 @@ local function showKeyModal(AuroraX, onSuccess)
     backdrop.BorderSizePixel = 0
     backdrop.Parent = gui
 
-    -- Ambient purple glow in center behind modal
     local ambientGlow = Instance.new("ImageLabel", backdrop)
     ambientGlow.Name = "AmbientGlow"
     ambientGlow.Size = UDim2.new(0, 560, 0, 420)
@@ -167,7 +128,6 @@ local function showKeyModal(AuroraX, onSuccess)
     ambientGlow.ImageColor3 = Color3.fromRGB(147, 51, 234)
     ambientGlow.ImageTransparency = 0.72
 
-    -- Modal Container (Luxury acrylic glass card with gradient neon stroke)
     local modal = Instance.new("Frame")
     modal.Name = "Modal"
     modal.Size = UDim2.new(0, 360, 0, 230)
@@ -183,7 +143,6 @@ local function showKeyModal(AuroraX, onSuccess)
     modalCorner.CornerRadius = UDim.new(0, 16)
     modalCorner.Parent = modal
 
-    -- Gradient Border
     local modalStroke = Instance.new("UIStroke")
     modalStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     modalStroke.Color = Color3.fromRGB(168, 85, 247)
@@ -198,7 +157,6 @@ local function showKeyModal(AuroraX, onSuccess)
     })
     strokeGrad.Rotation = 45
 
-    -- Top Accent Glow Line
     local topGlow = Instance.new("Frame", modal)
     topGlow.Name = "TopGlow"
     topGlow.Size = UDim2.new(0.65, 0, 0, 2)
@@ -213,7 +171,6 @@ local function showKeyModal(AuroraX, onSuccess)
         NumberSequenceKeypoint.new(1, 1)
     })
 
-    -- Header Icon & Badge
     local logoBadge = Instance.new("Frame", modal)
     logoBadge.Name = "LogoBadge"
     logoBadge.Size = UDim2.new(0, 48, 0, 48)
@@ -238,7 +195,6 @@ local function showKeyModal(AuroraX, onSuccess)
     logo.ScaleType = Enum.ScaleType.Fit
     Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 9)
 
-    -- Title
     local title = Instance.new("TextLabel", modal)
     title.Size = UDim2.new(1, -30, 0, 22)
     title.Position = UDim2.new(0, 15, 0, 70)
@@ -249,7 +205,6 @@ local function showKeyModal(AuroraX, onSuccess)
     title.TextSize = 19
     title.TextXAlignment = Enum.TextXAlignment.Center
 
-    -- Security Pill Subtitle
     local sub = Instance.new("TextLabel", modal)
     sub.Size = UDim2.new(1, -30, 0, 16)
     sub.Position = UDim2.new(0, 15, 0, 94)
@@ -260,7 +215,6 @@ local function showKeyModal(AuroraX, onSuccess)
     sub.TextSize = 9.5
     sub.TextXAlignment = Enum.TextXAlignment.Center
 
-    -- Key Input Container (Glass Capsule with Key Icon and Paste Button)
     local inputContainer = Instance.new("Frame", modal)
     inputContainer.Size = UDim2.new(1, -40, 0, 38)
     inputContainer.AnchorPoint = Vector2.new(0.5, 0)
@@ -326,7 +280,6 @@ local function showKeyModal(AuroraX, onSuccess)
         end
     end)
 
-    -- Status Feedback Label
     local feedback = Instance.new("TextLabel", modal)
     feedback.Size = UDim2.new(1, -40, 0, 16)
     feedback.AnchorPoint = Vector2.new(0.5, 0)
@@ -338,14 +291,12 @@ local function showKeyModal(AuroraX, onSuccess)
     feedback.TextSize = 10.5
     feedback.TextXAlignment = Enum.TextXAlignment.Center
 
-    -- Buttons Frame
     local btnRow = Instance.new("Frame", modal)
     btnRow.Size = UDim2.new(1, -40, 0, 36)
     btnRow.AnchorPoint = Vector2.new(0.5, 0)
     btnRow.Position = UDim2.new(0.5, 0, 0, 192)
     btnRow.BackgroundTransparency = 1
 
-    -- 1. Get Key Button
     local getKeyBtn = Instance.new("TextButton", btnRow)
     getKeyBtn.Size = UDim2.new(0.48, 0, 1, 0)
     getKeyBtn.Position = UDim2.new(0, 0, 0, 0)
@@ -381,7 +332,6 @@ local function showKeyModal(AuroraX, onSuccess)
         feedback.Text = "Link copied! Complete verification in your browser."
     end)
 
-    -- 2. Verify Key Button (Glowing Gradient Button)
     local verifyBtn = Instance.new("TextButton", btnRow)
     verifyBtn.Size = UDim2.new(0.48, 0, 1, 0)
     verifyBtn.Position = UDim2.new(0.52, 0, 0, 0)
@@ -454,14 +404,12 @@ local function showKeyModal(AuroraX, onSuccess)
 
     gui.Parent = parent
 
-    -- Smooth Spring Entrance Animation
     TweenService:Create(modal, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Size = UDim2.new(0, 410, 0, 250),
         BackgroundTransparency = 0.15
     }):Play()
 end
 
--- 4. Launch Custom Key System (passes authenticated key directly to AuroraX)
 showKeyModal(AuroraX, function()
     local saved = (AuroraX.GetSavedKey and AuroraX.GetSavedKey()) or candidate
     AuroraX.LoadScript(saved)
