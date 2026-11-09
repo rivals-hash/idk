@@ -1800,12 +1800,14 @@ SubTitle.ZIndex = 16
 -- CENTRAL AUDIO CONTROLLER & HEADER MUSIC BAR
 -- ============================================================
 do
+    local soundService = game:GetService("SoundService")
+
     local MonodyMusic = {
         Sound = nil,
         IsPlaying = false,
         CurrentTrackName = "No Track",
         CurrentSoundId = "",
-        Volume = 0.5,
+        Volume = 1.0, -- Default full volume (100%)
         Pitch = 1.0,
         Looped = true,
         TopBarFrame = nil,
@@ -1813,22 +1815,60 @@ do
     }
     _G.MonodyMusic = MonodyMusic
 
-    local function getSoundParent()
-        return Workspace.CurrentCamera or game:GetService("SoundService") or CoreGui
+    local function resolveSoundSource(identifier)
+        if not identifier or identifier == "" then return nil end
+        local str = tostring(identifier):gsub("^%s+", ""):gsub("%s+$", "")
+        if str == "" then return nil end
+
+        -- 1. Check custom local asset files in executor
+        if type(isfile) == "function" and type(getcustomasset) == "function" then
+            local candidates = {
+                str,
+                "darling_hub/" .. str,
+                str .. ".mp3",
+                "darling_hub/" .. str .. ".mp3",
+                str .. ".ogg",
+                str .. ".wav"
+            }
+            for _, path in ipairs(candidates) do
+                local okCheck, exists = pcall(function() return isfile(path) end)
+                if okCheck and exists then
+                    local okAsset, asset = pcall(function() return getcustomasset(path) end)
+                    if okAsset and asset and type(asset) == "string" and #asset > 0 then
+                        return asset
+                    end
+                end
+            end
+        end
+
+        -- 2. Extract digits from numbers, roblox URLs, or rbxassetid://
+        local digits = str:match("(%d%d%d%d+)")
+        if digits and #digits > 0 then
+            return "rbxassetid://" .. digits
+        end
+
+        if str:find("rbxassetid://") or str:find("rbxasset://") then
+            return str
+        end
+
+        return "rbxassetid://1843588265"
     end
 
     local function InitMusicSound()
-        local parent = getSoundParent()
-        if not MonodyMusic.Sound or not MonodyMusic.Sound.Parent then
-            local snd = Instance.new("Sound")
-            snd.Name = "MonodyBGM"
+        local snd = MonodyMusic.Sound
+        if not snd or not snd.Parent or snd.Parent ~= soundService then
+            local existing = soundService:FindFirstChild("MonodyBGM")
+            if existing and existing:IsA("Sound") then
+                snd = existing
+            else
+                snd = Instance.new("Sound")
+                snd.Name = "MonodyBGM"
+                snd.Parent = soundService
+            end
             snd.Volume = MonodyMusic.Volume
             snd.PlaybackSpeed = MonodyMusic.Pitch
             snd.Looped = MonodyMusic.Looped
-            snd.RollOffMaxDistance = 10000000
-            snd.RollOffMinDistance = 10000000
             snd.SoundGroup = nil
-            pcall(function() snd.Parent = parent end)
             snd.Ended:Connect(function()
                 if not MonodyMusic.Looped then
                     MonodyMusic.IsPlaying = false
@@ -1836,74 +1876,50 @@ do
                 end
             end)
             MonodyMusic.Sound = snd
-        else
-            pcall(function()
-                if MonodyMusic.Sound.Parent ~= parent then
-                    MonodyMusic.Sound.Parent = parent
-                end
-            end)
         end
-        return MonodyMusic.Sound
+        return snd
     end
 
-    pcall(function()
-        Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
-            pcall(function()
-                if MonodyMusic.Sound and Workspace.CurrentCamera then
-                    MonodyMusic.Sound.Parent = Workspace.CurrentCamera
-                end
-            end)
-        end)
-    end)
-
     function MonodyMusic.Play(soundId, trackName)
-        local snd = InitMusicSound()
-        if soundId and soundId ~= "" then
-            local str = tostring(soundId):gsub("%s+", "")
-            local source = str
-
-            -- check custom asset bypass
-            if type(isfile) == "function" and type(getcustomasset) == "function" then
-                local candidates = { str, "darling_hub/" .. str, str .. ".mp3", "darling_hub/" .. str .. ".mp3" }
-                for _, path in ipairs(candidates) do
-                    local okC, exists = pcall(function() return isfile(path) end)
-                    if okC and exists then
-                        local okA, asset = pcall(function() return getcustomasset(path) end)
-                        if okA and asset then source = asset; break end
-                    end
-                end
-            end
-
-            if not source:find("rbxassetid://") and not source:find("rbxasset://") and not source:find("http") then
-                local cleanDigits = source:match("%d+")
-                if cleanDigits and #cleanDigits > 0 then
-                    source = "rbxassetid://" .. cleanDigits
-                end
-            end
-
-            snd.SoundId = source
-            MonodyMusic.CurrentSoundId = soundId
+        local source = resolveSoundSource(soundId)
+        if not source or source == "" then
+            return false, "Invalid Sound ID"
         end
-        if trackName then MonodyMusic.CurrentTrackName = trackName end
+
+        local snd = InitMusicSound()
+        pcall(function() snd:Stop() end)
+        snd.TimePosition = 0
+        snd.SoundId = source
         snd.Volume = MonodyMusic.Volume
         snd.PlaybackSpeed = MonodyMusic.Pitch
         snd.Looped = MonodyMusic.Looped
+        snd.SoundGroup = nil
 
-        task.spawn(function()
-            pcall(function()
-                game:GetService("ContentProvider"):PreloadAsync({ snd })
-            end)
-            pcall(function()
-                snd:Stop()
-                snd.TimePosition = 0
-                snd:Play()
-            end)
-            pcall(function()
-                game:GetService("SoundService"):PlayLocalSound(snd)
-            end)
-        end)
+        local okPlay = pcall(function() snd:Play() end)
+
+        MonodyMusic.CurrentSoundId = soundId
+        MonodyMusic.CurrentTrackName = (trackName and trackName ~= "") and trackName or ("Track " .. tostring(soundId))
         MonodyMusic.IsPlaying = true
         if MonodyMusic.OnStateChanged then pcall(MonodyMusic.OnStateChanged) end
+
+        -- Monitor load state & inform user if Roblox blocked the ID
+        task.spawn(function()
+            local elapsed = 0
+            while MonodyMusic.IsPlaying and snd.SoundId == source and elapsed < 3.5 do
+                if snd.IsLoaded and snd.TimeLength > 0 then
+                    return
+                end
+                task.wait(0.2)
+                elapsed = elapsed + 0.2
+            end
+            if MonodyMusic.IsPlaying and snd.SoundId == source and snd.TimeLength == 0 and not snd.IsLoaded then
+                pcall(function()
+                    Notify("Music Player", "Audio could not load. Roblox might have privatized this asset ID.")
+                end)
+            end
+        end)
+
+        return true, "Playing " .. MonodyMusic.CurrentTrackName
     end
 
     function MonodyMusic.Pause()
@@ -7640,14 +7656,34 @@ do
             end)
         end
 
+        local function hasBusoActive(char)
+            if not char then return false end
+            if char:FindFirstChild("HasBuso") or char:FindFirstChild("Buso") or char:FindFirstChild("Aura") then
+                return true
+            end
+            if char:GetAttribute("HasBuso") == true or char:GetAttribute("Buso") == true or char:GetAttribute("Aura") == true then
+                return true
+            end
+            for _, part in ipairs(char:GetChildren()) do
+                if part:IsA("BasePart") and (part:FindFirstChild("Buso") or part:FindFirstChild("Aura")) then
+                    return true
+                end
+            end
+            return false
+        end
+
         local function StartAutoBuffs()
             task.spawn(function()
                 while autoDungeonActive do
                     pcall(function()
-                        local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
-                        local commF = remotes and remotes:FindFirstChild("CommF_")
-                        if commF then
-                            commF:InvokeServer("Buso")
+                        local char = lp.Character
+                        -- Only activate Haki if it is NOT currently active, preventing accidental shutoff
+                        if char and not hasBusoActive(char) then
+                            local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
+                            local commF = remotes and remotes:FindFirstChild("CommF_")
+                            if commF then
+                                commF:InvokeServer("Buso")
+                            end
                         end
                         if autoV4Active then
                             local vim = game:GetService("VirtualInputManager")
@@ -7658,7 +7694,7 @@ do
                             end
                         end
                     end)
-                    task.wait(4)
+                    task.wait(2.5)
                 end
             end)
         end
@@ -7776,14 +7812,10 @@ do
 
         task.defer(function()
             task.wait(1)
-            if AutoLoad then
-                autoDungeonActive = true
+            -- Never auto-start dungeon on script load unless user explicitly enabled Auto Dungeon
+            if AutoLoad and autoDungeonActive then
                 StartAutoBuffs()
                 task.spawn(RotateTargets)
-                VoidConfig.Enabled = true
-                VoidConfig.VoidOnlyBossRoom = true
-                voidRunning = false
-                VoidLoop()
             end
         end)
     end)
@@ -8338,21 +8370,22 @@ do
 
         -- 2. Roblox Audio Player & Visualizer Controls
         local mCard1 = CreateCard(MusicPage, "Roblox Audio Player")
-        local customIdInput = ""
+        local customIdInput = "1843588265"
 
-        local soundInputObj = AddInput(mCard1, "Custom Sound ID", "Enter Roblox Asset ID (e.g. 1843588265)...", "", function(v)
+        local soundInputObj = AddInput(mCard1, "Custom Sound ID", "Enter Roblox Asset ID (e.g. 1843588265)...", "1843588265", function(v)
             customIdInput = tostring(v or "")
         end)
 
         AddButton(mCard1, "Play", function()
-            local raw = (soundInputObj and soundInputObj.GetText and soundInputObj.GetText()) or customIdInput or ""
+            local raw = (soundInputObj and soundInputObj.GetText and soundInputObj.GetText()) or customIdInput or "1843588265"
             local trimmed = tostring(raw):gsub("^%s+", ""):gsub("%s+$", "")
             if _G.MonodyMusic then
                 if #trimmed > 0 then
                     _G.MonodyMusic.Play(trimmed, "")
                     Notify("Music Player", "Playing audio: " .. trimmed)
                 else
-                    Notify("Music Player", "Enter a Sound ID first or launch YouTube player above.")
+                    _G.MonodyMusic.Play("1843588265", "Montagem Ceita")
+                    Notify("Music Player", "Playing default audio: 1843588265")
                 end
             end
         end)
@@ -8378,6 +8411,31 @@ do
             end
         end)
 
+        -- Quick Verified Preset Tracks
+        AddButton(mCard1, "Play Montagem Phonk (1843588265)", function()
+            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("1843588265") end
+            if _G.MonodyMusic then
+                _G.MonodyMusic.Play("1843588265", "Montagem Ceita Phonk")
+                Notify("Music Player", "Now playing: Montagem Phonk")
+            end
+        end)
+
+        AddButton(mCard1, "Play Spooky Theme (9114223171)", function()
+            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("9114223171") end
+            if _G.MonodyMusic then
+                _G.MonodyMusic.Play("9114223171", "Spooky Theme")
+                Notify("Music Player", "Now playing: Spooky Theme")
+            end
+        end)
+
+        AddButton(mCard1, "Play Fearless Phonk (90089940136467)", function()
+            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("90089940136467") end
+            if _G.MonodyMusic then
+                _G.MonodyMusic.Play("90089940136467", "Montagem Fearless")
+                Notify("Music Player", "Now playing: Montagem Fearless")
+            end
+        end)
+
         AddSlider(mCard1, "Volume", 0, 100, 100, 5, function(v)
             if _G.MonodyMusic then _G.MonodyMusic.SetVolume(v / 100) end
         end)
@@ -8386,8 +8444,58 @@ do
             if _G.MonodyMusic then _G.MonodyMusic.SetPitch(v) end
         end)
 
-        AddToggle(mCard1, "Loop Track", "Repeats the current song automatically", false, function(v)
+        AddToggle(mCard1, "Loop Track", "Repeats the current song automatically", true, function(v)
             if _G.MonodyMusic then _G.MonodyMusic.SetLooped(v) end
+        end)
+
+        -- Mute Game Audio Feature
+        local isGameMuted = false
+        local originalSoundVolumes = setmetatable({}, { __mode = "k" })
+        local muteConns = {}
+
+        AddToggle(mCard1, "Mute Game Audio", "Silences ambient game SFX so only your music plays", false, function(v)
+            isGameMuted = v
+            if v then
+                local targets = { game:GetService("SoundService"), Workspace }
+                local pGui = lp:FindFirstChildOfClass("PlayerGui")
+                if pGui then table.insert(targets, pGui) end
+                for _, container in ipairs(targets) do
+                    for _, obj in ipairs(container:GetDescendants()) do
+                        if obj:IsA("Sound") and obj ~= (_G.MonodyMusic and _G.MonodyMusic.Sound) and obj.Name ~= "MonodyBGM" then
+                            if originalSoundVolumes[obj] == nil then
+                                originalSoundVolumes[obj] = obj.Volume
+                            end
+                            obj.Volume = 0
+                        end
+                    end
+                    local conn = container.DescendantAdded:Connect(function(obj)
+                        if isGameMuted and obj:IsA("Sound") and obj ~= (_G.MonodyMusic and _G.MonodyMusic.Sound) and obj.Name ~= "MonodyBGM" then
+                            task.defer(function()
+                                if isGameMuted and obj and obj.Parent then
+                                    if originalSoundVolumes[obj] == nil then
+                                        originalSoundVolumes[obj] = obj.Volume
+                                    end
+                                    obj.Volume = 0
+                                end
+                            end)
+                        end
+                    end)
+                    table.insert(muteConns, conn)
+                end
+                Notify("Music Player", "Game audio muted.")
+            else
+                for _, conn in ipairs(muteConns) do
+                    pcall(function() conn:Disconnect() end)
+                end
+                table.clear(muteConns)
+                for obj, vol in pairs(originalSoundVolumes) do
+                    if obj and obj.Parent then
+                        pcall(function() obj.Volume = vol end)
+                    end
+                end
+                table.clear(originalSoundVolumes)
+                Notify("Music Player", "Game audio restored.")
+            end
         end)
 
         AddToggle(mCard1, "Show Top Music Bar", "Displays the audio player on the top header", true, function(v)

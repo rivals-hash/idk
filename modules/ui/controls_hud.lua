@@ -31,7 +31,8 @@ _G.Darling_ControlsLayout = _G.Darling_ControlsLayout or {}
 local ignoredHUDNames = {
     "health", "energy", "stamina", "level", "beli", "fragment", "stat",
     "compass", "quest", "menu", "dialogue", "top", "topbar", "bar",
-    "characteravatar", "profile", "avatar", "crew", "leaderboard"
+    "characteravatar", "profile", "avatar", "crew", "leaderboard",
+    "hotbar", "backpack", "inventory", "container", "itemslot"
 }
 
 local function isAllowedHUDButton(btn)
@@ -86,14 +87,6 @@ local function getBloxFruitsControlButtons()
                 end
             end
         end
-        local hotbar = main:FindFirstChild("Hotbar")
-        if hotbar then addBtn(hotbar, "PC_Hotbar") end
-    end
-
-    local backpackGui = pGui:FindFirstChild("Backpack")
-    if backpackGui then
-        local hb = backpackGui:FindFirstChild("Hotbar") or backpackGui:FindFirstChild("Container")
-        if hb and hb:IsA("GuiObject") then addBtn(hb, "Backpack_Hotbar") end
     end
 
     local touchGui = pGui:FindFirstChild("TouchGui")
@@ -192,6 +185,12 @@ local function loadControlsLayoutFromFile()
         if json and json ~= "" then
             local ok, parsed = pcall(function() return HttpService:JSONDecode(json) end)
             if ok and type(parsed) == "table" then
+                -- Purge any saved hotbar keys so hotbar is never displaced
+                parsed["Hotbar"] = nil
+                parsed["PC_Hotbar"] = nil
+                parsed["Backpack_Hotbar"] = nil
+                parsed["Container"] = nil
+
                 _G.Darling_ControlsLayout = parsed
                 local globalScale = parsed.globalScale or 1.0
                 ControlsHUD.GlobalScale = globalScale
@@ -532,6 +531,25 @@ local function setControlsScale(val)
     saveControlsLayoutToFile()
 end
 ControlsHUD.SetScale = setControlsScale
+
+-- Safeguard: Ensure hotbar is never scaled or displaced by old configs
+pcall(function()
+    local pGui = LocalPlayer and LocalPlayer:FindFirstChildOfClass("PlayerGui")
+    if pGui then
+        local main = pGui:FindFirstChild("Main")
+        local bp = pGui:FindFirstChild("Backpack")
+        local candidates = {
+            main and main:FindFirstChild("Hotbar"),
+            bp and (bp:FindFirstChild("Hotbar") or bp:FindFirstChild("Container"))
+        }
+        for _, hb in ipairs(candidates) do
+            if hb and hb:IsA("GuiObject") then
+                local sc = hb:FindFirstChildOfClass("UIScale")
+                if sc then sc:Destroy() end
+            end
+        end
+    end
+end)
 
 task.spawn(function()
     task.wait(1.5)
