@@ -166,8 +166,11 @@ local THEMES = {
     ["Rainbow"]  = Color3.fromRGB(138, 43, 226),
 }
 local THEME_ORDER = { "Purple", "Blue", "Pink", "Green", "Yellow", "Orange", "Red", "Cyan", "White", "Rainbow" }
-local CurrentThemeName = "White"
-local CurrentAccent = THEMES.White
+THEMES["Red"] = Color3.fromRGB(255, 60, 80)
+THEMES["Rainbow"] = Color3.fromRGB(255, 60, 80)
+local THEME_ORDER = { "Red", "Purple", "Blue", "Pink", "Green", "Yellow", "Orange", "Cyan", "White", "Rainbow" }
+local CurrentThemeName = "Red"
+local CurrentAccent = THEMES.Red
 local IsRainbowTheme = false
 local RainbowSpeed = 0.4
 
@@ -317,6 +320,52 @@ local function ResolveCustomAsset(relativePath, fallbackAssetId)
     end
 
     return fallbackAssetId
+end
+
+local function ResolveAndBindAsset(filename, fallbackId, imageLabel)
+    local localAsset = ResolveCustomAsset("assets/" .. filename, nil)
+    if localAsset then
+        if imageLabel and imageLabel.Parent then pcall(function() imageLabel.Image = localAsset end) end
+        return localAsset
+    end
+
+    local cachedPath = "Monody/cache/" .. filename
+    if exIsFile and exGetCustomAsset then
+        local okC, existsC = pcall(exIsFile, cachedPath)
+        if okC and existsC then
+            local okA, asset = pcall(exGetCustomAsset, cachedPath)
+            if okA and type(asset) == "string" and #asset > 0 then
+                if imageLabel and imageLabel.Parent then pcall(function() imageLabel.Image = asset end) end
+                return asset
+            end
+        end
+    end
+
+    if fallbackId and #fallbackId > 0 and imageLabel and imageLabel.Parent then
+        pcall(function() imageLabel.Image = fallbackId end)
+    end
+
+    if exWriteFile and exGetCustomAsset then
+        task.spawn(function()
+            pcall(function()
+                if exMakeFolder then
+                    pcall(exMakeFolder, "Monody")
+                    pcall(exMakeFolder, "Monody/cache")
+                end
+                local rawUrl = GITHUB_REPO_RAW .. "/assets/" .. filename
+                local body = SafeHttpGet(rawUrl)
+                if body and #body > 50 then
+                    exWriteFile(cachedPath, body)
+                    local okA, asset = pcall(exGetCustomAsset, cachedPath)
+                    if okA and type(asset) == "string" and #asset > 0 and imageLabel and imageLabel.Parent then
+                        imageLabel.Image = asset
+                    end
+                end
+            end)
+        end)
+    end
+
+    return fallbackId or ""
 end
 
 -- Cached permanent Darling Hub logo asset
@@ -1559,35 +1608,41 @@ local function RejoinServer()
     end
 end
 
--- Floating Open Button (Always Displays the Darling Hub Logo)
+-- Floating Open Button (Displays Monody Red Floating Avatar)
 local FloatingOpen = Instance.new("ImageButton", ScreenGui)
 FloatingOpen.Name = "FloatingOpen"
-FloatingOpen.Size = UDim2.new(0, 44, 0, 44)
+FloatingOpen.Size = UDim2.new(0, 46, 0, 46)
 FloatingOpen.Position = UDim2.new(0, 15, 0.20, 0)
-FloatingOpen.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-FloatingOpen.BackgroundTransparency = 1
+FloatingOpen.BackgroundColor3 = Color3.fromRGB(15, 12, 18)
+FloatingOpen.BackgroundTransparency = 0.2
 FloatingOpen.BorderSizePixel = 0
-FloatingOpen.Image = GetLogoAsset()
+FloatingOpen.Image = ResolveAndBindAsset("floating_avatar_red.png", DEFAULT_LOGO_ID, FloatingOpen)
 FloatingOpen.ScaleType = Enum.ScaleType.Crop
 FloatingOpen.AutoButtonColor = false
 FloatingOpen.Active = true
 FloatingOpen.Selectable = true
 FloatingOpen.ZIndex = 100
 FloatingOpen.Visible = false
-Instance.new("UICorner", FloatingOpen).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", FloatingOpen).CornerRadius = UDim.new(1, 0)
+local floatStroke = Instance.new("UIStroke", FloatingOpen)
+floatStroke.Color = CurrentAccent
+floatStroke.Thickness = 1.6
+floatStroke.Transparency = 0.3
+RegisterThemeStroke(floatStroke)
 
--- Main Window (Liquid Glass Compact 440x300)
+-- Main Window (Classic Red UI Dimensions 568x400)
 Main = Instance.new("Frame", ScreenGui)
 Main.Name = "Monody_MainWindow"
 Main.Visible = false
 Main.Size = UDim2.new(0, 0, 0, 0)
+Main.AnchorPoint = Vector2.new(0.5, 0.5)
 Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-Main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Main.BackgroundTransparency = 1
+Main.BackgroundColor3 = Color3.fromRGB(14, 11, 16)
+Main.BackgroundTransparency = 0.05
 Main.BorderSizePixel = 0
 Main.ClipsDescendants = true
 Main.Active = true
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 22)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 
 local MainScale = Instance.new("UIScale", Main)
 MainScale.Scale = 1
@@ -1595,9 +1650,9 @@ local GlassFrames = {}
 
 local function UpdateMobileScale()
     local viewport = camera and camera.ViewportSize or Vector2.new(1280, 720)
-    local widthScale = (viewport.X - 24) / 440
-    local heightScale = (viewport.Y - 24) / 300
-    MainScale.Scale = math.clamp(math.min(widthScale, heightScale), 0.65, 1)
+    local widthScale = (viewport.X - 24) / 568
+    local heightScale = (viewport.Y - 24) / 400
+    MainScale.Scale = math.clamp(math.min(widthScale, heightScale), 0.50, 1.0)
 end
 UpdateMobileScale()
 if camera then
@@ -1607,7 +1662,7 @@ end
 local MainStroke = Instance.new("UIStroke", Main)
 MainStroke.Color = CurrentAccent
 MainStroke.Thickness = 1.2
-MainStroke.Transparency = 0.35
+MainStroke.Transparency = 0.4
 MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 RegisterThemeStroke(MainStroke)
 
@@ -1757,11 +1812,12 @@ if Main.Visible and RainEnabled then
     task.defer(StartRainAnimation)
 end
 
--- Header Bar
+-- Header Bar (Hidden in Red layout since Card 1 acts as header)
 local Header = Instance.new("Frame", Main)
 Header.Name = "Header"
 Header.Size = UDim2.new(1, 0, 0, 42)
 Header.BackgroundTransparency = 1
+Header.Visible = false
 Header.ZIndex = 15
 
 -- Logo Badge
@@ -1809,12 +1865,20 @@ SubTitle.ZIndex = 16
 do
     local soundService = game:GetService("SoundService")
 
+    local PLAYLIST = {
+        { title = "MONTAGEM BAILÃO (Phonk)", id = "7025810761", url = "https://raw.githubusercontent.com/rivals-hash/idk/main/assets/audio/phonk.mp3", file = "monody_phonk.mp3" },
+        { title = "Blox Fruits Theme", id = "7025810761" },
+        { title = "One Piece Overtaken", id = "6948625906" },
+        { title = "Spooky Theme", id = "9114223171" }
+    }
+    local currentTrackIdx = 1
+
     local MonodyMusic = {
         Sound = nil,
         IsPlaying = false,
-        CurrentTrackName = "No Track",
-        CurrentSoundId = "",
-        Volume = 1.0, -- Default full volume (100%)
+        CurrentTrackName = "MONTAGEM BAILÃO (Phonk)",
+        CurrentSoundId = "7025810761",
+        Volume = 1.0,
         Pitch = 1.0,
         Looped = true,
         TopBarFrame = nil,
@@ -2052,211 +2116,240 @@ do
         if MonodyMusic.Sound then MonodyMusic.Sound.Looped = l end
     end
 
-    -- Top Music Bar on UI Header (Full Span across header, 24-bar Dynamic Equalizer, 0.7 Pill)
-    local TopMusicBar = Instance.new("Frame", Header)
-    TopMusicBar.Name = "TopMusicBar"
-    TopMusicBar.Size = UDim2.new(1, -150, 0, 24)
-    TopMusicBar.Position = UDim2.new(0, 88, 0.5, -12)
-    TopMusicBar.BackgroundColor3 = Color3.fromRGB(15, 12, 24)
-    TopMusicBar.BackgroundTransparency = 0.45
-    TopMusicBar.ZIndex = 16
-    Instance.new("UICorner", TopMusicBar).CornerRadius = UDim.new(0.7, 0)
-    local topMusicStroke = Instance.new("UIStroke", TopMusicBar)
-    topMusicStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    topMusicStroke.Color = CurrentAccent
-    topMusicStroke.Thickness = 0.8
-    topMusicStroke.Transparency = 0.5
-    RegisterThemeStroke(topMusicStroke)
-    MonodyMusic.TopBarFrame = TopMusicBar
-
-    -- Animated Multi-Bar Equalizer across the whole width of the bar
-    local EqContainer = Instance.new("Frame", TopMusicBar)
-    EqContainer.Name = "EqContainer"
-    EqContainer.Size = UDim2.new(1, -20, 0, 14)
-    EqContainer.Position = UDim2.new(0, 10, 0.5, -7)
-    EqContainer.BackgroundTransparency = 1
-    EqContainer.ZIndex = 17
-
-    local eqBars = {}
-    local totalBars = 24
-    for i = 1, totalBars do
-        local bar = Instance.new("Frame", EqContainer)
-        bar.Name = "EqBar" .. i
-        bar.Size = UDim2.new(0, 2.5, 0, 2)
-        bar.Position = UDim2.new((i - 1) / totalBars, 0, 1, -2)
-        bar.BackgroundColor3 = CurrentAccent
-        bar.BackgroundTransparency = 0.8
-        bar.ZIndex = 17
-        Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
-        RegisterThemeFill(bar)
-        table.insert(eqBars, bar)
+    function MonodyMusic.PlayTrack(idx)
+        currentTrackIdx = math.clamp(idx, 1, #PLAYLIST)
+        local t = PLAYLIST[currentTrackIdx]
+        if t.url and MonodyMusic.PlayLocalBypass then
+            MonodyMusic.PlayLocalBypass(t.url, t.file or "monody_phonk.mp3", t.title)
+        else
+            MonodyMusic.Play(t.id, t.title)
+        end
     end
 
-    -- Click TopMusicBar to toggle playback
-    local clickOverlay = Instance.new("TextButton", TopMusicBar)
-    clickOverlay.Name = "ClickOverlay"
-    clickOverlay.Size = UDim2.new(1, 0, 1, 0)
-    clickOverlay.BackgroundTransparency = 1
-    clickOverlay.Text = ""
-    clickOverlay.ZIndex = 19
-    ConnectButton(clickOverlay, function()
+    function MonodyMusic.NextTrack()
+        currentTrackIdx = currentTrackIdx + 1
+        if currentTrackIdx > #PLAYLIST then currentTrackIdx = 1 end
+        MonodyMusic.PlayTrack(currentTrackIdx)
+    end
+
+    function MonodyMusic.PrevTrack()
+        currentTrackIdx = currentTrackIdx - 1
+        if currentTrackIdx < 1 then currentTrackIdx = #PLAYLIST end
+        MonodyMusic.PlayTrack(currentTrackIdx)
+    end
+
+    function MonodyMusic.ShuffleTrack()
+        local nextIdx = math.random(1, #PLAYLIST)
+        MonodyMusic.PlayTrack(nextIdx)
+    end
+
+    function MonodyMusic.TogglePlay()
         if MonodyMusic.IsPlaying then
             MonodyMusic.Pause()
+            return false
         else
-            if MonodyMusic.Sound and MonodyMusic.Sound.SoundId ~= "" then
+            if not MonodyMusic.Sound or MonodyMusic.Sound.SoundId == "" then
+                MonodyMusic.PlayTrack(currentTrackIdx)
+            else
                 MonodyMusic.Resume()
             end
-        end
-    end)
-
-    local eqAnimStep = 0
-    local wasPlaying = false
-    RunService.Heartbeat:Connect(function()
-        if MonodyMusic.IsPlaying then
-            wasPlaying = true
-            eqAnimStep = eqAnimStep + 0.16
-            for i, bar in ipairs(eqBars) do
-                local h = math.clamp(3 + math.abs(math.sin(eqAnimStep + i * 0.45)) * 11, 2, 14)
-                bar.Size = UDim2.new(0, 2.5, 0, h)
-                bar.Position = UDim2.new((i - 1) / totalBars, 0, 1, -h)
-                bar.BackgroundTransparency = 0.35
-            end
-        elseif wasPlaying then
-            wasPlaying = false
-            for i, bar in ipairs(eqBars) do
-                bar.Size = UDim2.new(0, 2.5, 0, 2)
-                bar.Position = UDim2.new((i - 1) / totalBars, 0, 1, -2)
-                bar.BackgroundTransparency = 0.85
-            end
-        end
-    end)
-end
-
--- Window Controls (Minimize & Close)
-local function createHeaderBtn(symbol, offsetRight, color, callback)
-    local btn = Instance.new("TextButton", Header)
-    btn.Size = UDim2.new(0, 22, 0, 22)
-    btn.Position = UDim2.new(1, offsetRight, 0.5, -11)
-    btn.BackgroundColor3 = Color3.fromRGB(15, 12, 22)
-    btn.BackgroundTransparency = 0.5
-    btn.Text = ""
-    btn.AutoButtonColor = false
-    btn.Active = true
-    btn.ZIndex = 16
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 7)
-    local str = Instance.new("UIStroke", btn)
-    str.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    str.Color = color
-    str.Thickness = 0.8
-    
-    local lbl = Instance.new("TextLabel", btn)
-    lbl.Size = UDim2.new(1, 0, 1, 0)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = symbol
-    lbl.Font = Enum.Font.GothamBold
-    lbl.TextSize = 11
-    lbl.TextColor3 = color
-    lbl.Active = false
-    lbl.ZIndex = 17
-
-    ConnectButton(btn, callback)
-    return btn
-end
-
-local function minimizeUI()
-    TweenService:Create(Main, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
-        Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)
-    }):Play()
-    task.wait(0.25)
-    Main.Visible = false
-    FloatingOpen.Visible = true
-    Notify(APP_TITLE, "Minimized. Tap floating button to reopen.")
-end
-
-local opening = false
-maximizeUI = function()
-    if opening then return end
-    opening = true
-    FloatingOpen.Visible = false
-    Main.Visible = true
-    Main.Size = UDim2.new(0, 0, 0, 0)
-    Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-    local openTween = TweenService:Create(Main, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0, 440, 0, 300), Position = UDim2.new(0.5, -220, 0.5, -150)
-    })
-    openTween.Completed:Connect(function()
-        opening = false
-    end)
-    openTween:Play()
-end
-
-local function fullCloseUI()
-    IsScriptRunning = false
-    for _, c in ipairs(ActiveConnections) do pcall(function() c:Disconnect() end) end
-    pcall(function() ScreenGui:Destroy() end)
-    pcall(function()
-        local target = parentGui or (lp and lp:FindFirstChild("PlayerGui"))
-        if target then
-            for _, old in ipairs(target:GetChildren()) do
-                if old.Name:find("DarlingX") or old.Name:find("DarlingHub_FOV") or old.Name:find("DarlingHub_Tracers") then
-                    old:Destroy()
-                end
-            end
-        end
-    end)
-    print("[Monody] Closed completely.")
-end
-
-createHeaderBtn("-", -54, Color3.fromRGB(255, 255, 255), minimizeUI)
-createHeaderBtn("X", -28, Color3.fromRGB(255, 75, 75), fullCloseUI)
-ConnectButton(FloatingOpen, maximizeUI)
-
--- Dragging Support
-local dragging, dragStart, startPos
-Header.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = Main.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then dragging = false end
-        end)
-    end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        if dragging then
-            local delta = input.Position - dragStart
-            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            return true
         end
     end
-end)
 
--- Page Container (Right Side Content Area)
+    function MonodyMusic.Seek(ratio)
+        if MonodyMusic.Sound and MonodyMusic.Sound.TimeLength > 0 then
+            local target = math.clamp(ratio * MonodyMusic.Sound.TimeLength, 0, MonodyMusic.Sound.TimeLength)
+            pcall(function() MonodyMusic.Sound.TimePosition = target end)
+        end
+    end
+
+    function MonodyMusic.GetProgress()
+        if MonodyMusic.Sound and MonodyMusic.Sound.TimeLength > 0 then
+            local pos = MonodyMusic.Sound.TimePosition
+            local len = MonodyMusic.Sound.TimeLength
+            return pos / len, pos, len
+        end
+        return 0, 0, 145
+    end
+
+end
+
+-- Content Area (Left Side 406x400)
 local PageContainer = Instance.new("Frame", Main)
 PageContainer.Name = "PageContainer"
-PageContainer.Size = UDim2.new(1, -120, 1, -52)
-PageContainer.Position = UDim2.new(0, 112, 0, 44)
+PageContainer.Size = UDim2.new(0, 406, 1, 0)
+PageContainer.Position = UDim2.new(0, 0, 0, 0)
 PageContainer.BackgroundTransparency = 1
 PageContainer.ZIndex = 10
-PageContainer.ClipsDescendants = false
+PageContainer.ClipsDescendants = true
 PageContainer.Active = false
 
--- Side Navigation Dock Capsule (Adaptive ScrollingFrame to prevent clipping on mobile)
-local BottomDock = Instance.new("ScrollingFrame", Main)
-BottomDock.Name = "BottomDock"
-BottomDock.Size = UDim2.new(0, 100, 1, -52)
-BottomDock.Position = UDim2.new(0, 8, 0, 44)
-BottomDock.BackgroundColor3 = Color3.fromRGB(12, 10, 18)
-BottomDock.BackgroundTransparency = 0.55
-BottomDock.ZIndex = 15
-BottomDock.BorderSizePixel = 0
-BottomDock.ScrollBarThickness = 0
-BottomDock.AutomaticCanvasSize = Enum.AutomaticSize.Y
-BottomDock.CanvasSize = UDim2.new(0, 0, 0, 240)
-BottomDock.Active = true
-Instance.new("UICorner", BottomDock).CornerRadius = UDim.new(0, 14)
-table.insert(GlassFrames, BottomDock)
+-- Right Navigation Sidebar (154x400) & Window Controls
+local BottomDock
+local enableWindowDrag
+
+do
+    local SidebarFrame = Instance.new("Frame", Main)
+    SidebarFrame.Name = "SidebarFrame"
+    SidebarFrame.Size = UDim2.new(0, 154, 1, 0)
+    SidebarFrame.Position = UDim2.new(1, -154, 0, 0)
+    SidebarFrame.BackgroundTransparency = 1
+    SidebarFrame.BorderSizePixel = 0
+    SidebarFrame.ZIndex = 15
+    SidebarFrame.ClipsDescendants = true
+    Instance.new("UICorner", SidebarFrame).CornerRadius = UDim.new(0, 12)
+
+    -- Japanese Torii Moon Wallpaper Background for Sidebar
+    local SidebarBg = Instance.new("ImageLabel", SidebarFrame)
+    SidebarBg.Name = "SidebarBackground"
+    SidebarBg.Size = UDim2.new(1, 0, 1, 0)
+    SidebarBg.BackgroundTransparency = 1
+    SidebarBg.ScaleType = Enum.ScaleType.Stretch
+    SidebarBg.ZIndex = 15
+    Instance.new("UICorner", SidebarBg).CornerRadius = UDim.new(0, 12)
+    ResolveAndBindAsset("sidebar_bg_red.png", "rbxassetid://109687263098821", SidebarBg)
+
+    -- Dark Contrast Layer for Readability
+    local SidebarDim = Instance.new("Frame", SidebarFrame)
+    SidebarDim.Name = "SidebarDim"
+    SidebarDim.Size = UDim2.new(1, 0, 1, 0)
+    SidebarDim.BackgroundColor3 = Color3.fromRGB(12, 10, 16)
+    SidebarDim.BackgroundTransparency = 0.35
+    SidebarDim.BorderSizePixel = 0
+    SidebarDim.ZIndex = 16
+    Instance.new("UICorner", SidebarDim).CornerRadius = UDim.new(0, 12)
+
+    local function minimizeUI()
+        TweenService:Create(Main, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0)
+        }):Play()
+        task.wait(0.25)
+        Main.Visible = false
+        FloatingOpen.Visible = true
+        Notify(APP_TITLE, "Minimized. Tap floating button to reopen.")
+    end
+
+    local opening = false
+    maximizeUI = function()
+        if opening then return end
+        opening = true
+        FloatingOpen.Visible = false
+        Main.Visible = true
+        Main.Size = UDim2.new(0, 0, 0, 0)
+        Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+        local openTween = TweenService:Create(Main, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 568, 0, 400), Position = UDim2.new(0.5, 0, 0.5, 0)
+        })
+        openTween.Completed:Connect(function()
+            opening = false
+        end)
+        openTween:Play()
+    end
+
+    local function fullCloseUI()
+        IsScriptRunning = false
+        for _, c in ipairs(ActiveConnections) do pcall(function() c:Disconnect() end) end
+        pcall(function() ScreenGui:Destroy() end)
+        pcall(function()
+            local target = parentGui or (lp and lp:FindFirstChild("PlayerGui"))
+            if target then
+                for _, old in ipairs(target:GetChildren()) do
+                    if old.Name:find("DarlingX") or old.Name:find("DarlingHub_FOV") or old.Name:find("DarlingHub_Tracers") or old.Name:find("Monody") then
+                        old:Destroy()
+                    end
+                end
+            end
+        end)
+        print("[Monody] Closed completely.")
+    end
+
+    -- Top Window Controls on Sidebar
+    local function createSidebarBtn(symbol, offsetRight, color, callback)
+        local btn = Instance.new("TextButton", SidebarFrame)
+        btn.Size = UDim2.new(0, 22, 0, 22)
+        btn.Position = UDim2.new(1, offsetRight, 0, 6)
+        btn.BackgroundColor3 = Color3.fromRGB(24, 18, 30)
+        btn.BackgroundTransparency = 0.4
+        btn.Text = ""
+        btn.AutoButtonColor = false
+        btn.Active = true
+        btn.ZIndex = 22
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+        local str = Instance.new("UIStroke", btn)
+        str.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        str.Color = color
+        str.Thickness = 0.8
+        str.Transparency = 0.3
+
+        local lbl = Instance.new("TextLabel", btn)
+        lbl.Size = UDim2.new(1, 0, 1, 0)
+        lbl.BackgroundTransparency = 1
+        lbl.Text = symbol
+        lbl.Font = Enum.Font.GothamBold
+        lbl.TextSize = 11
+        lbl.TextColor3 = color
+        lbl.Active = false
+        lbl.ZIndex = 23
+
+        ConnectButton(btn, callback)
+        return btn
+    end
+
+    createSidebarBtn("-", -54, Color3.fromRGB(255, 255, 255), minimizeUI)
+    createSidebarBtn("X", -26, Color3.fromRGB(255, 75, 75), fullCloseUI)
+    ConnectButton(FloatingOpen, maximizeUI)
+
+    -- Dragging Engine
+    local dragging, dragStart, startPos
+    enableWindowDrag = function(handle)
+        if not handle then return end
+        handle.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                dragStart = input.Position
+                startPos = Main.Position
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then dragging = false end
+                end)
+            end
+        end)
+    end
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            if dragging then
+                local delta = input.Position - dragStart
+                Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end
+    end)
+
+    local sidebarDragHandle = Instance.new("Frame", SidebarFrame)
+    sidebarDragHandle.Name = "DragHandle"
+    sidebarDragHandle.Size = UDim2.new(1, -60, 0, 32)
+    sidebarDragHandle.Position = UDim2.new(0, 0, 0, 0)
+    sidebarDragHandle.BackgroundTransparency = 1
+    sidebarDragHandle.Active = true
+    sidebarDragHandle.ZIndex = 20
+    enableWindowDrag(sidebarDragHandle)
+
+    -- Side Navigation Dock inside SidebarFrame
+    BottomDock = Instance.new("ScrollingFrame", SidebarFrame)
+    BottomDock.Name = "BottomDock"
+    BottomDock.Size = UDim2.new(1, -12, 1, -38)
+    BottomDock.Position = UDim2.new(0, 6, 0, 32)
+    BottomDock.BackgroundTransparency = 1
+    BottomDock.ZIndex = 20
+    BottomDock.BorderSizePixel = 0
+    BottomDock.ScrollBarThickness = 2
+    BottomDock.ScrollBarImageColor3 = CurrentAccent
+    BottomDock.ScrollBarImageTransparency = 0.3
+    BottomDock.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    BottomDock.CanvasSize = UDim2.new(0, 0, 0, 240)
+    BottomDock.Active = true
+    Instance.new("UICorner", BottomDock).CornerRadius = UDim.new(0, 10)
+    table.insert(GlassFrames, BottomDock)
+end
 
 local dockStroke = Instance.new("UIStroke", BottomDock)
 dockStroke.Color = CurrentAccent
@@ -2424,23 +2517,25 @@ local function SelectTabById(targetId)
             if isTarget then
                 TweenService:Create(dbtn.btn, TweenInfo.new(0.18), {
                     BackgroundColor3 = CurrentAccent,
-                    BackgroundTransparency = 0.72
+                    BackgroundTransparency = 0.2
                 }):Play()
                 TweenService:Create(dbtn.stroke, TweenInfo.new(0.18), {
                     Color = CurrentAccent,
-                    Thickness = 1.2
+                    Thickness = 1.0,
+                    Transparency = 0.3
                 }):Play()
                 TweenService:Create(dbtn.pill, TweenInfo.new(0.18), { BackgroundTransparency = 0 }):Play()
-                TweenService:Create(dbtn.icon, TweenInfo.new(0.18), { ImageColor3 = CurrentAccent }):Play()
+                TweenService:Create(dbtn.icon, TweenInfo.new(0.18), { ImageColor3 = Color3.fromRGB(255, 255, 255) }):Play()
                 TweenService:Create(dbtn.label, TweenInfo.new(0.18), { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
             else
                 TweenService:Create(dbtn.btn, TweenInfo.new(0.18), {
-                    BackgroundColor3 = Color3.fromRGB(20, 16, 32),
-                    BackgroundTransparency = 0.55
+                    BackgroundColor3 = Color3.fromRGB(24, 18, 30),
+                    BackgroundTransparency = 0.65
                 }):Play()
                 TweenService:Create(dbtn.stroke, TweenInfo.new(0.18), {
                     Color = Color3.fromRGB(48, 42, 68),
-                    Thickness = 0.8
+                    Thickness = 0.8,
+                    Transparency = 0.7
                 }):Play()
                 TweenService:Create(dbtn.pill, TweenInfo.new(0.18), { BackgroundTransparency = 1 }):Play()
                 TweenService:Create(dbtn.icon, TweenInfo.new(0.18), { ImageColor3 = Color3.fromRGB(200, 195, 225) }):Play()
@@ -4488,25 +4583,25 @@ local function BuildTabEntity(tabId, tabName, lucideName, orderIndex)
         UpdatePageCanvas(page)
     end)
 
-    -- Dock Button (Luxury Glass Pill Capsule)
+    -- Dock Button (Darling X Modern Tab Pill)
     local dockBtn = Instance.new("TextButton", BottomDock)
     dockBtn.Name = "DockBtn_" .. tabId
     dockBtn.LayoutOrder = orderIndex
     dockBtn.Size = UDim2.new(1, 0, 0, 28)
-    dockBtn.BackgroundColor3 = Color3.fromRGB(20, 16, 32)
-    dockBtn.BackgroundTransparency = 0.55
+    dockBtn.BackgroundColor3 = Color3.fromRGB(24, 18, 30)
+    dockBtn.BackgroundTransparency = 0.65
     dockBtn.AutoButtonColor = false
     dockBtn.Text = ""
     dockBtn.Active = true
     dockBtn.Selectable = true
-    dockBtn.ZIndex = 16
+    dockBtn.ZIndex = 21
     Instance.new("UICorner", dockBtn).CornerRadius = UDim.new(0, 8)
 
     local btnStroke = Instance.new("UIStroke", dockBtn)
     btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     btnStroke.Color = Color3.fromRGB(48, 42, 68)
     btnStroke.Thickness = 0.8
-    btnStroke.Transparency = 0.4
+    btnStroke.Transparency = 0.7
 
     -- Left Active Pill Indicator
     local activePill = Instance.new("Frame", dockBtn)
@@ -4515,7 +4610,7 @@ local function BuildTabEntity(tabId, tabName, lucideName, orderIndex)
     activePill.BackgroundColor3 = CurrentAccent
     activePill.BackgroundTransparency = 1
     activePill.Active = false
-    activePill.ZIndex = 17
+    activePill.ZIndex = 22
     Instance.new("UICorner", activePill).CornerRadius = UDim.new(1, 0)
     RegisterThemeFill(activePill)
 
@@ -4525,7 +4620,7 @@ local function BuildTabEntity(tabId, tabName, lucideName, orderIndex)
     iconImg.BackgroundTransparency = 1
     iconImg.ImageColor3 = Color3.fromRGB(200, 195, 225)
     iconImg.Active = false
-    iconImg.ZIndex = 17
+    iconImg.ZIndex = 22
     ApplyTabIcon(iconImg, tabId, lucideName)
 
     local tabLabel = Instance.new("TextLabel", dockBtn)
@@ -4540,18 +4635,18 @@ local function BuildTabEntity(tabId, tabName, lucideName, orderIndex)
     tabLabel.TextXAlignment = Enum.TextXAlignment.Left
     tabLabel.TextTruncate = Enum.TextTruncate.AtEnd
     tabLabel.Active = false
-    tabLabel.ZIndex = 17
+    tabLabel.ZIndex = 22
 
     dockBtn.MouseEnter:Connect(function()
         if not (DockButtons[tabId] and DockButtons[tabId].isSelected) then
-            TweenService:Create(dockBtn, TweenInfo.new(0.15), { BackgroundTransparency = 0.35 }):Play()
-            TweenService:Create(btnStroke, TweenInfo.new(0.15), { Color = CurrentAccent }):Play()
+            TweenService:Create(dockBtn, TweenInfo.new(0.15), { BackgroundTransparency = 0.4 }):Play()
+            TweenService:Create(btnStroke, TweenInfo.new(0.15), { Color = CurrentAccent, Transparency = 0.3 }):Play()
         end
     end)
     dockBtn.MouseLeave:Connect(function()
         if not (DockButtons[tabId] and DockButtons[tabId].isSelected) then
-            TweenService:Create(dockBtn, TweenInfo.new(0.15), { BackgroundTransparency = 0.55 }):Play()
-            TweenService:Create(btnStroke, TweenInfo.new(0.15), { Color = Color3.fromRGB(48, 42, 68) }):Play()
+            TweenService:Create(dockBtn, TweenInfo.new(0.15), { BackgroundTransparency = 0.65 }):Play()
+            TweenService:Create(btnStroke, TweenInfo.new(0.15), { Color = Color3.fromRGB(48, 42, 68), Transparency = 0.7 }):Play()
         end
     end)
 
@@ -6192,444 +6287,514 @@ end
 
 local HomePage = RegisterTab("Home", "Home", "house")
 pcall(function()
-    -- Player Profile Identity Card
-    local profileCard = CreateCard(HomePage, nil)
-    local pRow = Instance.new("Frame", profileCard)
-    pRow.Size = UDim2.new(1, 0, 0, 52)
-    pRow.BackgroundTransparency = 1
+    HomePage.CanvasSize = UDim2.new(0, 0, 0, 376)
+    HomePage.ScrollBarThickness = 0
 
-    local avatarFrame = Instance.new("Frame", pRow)
-    avatarFrame.Size = UDim2.new(0, 48, 0, 48)
-    avatarFrame.Position = UDim2.new(0, 2, 0.5, -24)
-    avatarFrame.BackgroundColor3 = Color3.fromRGB(20, 18, 30)
-    Instance.new("UICorner", avatarFrame).CornerRadius = UDim.new(1, 0)
-    local aStroke = Instance.new("UIStroke", avatarFrame)
-    aStroke.Thickness = 1.4
-    RegisterThemeStroke(aStroke)
-
-    local avatarImg = Instance.new("ImageLabel", avatarFrame)
-    avatarImg.Size = UDim2.new(1, 0, 1, 0)
-    avatarImg.BackgroundTransparency = 1
-    avatarImg.Image = GetLogoAsset()
-    avatarImg.ScaleType = Enum.ScaleType.Crop
-    Instance.new("UICorner", avatarImg).CornerRadius = UDim.new(1, 0)
-
-    -- Status dot on avatar
-    local statusDot = Instance.new("Frame", avatarFrame)
-    statusDot.Size = UDim2.new(0, 10, 0, 10)
-    statusDot.Position = UDim2.new(1, -9, 1, -9)
-    statusDot.BackgroundColor3 = Color3.fromRGB(16, 185, 129)
-    Instance.new("UICorner", statusDot).CornerRadius = UDim.new(1, 0)
-    local sdotStroke = Instance.new("UIStroke", statusDot)
-    sdotStroke.Color = Color3.fromRGB(12, 10, 18)
-    sdotStroke.Thickness = 1.5
-
-    -- Load player thumbnail asynchronously in background so main thread NEVER yields or hangs
-    task.spawn(function()
-        pcall(function()
-            if lp and lp.UserId then
-                local avatarUrl = Players:GetUserThumbnailAsync(lp.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
-                if avatarUrl and avatarImg and avatarImg.Parent then
-                    avatarImg.Image = avatarUrl
-                end
-            end
-        end)
-    end)
-
-    local dNameLbl = Instance.new("TextLabel", pRow)
-    dNameLbl.Size = UDim2.new(1, -60, 0, 16)
-    dNameLbl.Position = UDim2.new(0, 58, 0, 2)
-    dNameLbl.BackgroundTransparency = 1
-    dNameLbl.Text = lp and lp.DisplayName or "Player"
-    dNameLbl.Font = Enum.Font.GothamBold
-    dNameLbl.TextSize = 13
-    dNameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-    dNameLbl.TextXAlignment = Enum.TextXAlignment.Left
-
-    local uNameLbl = Instance.new("TextLabel", pRow)
-    uNameLbl.Size = UDim2.new(1, -60, 0, 13)
-    uNameLbl.Position = UDim2.new(0, 58, 0, 19)
-    uNameLbl.BackgroundTransparency = 1
-    uNameLbl.Text = "@" .. (lp and lp.Name or "username")
-    uNameLbl.Font = Enum.Font.GothamSemibold
-    uNameLbl.TextSize = 9
-    uNameLbl.TextColor3 = CurrentAccent
-    uNameLbl.TextXAlignment = Enum.TextXAlignment.Left
-    RegisterThemeText(uNameLbl)
-
-    local badgeRow = Instance.new("Frame", pRow)
-    badgeRow.Size = UDim2.new(1, -60, 0, 14)
-    badgeRow.Position = UDim2.new(0, 58, 0, 34)
-    badgeRow.BackgroundTransparency = 1
-
-    local bLayout = Instance.new("UIListLayout", badgeRow)
-    bLayout.FillDirection = Enum.FillDirection.Horizontal
-    bLayout.Padding = UDim.new(0, 6)
-
-    local function makeMicroBadge(txt)
-        local b = Instance.new("Frame", badgeRow)
-        b.Size = UDim2.new(0, 0, 1, 0)
-        b.AutomaticSize = Enum.AutomaticSize.X
-        b.BackgroundColor3 = Color3.fromRGB(22, 18, 30)
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
-        local bPad = Instance.new("UIPadding", b)
-        bPad.PaddingLeft = UDim.new(0, 5); bPad.PaddingRight = UDim.new(0, 5)
-        local l = Instance.new("TextLabel", b)
-        l.Size = UDim2.new(0, 0, 1, 0)
-        l.AutomaticSize = Enum.AutomaticSize.X
-        l.BackgroundTransparency = 1
-        l.Text = txt
-        l.Font = Enum.Font.GothamBold
-        l.TextSize = 7.5
-        l.TextColor3 = Color3.fromRGB(180, 175, 195)
-    end
-    makeMicroBadge("UID: " .. (lp and tostring(lp.UserId) or "0"))
-    makeMicroBadge("AGE: " .. (lp and tostring(lp.AccountAge) or "0") .. "d")
-    makeMicroBadge("MONODY " .. APP_VERSION)
-
-    -- Quick Actions Card (Replaces Non-Working Health & Energy HUD)
-    local quickCard = CreateCard(HomePage, "Quick Actions")
-
-    AddToggle(quickCard, "Show FPS & Ping", "Display real-time FPS and ping overlay top-left", false, function(state)
-        SetFPSPingVisible(state)
-        Notify("Telemetry", "FPS & Ping: " .. (state and "Visible" or "Hidden"))
-    end)
-
-    AddToggle(quickCard, "Fast Attack", "Rapid weapon hit bursts", false, function(state)
-        _G.DarlingX_FastAttack = state
-        local fa = M.getFastAttack()
-        if fa then if state then fa.enable() else fa.disable() end end
-        Notify("Combat", "Fast Attack: " .. (state and "Enabled" or "Disabled"))
-    end)
-
-    AddToggle(quickCard, "Dragon Gun M1", "Rapid fire M1 gun shots", false, function(state)
-        _G.DarlingX_DragonM1Enabled = state
-        local dg = M.getDragonGun()
-        local ew = M.getExtraWidgets()
-        if dg then dg.SetEnabled(state) end
-        if ew then
-            ew.SetDragonM1WidgetVisible(state)
-            ew.UpdateDragonM1Visual(state)
-        end
-        Notify("Combat", "Dragon Gun M1: " .. (state and "Enabled" or "Disabled"))
-    end)
-
-    AddToggle(quickCard, "Camlock", "Lock camera onto enemy", false, function(state)
-        local cl = M.getCamlock()
-        if cl then cl.SetEnabled(state) end
-        Notify("Combat", "Camlock: " .. (state and "Locked" or "Unlocked"))
-    end)
-
-    AddToggle(quickCard, "Sanguine Boost", "Forward velocity boost", false, function(state)
-        _G.DarlingX_SanguineBoost = state
-        local sb = M.getSanguineBoost()
-        local ew = M.getExtraWidgets()
-        if sb then sb.SetEnabled(state) end
-        if ew then ew.SetSanguineWidgetVisible(state) end
-        Notify("Combat", "Sanguine Boost: " .. (state and "Active" or "Inactive"))
-    end)
-
-    AddToggle(quickCard, "Super Jump", "High jump leap", false, function(state)
-        local mm = M.getMoveMod()
-        if mm then mm.SetSuperJump(state) end
-        Notify("Movement", "Super Jump: " .. (state and "Enabled" or "Disabled"))
-    end)
-
-    AddToggle(quickCard, "Custom WalkSpeed", "Speed up player movement", false, function(state)
-        local mm = M.getMoveMod()
-        if mm then mm.SetWalkSpeed(state) end
-        Notify("Movement", "WalkSpeed: " .. (state and "Enabled" or "Disabled"))
-    end)
-
-    AddToggle(quickCard, "FFlags 1 (FPS Booster)", "120 FPS cap, smooth plastic textures, removes atmosphere fog, hides debris", false, function(state)
-        SetFFlags1(state)
-    end)
-
-    AddButton(quickCard, "Apply Fast FFlags", function()
-        ApplyFastFFlags()
-    end)
-
-    -- Atmosphere Wallpaper Card (Quick Atmosphere Switcher on Home)
-    local wpHomeCard = CreateCard(HomePage, "Wallpaper")
-
-    local wpHomeStatus = Instance.new("TextLabel", wpHomeCard)
-    wpHomeStatus.Size = UDim2.new(1, 0, 0, 18)
-    wpHomeStatus.BackgroundTransparency = 1
-    wpHomeStatus.Text = string.format("Active: [%02d/%02d] %s", currentBgIdx, #WALLPAPERS, WALLPAPERS[currentBgIdx].name)
-    wpHomeStatus.Font = Enum.Font.GothamBold
-    wpHomeStatus.TextSize = 9
-    wpHomeStatus.TextColor3 = CurrentAccent
-    wpHomeStatus.TextXAlignment = Enum.TextXAlignment.Left
-    RegisterThemeText(wpHomeStatus)
-
-    local wpNamesListHome = {}
-    for i, wp in ipairs(WALLPAPERS) do
-        table.insert(wpNamesListHome, string.format("[%02d] %s", i, wp.name))
+    local pList = HomePage:FindFirstChildOfClass("UIListLayout")
+    if pList then
+        pList.Padding = UDim.new(0, 8)
+        pList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     end
 
-    local wpHomeChoice = AddChoice(wpHomeCard, "Direct Wallpaper", wpNamesListHome, currentBgIdx, function(val, idx)
-        SetWallpaper(idx)
-    end)
+    local function createRedCard(name, height, layoutOrder, bgFilename, fallbackId)
+        local frame = Instance.new("Frame", HomePage)
+        frame.Name = name
+        frame.Size = UDim2.new(0, 406, 0, height)
+        frame.LayoutOrder = layoutOrder
+        frame.BackgroundColor3 = Color3.fromRGB(18, 14, 20)
+        frame.BackgroundTransparency = 0.08
+        frame.BorderSizePixel = 0
+        frame.ClipsDescendants = true
+        Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
-    -- Navigation row: Previous, Shuffle, Next
-    local navRowHome = Instance.new("Frame", wpHomeCard)
-    navRowHome.Size = UDim2.new(1, 0, 0, 28)
-    navRowHome.BackgroundTransparency = 1
+        local bg = Instance.new("ImageLabel", frame)
+        bg.Name = "Bg"
+        bg.Size = UDim2.new(1, 0, 1, 0)
+        bg.BackgroundTransparency = 1
+        bg.BorderSizePixel = 0
+        bg.ScaleType = Enum.ScaleType.Stretch
+        Instance.new("UICorner", bg).CornerRadius = UDim.new(0, 10)
+        ResolveAndBindAsset(bgFilename, fallbackId, bg)
 
-    local nLayoutHome = Instance.new("UIGridLayout", navRowHome)
-    nLayoutHome.CellSize = UDim2.new(0.333, -5, 1, 0)
-    nLayoutHome.CellPadding = UDim.new(0, 7, 0, 0)
-
-    local function makeHomeNavBtn(txt, callback)
-        local btn = Instance.new("TextButton", navRowHome)
-        btn.BackgroundColor3 = Color3.fromRGB(22, 18, 32)
-        btn.BackgroundTransparency = 0.45
-        btn.Text = ""
-        btn.AutoButtonColor = false
-        btn.Active = true
-        btn.Selectable = true
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-        local bStr = Instance.new("UIStroke", btn)
-        bStr.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-        bStr.Color = CurrentAccent
-        bStr.Thickness = 0.8
-        bStr.Transparency = 0.5
-        RegisterThemeStroke(bStr)
-
-        local btnLbl = Instance.new("TextLabel", btn)
-        btnLbl.Size = UDim2.new(1, 0, 1, 0)
-        btnLbl.BackgroundTransparency = 1
-        btnLbl.Font = Enum.Font.GothamBold
-        btnLbl.Text = txt
-        btnLbl.TextSize = 8.5
-        btnLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-        RegisterTranslatable(btnLbl, txt)
-
-        ConnectButton(btn, callback)
-        return btn
+        return frame, bg
     end
 
-    makeHomeNavBtn("Previous (‹)", function()
-        local prevIdx = currentBgIdx - 1
-        if prevIdx < 1 then prevIdx = #WALLPAPERS end
-        SetWallpaper(prevIdx)
-    end)
+    ----------------------------------------------------------------------------
+    -- 1. CARD 1: TOP PROFILE & BRAND CARD (header_profile_panel_red.png, 126h)
+    ----------------------------------------------------------------------------
+    local card1, bg1 = createRedCard("TopBrandCard", 126, 1, "header_profile_panel_red.png", "rbxassetid://109687263098821")
 
-    makeHomeNavBtn("Random (Shuffle)", function()
-        local randIdx = math.random(1, #WALLPAPERS)
-        SetWallpaper(randIdx)
-    end)
-
-    makeHomeNavBtn("Next (›)", function()
-        local nextIdx = currentBgIdx + 1
-        if nextIdx > #WALLPAPERS then nextIdx = 1 end
-        SetWallpaper(nextIdx)
-    end)
-
-    RegisterWallpaperListener(function(idx, wp)
-        if wpHomeStatus and wpHomeStatus.Parent then
-            wpHomeStatus.Text = string.format("Active: [%02d/%02d] %s", idx, #WALLPAPERS, wp.name)
-        end
-        if wpHomeChoice and wpHomeChoice.SetIndex then
-            wpHomeChoice.SetIndex(idx, false)
-        end
-    end)
-
-    -- In-Game Attributes Bento Grid Card
-    local statsCard = CreateCard(HomePage, "Game Stats")
-    local grid = Instance.new("Frame", statsCard)
-    grid.Size = UDim2.new(1, 0, 0, 84)
-    grid.BackgroundTransparency = 1
-    local gLayout = Instance.new("UIGridLayout", grid)
-    gLayout.CellSize = UDim2.new(0.333, -6, 0, 38)
-    gLayout.CellPadding = UDim2.new(0, 8, 0, 8)
-
-    local function createStatPill(headerText, initialVal)
-        local frame = Instance.new("Frame", grid)
-        frame.BackgroundColor3 = Color3.fromRGB(18, 14, 28)
-        frame.BackgroundTransparency = 0.5
-        Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
-        local fStr = Instance.new("UIStroke", frame)
-        fStr.Color = Color3.fromRGB(44, 38, 60)
-        fStr.Thickness = 0.8
-
-        local t = Instance.new("TextLabel", frame)
-        t.Size = UDim2.new(1, -8, 0, 12)
-        t.Position = UDim2.new(0, 4, 0, 4)
-        t.BackgroundTransparency = 1
-        t.Text = headerText
-        RegisterTranslatable(t, headerText)
-        t.Font = Enum.Font.Gotham
-        t.TextSize = 7.5
-        t.TextColor3 = Color3.fromRGB(150, 145, 175)
-        t.TextXAlignment = Enum.TextXAlignment.Center
-
-        local v = Instance.new("TextLabel", frame)
-        v.Size = UDim2.new(1, -8, 0, 18)
-        v.Position = UDim2.new(0, 4, 0, 16)
-        v.BackgroundTransparency = 1
-        v.Text = initialVal
-        v.Font = Enum.Font.GothamBold
-        v.TextSize = 9.5
-        v.TextColor3 = Color3.fromRGB(255, 255, 255)
-        v.TextXAlignment = Enum.TextXAlignment.Center
-
-        return v
+    if enableWindowDrag then
+        enableWindowDrag(card1)
     end
 
-    local statLevel = createStatPill("LEVEL", "--")
-    local statBeli = createStatPill("BELI", "--")
-    local statBounty = createStatPill("BOUNTY", "--")
-    local statFruit = createStatPill("FRUIT", "--")
-    local statRace = createStatPill("RACE", "--")
-    local statTeam = createStatPill("FACTION", "--")
+    -- Discord Hitbox Button
+    local discordHitbox = Instance.new("TextButton", card1)
+    discordHitbox.Name = "DiscordHitbox"
+    discordHitbox.Size = UDim2.new(0, 26, 0, 26)
+    discordHitbox.Position = UDim2.new(0, 14, 0, 92)
+    discordHitbox.BackgroundTransparency = 1
+    discordHitbox.Text = ""
+    discordHitbox.Active = true
+    discordHitbox.ZIndex = 12
 
-    -- Performance & Network Telemetry Card
-    local netCard = CreateCard(HomePage, "System Info")
-    local nGrid = Instance.new("Frame", netCard)
-    nGrid.Size = UDim2.new(1, 0, 0, 36)
-    nGrid.BackgroundTransparency = 1
-    local ngLayout = Instance.new("UIGridLayout", nGrid)
-    ngLayout.CellSize = UDim2.new(0.25, -6, 0, 34)
-    ngLayout.CellPadding = UDim2.new(0, 8, 0, 0)
-
-    local function createNetPill(headerText, initialVal)
-        local frame = Instance.new("Frame", nGrid)
-        frame.BackgroundColor3 = Color3.fromRGB(18, 14, 28)
-        frame.BackgroundTransparency = 0.5
-        Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
-        local fStr = Instance.new("UIStroke", frame)
-        fStr.Color = Color3.fromRGB(44, 38, 60)
-        fStr.Thickness = 0.8
-
-        local t = Instance.new("TextLabel", frame)
-        t.Size = UDim2.new(1, 0, 0, 11)
-        t.Position = UDim2.new(0, 0, 0, 3)
-        t.BackgroundTransparency = 1
-        t.Text = headerText
-        RegisterTranslatable(t, headerText)
-        t.Font = Enum.Font.Gotham
-        t.TextSize = 7.5
-        t.TextColor3 = Color3.fromRGB(150, 145, 175)
-        t.TextXAlignment = Enum.TextXAlignment.Center
-
-        local v = Instance.new("TextLabel", frame)
-        v.Size = UDim2.new(1, 0, 0, 16)
-        v.Position = UDim2.new(0, 0, 0, 15)
-        v.BackgroundTransparency = 1
-        v.Text = initialVal
-        v.Font = Enum.Font.GothamBold
-        v.TextSize = 9
-        v.TextColor3 = CurrentAccent
-        v.TextXAlignment = Enum.TextXAlignment.Center
-        RegisterThemeText(v)
-
-        return v
-    end
-
-    local itemPing = createNetPill("PING", "0 ms")
-    local itemFps = createNetPill("FPS", "60")
-    local itemPlayers = createNetPill("PLAYERS", "0")
-    local itemUptime = createNetPill("UPTIME", "0s")
-
-    AddButton(netCard, "Copy Server JobId", function()
+    ConnectButton(discordHitbox, function()
         pcall(function()
             if setclipboard then
-                setclipboard(tostring(game.JobId))
-                Notify("Server", "Copied JobId to clipboard!")
+                setclipboard("https://discord.gg/besthub")
+            elseif toclipboard then
+                toclipboard("https://discord.gg/besthub")
             end
         end)
+        Notify("Monody", "Discord link copied to clipboard!", 2.0)
     end)
 
-    AddButton(netCard, "Rejoin Current Server", function()
-        RejoinServer()
+    -- TikTok Hitbox Button
+    local tiktokHitbox = Instance.new("TextButton", card1)
+    tiktokHitbox.Name = "TikTokHitbox"
+    tiktokHitbox.Size = UDim2.new(0, 26, 0, 26)
+    tiktokHitbox.Position = UDim2.new(0, 42, 0, 92)
+    tiktokHitbox.BackgroundTransparency = 1
+    tiktokHitbox.Text = ""
+    tiktokHitbox.Active = true
+    tiktokHitbox.ZIndex = 12
+
+    ConnectButton(tiktokHitbox, function()
+        pcall(function()
+            if setclipboard then
+                setclipboard("https://www.tiktok.com/@besthub")
+            elseif toclipboard then
+                toclipboard("https://www.tiktok.com/@besthub")
+            end
+        end)
+        Notify("Monody", "TikTok link copied to clipboard!", 2.0)
     end)
 
+    -- Key Time Display Label
+    local keyTimeLbl = Instance.new("TextLabel", card1)
+    keyTimeLbl.Name = "KeyTimeLabel"
+    keyTimeLbl.Size = UDim2.new(0, 160, 0, 18)
+    keyTimeLbl.Position = UDim2.new(1, -170, 0, 96)
+    keyTimeLbl.BackgroundTransparency = 1
+    keyTimeLbl.Font = Enum.Font.GothamMedium
+    keyTimeLbl.TextSize = 10.5
+    keyTimeLbl.TextColor3 = Color3.fromRGB(245, 235, 245)
+    keyTimeLbl.TextXAlignment = Enum.TextXAlignment.Right
+    keyTimeLbl.ZIndex = 12
 
-
-    -- Live Telemetry Thread
-    task.spawn(function()
-        local startTime = os.clock()
-        local fpsCount = 0
-        local lastFpsCheck = os.clock()
-        local fpsConn = nil
-        fpsConn = RunService.Heartbeat:Connect(function()
-            fpsCount = fpsCount + 1
-            if os.clock() - lastFpsCheck >= 1 then
-                if itemFps and itemFps.Parent then
-                    itemFps.Text = fpsCount .. " FPS"
+    local function updateKeyTime()
+        local remaining = "Key Time: 25 Hours Left"
+        pcall(function()
+            local exp = AX_KeyExpires or (_G.AX_USER and _G.AX_USER.KeyExpires) or (getgenv and getgenv().AX_KeyExpires)
+            if exp and tonumber(exp) then
+                local diff = tonumber(exp) - os.time()
+                if diff > 86400 * 365 then
+                    remaining = "Key: Lifetime Access"
+                elseif diff > 0 then
+                    local hrs = math.floor(diff / 3600)
+                    local mins = math.floor((diff % 3600) / 60)
+                    remaining = string.format("Key Time: %dh %dm Left", hrs, mins)
+                else
+                    remaining = "Key: Verified"
                 end
-                fpsCount = 0
-                lastFpsCheck = os.clock()
             end
         end)
+        keyTimeLbl.Text = remaining
+    end
+    updateKeyTime()
 
-        local statTick = 0
-        while IsScriptRunning do
-            pcall(function()
-                statTick = statTick + 1
-                -- Game Stats (throttled to every ~3 seconds)
-                if statTick >= 3 or statTick == 1 then
-                    statTick = 0
-                    local data = lp and (lp:FindFirstChild("Data") or lp:FindFirstChild("leaderstats"))
-                    if data then
-                        local lvl = data:FindFirstChild("Level")
-                        statLevel.Text = lvl and tostring(lvl.Value) or "--"
+    ----------------------------------------------------------------------------
+    -- 2. CARD 2: REAL LIVE STATS CARD (stats_panel_red.png, 146h)
+    ----------------------------------------------------------------------------
+    local card2, bg2 = createRedCard("CenterStatsCard", 146, 2, "stats_panel_red.png", "rbxassetid://109687263098821")
 
-                        local beli = data:FindFirstChild("Beli")
-                        statBeli.Text = beli and ("$" .. FormatNumber(beli.Value)) or "--"
+    local function createStatRow(name, initialText, yPos, xPos, width)
+        local lbl = Instance.new("TextLabel", card2)
+        lbl.Name = name
+        lbl.Size = UDim2.new(0, width, 0, 20)
+        lbl.Position = UDim2.new(0, xPos, 0, yPos)
+        lbl.BackgroundTransparency = 1
+        lbl.Font = Enum.Font.GothamMedium
+        lbl.Text = initialText
+        lbl.TextSize = 12
+        lbl.TextColor3 = Color3.fromRGB(245, 240, 245)
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+        lbl.TextTruncate = Enum.TextTruncate.AtEnd
+        lbl.ZIndex = 12
+        return lbl
+    end
 
-                        local bnty = data:FindFirstChild("Bounty") or data:FindFirstChild("Bounty/Honor")
-                        statBounty.Text = bnty and FormatNumber(bnty.Value) or "--"
+    -- Left 4 stats (Player, Game, Bounty, Level) aligned to icons at x=72
+    local statPlayer = createStatRow("StatPlayer", "- " .. (lp and lp.DisplayName or "Player"), 22, 72, 100)
+    local statGame   = createStatRow("StatGame", "- Blox Fruits", 51, 72, 100)
+    local statBounty = createStatRow("StatBounty", "- Bounty 4M", 83, 72, 100)
+    local statLevel  = createStatRow("StatLevel", "- Level 2800", 115, 72, 100)
 
-                        local df = data:FindFirstChild("DevilFruit")
-                        statFruit.Text = df and tostring(df.Value):gsub("-%w+", "") or "None"
+    -- Right 4 stats (Session, Ping, FPS, Server Clock) aligned to icons at x=320
+    local statSession = createStatRow("StatSession", "- 0:00", 22, 320, 75)
+    local statPing    = createStatRow("StatPing", "- 50ms", 51, 320, 75)
+    local statFps     = createStatRow("StatFps", "- 60Fps", 83, 320, 75)
+    local statClock   = createStatRow("StatClock", "- 00:00", 115, 320, 75)
 
-                        local race = data:FindFirstChild("Race")
-                        statRace.Text = race and tostring(race.Value) or "--"
-                    else
-                        if hum then
-                            statLevel.Text = "WS: " .. math.floor(hum.WalkSpeed)
-                            statBeli.Text = "JP: " .. math.floor(hum.JumpPower)
+    -- Real-time stats updater
+    local scriptStart = tick()
+    local lastStatUpdate = 0
+    local smoothedFps = 60
+    local lastFrameTick = tick()
+
+    RunService.Heartbeat:Connect(function()
+        local now = tick()
+        local dt = now - lastFrameTick
+        lastFrameTick = now
+        if dt > 0 then
+            smoothedFps = math.floor(smoothedFps * 0.9 + (1 / dt) * 0.1)
+        end
+
+        if now - lastStatUpdate < 0.4 then return end
+        lastStatUpdate = now
+
+        -- Session stopwatch
+        local elapsed = math.floor(now - scriptStart)
+        local mins = math.floor(elapsed / 60)
+        local secs = elapsed % 60
+        statSession.Text = string.format("- %d:%02d", mins, secs)
+
+        -- Ping
+        local ping = 50
+        pcall(function()
+            local s = Stats:FindFirstChild("Network") and Stats.Network:FindFirstChild("ServerStatsItem")
+            local item = s and s:FindFirstChild("Data Ping")
+            if item then ping = math.floor(item:GetValue()) end
+        end)
+        if ping == 0 and lp then
+            pcall(function() ping = math.floor(lp:GetNetworkPing() * 1000) end)
+        end
+        statPing.Text = string.format("- %dms", ping)
+
+        -- FPS
+        statFps.Text = string.format("- %dFps", math.clamp(smoothedFps, 15, 240))
+
+        -- Clock
+        statClock.Text = "- " .. os.date("%H:%M")
+
+        -- Live Bounty & Level
+        pcall(function()
+            if lp then
+                local ls = lp:FindFirstChild("leaderstats")
+                if ls then
+                    local b = ls:FindFirstChild("Bounty/Honor") or ls:FindFirstChild("Bounty") or ls:FindFirstChild("Honor")
+                    if b then
+                        local v = tonumber(b.Value) or 0
+                        if v >= 1000000 then
+                            statBounty.Text = string.format("- Bounty %.1fM", v / 1000000)
+                        elseif v >= 1000 then
+                            statBounty.Text = string.format("- Bounty %.1fK", v / 1000)
+                        else
+                            statBounty.Text = "- Bounty " .. tostring(v)
                         end
                     end
-
-                    if lp and lp.Team then
-                        statTeam.Text = tostring(lp.Team.Name)
-                    end
                 end
-
-                -- Telemetry (updated every 1s)
-                local ping = 0
-                local statsService = game:GetService("Stats")
-                pcall(function()
-                    ping = math.floor(statsService.Network.ServerStatsItem["Data Ping"]:GetValue())
-                end)
-                if ping == 0 and lp then
-                    pcall(function() ping = math.floor(lp:GetNetworkPing() * 1000) end)
+                local data = lp:FindFirstChild("Data")
+                if data and data:FindFirstChild("Level") then
+                    statLevel.Text = "- Level " .. tostring(data.Level.Value)
                 end
-                itemPing.Text = ping .. " ms"
-                if ping < 100 then
-                    itemPing.TextColor3 = Color3.fromRGB(16, 215, 135)
-                elseif ping < 200 then
-                    itemPing.TextColor3 = Color3.fromRGB(245, 180, 20)
-                else
-                    itemPing.TextColor3 = Color3.fromRGB(245, 60, 60)
-                end
+            end
+        end)
+    end)
 
-                local elapsed = math.floor(os.clock() - startTime)
-                local mins = math.floor(elapsed / 60)
-                local secs = elapsed % 60
-                itemUptime.Text = mins .. "m " .. secs .. "s"
-                itemPlayers.Text = #Players:GetPlayers() .. "/" .. Players.MaxPlayers
-            end)
-            task.wait(1.0)
+    ----------------------------------------------------------------------------
+    -- 3. CARD 3: REAL INTERACTIVE MUSIC PLAYER (music_player_red.png, 80h)
+    ----------------------------------------------------------------------------
+    local card3, bg3 = createRedCard("BottomMusicCard", 80, 3, "music_player_red.png", "rbxassetid://109687263098821")
+
+    -- Dynamic Track Title label (overlay over track title area)
+    local trackTitleLbl = Instance.new("TextLabel", card3)
+    trackTitleLbl.Name = "TrackTitle"
+    trackTitleLbl.Size = UDim2.new(0, 140, 0, 16)
+    trackTitleLbl.Position = UDim2.new(0, 78, 0, 12)
+    trackTitleLbl.BackgroundTransparency = 1
+    trackTitleLbl.Font = Enum.Font.GothamBold
+    trackTitleLbl.Text = (MonodyMusic and MonodyMusic.CurrentTrackName) or "MONTAGEM BAILÃO (Phonk)"
+    trackTitleLbl.TextSize = 10.5
+    trackTitleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    trackTitleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    trackTitleLbl.TextTruncate = Enum.TextTruncate.AtEnd
+    trackTitleLbl.ZIndex = 12
+
+    -- Dynamic Playback Time label (overlay over time area)
+    local timeLbl = Instance.new("TextLabel", card3)
+    timeLbl.Name = "TimeLabel"
+    timeLbl.Size = UDim2.new(0, 90, 0, 14)
+    timeLbl.Position = UDim2.new(0, 78, 0, 30)
+    timeLbl.BackgroundTransparency = 1
+    timeLbl.Font = Enum.Font.GothamMedium
+    timeLbl.Text = "00:00 / 02:25"
+    timeLbl.TextSize = 9.5
+    timeLbl.TextColor3 = Color3.fromRGB(220, 210, 230)
+    timeLbl.TextXAlignment = Enum.TextXAlignment.Left
+    timeLbl.ZIndex = 12
+
+    -- Interactive Progress Scrubber Track
+    local scrubTrack = Instance.new("Frame", card3)
+    scrubTrack.Name = "ScrubberTrack"
+    scrubTrack.Size = UDim2.new(0, 148, 0, 16)
+    scrubTrack.Position = UDim2.new(0, 34, 0, 52)
+    scrubTrack.BackgroundTransparency = 1
+    scrubTrack.ZIndex = 12
+
+    local scrubFill = Instance.new("Frame", scrubTrack)
+    scrubFill.Name = "Fill"
+    scrubFill.Size = UDim2.new(0, 0, 0, 3)
+    scrubFill.Position = UDim2.new(0, 0, 0.5, -1.5)
+    scrubFill.BackgroundColor3 = Color3.fromRGB(255, 60, 80)
+    scrubFill.BorderSizePixel = 0
+    scrubFill.ZIndex = 13
+    Instance.new("UICorner", scrubFill).CornerRadius = UDim.new(1, 0)
+
+    local scrubThumb = Instance.new("Frame", scrubTrack)
+    scrubThumb.Name = "Thumb"
+    scrubThumb.Size = UDim2.new(0, 9, 0, 9)
+    scrubThumb.AnchorPoint = Vector2.new(0.5, 0.5)
+    scrubThumb.Position = UDim2.new(0, 0, 0.5, 0)
+    scrubThumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    scrubThumb.BorderSizePixel = 0
+    scrubThumb.ZIndex = 14
+    Instance.new("UICorner", scrubThumb).CornerRadius = UDim.new(1, 0)
+
+    local scrubbing = false
+    local function seekFromInput(input)
+        local absX = scrubTrack.AbsolutePosition.X
+        local absW = scrubTrack.AbsoluteSize.X
+        if absW > 0 then
+            local ratio = math.clamp((input.Position.X - absX) / absW, 0, 1)
+            scrubFill.Size = UDim2.new(ratio, 0, 0, 3)
+            scrubThumb.Position = UDim2.new(ratio, 0, 0.5, 0)
+            if MonodyMusic and MonodyMusic.Seek then
+                MonodyMusic.Seek(ratio)
+            end
         end
-        if fpsConn then
-            pcall(function() fpsConn:Disconnect() end)
-            fpsConn = nil
+    end
+
+    local scrubBtn = Instance.new("TextButton", scrubTrack)
+    scrubBtn.Name = "ScrubHitbox"
+    scrubBtn.Size = UDim2.new(1, 0, 1, 0)
+    scrubBtn.BackgroundTransparency = 1
+    scrubBtn.Text = ""
+    scrubBtn.Active = true
+    scrubBtn.ZIndex = 15
+
+    scrubBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            scrubbing = true
+            seekFromInput(input)
         end
     end)
+    UserInputService.InputChanged:Connect(function(input)
+        if scrubbing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            seekFromInput(input)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            scrubbing = false
+        end
+    end)
+
+    -- Dynamic Animated Equalizer Bars over top-right waveform
+    local eqContainer = Instance.new("Frame", card3)
+    eqContainer.Name = "EqContainer"
+    eqContainer.Size = UDim2.new(0, 130, 0, 16)
+    eqContainer.Position = UDim2.new(0, 232, 0, 15)
+    eqContainer.BackgroundTransparency = 1
+    eqContainer.ZIndex = 12
+
+    local eqLayout = Instance.new("UIListLayout", eqContainer)
+    eqLayout.FillDirection = Enum.FillDirection.Horizontal
+    eqLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    eqLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    eqLayout.Padding = UDim.new(0, 3)
+    eqLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local numEqBars = 20
+    local eqBars = {}
+    for i = 1, numEqBars do
+        local bar = Instance.new("Frame", eqContainer)
+        bar.Name = "EqBar_" .. i
+        bar.LayoutOrder = i
+        bar.Size = UDim2.new(0, 3, 0, 4)
+        bar.BackgroundColor3 = Color3.fromRGB(255, 60, 80)
+        bar.BorderSizePixel = 0
+        bar.ZIndex = 13
+        Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
+        table.insert(eqBars, bar)
+    end
+
+    -- Control Hitbox Buttons
+    -- 1. Play / Pause Button (centered on glowing circle)
+    local playBtn = Instance.new("TextButton", card3)
+    playBtn.Name = "PlayBtn"
+    playBtn.Size = UDim2.new(0, 34, 0, 34)
+    playBtn.Position = UDim2.new(0, 302, 0, 36)
+    playBtn.BackgroundTransparency = 1
+    playBtn.Text = ""
+    playBtn.Active = true
+    playBtn.ZIndex = 15
+
+    local playIconLbl = Instance.new("TextLabel", playBtn)
+    playIconLbl.Size = UDim2.new(1, 0, 1, 0)
+    playIconLbl.BackgroundTransparency = 1
+    playIconLbl.Font = Enum.Font.GothamBold
+    playIconLbl.Text = (MonodyMusic and MonodyMusic.IsPlaying) and "||" or "▶"
+    playIconLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    playIconLbl.TextSize = 13
+    playIconLbl.ZIndex = 16
+
+    ConnectButton(playBtn, function()
+        if MonodyMusic and MonodyMusic.TogglePlay then
+            local isPlaying = MonodyMusic.TogglePlay()
+            playIconLbl.Text = isPlaying and "||" or "▶"
+            trackTitleLbl.Text = (MonodyMusic.CurrentTrackName and #MonodyMusic.CurrentTrackName > 0) and MonodyMusic.CurrentTrackName or "MONTAGEM BAILÃO (Phonk)"
+            Notify("Monody Music", isPlaying and ("Playing: " .. trackTitleLbl.Text) or "Playback Paused", 1.2)
+        end
+    end)
+
+    -- 2. Previous Track Button
+    local prevBtn = Instance.new("TextButton", card3)
+    prevBtn.Name = "PrevBtn"
+    prevBtn.Size = UDim2.new(0, 24, 0, 24)
+    prevBtn.Position = UDim2.new(0, 268, 0, 42)
+    prevBtn.BackgroundTransparency = 1
+    prevBtn.Text = ""
+    prevBtn.Active = true
+    prevBtn.ZIndex = 15
+
+    ConnectButton(prevBtn, function()
+        if MonodyMusic and MonodyMusic.PrevTrack then
+            MonodyMusic.PrevTrack()
+            trackTitleLbl.Text = MonodyMusic.CurrentTrackName or "Track"
+            playIconLbl.Text = "||"
+            Notify("Monody Music", "Previous: " .. trackTitleLbl.Text, 1.2)
+        end
+    end)
+
+    -- 3. Next Track Button
+    local nextBtn = Instance.new("TextButton", card3)
+    nextBtn.Name = "NextBtn"
+    nextBtn.Size = UDim2.new(0, 24, 0, 24)
+    nextBtn.Position = UDim2.new(0, 344, 0, 42)
+    nextBtn.BackgroundTransparency = 1
+    nextBtn.Text = ""
+    nextBtn.Active = true
+    nextBtn.ZIndex = 15
+
+    ConnectButton(nextBtn, function()
+        if MonodyMusic and MonodyMusic.NextTrack then
+            MonodyMusic.NextTrack()
+            trackTitleLbl.Text = MonodyMusic.CurrentTrackName or "Track"
+            playIconLbl.Text = "||"
+            Notify("Monody Music", "Next: " .. trackTitleLbl.Text, 1.2)
+        end
+    end)
+
+    -- 4. Shuffle Button
+    local shuffleBtn = Instance.new("TextButton", card3)
+    shuffleBtn.Name = "ShuffleBtn"
+    shuffleBtn.Size = UDim2.new(0, 22, 0, 22)
+    shuffleBtn.Position = UDim2.new(0, 238, 0, 42)
+    shuffleBtn.BackgroundTransparency = 1
+    shuffleBtn.Text = ""
+    shuffleBtn.Active = true
+    shuffleBtn.ZIndex = 15
+
+    ConnectButton(shuffleBtn, function()
+        if MonodyMusic and MonodyMusic.ShuffleTrack then
+            MonodyMusic.ShuffleTrack()
+            trackTitleLbl.Text = MonodyMusic.CurrentTrackName or "Track"
+            playIconLbl.Text = "||"
+            Notify("Monody Music", "Shuffle: " .. trackTitleLbl.Text, 1.2)
+        end
+    end)
+
+    -- 5. Loop Button
+    local loopBtn = Instance.new("TextButton", card3)
+    loopBtn.Name = "LoopBtn"
+    loopBtn.Size = UDim2.new(0, 22, 0, 22)
+    loopBtn.Position = UDim2.new(0, 376, 0, 42)
+    loopBtn.BackgroundTransparency = 1
+    loopBtn.Text = ""
+    loopBtn.Active = true
+    loopBtn.ZIndex = 15
+
+    ConnectButton(loopBtn, function()
+        if MonodyMusic then
+            local nextLoop = not MonodyMusic.Looped
+            MonodyMusic.SetLooped(nextLoop)
+            Notify("Monody Music", nextLoop and "Loop Mode: ON" or "Loop Mode: OFF", 1.2)
+        end
+    end)
+
+    -- 6. Volume / Mute Hitbox over speaker icon
+    local muteBtn = Instance.new("TextButton", card3)
+    muteBtn.Name = "MuteBtn"
+    muteBtn.Size = UDim2.new(0, 22, 0, 22)
+    muteBtn.Position = UDim2.new(0, 10, 0, 50)
+    muteBtn.BackgroundTransparency = 1
+    muteBtn.Text = ""
+    muteBtn.Active = true
+    muteBtn.ZIndex = 15
+
+    local isMuted = false
+    ConnectButton(muteBtn, function()
+        if MonodyMusic then
+            isMuted = not isMuted
+            MonodyMusic.SetVolume(isMuted and 0 or 1.0)
+            Notify("Monody Music", isMuted and "Audio Muted" or "Audio Unmuted (100%)", 1.2)
+        end
+    end)
+
+    -- Music Frame Render Loop (Equalizer wave, scrubber progress, track time)
+    local wavePhase = 0
+    RunService.Heartbeat:Connect(function(dt)
+        local isPlaying = MonodyMusic and MonodyMusic.IsPlaying
+        if isPlaying then
+            playIconLbl.Text = "||"
+            wavePhase = wavePhase + dt * 6
+            for i, bar in ipairs(eqBars) do
+                local s1 = math.sin(wavePhase + i * 0.45)
+                local s2 = math.cos(wavePhase * 0.65 + i * 0.3)
+                local wave = math.abs((s1 + s2) * 0.5)
+                local targetH = math.clamp(3 + wave * 13, 2, 16)
+                bar.Size = UDim2.new(0, 3, 0, math.floor(targetH))
+                bar.BackgroundColor3 = Color3.fromRGB(255, 60, 80)
+            end
+        else
+            playIconLbl.Text = "▶"
+            for i, bar in ipairs(eqBars) do
+                bar.Size = UDim2.new(0, 3, 0, 3)
+                bar.BackgroundColor3 = Color3.fromRGB(150, 40, 55)
+            end
+        end
+
+        -- Update scrubber and time label
+        if MonodyMusic and MonodyMusic.GetProgress then
+            local pct, pos, len = MonodyMusic.GetProgress()
+            if not scrubbing then
+                scrubFill.Size = UDim2.new(math.clamp(pct, 0, 1), 0, 0, 3)
+                scrubThumb.Position = UDim2.new(math.clamp(pct, 0, 1), 0, 0.5, 0)
+            end
+            timeLbl.Text = string.format("%02d:%02d / %02d:%02d", math.floor(pos / 60), math.floor(pos % 60), math.floor(len / 60), math.floor(len % 60))
+        end
+    end)
+
+    -- Register state change callback so UI updates if music changes from Music tab or keyboard
+    if MonodyMusic then
+        MonodyMusic.OnStateChanged = function()
+            if trackTitleLbl and trackTitleLbl.Parent then
+                trackTitleLbl.Text = MonodyMusic.CurrentTrackName or "MONTAGEM BAILÃO (Phonk)"
+                playIconLbl.Text = MonodyMusic.IsPlaying and "||" or "▶"
+            end
+        end
+    end
 end)
 
 -- 2. AIMBOT TAB (MODULAR COMBAT ENGINE)
