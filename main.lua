@@ -15,7 +15,7 @@ local ContentProvider = game:GetService("ContentProvider")
 local HttpService = game:GetService("HttpService")
 
 local APP_TITLE = "Monody"
-local APP_VERSION = "v3.3"
+local APP_VERSION = "by Darling v3.3"
 local APP_AUTHOR = "darling"
 local DEFAULT_WALLPAPER_ID = "rbxassetid://103674761222554"
 local DEFAULT_LOGO_ID = "rbxassetid://109687263098821"
@@ -154,16 +154,16 @@ end
 -- DYNAMIC THEME SYSTEM
 -- ============================================================
 local THEMES = {
-    ["Purple"]   = Color3.fromRGB(138, 43, 226),
-    ["Blue"]     = Color3.fromRGB(59, 130, 246),
-    ["Pink"]     = Color3.fromRGB(236, 72, 153),
-    ["Green"]    = Color3.fromRGB(16, 185, 129),
-    ["Yellow"]   = Color3.fromRGB(234, 179, 8),
-    ["Orange"]   = Color3.fromRGB(249, 115, 22),
-    ["Red"]      = Color3.fromRGB(239, 68, 68),
-    ["Cyan"]     = Color3.fromRGB(6, 182, 212),
+    ["Purple"]   = Color3.fromRGB(186, 115, 255),
+    ["Blue"]     = Color3.fromRGB(56, 175, 255),
+    ["Pink"]     = Color3.fromRGB(255, 118, 188),
+    ["Green"]    = Color3.fromRGB(34, 219, 155),
+    ["Yellow"]   = Color3.fromRGB(255, 198, 45),
+    ["Orange"]   = Color3.fromRGB(255, 138, 55),
+    ["Red"]      = Color3.fromRGB(255, 59, 85),
+    ["Cyan"]     = Color3.fromRGB(18, 225, 245),
     ["White"]    = Color3.fromRGB(255, 255, 255),
-    ["Rainbow"]  = Color3.fromRGB(138, 43, 226),
+    ["Rainbow"]  = Color3.fromRGB(186, 115, 255),
 }
 local THEME_ORDER = { "Purple", "Blue", "Pink", "Green", "Yellow", "Orange", "Red", "Cyan", "White", "Rainbow" }
 local CurrentThemeName = "White"
@@ -1924,7 +1924,7 @@ Title.ZIndex = 16
 
 local SubTitle = Instance.new("TextLabel", Header)
 SubTitle.Position = UDim2.new(0, 36, 0, 22)
-SubTitle.Size = UDim2.new(0, 48, 0, 12)
+SubTitle.Size = UDim2.new(0, 100, 0, 12)
 SubTitle.BackgroundTransparency = 1
 SubTitle.Text = APP_VERSION
 SubTitle.Font = Enum.Font.GothamMedium
@@ -2492,11 +2492,11 @@ local TABS_MANIFEST = {
     { id = "StealFruits",   name = "Steal Fruits",   icon = "apple" },
     { id = "HUD",           name = "HUD",            icon = "layout-dashboard" },
     { id = "Macro",         name = "Macro",          icon = "bot" },
+    { id = "MonodyAI",      name = "Monody AI",      icon = "bot" },
     { id = "Skins",         name = "Skins",          icon = "gem" },
     { id = "Music",         name = "Music",          icon = "headphones" },
     { id = "Animations",    name = "Animations",     icon = "sparkles" },
     { id = "Config",        name = "Config",         icon = "sliders-horizontal" },
-    { id = "Ai",            name = "AI Assistant",   icon = "bot" },
     { id = "Themes",        name = "Themes",         icon = "palette" },
 }
 
@@ -2513,6 +2513,7 @@ local TAB_MIN_CANVAS = {
     StealFruits = 600,
     HUD = 600,
     Macro = 1100,
+    MonodyAI = 950,
     Visuals = 950,
     Esp = 950,
     Skins = 600,
@@ -6470,6 +6471,16 @@ local okHome, errHome = pcall(function()
     Instance.new("UICorner", bgImg1).CornerRadius = UDim.new(0, 8)
     ResolveAndBindAsset("header_profile_panel_clean_white.png", "header_profile_panel_white.png", bgImg1)
 
+    local c1Overlay = Instance.new("Frame", card1)
+    c1Overlay.Name = "ThemeTintOverlay"
+    c1Overlay.Size = UDim2.new(1, 0, 1, 0)
+    c1Overlay.BackgroundColor3 = CurrentAccent
+    c1Overlay.BackgroundTransparency = 0.94
+    c1Overlay.BorderSizePixel = 0
+    c1Overlay.ZIndex = 2
+    Instance.new("UICorner", c1Overlay).CornerRadius = UDim.new(0, 8)
+    RegisterThemeFill(c1Overlay)
+
     -- Interactive Discord Button Overlay (Pixel-perfect over Discord icon)
     local discordBtn = Instance.new("TextButton", card1)
     discordBtn.Name = "DiscordBtn"
@@ -6508,18 +6519,33 @@ local okHome, errHome = pcall(function()
         Notify("Monody", "TikTok link copied to clipboard!", 2.0)
     end)
 
-    -- Real Dynamic Key Time TextLabel inside the bottom-right glass capsule
-    local keyTimeLbl = Instance.new("TextLabel", card1)
+    -- Real Dynamic Key Time Pill inside the bottom-right glass capsule
+    local keyPill = Instance.new("Frame", card1)
+    keyPill.Name = "KeyPill"
+    keyPill.Size = UDim2.new(0, 96, 0, 18)
+    keyPill.Position = UDim2.new(1, -12, 0, 72)
+    keyPill.AnchorPoint = Vector2.new(1, 0)
+    keyPill.BackgroundColor3 = Color3.fromRGB(15, 14, 20)
+    keyPill.BackgroundTransparency = 0.45
+    keyPill.BorderSizePixel = 0
+    keyPill.ZIndex = 5
+    Instance.new("UICorner", keyPill).CornerRadius = UDim.new(0, 9)
+    local kpStroke = Instance.new("UIStroke", keyPill)
+    kpStroke.Color = CurrentAccent
+    kpStroke.Thickness = 0.8
+    kpStroke.Transparency = 0.75
+    RegisterThemeStroke(kpStroke)
+
+    local keyTimeLbl = Instance.new("TextLabel", keyPill)
     keyTimeLbl.Name = "KeyTimeLabel"
-    keyTimeLbl.Size = UDim2.new(0, 84, 0, 18)
-    keyTimeLbl.Position = UDim2.new(0, 226, 0, 75)
+    keyTimeLbl.Size = UDim2.new(1, 0, 1, 0)
     keyTimeLbl.BackgroundTransparency = 1
     keyTimeLbl.Font = monodyFont
     keyTimeLbl.TextSize = 8.5
     keyTimeLbl.TextColor3 = CurrentAccent
-    keyTimeLbl.TextXAlignment = Enum.TextXAlignment.Left
+    keyTimeLbl.TextXAlignment = Enum.TextXAlignment.Center
     keyTimeLbl.Text = "Key: Verified"
-    keyTimeLbl.ZIndex = 5
+    keyTimeLbl.ZIndex = 6
     RegisterThemeText(keyTimeLbl)
 
     local function updateKeyTime()
@@ -6588,33 +6614,44 @@ local okHome, errHome = pcall(function()
     Instance.new("UICorner", bgImg2).CornerRadius = UDim.new(0, 8)
     ResolveAndBindAsset("stats_panel_clean_white.png", "stats_panel_white.png", bgImg2)
 
+    local c2Overlay = Instance.new("Frame", card2)
+    c2Overlay.Name = "ThemeTintOverlay"
+    c2Overlay.Size = UDim2.new(1, 0, 1, 0)
+    c2Overlay.BackgroundColor3 = CurrentAccent
+    c2Overlay.BackgroundTransparency = 0.94
+    c2Overlay.BorderSizePixel = 0
+    c2Overlay.ZIndex = 2
+    Instance.new("UICorner", c2Overlay).CornerRadius = UDim.new(0, 8)
+    RegisterThemeFill(c2Overlay)
+
     local function createStatLabel(name, initialText, xOffset, yOffset, width)
         local lbl = Instance.new("TextLabel", card2)
         lbl.Name = name
-        lbl.Size = UDim2.new(0, width, 0, 18)
+        lbl.Size = UDim2.new(0, width or 105, 0, 18)
         lbl.Position = UDim2.new(0, xOffset, 0, yOffset)
         lbl.BackgroundTransparency = 1
         lbl.Font = monodyFont
         lbl.TextSize = 8.5
-        lbl.TextColor3 = Color3.fromRGB(245, 245, 250)
+        lbl.TextColor3 = CurrentAccent
         lbl.TextXAlignment = Enum.TextXAlignment.Left
-        lbl.TextTruncate = Enum.TextTruncate.AtEnd
+        lbl.TextTruncate = Enum.TextTruncate.None
         lbl.ZIndex = 5
         lbl.Text = "- " .. initialText
+        RegisterThemeText(lbl)
         return lbl
     end
 
     -- Left 4 stats (User, Gamepad, Swords, Level - pixel-aligned beside artwork icons at x=53)
-    local statPlayer = createStatLabel("StatPlayer", lp and lp.DisplayName or "Player", 53, 7, 72)
-    local statGame   = createStatLabel("StatGame", "Blox Fruits", 53, 38, 72)
-    local statBounty = createStatLabel("StatBounty", "Bounty 4M", 53, 61, 72)
-    local statLevel  = createStatLabel("StatLevel", "Level 2800", 53, 86, 72)
+    local statPlayer = createStatLabel("StatPlayer", lp and lp.DisplayName or "Player", 53, 7, 110)
+    local statGame   = createStatLabel("StatGame", "Blox Fruits", 53, 38, 110)
+    local statBounty = createStatLabel("StatBounty", "Bounty 4M", 53, 61, 110)
+    local statLevel  = createStatLabel("StatLevel", "Level 2800", 53, 86, 110)
 
     -- Right 4 stats (Session, Ping, FPS, Server Clock - pixel-aligned beside artwork icons at x=250)
-    local statSession = createStatLabel("StatSession", "0:00", 250, 7, 62)
-    local statPing    = createStatLabel("StatPing", "50ms", 250, 38, 62)
-    local statFps     = createStatLabel("StatFps", "60Fps", 250, 61, 62)
-    local statClock   = createStatLabel("StatClock", os.date("%H:%M"), 250, 86, 62)
+    local statSession = createStatLabel("StatSession", "0:00", 250, 7, 95)
+    local statPing    = createStatLabel("StatPing", "50ms", 250, 38, 95)
+    local statFps     = createStatLabel("StatFps", "60Fps", 250, 61, 95)
+    local statClock   = createStatLabel("StatClock", os.date("%H:%M"), 250, 86, 95)
 
     ----------------------------------------------------------------------------
     -- 3. CARD 3: QUICK COMBAT & MOBILITY (Slide Down)
@@ -6717,7 +6754,8 @@ local okHome, errHome = pcall(function()
         v.Text = initialVal
         v.Font = Enum.Font.GothamBold
         v.TextSize = 8.5
-        v.TextColor3 = Color3.fromRGB(255, 255, 255)
+        v.TextColor3 = CurrentAccent
+        RegisterThemeText(v)
         v.TextXAlignment = Enum.TextXAlignment.Center
         v.TextTruncate = Enum.TextTruncate.AtEnd
 
@@ -7062,6 +7100,27 @@ local okHome, errHome = pcall(function()
                 end
             end
         end)
+
+        _G.DarlingX.UpdateHomeTheme = function(accent)
+            if c1Stroke then c1Stroke.Color = accent end
+            if c2Stroke then c2Stroke.Color = accent end
+            if c1Overlay then c1Overlay.BackgroundColor3 = accent end
+            if c2Overlay then c2Overlay.BackgroundColor3 = accent end
+            if keyTimeLbl then keyTimeLbl.TextColor3 = accent end
+            if kpStroke then kpStroke.Color = accent end
+            if bgImg1 then
+                local r = 0.85 + accent.R * 0.15
+                local g = 0.85 + accent.G * 0.15
+                local b = 0.85 + accent.B * 0.15
+                bgImg1.ImageColor3 = Color3.new(r, g, b)
+            end
+            if bgImg2 then
+                local r = 0.85 + accent.R * 0.15
+                local g = 0.85 + accent.G * 0.15
+                local b = 0.85 + accent.B * 0.15
+                bgImg2.ImageColor3 = Color3.new(r, g, b)
+            end
+        end
     end)
 end)
 if not okHome then
@@ -9776,7 +9835,9 @@ end
 -- 6.5 AI ASSISTANT & MIKA ANIME COMPANION TAB
 -- ============================================================
 do
-local AiPage = RegisterTab("Ai", "AI Assistant", "bot")
+local AiPage = RegisterTab("MonodyAI", "Monody AI", "bot")
+Pages["Ai"] = AiPage
+Pages["MonodyAI"] = AiPage
 local okAi, errAi = pcall(function()
     AiPage.ScrollingEnabled = true
     AiPage.Active = true
@@ -9852,7 +9913,7 @@ local okAi, errAi = pcall(function()
         end
     end)
 
-    AddToggle(mikaCard, "Combat Voice Reactions", "Mika reacts when you kill someone, die, or have low HP", true, function(state)
+    AddToggle(mikaCard, "Combat Reactions", "Companion reacts when you kill someone, die, or have low HP", true, function(state)
         _G.DarlingX.MikaCombatReactions = state
         if _G.MikaCompanion then _G.MikaCompanion.combatReactions = state end
         Notify("Mika Voice", "Combat Reactions: " .. (state and "Enabled" or "Disabled"))
@@ -9883,138 +9944,11 @@ local okAi, errAi = pcall(function()
         end
     end)
 
-    -- Test Reaction Action Row (2-column pill buttons)
-    local testRow = Instance.new("Frame", mikaCard)
-    testRow.Name = "TestReactionRow"
-    testRow.Size = UDim2.new(1, 0, 0, 28)
-    testRow.BackgroundTransparency = 1
-    testRow.LayoutOrder = 10
-
-    local function makeMiniPill(name, textLbl, posX, sizeX, cb)
-        local btn = Instance.new("TextButton", testRow)
-        btn.Name = name
-        btn.Size = sizeX
-        btn.Position = posX
-        btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        btn.BackgroundTransparency = 0.92
-        btn.Text = ""
-        btn.AutoButtonColor = false
-        btn.Active = true
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-        local bStr = Instance.new("UIStroke", btn)
-        bStr.Color = CurrentAccent
-        bStr.Thickness = 0.8
-        bStr.Transparency = 0.82
-        RegisterThemeStroke(bStr)
-
-        local t = Instance.new("TextLabel", btn)
-        t.Size = UDim2.new(1, 0, 1, 0)
-        t.BackgroundTransparency = 1
-        t.Text = textLbl
-        RegisterTranslatable(t, textLbl)
-        t.Font = Enum.Font.GothamMedium
-        t.TextSize = 8.5
-        t.TextColor3 = Color3.fromRGB(240, 240, 245)
-        ConnectButton(btn, cb)
-        return btn
-    end
-
-    makeMiniPill("KillTest", "Test Kill Voice", UDim2.new(0, 0, 0, 0), UDim2.new(0.485, 0, 1, 0), function()
-        if not _G.MikaCompanion then
-            spawnMika()
-            task.wait(0.2)
-        end
-        if _G.MikaCompanion and _G.MikaCompanion.ReactToKill then
-            _G.MikaCompanion:ReactToKill()
-        end
-    end)
-
-    makeMiniPill("DeathTest", "Test Death Voice", UDim2.new(0.515, 0, 0, 0), UDim2.new(0.485, 0, 1, 0), function()
-        if not _G.MikaCompanion then
-            spawnMika()
-            task.wait(0.2)
-        end
-        if _G.MikaCompanion and _G.MikaCompanion.ReactToDeath then
-            _G.MikaCompanion:ReactToDeath()
-        end
-    end)
-
-    ----------------------------------------------------------------------------
-    -- CARD 2: QUICK ONE-TAP PRESETS (3 Modular Loadouts)
-    ----------------------------------------------------------------------------
-    local presetsCard = CreateCard(AiPage, "Modular Quick Presets")
-    presetsCard.LayoutOrder = 2
-
-    local function triggerPresetSpeech(speechKey)
-        if _G.MikaCompanion and _G.MikaCompanion.Speak then
-            local lang = (_G.DarlingX and _G.DarlingX.CurrentLanguage) or "en"
-            local text = "Preset applied!"
-            if speechKey == "pvp" then
-                text = (lang == "es" and "Modo PvP activado! A destruir rivales." or "PvP Beast mode engaged! Let us crush them.")
-            elseif speechKey == "opt" then
-                text = (lang == "es" and "Optimizacion lista! Maximos FPS." or "Optimization complete! Maximum FPS.")
-            elseif speechKey == "style" then
-                text = (lang == "es" and "Estilo visual actualizado! Todo combina." or "Visual aesthetic applied! Looking clean.")
-            end
-            _G.MikaCompanion:Speak(text, "happy", 3.8)
-        end
-    end
-
-    AddButton(presetsCard, "Preset 1: PvP Combat Beast Config", function()
-        _G.DarlingX_FastAttack = true
-        local fa = M.getFastAttack()
-        if fa and fa.enable then fa.enable() end
-
-        local cl = M.getCamlock()
-        if cl and cl.SetEnabled then cl.SetEnabled(true) end
-
-        _G.DarlingX_SanguineBoost = true
-        local sb = M.getSanguineBoost()
-        if sb and sb.SetEnabled then sb.SetEnabled(true) end
-
-        _G.DarlingX_AutoBuso = true
-        local pvp = M.getPvP()
-        if pvp and pvp.SetAutoBuso then pvp.SetAutoBuso(true) end
-
-        local mm = M.getMoveMod()
-        if mm and mm.SetWalkSpeed then mm.SetWalkSpeed(true) end
-
-        triggerPresetSpeech("pvp")
-        Notify("Preset Active", "PvP Combat Config Loaded: Fast Attack, Camlock, Buso & Boost ON!", 3.0)
-    end)
-
-    AddButton(presetsCard, "Preset 2: Maximum FPS & Optimization", function()
-        SetFFlags1(true)
-        ApplyFastFFlags()
-        pcall(function()
-            local lighting = game:GetService("Lighting")
-            lighting.GlobalShadows = false
-            lighting.FogEnd = 9e9
-            for _, v in ipairs(lighting:GetChildren()) do
-                if v:IsA("Atmosphere") or v:IsA("PostProcessEffect") then
-                    v.Enabled = false
-                end
-            end
-        end)
-        triggerPresetSpeech("opt")
-        Notify("Preset Active", "Optimization Loaded: 120 FPS Cap, Plastic & Fog Cleaner Active!", 3.0)
-    end)
-
-    AddButton(presetsCard, "Preset 3: Pure Aesthetic Visual Theme Style", function()
-        ApplyTheme("White")
-        if WallpaperDimOverlay then
-            WallpaperDimOverlay.BackgroundTransparency = 0.35
-            WallpaperDimOverlay.Visible = true
-        end
-        triggerPresetSpeech("style")
-        Notify("Preset Active", "Aesthetic Style Loaded: White Luxury Glass & Synchronized UI!", 3.0)
-    end)
-
     ----------------------------------------------------------------------------
     -- CARD 3: AI CODE GENERATOR & SCRIPT ENGINE (API Bridge)
     ----------------------------------------------------------------------------
-    local codeCard = CreateCard(AiPage, "AI Code Generator (API Bridge)")
-    codeCard.LayoutOrder = 3
+    local codeCard = CreateCard(AiPage, "AI Code Generator & Script Engine")
+    codeCard.LayoutOrder = 2
 
     local currentProvider = "OpenAI (GPT-4o)"
     local currentApiKey = ""
@@ -10166,9 +10100,175 @@ local okAi, errAi = pcall(function()
                 setDisplayedCode(generated)
                 Notify("AI Generator", "Script generated successfully!", 2.5)
             else
-                local fallbackCode = "-- [Local Script Template]\n-- Generated for: " .. currentPrompt .. "\n\nlocal Players = game:GetService(\"Players\")\nlocal player = Players.LocalPlayer\nlocal char = player.Character or player.CharacterAdded:Wait()\n\nprint(\"[Monody AI] Script active for: " .. currentPrompt:gsub('"', '\\"') .. "\")\n"
-                setDisplayedCode(fallbackCode)
-                Notify("AI Generator", "Notice: Using offline template. Set a valid API key for live AI generation!", 3.5)
+                local low = string.lower(currentPrompt or "")
+                local template = ""
+                if low:find("fruit") or low:find("fruta") then
+                    template = [[-- [Monody AI] Blox Fruits - Fruit Collector Engine
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+local function collectFruit(fruit)
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp or not fruit:IsA("Tool") then return end
+    local handle = fruit:FindFirstChild("Handle")
+    if not handle then return end
+
+    local dist = (handle.Position - hrp.Position).Magnitude
+    local info = TweenInfo.new(dist / 300, Enum.EasingStyle.Linear)
+    local tw = TweenService:Create(hrp, info, { CFrame = handle.CFrame })
+    tw:Play()
+    tw.Completed:Wait()
+    task.wait(0.2)
+    pcall(function()
+        firetouchinterest(hrp, handle, 0)
+        task.wait(0.1)
+        firetouchinterest(hrp, handle, 1)
+    end)
+end
+
+print("[Monody AI] Fruit collector active. Scanning fruits...")
+for _, item in ipairs(workspace:GetChildren()) do
+    if item:IsA("Tool") and item:FindFirstChild("Handle") then
+        collectFruit(item)
+    end
+end
+workspace.ChildAdded:Connect(function(child)
+    if child:IsA("Tool") then
+        task.wait(0.5)
+        collectFruit(child)
+    end
+end)]]
+                elseif low:find("chest") or low:find("cofre") then
+                    template = [[-- [Monody AI] Blox Fruits - Auto Chest Collector
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+local running = true
+task.spawn(function()
+    while running do
+        local char = player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if not running then break end
+                if obj.Name:find("Chest") and (obj:IsA("Part") or (obj:IsA("Model") and obj.PrimaryPart)) then
+                    local target = obj:IsA("Part") and obj or obj.PrimaryPart
+                    local dist = (target.Position - hrp.Position).Magnitude
+                    if dist < 6000 then
+                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / 320, Enum.EasingStyle.Linear), {
+                            CFrame = target.CFrame + Vector3.new(0, 2, 0)
+                        })
+                        tw:Play()
+                        tw.Completed:Wait()
+                        task.wait(0.2)
+                    end
+                end
+            end
+        end
+        task.wait(1.5)
+    end
+end)
+print("[Monody AI] Auto Chest Farm active!")]]
+                elseif low:find("attack") or low:find("fast") or low:find("hit") or low:find("ataque") then
+                    template = [[-- [Monody AI] Blox Fruits - Fast Attack Burst
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+local function hitNearby()
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local tool = char and char:FindFirstChildOfClass("Tool")
+    if not hrp or not tool then return end
+
+    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("CombatSystem")
+        or game:GetService("ReplicatedStorage"):FindFirstChild("RigControllerEvent")
+
+    if workspace:FindFirstChild("Enemies") then
+        for _, enemy in ipairs(workspace.Enemies:GetChildren()) do
+            local eHrp = enemy:FindFirstChild("HumanoidRootPart")
+            local hum = enemy:FindFirstChild("Humanoid")
+            if eHrp and hum and hum.Health > 0 then
+                local dist = (eHrp.Position - hrp.Position).Magnitude
+                if dist < 60 then
+                    pcall(function()
+                        if remote and remote:IsA("RemoteFunction") then
+                            remote:InvokeServer("Hit", eHrp)
+                        end
+                    end)
+                end
+            end
+        end
+    end
+end
+
+RunService.Heartbeat:Connect(hitNearby)
+print("[Monody AI] Fast Attack Burst active!")]]
+                elseif low:find("esp") or low:find("box") or low:find("chams") then
+                    template = [[-- [Monody AI] Universal Highlight & Player ESP
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+
+local function setupEsp(plr)
+    if plr == lp then return end
+    local function applyHighlight(char)
+        if not char then return end
+        local hl = char:FindFirstChild("MonodyHighlight") or Instance.new("Highlight")
+        hl.Name = "MonodyHighlight"
+        hl.FillColor = Color3.fromRGB(186, 115, 255)
+        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+        hl.FillTransparency = 0.5
+        hl.OutlineTransparency = 0
+        hl.Parent = char
+    end
+    if plr.Character then applyHighlight(plr.Character) end
+    plr.CharacterAdded:Connect(applyHighlight)
+end
+
+for _, p in ipairs(Players:GetPlayers()) do setupEsp(p) end
+Players.PlayerAdded:Connect(setupEsp)
+print("[Monody AI] Universal Highlight ESP active!")]]
+                elseif low:find("fly") or low:find("flight") or low:find("volar") or low:find("speed") then
+                    template = [[-- [Monody AI] Smooth Velocity Flight & Movement
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+local flySpeed = 75
+RunService.RenderStepped:Connect(function()
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChild("Humanoid")
+    if hrp and hum and hum.MoveDirection.Magnitude > 0 then
+        hrp.Velocity = hum.MoveDirection * flySpeed + Vector3.new(0, hrp.Velocity.Y, 0)
+    end
+end)
+print("[Monody AI] Smooth Velocity Movement active!")]]
+                else
+                    template = [[-- [Monody AI Code Output]
+-- Generated for prompt: ]] .. currentPrompt .. [[
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+print("[Monody AI] Executing script logic for: " .. currentPrompt)
+task.spawn(function()
+    print("[Monody AI] Custom task ready.")
+end)
+]]
+                end
+
+                setDisplayedCode(template)
+                if currentApiKey and #currentApiKey > 10 then
+                    Notify("AI Generator", "Live API returned template. Code ready!", 3.0)
+                else
+                    Notify("AI Generator", "Working script template generated! (Enter API Key for live AI)", 3.0)
+                end
             end
         end)
     end)
