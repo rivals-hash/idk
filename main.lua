@@ -6354,52 +6354,50 @@ end
 
 local HomePage = RegisterTab("Home", "Home", "house")
 pcall(function()
-    HomePage.CanvasSize = UDim2.new(0, 0, 0, 226)
-    HomePage.ScrollBarThickness = 2
-    HomePage.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
-    HomePage.ScrollBarImageTransparency = 0.7
+    HomePage.CanvasSize = UDim2.new(0, 0, 0, 0)
+    HomePage.ScrollBarThickness = 0
 
     local pList = HomePage:FindFirstChildOfClass("UIListLayout")
     if pList then
-        pList.Padding = UDim.new(0, 8)
+        pList.Padding = UDim.new(0, 6)
         pList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     end
 
     ----------------------------------------------------------------------------
-    -- 1. CARD 1: TOP PROFILE & BRAND CARD (Pure Native Glass, 94h)
+    -- 1. CARD 1: TOP PROFILE & BRAND CARD (Pure White Glass, 74h)
     ----------------------------------------------------------------------------
     local card1 = Instance.new("Frame", HomePage)
     card1.Name = "TopBrandCard"
-    card1.Size = UDim2.new(1, -6, 0, 94)
+    card1.Size = UDim2.new(1, -4, 0, 74)
     card1.LayoutOrder = 1
-    card1.BackgroundColor3 = Color3.fromRGB(14, 12, 18)
+    card1.BackgroundColor3 = Color3.fromRGB(14, 12, 19)
     card1.BackgroundTransparency = 0.15
     card1.BorderSizePixel = 0
     card1.ClipsDescendants = true
-    Instance.new("UICorner", card1).CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", card1).CornerRadius = UDim.new(0, 8)
 
     local c1Stroke = Instance.new("UIStroke", card1)
     c1Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     c1Stroke.Color = Color3.fromRGB(255, 255, 255)
     c1Stroke.Thickness = 0.8
-    c1Stroke.Transparency = 0.88
+    c1Stroke.Transparency = 0.85
     RegisterThemeStroke(c1Stroke)
 
-    -- Left Anime Avatar Frame (Square 66x66 - NEVER STRETCHED!)
+    -- Left Anime Avatar Frame (Square 54x54, centered vertically: (74-54)/2 = 10)
     local avatarFrame = Instance.new("Frame", card1)
     avatarFrame.Name = "AvatarFrame"
-    avatarFrame.Size = UDim2.new(0, 66, 0, 66)
-    avatarFrame.Position = UDim2.new(0, 12, 0.5, -33)
+    avatarFrame.Size = UDim2.new(0, 54, 0, 54)
+    avatarFrame.Position = UDim2.new(0, 10, 0, 10)
     avatarFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     avatarFrame.BackgroundTransparency = 0.94
     avatarFrame.BorderSizePixel = 0
     avatarFrame.ClipsDescendants = true
-    Instance.new("UICorner", avatarFrame).CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", avatarFrame).CornerRadius = UDim.new(0, 8)
 
     local afStroke = Instance.new("UIStroke", avatarFrame)
     afStroke.Color = Color3.fromRGB(255, 255, 255)
     afStroke.Thickness = 1.0
-    afStroke.Transparency = 0.75
+    afStroke.Transparency = 0.70
     RegisterThemeStroke(afStroke)
 
     local avatarImg = Instance.new("ImageLabel", avatarFrame)
@@ -6408,50 +6406,45 @@ pcall(function()
     avatarImg.BackgroundTransparency = 1
     avatarImg.BorderSizePixel = 0
     avatarImg.ScaleType = Enum.ScaleType.Crop
-    Instance.new("UICorner", avatarImg).CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", avatarImg).CornerRadius = UDim.new(0, 8)
     ResolveAndBindAsset("header_avatar_white.png", GetLogoAsset(), avatarImg)
 
     -- Status Online Dot on Avatar
     local statusDot = Instance.new("Frame", avatarFrame)
-    statusDot.Size = UDim2.new(0, 9, 0, 9)
-    statusDot.Position = UDim2.new(1, -11, 1, -11)
+    statusDot.Size = UDim2.new(0, 8, 0, 8)
+    statusDot.Position = UDim2.new(1, -9, 1, -9)
     statusDot.BackgroundColor3 = Color3.fromRGB(16, 215, 135)
     statusDot.BorderSizePixel = 0
     statusDot.ZIndex = 5
     Instance.new("UICorner", statusDot).CornerRadius = UDim.new(1, 0)
     local sdotStroke = Instance.new("UIStroke", statusDot)
-    sdotStroke.Color = Color3.fromRGB(14, 12, 18)
-    sdotStroke.Thickness = 1.5
+    sdotStroke.Color = Color3.fromRGB(14, 12, 19)
+    sdotStroke.Thickness = 1.2
 
-    -- Title Container: "Monody" + "PREMIUM" Badge (Zero emojis!)
-    local titleContainer = Instance.new("Frame", card1)
-    titleContainer.Name = "TitleContainer"
-    titleContainer.Size = UDim2.new(1, -95, 0, 20)
-    titleContainer.Position = UDim2.new(0, 88, 0, 12)
-    titleContainer.BackgroundTransparency = 1
-
-    local brandTitle = Instance.new("TextLabel", titleContainer)
+    -- Brand & Subtitle
+    local brandTitle = Instance.new("TextLabel", card1)
     brandTitle.Name = "BrandTitle"
-    brandTitle.Size = UDim2.new(0, 0, 1, 0)
+    brandTitle.Size = UDim2.new(0, 0, 0, 16)
+    brandTitle.Position = UDim2.new(0, 72, 0, 10)
     brandTitle.AutomaticSize = Enum.AutomaticSize.X
     brandTitle.BackgroundTransparency = 1
     brandTitle.Font = Enum.Font.GothamBold
     brandTitle.Text = APP_TITLE
-    brandTitle.TextSize = 14
+    brandTitle.TextSize = 13.5
     brandTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
     brandTitle.TextXAlignment = Enum.TextXAlignment.Left
 
-    local premBadge = Instance.new("Frame", titleContainer)
+    local premBadge = Instance.new("Frame", card1)
     premBadge.Name = "PremBadge"
-    premBadge.Size = UDim2.new(0, 58, 0, 16)
-    premBadge.Position = UDim2.new(0, 62, 0, 2)
+    premBadge.Size = UDim2.new(0, 52, 0, 14)
+    premBadge.Position = UDim2.new(0, 134, 0, 11)
     premBadge.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     premBadge.BackgroundTransparency = 0.88
     Instance.new("UICorner", premBadge).CornerRadius = UDim.new(0, 4)
     local pbStroke = Instance.new("UIStroke", premBadge)
     pbStroke.Color = Color3.fromRGB(255, 255, 255)
     pbStroke.Thickness = 0.8
-    pbStroke.Transparency = 0.82
+    pbStroke.Transparency = 0.80
     RegisterThemeStroke(pbStroke)
 
     local premLbl = Instance.new("TextLabel", premBadge)
@@ -6459,30 +6452,29 @@ pcall(function()
     premLbl.BackgroundTransparency = 1
     premLbl.Font = Enum.Font.GothamBold
     premLbl.Text = "PREMIUM"
-    premLbl.TextSize = 8
+    premLbl.TextSize = 7.5
     premLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-    -- Subtitle: By Darling
     local brandSub = Instance.new("TextLabel", card1)
     brandSub.Name = "BrandSub"
-    brandSub.Size = UDim2.new(0, 120, 0, 14)
-    brandSub.Position = UDim2.new(0, 88, 0, 34)
+    brandSub.Size = UDim2.new(0, 100, 0, 12)
+    brandSub.Position = UDim2.new(0, 72, 0, 28)
     brandSub.BackgroundTransparency = 1
     brandSub.Font = Enum.Font.GothamMedium
     brandSub.Text = "By Darling"
-    brandSub.TextSize = 9
+    brandSub.TextSize = 8.5
     brandSub.TextColor3 = Color3.fromRGB(180, 180, 210)
     brandSub.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Discord ImageButton with Discord Logo Asset
+    -- Social Buttons Row (y: 46)
     local discordBtn = Instance.new("ImageButton", card1)
     discordBtn.Name = "DiscordBtn"
-    discordBtn.Size = UDim2.new(0, 24, 0, 24)
-    discordBtn.Position = UDim2.new(0, 88, 0, 56)
+    discordBtn.Size = UDim2.new(0, 20, 0, 20)
+    discordBtn.Position = UDim2.new(0, 72, 0, 46)
     discordBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     discordBtn.BackgroundTransparency = 0.90
     discordBtn.AutoButtonColor = false
-    Instance.new("UICorner", discordBtn).CornerRadius = UDim.new(0, 6)
+    Instance.new("UICorner", discordBtn).CornerRadius = UDim.new(0, 5)
     local discStroke = Instance.new("UIStroke", discordBtn)
     discStroke.Color = Color3.fromRGB(255, 255, 255)
     discStroke.Thickness = 0.8
@@ -6491,7 +6483,7 @@ pcall(function()
 
     local discordIcon = Instance.new("ImageLabel", discordBtn)
     discordIcon.Name = "Icon"
-    discordIcon.Size = UDim2.new(0, 14, 0, 14)
+    discordIcon.Size = UDim2.new(0, 12, 0, 12)
     discordIcon.AnchorPoint = Vector2.new(0.5, 0.5)
     discordIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
     discordIcon.BackgroundTransparency = 1
@@ -6506,15 +6498,14 @@ pcall(function()
         Notify("Monody", "Discord link copied to clipboard!", 2.0)
     end)
 
-    -- TikTok ImageButton with TikTok Logo Asset
     local tiktokBtn = Instance.new("ImageButton", card1)
     tiktokBtn.Name = "TikTokBtn"
-    tiktokBtn.Size = UDim2.new(0, 24, 0, 24)
-    tiktokBtn.Position = UDim2.new(0, 118, 0, 56)
+    tiktokBtn.Size = UDim2.new(0, 20, 0, 20)
+    tiktokBtn.Position = UDim2.new(0, 98, 0, 46)
     tiktokBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     tiktokBtn.BackgroundTransparency = 0.90
     tiktokBtn.AutoButtonColor = false
-    Instance.new("UICorner", tiktokBtn).CornerRadius = UDim.new(0, 6)
+    Instance.new("UICorner", tiktokBtn).CornerRadius = UDim.new(0, 5)
     local ttStroke = Instance.new("UIStroke", tiktokBtn)
     ttStroke.Color = Color3.fromRGB(255, 255, 255)
     ttStroke.Thickness = 0.8
@@ -6523,7 +6514,7 @@ pcall(function()
 
     local tiktokIcon = Instance.new("ImageLabel", tiktokBtn)
     tiktokIcon.Name = "Icon"
-    tiktokIcon.Size = UDim2.new(0, 14, 0, 14)
+    tiktokIcon.Size = UDim2.new(0, 12, 0, 12)
     tiktokIcon.AnchorPoint = Vector2.new(0.5, 0.5)
     tiktokIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
     tiktokIcon.BackgroundTransparency = 1
@@ -6538,11 +6529,11 @@ pcall(function()
         Notify("Monody", "TikTok link copied to clipboard!", 2.0)
     end)
 
-    -- Real Key Countdown Capsule (With clock Lucide icon asset, zero emojis!)
+    -- Key Pill (Right side, vertically centered at 0.5, -11)
     local keyPill = Instance.new("Frame", card1)
     keyPill.Name = "KeyPill"
-    keyPill.Size = UDim2.new(0, 150, 0, 24)
-    keyPill.Position = UDim2.new(1, -158, 0, 56)
+    keyPill.Size = UDim2.new(0, 116, 0, 22)
+    keyPill.Position = UDim2.new(1, -124, 0.5, -11)
     keyPill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     keyPill.BackgroundTransparency = 0.90
     Instance.new("UICorner", keyPill).CornerRadius = UDim.new(0, 6)
@@ -6552,21 +6543,21 @@ pcall(function()
     kpStroke.Transparency = 0.85
     RegisterThemeStroke(kpStroke)
 
-    local keyClockIcon = Instance.new("ImageLabel", keyPill)
-    keyClockIcon.Name = "ClockIcon"
-    keyClockIcon.Size = UDim2.new(0, 12, 0, 12)
-    keyClockIcon.Position = UDim2.new(0, 6, 0.5, -6)
-    keyClockIcon.BackgroundTransparency = 1
-    keyClockIcon.Image = "rbxassetid://98755624629571"
-    keyClockIcon.ImageColor3 = Color3.fromRGB(240, 240, 255)
+    local keyIconImg = Instance.new("ImageLabel", keyPill)
+    keyIconImg.Name = "KeyIcon"
+    keyIconImg.Size = UDim2.new(0, 11, 0, 11)
+    keyIconImg.Position = UDim2.new(0, 7, 0.5, -5.5)
+    keyIconImg.BackgroundTransparency = 1
+    keyIconImg.ImageColor3 = Color3.fromRGB(240, 240, 255)
+    ResolveAndBindAsset("key_icon_white.png", "rbxassetid://130551565616516", keyIconImg)
 
     local keyTimeLbl = Instance.new("TextLabel", keyPill)
     keyTimeLbl.Name = "KeyTimeLabel"
     keyTimeLbl.Size = UDim2.new(1, -22, 1, 0)
-    keyTimeLbl.Position = UDim2.new(0, 20, 0, 0)
+    keyTimeLbl.Position = UDim2.new(0, 21, 0, 0)
     keyTimeLbl.BackgroundTransparency = 1
     keyTimeLbl.Font = Enum.Font.GothamMedium
-    keyTimeLbl.TextSize = 8.5
+    keyTimeLbl.TextSize = 8
     keyTimeLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
     keyTimeLbl.TextXAlignment = Enum.TextXAlignment.Left
     keyTimeLbl.Text = "Key: Verified"
@@ -6608,39 +6599,40 @@ pcall(function()
     updateKeyTime()
 
     ----------------------------------------------------------------------------
-    -- 2. CARD 2: REAL LIVE STATS CARD (Pure White Glass, 122h - ZERO EMOJIS)
+    -- 2. CARD 2: REAL LIVE STATS CARD (Pure White Glass, 96h - Symmetrical)
     ----------------------------------------------------------------------------
     local card2 = Instance.new("Frame", HomePage)
     card2.Name = "CenterStatsCard"
-    card2.Size = UDim2.new(1, -6, 0, 122)
+    card2.Size = UDim2.new(1, -4, 0, 96)
     card2.LayoutOrder = 2
-    card2.BackgroundColor3 = Color3.fromRGB(13, 11, 18)
+    card2.BackgroundColor3 = Color3.fromRGB(14, 12, 19)
     card2.BackgroundTransparency = 0.15
     card2.BorderSizePixel = 0
     card2.ClipsDescendants = true
-    Instance.new("UICorner", card2).CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", card2).CornerRadius = UDim.new(0, 8)
 
     local c2Stroke = Instance.new("UIStroke", card2)
     c2Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     c2Stroke.Color = Color3.fromRGB(255, 255, 255)
     c2Stroke.Thickness = 0.8
-    c2Stroke.Transparency = 0.88
+    c2Stroke.Transparency = 0.85
     RegisterThemeStroke(c2Stroke)
 
-    -- Center Circular Anime Avatar with Duck Plushie (78x78)
+    -- Center Circular Anime Avatar with Duck Plushie (58x58, EXACT center of card!)
     local centerAvatarFrame = Instance.new("Frame", card2)
     centerAvatarFrame.Name = "CenterAvatarFrame"
-    centerAvatarFrame.Size = UDim2.new(0, 78, 0, 78)
-    centerAvatarFrame.Position = UDim2.new(0.5, -39, 0.5, -39)
+    centerAvatarFrame.Size = UDim2.new(0, 58, 0, 58)
+    centerAvatarFrame.Position = UDim2.new(0.5, -29, 0.5, -29)
     centerAvatarFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     centerAvatarFrame.BackgroundTransparency = 0.94
     centerAvatarFrame.BorderSizePixel = 0
+    centerAvatarFrame.ZIndex = 3
     Instance.new("UICorner", centerAvatarFrame).CornerRadius = UDim.new(1, 0)
 
     local caStroke = Instance.new("UIStroke", centerAvatarFrame)
     caStroke.Color = Color3.fromRGB(255, 255, 255)
     caStroke.Thickness = 1.2
-    caStroke.Transparency = 0.4
+    caStroke.Transparency = 0.45
     RegisterThemeStroke(caStroke)
 
     local caImg = Instance.new("ImageLabel", centerAvatarFrame)
@@ -6652,48 +6644,52 @@ pcall(function()
     Instance.new("UICorner", caImg).CornerRadius = UDim.new(1, 0)
     ResolveAndBindAsset("stats_center_avatar_white.png", GetLogoAsset(), caImg)
 
-    -- Helper for Stat Row using ASSET ICONS (Lucide asset IDs) - ZERO EMOJIS!
-    local function createStatRow(parent, name, initialText, yPos, xPos, width, iconAssetId)
+    -- Helper for Stat Row (Icon + TextLabel with "- ")
+    local function createStatRow(parent, name, initialText, yPos, xPos, width, iconAsset)
         local row = Instance.new("Frame", parent)
         row.Name = name .. "Row"
-        row.Size = UDim2.new(0, width, 0, 20)
+        row.Size = UDim2.new(0, width, 0, 18)
         row.Position = UDim2.new(0, xPos, 0, yPos)
         row.BackgroundTransparency = 1
 
         local iconImg = Instance.new("ImageLabel", row)
         iconImg.Name = "Icon"
-        iconImg.Size = UDim2.new(0, 13, 0, 13)
-        iconImg.Position = UDim2.new(0, 0, 0.5, -6)
+        iconImg.Size = UDim2.new(0, 11, 0, 11)
+        iconImg.Position = UDim2.new(0, 0, 0.5, -5.5)
         iconImg.BackgroundTransparency = 1
-        iconImg.Image = iconAssetId
         iconImg.ImageColor3 = Color3.fromRGB(240, 240, 255)
         iconImg.ScaleType = Enum.ScaleType.Fit
+        if iconAsset:find("^assets/") or iconAsset:find(".png$") then
+            ResolveAndBindAsset(iconAsset, "rbxassetid://130551565616516", iconImg)
+        else
+            iconImg.Image = iconAsset
+        end
 
         local lbl = Instance.new("TextLabel", row)
         lbl.Name = name
-        lbl.Size = UDim2.new(1, -17, 1, 0)
-        lbl.Position = UDim2.new(0, 17, 0, 0)
+        lbl.Size = UDim2.new(1, -15, 1, 0)
+        lbl.Position = UDim2.new(0, 15, 0, 0)
         lbl.BackgroundTransparency = 1
         lbl.Font = Enum.Font.GothamMedium
         lbl.Text = "- " .. initialText
-        lbl.TextSize = 8.5
+        lbl.TextSize = 8
         lbl.TextColor3 = Color3.fromRGB(240, 240, 250)
         lbl.TextXAlignment = Enum.TextXAlignment.Left
         lbl.TextTruncate = Enum.TextTruncate.AtEnd
         return lbl
     end
 
-    -- Left 4 stats (Users, Gamepad, Swords, Sparkles) - ZERO EMOJIS!
-    local statPlayer = createStatRow(card2, "StatPlayer", lp and lp.DisplayName or "Player", 12, 10, 100, "rbxassetid://115398113982385")
-    local statGame   = createStatRow(card2, "StatGame", "Blox Fruits", 38, 10, 100, "rbxassetid://92483947987410")
-    local statBounty = createStatRow(card2, "StatBounty", "Bounty 4M", 64, 10, 100, "rbxassetid://81872698913435")
-    local statLevel  = createStatRow(card2, "StatLevel", "Level 2800", 90, 10, 100, "rbxassetid://138635884129147")
+    -- Left 4 stats (y: 8, 28, 48, 68 in 96h card - perfectly balanced!)
+    local statPlayer = createStatRow(card2, "StatPlayer", lp and lp.DisplayName or "Player", 8, 10, 102, "rbxassetid://115398113982385")
+    local statGame   = createStatRow(card2, "StatGame", "Blox Fruits", 28, 10, 102, "rbxassetid://92483947987410")
+    local statBounty = createStatRow(card2, "StatBounty", "Bounty 4M", 48, 10, 102, "rbxassetid://81872698913435")
+    local statLevel  = createStatRow(card2, "StatLevel", "Level 2800", 68, 10, 102, "rbxassetid://138635884129147")
 
-    -- Right 4 stats (Zap/Session, Signal/Ping, Monitor/FPS, Clock/Time) - ZERO EMOJIS!
-    local statSession = createStatRow(card2, "StatSession", "0:00", 12, 206, 96, "rbxassetid://130551565616516")
-    local statPing    = createStatRow(card2, "StatPing", "50ms", 38, 206, 96, "rbxassetid://85538382643347")
-    local statFps     = createStatRow(card2, "StatFps", "60Fps", 64, 206, 96, "rbxassetid://139929981863901")
-    local statClock   = createStatRow(card2, "StatClock", "00:00", 90, 206, 96, "rbxassetid://98755624629571")
+    -- Right 4 stats (x: 196, width: 104)
+    local statSession = createStatRow(card2, "StatSession", "0:00", 8, 196, 104, "rbxassetid://130551565616516")
+    local statPing    = createStatRow(card2, "StatPing", "50ms", 28, 196, 104, "rbxassetid://85538382643347")
+    local statFps     = createStatRow(card2, "StatFps", "60Fps", 48, 196, 104, "rbxassetid://139929981863901")
+    local statClock   = createStatRow(card2, "StatClock", "00:00", 68, 196, 104, "clock_icon_white.png")
 
     -- Real-time stats updater (throttled to 0.4s)
     local scriptStart = tick()

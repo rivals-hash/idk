@@ -446,6 +446,8 @@ task.spawn(function()
                 "stats_center_avatar_white.png",
                 "discord_icon_white.png",
                 "tiktok_icon_white.png",
+                "clock_icon_white.png",
+                "key_icon_white.png",
                 "logo.jpg"
             }
             for _, fn in ipairs(assetsToPreload) do
