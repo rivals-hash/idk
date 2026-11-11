@@ -441,6 +441,8 @@ task.spawn(function()
                 pcall(exMakeFolder, "Monody/cache")
             end
             local assetsToPreload = {
+                "header_profile_panel_clean_white.png",
+                "stats_panel_clean_white.png",
                 "floating_avatar_white.png",
                 "header_avatar_white.png",
                 "stats_center_avatar_white.png",
