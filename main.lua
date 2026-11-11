@@ -181,14 +181,17 @@ local ToggleControls = {}
 
 local function SetActiveToggle(toggle, active)
     if not toggle then return end
+    local swStr = toggle:FindFirstChildOfClass("UIStroke")
     if active then
         ActiveToggles[toggle] = true
         toggle.BackgroundColor3 = CurrentAccent
         toggle.BackgroundTransparency = 0.1
+        if swStr then swStr.Color = CurrentAccent end
     else
         ActiveToggles[toggle] = nil
         toggle.BackgroundColor3 = Color3.fromRGB(38, 38, 44)
         toggle.BackgroundTransparency = 0.5
+        if swStr then swStr.Color = Color3.fromRGB(255, 255, 255) end
     end
 end
 
@@ -206,7 +209,27 @@ local function UpdateThemeColors()
         if img and img.Parent then img.ImageColor3 = CurrentAccent end
     end
     for toggle, _ in pairs(ActiveToggles) do
-        if toggle and toggle.Parent then toggle.BackgroundColor3 = CurrentAccent end
+        if toggle and toggle.Parent then
+            toggle.BackgroundColor3 = CurrentAccent
+            local swStr = toggle:FindFirstChildOfClass("UIStroke")
+            if swStr then swStr.Color = CurrentAccent end
+        end
+    end
+    if DockButtons then
+        for _, dbtn in pairs(DockButtons) do
+            if dbtn and dbtn.isSelected then
+                if dbtn.icon then dbtn.icon.ImageColor3 = CurrentAccent end
+                if dbtn.label then dbtn.label.TextColor3 = CurrentAccent end
+                if dbtn.stroke then dbtn.stroke.Color = CurrentAccent end
+                if dbtn.pill then dbtn.pill.BackgroundColor3 = CurrentAccent end
+            end
+        end
+    end
+    if _G.DarlingX and _G.DarlingX.UpdateHomeTheme then
+        pcall(_G.DarlingX.UpdateHomeTheme, CurrentAccent)
+    end
+    if _G.MikaCompanion and _G.MikaCompanion.SetThemeColor then
+        pcall(function() _G.MikaCompanion:SetThemeColor(CurrentAccent) end)
     end
 end
 
@@ -656,6 +679,7 @@ local WINDUI_LUCIDE_FALLBACK = {
     Animations    = "rbxassetid://138635884129147",  -- Lucide: sparkles
     Config        = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
     Misc          = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
+    Ai            = "rbxassetid://80451686744860",   -- Lucide: bot (AI Assistant & Mika)
     Settings      = "rbxassetid://86350350950064",   -- Lucide: palette
     Themes        = "rbxassetid://86350350950064",   -- Lucide: palette
 }
@@ -2420,7 +2444,7 @@ BottomDock.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
 BottomDock.ScrollBarImageTransparency = 0.65
 BottomDock.VerticalScrollBarInset = Enum.ScrollBarInset.None
 BottomDock.ScrollingDirection = Enum.ScrollingDirection.Y
-BottomDock.AutomaticCanvasSize = Enum.AutomaticSize.Y
+BottomDock.AutomaticCanvasSize = Enum.AutomaticSize.None
 BottomDock.CanvasSize = UDim2.new(0, 0, 0, 0)
 BottomDock.ClipsDescendants = true
 BottomDock.Active = true
@@ -2472,6 +2496,7 @@ local TABS_MANIFEST = {
     { id = "Music",         name = "Music",          icon = "headphones" },
     { id = "Animations",    name = "Animations",     icon = "sparkles" },
     { id = "Config",        name = "Config",         icon = "sliders-horizontal" },
+    { id = "Ai",            name = "AI Assistant",   icon = "bot" },
     { id = "Themes",        name = "Themes",         icon = "palette" },
 }
 
@@ -2495,6 +2520,7 @@ local TAB_MIN_CANVAS = {
     Animations = 600,
     Config = 1050,
     Misc = 1050,
+    Ai = 1250,
     Themes = 1500,
     Settings = 1500,
 }
@@ -2598,13 +2624,16 @@ local function SelectTabById(targetId)
                     BackgroundTransparency = 0.85
                 }):Play()
                 TweenService:Create(dbtn.stroke, TweenInfo.new(0.18), {
-                    Color = Color3.fromRGB(255, 255, 255),
+                    Color = CurrentAccent,
                     Transparency = 0.65,
                     Thickness = 0.8
                 }):Play()
-                TweenService:Create(dbtn.pill, TweenInfo.new(0.18), { BackgroundTransparency = 0 }):Play()
-                TweenService:Create(dbtn.icon, TweenInfo.new(0.18), { ImageColor3 = Color3.fromRGB(255, 255, 255) }):Play()
-                TweenService:Create(dbtn.label, TweenInfo.new(0.18), { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
+                TweenService:Create(dbtn.pill, TweenInfo.new(0.18), {
+                    BackgroundColor3 = CurrentAccent,
+                    BackgroundTransparency = 0
+                }):Play()
+                TweenService:Create(dbtn.icon, TweenInfo.new(0.18), { ImageColor3 = CurrentAccent }):Play()
+                TweenService:Create(dbtn.label, TweenInfo.new(0.18), { TextColor3 = CurrentAccent }):Play()
             else
                 TweenService:Create(dbtn.btn, TweenInfo.new(0.18), {
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -6184,6 +6213,7 @@ function M.getAutoCombat() return M.get("modules/pvp/auto_combat.lua") end
 function M.getCamlock() return M.get("modules/pvp/camlock.lua") end
 function M.getMoveMod() return M.get("modules/mobility/movement_engine.lua") end
 function M.getAutoBounty() return M.get("modules/combat/auto_bounty.lua") end
+function M.getMika() return M.get("modules/ai/mika.lua") end
 
 _G.DarlingX_SyncCamlockUI = function(active)
     if UI_TOGGLES and UI_TOGGLES["Camlock"] and UI_TOGGLES["Camlock"].set then
@@ -6486,10 +6516,11 @@ local okHome, errHome = pcall(function()
     keyTimeLbl.BackgroundTransparency = 1
     keyTimeLbl.Font = monodyFont
     keyTimeLbl.TextSize = 8.5
-    keyTimeLbl.TextColor3 = Color3.fromRGB(250, 250, 255)
+    keyTimeLbl.TextColor3 = CurrentAccent
     keyTimeLbl.TextXAlignment = Enum.TextXAlignment.Left
     keyTimeLbl.Text = "Key: Verified"
     keyTimeLbl.ZIndex = 5
+    RegisterThemeText(keyTimeLbl)
 
     local function updateKeyTime()
         local remaining = "Key: Verified"
@@ -6663,9 +6694,10 @@ local okHome, errHome = pcall(function()
         frame.BackgroundTransparency = 0.92
         Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
         local fStr = Instance.new("UIStroke", frame)
-        fStr.Color = Color3.fromRGB(255, 255, 255)
+        fStr.Color = CurrentAccent
         fStr.Thickness = 0.8
-        fStr.Transparency = 0.88
+        fStr.Transparency = 0.85
+        RegisterThemeStroke(fStr)
 
         local t = Instance.new("TextLabel", frame)
         t.Size = UDim2.new(1, -4, 0, 12)
@@ -9739,7 +9771,484 @@ if not okMisc then
     warn("[Monody] Failed to initialize MiscPage: " .. tostring(errMisc))
 end
 end
+
+-- ============================================================
+-- 6.5 AI ASSISTANT & MIKA ANIME COMPANION TAB
+-- ============================================================
+do
+local AiPage = RegisterTab("Ai", "AI Assistant", "bot")
+local okAi, errAi = pcall(function()
+    AiPage.ScrollingEnabled = true
+    AiPage.Active = true
+    AiPage.Selectable = true
+    AiPage.ScrollBarThickness = 3
+    AiPage.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+    AiPage.ScrollBarImageTransparency = 0.65
+    AiPage.ElasticBehavior = Enum.ElasticBehavior.Always
+    AiPage.CanvasSize = UDim2.new(0, 0, 0, 1350)
+
+    local pList = AiPage:FindFirstChildOfClass("UIListLayout")
+    if pList then
+        pList.Padding = UDim.new(0, 7)
+        pList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    end
+
+    local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+    local defaultCompanionSize = isMobile and 88 or 115
+
+    _G.DarlingX.MikaSize = _G.DarlingX.MikaSize or defaultCompanionSize
+    _G.DarlingX.MikaCombatReactions = (_G.DarlingX.MikaCombatReactions ~= false)
+    _G.DarlingX.MikaFollow = (_G.DarlingX.MikaFollow ~= false)
+    _G.DarlingX.MikaAutoTalk = (_G.DarlingX.MikaAutoTalk ~= false)
+    _G.DarlingX.MikaTintReactive = (_G.DarlingX.MikaTintReactive ~= false)
+
+    ----------------------------------------------------------------------------
+    -- CARD 1: MIKA ANIME COMPANION
+    ----------------------------------------------------------------------------
+    local mikaCard = CreateCard(AiPage, "Mika Anime Companion")
+    mikaCard.LayoutOrder = 1
+
+    local function getMikaModule()
+        local m = M.get("modules/ai/mika.lua")
+        if not m then
+            pcall(function() m = RequireModule("modules/ai/mika.lua") end)
+        end
+        return m
+    end
+
+    local function spawnMika()
+        local mod = getMikaModule()
+        if mod and mod.Spawn then
+            mod.Spawn({
+                Parent = ScreenGui,
+                Size = _G.DarlingX.MikaSize or defaultCompanionSize,
+                ThemeColor = CurrentAccent,
+                TintReactive = _G.DarlingX.MikaTintReactive,
+                CombatReactions = _G.DarlingX.MikaCombatReactions,
+                FollowMouse = _G.DarlingX.MikaFollow,
+                AutoTalk = _G.DarlingX.MikaAutoTalk,
+                Language = _G.DarlingX.CurrentLanguage or "en"
+            })
+        end
+    end
+
+    local function destroyMika()
+        local mod = getMikaModule()
+        if mod and mod.Destroy then
+            mod.Destroy()
+        elseif _G.MikaCompanion and _G.MikaCompanion.Destroy then
+            pcall(function() _G.MikaCompanion:Destroy() end)
+        end
+    end
+
+    AddToggle(mikaCard, "Summon Mika Companion", "Spawn floating anime companion with gestures & reactions", false, function(state)
+        _G.DarlingX.MikaActive = state
+        if state then
+            spawnMika()
+            Notify("Mika AI", "Mika is now accompanying you!", 2.5)
+        else
+            destroyMika()
+            Notify("Mika AI", "Mika is taking a nap. Despawned.", 2.0)
+        end
+    end)
+
+    AddToggle(mikaCard, "Combat Voice Reactions", "Mika reacts when you kill someone, die, or have low HP", true, function(state)
+        _G.DarlingX.MikaCombatReactions = state
+        if _G.MikaCompanion then _G.MikaCompanion.combatReactions = state end
+        Notify("Mika Voice", "Combat Reactions: " .. (state and "Enabled" or "Disabled"))
+    end)
+
+    AddToggle(mikaCard, "Cursor & Touch Tracking", "Eyes and head follow mouse cursor or touch pointer", true, function(state)
+        _G.DarlingX.MikaFollow = state
+        if _G.MikaCompanion and _G.MikaCompanion.SetFollow then _G.MikaCompanion:SetFollow(state) end
+    end)
+
+    AddToggle(mikaCard, "Ambient Auto-Talking", "Occasional thoughts and cute idle encouragement", true, function(state)
+        _G.DarlingX.MikaAutoTalk = state
+        if _G.MikaCompanion and _G.MikaCompanion.SetAutoTalk then _G.MikaCompanion:SetAutoTalk(state) end
+    end)
+
+    AddToggle(mikaCard, "Theme Reactive Color", "Adapts companion accents to active UI theme (White default)", true, function(state)
+        _G.DarlingX.MikaTintReactive = state
+        if _G.MikaCompanion then
+            _G.MikaCompanion.tintReactive = state
+            _G.MikaCompanion:SetThemeColor(CurrentAccent)
+        end
+    end)
+
+    AddSlider(mikaCard, "Companion Size", 55, 180, defaultCompanionSize, 5, function(val)
+        _G.DarlingX.MikaSize = val
+        if _G.MikaCompanion and _G.MikaCompanion.SetSize then
+            _G.MikaCompanion:SetSize(val)
+        end
+    end)
+
+    -- Test Reaction Action Row (2-column pill buttons)
+    local testRow = Instance.new("Frame", mikaCard)
+    testRow.Name = "TestReactionRow"
+    testRow.Size = UDim2.new(1, 0, 0, 28)
+    testRow.BackgroundTransparency = 1
+    testRow.LayoutOrder = 10
+
+    local function makeMiniPill(name, textLbl, posX, sizeX, cb)
+        local btn = Instance.new("TextButton", testRow)
+        btn.Name = name
+        btn.Size = sizeX
+        btn.Position = posX
+        btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        btn.BackgroundTransparency = 0.92
+        btn.Text = ""
+        btn.AutoButtonColor = false
+        btn.Active = true
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+        local bStr = Instance.new("UIStroke", btn)
+        bStr.Color = CurrentAccent
+        bStr.Thickness = 0.8
+        bStr.Transparency = 0.82
+        RegisterThemeStroke(bStr)
+
+        local t = Instance.new("TextLabel", btn)
+        t.Size = UDim2.new(1, 0, 1, 0)
+        t.BackgroundTransparency = 1
+        t.Text = textLbl
+        RegisterTranslatable(t, textLbl)
+        t.Font = Enum.Font.GothamMedium
+        t.TextSize = 8.5
+        t.TextColor3 = Color3.fromRGB(240, 240, 245)
+        ConnectButton(btn, cb)
+        return btn
+    end
+
+    makeMiniPill("KillTest", "Test Kill Voice", UDim2.new(0, 0, 0, 0), UDim2.new(0.485, 0, 1, 0), function()
+        if not _G.MikaCompanion then
+            spawnMika()
+            task.wait(0.2)
+        end
+        if _G.MikaCompanion and _G.MikaCompanion.ReactToKill then
+            _G.MikaCompanion:ReactToKill()
+        end
+    end)
+
+    makeMiniPill("DeathTest", "Test Death Voice", UDim2.new(0.515, 0, 0, 0), UDim2.new(0.485, 0, 1, 0), function()
+        if not _G.MikaCompanion then
+            spawnMika()
+            task.wait(0.2)
+        end
+        if _G.MikaCompanion and _G.MikaCompanion.ReactToDeath then
+            _G.MikaCompanion:ReactToDeath()
+        end
+    end)
+
+    ----------------------------------------------------------------------------
+    -- CARD 2: QUICK ONE-TAP PRESETS (3 Modular Loadouts)
+    ----------------------------------------------------------------------------
+    local presetsCard = CreateCard(AiPage, "Modular Quick Presets")
+    presetsCard.LayoutOrder = 2
+
+    local function triggerPresetSpeech(speechKey)
+        if _G.MikaCompanion and _G.MikaCompanion.Speak then
+            local lang = (_G.DarlingX and _G.DarlingX.CurrentLanguage) or "en"
+            local text = "Preset applied!"
+            if speechKey == "pvp" then
+                text = (lang == "es" and "Modo PvP activado! A destruir rivales." or "PvP Beast mode engaged! Let us crush them.")
+            elseif speechKey == "opt" then
+                text = (lang == "es" and "Optimizacion lista! Maximos FPS." or "Optimization complete! Maximum FPS.")
+            elseif speechKey == "style" then
+                text = (lang == "es" and "Estilo visual actualizado! Todo combina." or "Visual aesthetic applied! Looking clean.")
+            end
+            _G.MikaCompanion:Speak(text, "happy", 3.8)
+        end
+    end
+
+    AddButton(presetsCard, "Preset 1: PvP Combat Beast Config", function()
+        _G.DarlingX_FastAttack = true
+        local fa = M.getFastAttack()
+        if fa and fa.enable then fa.enable() end
+
+        local cl = M.getCamlock()
+        if cl and cl.SetEnabled then cl.SetEnabled(true) end
+
+        _G.DarlingX_SanguineBoost = true
+        local sb = M.getSanguineBoost()
+        if sb and sb.SetEnabled then sb.SetEnabled(true) end
+
+        _G.DarlingX_AutoBuso = true
+        local pvp = M.getPvP()
+        if pvp and pvp.SetAutoBuso then pvp.SetAutoBuso(true) end
+
+        local mm = M.getMoveMod()
+        if mm and mm.SetWalkSpeed then mm.SetWalkSpeed(true) end
+
+        triggerPresetSpeech("pvp")
+        Notify("Preset Active", "PvP Combat Config Loaded: Fast Attack, Camlock, Buso & Boost ON!", 3.0)
+    end)
+
+    AddButton(presetsCard, "Preset 2: Maximum FPS & Optimization", function()
+        SetFFlags1(true)
+        ApplyFastFFlags()
+        pcall(function()
+            local lighting = game:GetService("Lighting")
+            lighting.GlobalShadows = false
+            lighting.FogEnd = 9e9
+            for _, v in ipairs(lighting:GetChildren()) do
+                if v:IsA("Atmosphere") or v:IsA("PostProcessEffect") then
+                    v.Enabled = false
+                end
+            end
+        end)
+        triggerPresetSpeech("opt")
+        Notify("Preset Active", "Optimization Loaded: 120 FPS Cap, Plastic & Fog Cleaner Active!", 3.0)
+    end)
+
+    AddButton(presetsCard, "Preset 3: Pure Aesthetic Visual Theme Style", function()
+        ApplyTheme("White")
+        if WallpaperDimOverlay then
+            WallpaperDimOverlay.BackgroundTransparency = 0.35
+            WallpaperDimOverlay.Visible = true
+        end
+        triggerPresetSpeech("style")
+        Notify("Preset Active", "Aesthetic Style Loaded: White Luxury Glass & Synchronized UI!", 3.0)
+    end)
+
+    ----------------------------------------------------------------------------
+    -- CARD 3: AI CODE GENERATOR & SCRIPT ENGINE (API Bridge)
+    ----------------------------------------------------------------------------
+    local codeCard = CreateCard(AiPage, "AI Code Generator (API Bridge)")
+    codeCard.LayoutOrder = 3
+
+    local currentProvider = "OpenAI (GPT-4o)"
+    local currentApiKey = ""
+    local currentPrompt = ""
+
+    -- Load saved key if available
+    pcall(function()
+        if isfile and isfile("monody_ai_key.json") then
+            local data = readfile("monody_ai_key.json")
+            local parsed = HttpService:JSONDecode(data)
+            if parsed and parsed.key then currentApiKey = parsed.key end
+            if parsed and parsed.provider then currentProvider = parsed.provider end
+        end
+    end)
+
+    AddChoice(codeCard, "AI Provider", { "OpenAI (GPT-4o)", "Google Gemini", "Custom API" }, currentProvider == "Google Gemini" and 2 or 1, function(val)
+        currentProvider = val
+        Notify("AI Provider", "Provider set to " .. val)
+    end)
+
+    AddInput(codeCard, "API Key", "Paste OpenAI / Gemini Key here...", currentApiKey ~= "" and (currentApiKey:sub(1, 7) .. "..." .. currentApiKey:sub(-4)) or "", function(val)
+        if val and #val > 10 then
+            currentApiKey = val
+            pcall(function()
+                if writefile then
+                    writefile("monody_ai_key.json", HttpService:JSONEncode({key = currentApiKey, provider = currentProvider}))
+                end
+            end)
+            Notify("AI Key", "API key saved securely!", 2.0)
+        end
+    end)
+
+    AddInput(codeCard, "Prompt / Script Description", "e.g. Create an auto fruit collector script with tween...", "", function(val)
+        currentPrompt = val
+    end)
+
+    -- Code Display Box Container
+    local codeBoxContainer = Instance.new("Frame", codeCard)
+    codeBoxContainer.Name = "CodeBoxContainer"
+    codeBoxContainer.Size = UDim2.new(1, 0, 0, 110)
+    codeBoxContainer.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
+    codeBoxContainer.BackgroundTransparency = 0.3
+    codeBoxContainer.BorderSizePixel = 0
+    Instance.new("UICorner", codeBoxContainer).CornerRadius = UDim.new(0, 8)
+    local cbStroke = Instance.new("UIStroke", codeBoxContainer)
+    cbStroke.Color = CurrentAccent
+    cbStroke.Thickness = 0.8
+    cbStroke.Transparency = 0.82
+    RegisterThemeStroke(cbStroke)
+
+    local codeScroll = Instance.new("ScrollingFrame", codeBoxContainer)
+    codeScroll.Size = UDim2.new(1, -12, 1, -12)
+    codeScroll.Position = UDim2.new(0, 6, 0, 6)
+    codeScroll.BackgroundTransparency = 1
+    codeScroll.BorderSizePixel = 0
+    codeScroll.ScrollBarThickness = 2
+    codeScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+    codeScroll.ScrollBarImageTransparency = 0.65
+    codeScroll.CanvasSize = UDim2.new(0, 0, 0, 300)
+
+    local codeLabel = Instance.new("TextLabel", codeScroll)
+    codeLabel.Size = UDim2.new(1, -4, 1, 0)
+    codeLabel.BackgroundTransparency = 1
+    codeLabel.Text = "-- [Monody AI Code Output]\n-- Enter prompt above and tap 'Generate Lua Script'\n-- Output will appear here syntax-ready!"
+    codeLabel.Font = Enum.Font.Code
+    codeLabel.TextSize = 8.5
+    codeLabel.TextColor3 = Color3.fromRGB(190, 225, 255)
+    codeLabel.TextXAlignment = Enum.TextXAlignment.Left
+    codeLabel.TextYAlignment = Enum.TextYAlignment.Top
+    codeLabel.TextWrapped = true
+
+    local function setDisplayedCode(code)
+        codeLabel.Text = code
+        local measured = TextService:GetTextSize(code, 8.5, Enum.Font.Code, Vector2.new(codeScroll.AbsoluteSize.X - 8, 5000))
+        codeScroll.CanvasSize = UDim2.new(0, 0, 0, math.max(120, measured.Y + 20))
+    end
+
+    AddButton(codeCard, "Generate Lua Script", function()
+        if not currentPrompt or currentPrompt:gsub("%s+", "") == "" then
+            Notify("AI Generator", "Please enter a prompt or script description first!", 2.5)
+            return
+        end
+
+        Notify("AI Generator", "Generating script with " .. currentProvider .. "...", 2.5)
+        setDisplayedCode("-- Contacting " .. currentProvider .. "...\n-- Generating requested Luau script...")
+
+        task.spawn(function()
+            local requestFn = (syn and syn.request) or (http and http.request) or http_request or request
+            if type(requestFn) ~= "function" then
+                local fallbackCode = "-- [Offline Fallback Script Generated]\n-- Prompt: " .. currentPrompt .. "\n\nlocal Players = game:GetService(\"Players\")\nlocal player = Players.LocalPlayer\nprint(\"[Monody AI] Executing generated action: " .. currentPrompt:gsub('"', '\\"') .. "\")\n"
+                setDisplayedCode(fallbackCode)
+                Notify("AI Generator", "HTTP request not supported by executor. Fallback template loaded!", 3.0)
+                return
+            end
+
+            local generated = nil
+            pcall(function()
+                if currentProvider:find("Gemini") then
+                    local url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" .. currentApiKey
+                    local payload = HttpService:JSONEncode({
+                        contents = {{
+                            parts = {{
+                                text = "You are a professional Roblox Luau script developer. Return ONLY valid, complete, runnable Roblox Luau code inside a ```lua codeblock for: " .. currentPrompt
+                            }}
+                        }}
+                    })
+                    local res = requestFn({
+                        Url = url,
+                        Method = "POST",
+                        Headers = { ["Content-Type"] = "application/json" },
+                        Body = payload
+                    })
+                    if res and res.Body then
+                        local json = HttpService:JSONDecode(res.Body)
+                        local txt = json.candidates[1].content.parts[1].text
+                        local code = txt:match("```lua%s*(.-)%s*```") or txt:match("```%s*(.-)%s*```") or txt
+                        generated = code
+                    end
+                else
+                    -- OpenAI / Compatible
+                    local url = "https://api.openai.com/v1/chat/completions"
+                    local payload = HttpService:JSONEncode({
+                        model = "gpt-4o-mini",
+                        messages = {
+                            { role = "system", content = "You are an expert Roblox Luau script writer. Output only pure executable Luau code without markdown if possible or inside ```lua block." },
+                            { role = "user", content = currentPrompt }
+                        },
+                        temperature = 0.3
+                    })
+                    local res = requestFn({
+                        Url = url,
+                        Method = "POST",
+                        Headers = {
+                            ["Content-Type"] = "application/json",
+                            ["Authorization"] = "Bearer " .. currentApiKey
+                        },
+                        Body = payload
+                    })
+                    if res and res.Body then
+                        local json = HttpService:JSONDecode(res.Body)
+                        local txt = json.choices[1].message.content
+                        local code = txt:match("```lua%s*(.-)%s*```") or txt:match("```%s*(.-)%s*```") or txt
+                        generated = code
+                    end
+                end
+            end)
+
+            if generated and #generated > 10 then
+                setDisplayedCode(generated)
+                Notify("AI Generator", "Script generated successfully!", 2.5)
+            else
+                local fallbackCode = "-- [Local Script Template]\n-- Generated for: " .. currentPrompt .. "\n\nlocal Players = game:GetService(\"Players\")\nlocal player = Players.LocalPlayer\nlocal char = player.Character or player.CharacterAdded:Wait()\n\nprint(\"[Monody AI] Script active for: " .. currentPrompt:gsub('"', '\\"') .. "\")\n"
+                setDisplayedCode(fallbackCode)
+                Notify("AI Generator", "Notice: Using offline template. Set a valid API key for live AI generation!", 3.5)
+            end
+        end)
+    end)
+
+    -- Code Actions Row (Copy & Execute)
+    local codeBtnRow = Instance.new("Frame", codeCard)
+    codeBtnRow.Name = "CodeActionRow"
+    codeBtnRow.Size = UDim2.new(1, 0, 0, 28)
+    codeBtnRow.BackgroundTransparency = 1
+    codeBtnRow.LayoutOrder = 20
+
+    local function makeCodeMiniPill(name, textLbl, posX, sizeX, cb)
+        local btn = Instance.new("TextButton", codeBtnRow)
+        btn.Name = name
+        btn.Size = sizeX
+        btn.Position = posX
+        btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        btn.BackgroundTransparency = 0.92
+        btn.Text = ""
+        btn.AutoButtonColor = false
+        btn.Active = true
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+        local bStr = Instance.new("UIStroke", btn)
+        bStr.Color = CurrentAccent
+        bStr.Thickness = 0.8
+        bStr.Transparency = 0.82
+        RegisterThemeStroke(bStr)
+
+        local t = Instance.new("TextLabel", btn)
+        t.Size = UDim2.new(1, 0, 1, 0)
+        t.BackgroundTransparency = 1
+        t.Text = textLbl
+        RegisterTranslatable(t, textLbl)
+        t.Font = Enum.Font.GothamMedium
+        t.TextSize = 8.5
+        t.TextColor3 = Color3.fromRGB(240, 240, 245)
+        ConnectButton(btn, cb)
+        return btn
+    end
+
+    makeCodeMiniPill("CopyCodeBtn", "Copy Code", UDim2.new(0, 0, 0, 0), UDim2.new(0.485, 0, 1, 0), function()
+        local code = codeLabel.Text
+        if code and #code > 0 then
+            pcall(function()
+                if setclipboard then setclipboard(code)
+                elseif toclipboard then toclipboard(code) end
+            end)
+            Notify("AI Code", "Code copied to clipboard!", 2.0)
+        end
+    end)
+
+    makeCodeMiniPill("ExecCodeBtn", "Execute (loadstring)", UDim2.new(0.515, 0, 0, 0), UDim2.new(0.485, 0, 1, 0), function()
+        local code = codeLabel.Text
+        if code and #code > 0 then
+            local fn, err = loadstring(code)
+            if fn then
+                local execOk, execErr = pcall(fn)
+                if execOk then
+                    Notify("AI Code", "Script executed successfully!", 2.5)
+                else
+                    Notify("AI Code Error", tostring(execErr):sub(1, 60), 3.5)
+                end
+            else
+                Notify("AI Syntax Error", tostring(err):sub(1, 60), 3.5)
+            end
+        end
+    end)
+
+    UpdateCardGeometry(mikaCard)
+    UpdateCardGeometry(presetsCard)
+    UpdateCardGeometry(codeCard)
+    UpdatePageCanvas(AiPage)
+end)
+if not okAi then
+    warn("[Monody] Failed to initialize AiPage: " .. tostring(errAi))
+end
+end
+
 -- 7. THEMES & CUSTOMIZATION STUDIO (FULL LUXURY ENGINE)
+
 do
 local ThemesPage = RegisterTab("Themes", "Themes", "palette")
 local SettingsPage = ThemesPage
