@@ -321,6 +321,52 @@ local function ResolveCustomAsset(relativePath, fallbackAssetId)
     return fallbackAssetId
 end
 
+local function ResolveAndBindAsset(filename, fallbackId, imageLabel)
+    local localAsset = ResolveCustomAsset("assets/" .. filename, nil)
+    if localAsset then
+        if imageLabel and imageLabel.Parent then pcall(function() imageLabel.Image = localAsset end) end
+        return localAsset
+    end
+
+    local cachedPath = "Monody/cache/" .. filename
+    if exIsFile and exGetCustomAsset then
+        local okC, existsC = pcall(exIsFile, cachedPath)
+        if okC and existsC then
+            local okA, asset = pcall(exGetCustomAsset, cachedPath)
+            if okA and type(asset) == "string" and #asset > 0 then
+                if imageLabel and imageLabel.Parent then pcall(function() imageLabel.Image = asset end) end
+                return asset
+            end
+        end
+    end
+
+    if fallbackId and #fallbackId > 0 and imageLabel and imageLabel.Parent then
+        pcall(function() imageLabel.Image = fallbackId end)
+    end
+
+    if exWriteFile and exGetCustomAsset then
+        task.spawn(function()
+            pcall(function()
+                if exMakeFolder then
+                    pcall(exMakeFolder, "Monody")
+                    pcall(exMakeFolder, "Monody/cache")
+                end
+                local rawUrl = GITHUB_REPO_RAW .. "/assets/" .. filename
+                local body = SafeHttpGet(rawUrl)
+                if body and #body > 50 then
+                    exWriteFile(cachedPath, body)
+                    local okA, asset = pcall(exGetCustomAsset, cachedPath)
+                    if okA and type(asset) == "string" and #asset > 0 and imageLabel and imageLabel.Parent then
+                        imageLabel.Image = asset
+                    end
+                end
+            end)
+        end)
+    end
+
+    return fallbackId or ""
+end
+
 -- Cached permanent Darling Hub logo asset
 local CachedLogoAsset = nil
 local function GetLogoAsset()
@@ -1561,22 +1607,27 @@ local function RejoinServer()
     end
 end
 
--- Floating Open Button (Always Displays the Darling Hub Logo)
+-- Floating Open Button (Displays Monody White Floating Avatar)
 local FloatingOpen = Instance.new("ImageButton", ScreenGui)
 FloatingOpen.Name = "FloatingOpen"
 FloatingOpen.Size = UDim2.new(0, 44, 0, 44)
 FloatingOpen.Position = UDim2.new(0, 15, 0.20, 0)
-FloatingOpen.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-FloatingOpen.BackgroundTransparency = 1
+FloatingOpen.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+FloatingOpen.BackgroundTransparency = 0.2
 FloatingOpen.BorderSizePixel = 0
-FloatingOpen.Image = GetLogoAsset()
+FloatingOpen.Image = ResolveAndBindAsset("floating_avatar_white.png", DEFAULT_LOGO_ID, FloatingOpen)
 FloatingOpen.ScaleType = Enum.ScaleType.Crop
 FloatingOpen.AutoButtonColor = false
 FloatingOpen.Active = true
 FloatingOpen.Selectable = true
 FloatingOpen.ZIndex = 100
 FloatingOpen.Visible = false
-Instance.new("UICorner", FloatingOpen).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", FloatingOpen).CornerRadius = UDim.new(1, 0)
+local floatStroke = Instance.new("UIStroke", FloatingOpen)
+floatStroke.Color = Color3.fromRGB(255, 255, 255)
+floatStroke.Thickness = 0.8
+floatStroke.Transparency = 0.85
+RegisterThemeStroke(floatStroke)
 
 -- Main Window (Liquid Glass Compact 440x300)
 Main = Instance.new("Frame", ScreenGui)
@@ -2053,6 +2104,63 @@ do
     function MonodyMusic.SetLooped(l)
         MonodyMusic.Looped = l
         if MonodyMusic.Sound then MonodyMusic.Sound.Looped = l end
+    end
+
+    local PLAYLIST = {
+        { title = "MONTAGEM BAILÃO (Phonk)", id = "7025810761", url = "https://raw.githubusercontent.com/rivals-hash/idk/main/assets/audio/phonk.mp3", file = "monody_phonk.mp3" },
+        { title = "Blox Fruits Theme", id = "7025810761" },
+        { title = "One Piece Overtaken", id = "6948625906" },
+        { title = "Spooky Theme", id = "9114223171" }
+    }
+    local currentTrackIdx = 1
+
+    function MonodyMusic.PlayTrack(idx)
+        currentTrackIdx = math.clamp(idx, 1, #PLAYLIST)
+        local t = PLAYLIST[currentTrackIdx]
+        if t.url and MonodyMusic.PlayLocalBypass then
+            MonodyMusic.PlayLocalBypass(t.url, t.file or "monody_phonk.mp3", t.title)
+        else
+            MonodyMusic.Play(t.id, t.title)
+        end
+    end
+
+    function MonodyMusic.NextTrack()
+        currentTrackIdx = currentTrackIdx + 1
+        if currentTrackIdx > #PLAYLIST then currentTrackIdx = 1 end
+        MonodyMusic.PlayTrack(currentTrackIdx)
+    end
+
+    function MonodyMusic.PrevTrack()
+        currentTrackIdx = currentTrackIdx - 1
+        if currentTrackIdx < 1 then currentTrackIdx = #PLAYLIST end
+        MonodyMusic.PlayTrack(currentTrackIdx)
+    end
+
+    function MonodyMusic.ShuffleTrack()
+        local nextIdx = math.random(1, #PLAYLIST)
+        MonodyMusic.PlayTrack(nextIdx)
+    end
+
+    function MonodyMusic.TogglePlay()
+        if MonodyMusic.IsPlaying then
+            MonodyMusic.Pause()
+            return false
+        else
+            if not MonodyMusic.Sound or MonodyMusic.Sound.SoundId == "" then
+                MonodyMusic.PlayTrack(currentTrackIdx)
+            else
+                MonodyMusic.Resume()
+            end
+            return true
+        end
+    end
+
+    function MonodyMusic.Seek(ratio)
+        if MonodyMusic.Sound and MonodyMusic.Sound.TimeLength > 0 then
+            pcall(function()
+                MonodyMusic.Sound.TimePosition = math.clamp(ratio * MonodyMusic.Sound.TimeLength, 0, MonodyMusic.Sound.TimeLength - 0.1)
+            end)
+        end
     end
 
     -- Top Music Bar on UI Header (Full Span across header, 24-bar Dynamic Equalizer, 0.7 Pill)
@@ -6215,451 +6323,506 @@ end
 
 local HomePage = RegisterTab("Home", "Home", "house")
 pcall(function()
-    -- Player Profile Identity Card
-    local profileCard = CreateCard(HomePage, nil)
-    local pRow = Instance.new("Frame", profileCard)
-    pRow.Size = UDim2.new(1, 0, 0, 52)
-    pRow.BackgroundTransparency = 1
+    HomePage.CanvasSize = UDim2.new(0, 0, 0, 286)
+    HomePage.ScrollBarThickness = 2
+    HomePage.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+    HomePage.ScrollBarImageTransparency = 0.7
 
-    local avatarFrame = Instance.new("Frame", pRow)
-    avatarFrame.Size = UDim2.new(0, 48, 0, 48)
-    avatarFrame.Position = UDim2.new(0, 2, 0.5, -24)
-    avatarFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    avatarFrame.BackgroundTransparency = 0.92
-    Instance.new("UICorner", avatarFrame).CornerRadius = UDim.new(1, 0)
-    local aStroke = Instance.new("UIStroke", avatarFrame)
-    aStroke.Thickness = 1.0
-    aStroke.Transparency = 0.85
-    RegisterThemeStroke(aStroke)
-
-    local avatarImg = Instance.new("ImageLabel", avatarFrame)
-    avatarImg.Size = UDim2.new(1, 0, 1, 0)
-    avatarImg.BackgroundTransparency = 1
-    avatarImg.Image = GetLogoAsset()
-    avatarImg.ScaleType = Enum.ScaleType.Crop
-    Instance.new("UICorner", avatarImg).CornerRadius = UDim.new(1, 0)
-
-    -- Status dot on avatar
-    local statusDot = Instance.new("Frame", avatarFrame)
-    statusDot.Size = UDim2.new(0, 10, 0, 10)
-    statusDot.Position = UDim2.new(1, -9, 1, -9)
-    statusDot.BackgroundColor3 = Color3.fromRGB(16, 185, 129)
-    Instance.new("UICorner", statusDot).CornerRadius = UDim.new(1, 0)
-    local sdotStroke = Instance.new("UIStroke", statusDot)
-    sdotStroke.Color = Color3.fromRGB(12, 10, 18)
-    sdotStroke.Thickness = 1.5
-
-    -- Load player thumbnail asynchronously in background so main thread NEVER yields or hangs
-    task.spawn(function()
-        pcall(function()
-            if lp and lp.UserId then
-                local avatarUrl = Players:GetUserThumbnailAsync(lp.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
-                if avatarUrl and avatarImg and avatarImg.Parent then
-                    avatarImg.Image = avatarUrl
-                end
-            end
-        end)
-    end)
-
-    local dNameLbl = Instance.new("TextLabel", pRow)
-    dNameLbl.Size = UDim2.new(1, -60, 0, 16)
-    dNameLbl.Position = UDim2.new(0, 58, 0, 2)
-    dNameLbl.BackgroundTransparency = 1
-    dNameLbl.Text = lp and lp.DisplayName or "Player"
-    dNameLbl.Font = Enum.Font.GothamBold
-    dNameLbl.TextSize = 13
-    dNameLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-    dNameLbl.TextXAlignment = Enum.TextXAlignment.Left
-
-    local uNameLbl = Instance.new("TextLabel", pRow)
-    uNameLbl.Size = UDim2.new(1, -60, 0, 13)
-    uNameLbl.Position = UDim2.new(0, 58, 0, 19)
-    uNameLbl.BackgroundTransparency = 1
-    uNameLbl.Text = "@" .. (lp and lp.Name or "username")
-    uNameLbl.Font = Enum.Font.GothamSemibold
-    uNameLbl.TextSize = 9
-    uNameLbl.TextColor3 = CurrentAccent
-    uNameLbl.TextXAlignment = Enum.TextXAlignment.Left
-    RegisterThemeText(uNameLbl)
-
-    local badgeRow = Instance.new("Frame", pRow)
-    badgeRow.Size = UDim2.new(1, -60, 0, 14)
-    badgeRow.Position = UDim2.new(0, 58, 0, 34)
-    badgeRow.BackgroundTransparency = 1
-
-    local bLayout = Instance.new("UIListLayout", badgeRow)
-    bLayout.FillDirection = Enum.FillDirection.Horizontal
-    bLayout.Padding = UDim.new(0, 6)
-
-    local function makeMicroBadge(txt)
-        local b = Instance.new("Frame", badgeRow)
-        b.Size = UDim2.new(0, 0, 1, 0)
-        b.AutomaticSize = Enum.AutomaticSize.X
-        b.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        b.BackgroundTransparency = 0.92
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
-        local bStr = Instance.new("UIStroke", b)
-        bStr.Color = Color3.fromRGB(255, 255, 255)
-        bStr.Thickness = 0.8
-        bStr.Transparency = 0.88
-        local bPad = Instance.new("UIPadding", b)
-        bPad.PaddingLeft = UDim.new(0, 5); bPad.PaddingRight = UDim.new(0, 5)
-        local l = Instance.new("TextLabel", b)
-        l.Size = UDim2.new(0, 0, 1, 0)
-        l.AutomaticSize = Enum.AutomaticSize.X
-        l.BackgroundTransparency = 1
-        l.Text = txt
-        l.Font = Enum.Font.GothamBold
-        l.TextSize = 7.5
-        l.TextColor3 = Color3.fromRGB(220, 220, 220)
-    end
-    makeMicroBadge("UID: " .. (lp and tostring(lp.UserId) or "0"))
-    makeMicroBadge("AGE: " .. (lp and tostring(lp.AccountAge) or "0") .. "d")
-    makeMicroBadge("MONODY " .. APP_VERSION)
-
-    -- Quick Actions Card (Replaces Non-Working Health & Energy HUD)
-    local quickCard = CreateCard(HomePage, "Quick Actions")
-
-    AddToggle(quickCard, "Show FPS & Ping", "Display real-time FPS and ping overlay top-left", false, function(state)
-        SetFPSPingVisible(state)
-        Notify("Telemetry", "FPS & Ping: " .. (state and "Visible" or "Hidden"))
-    end)
-
-    AddToggle(quickCard, "Fast Attack", "Rapid weapon hit bursts", false, function(state)
-        _G.DarlingX_FastAttack = state
-        local fa = M.getFastAttack()
-        if fa then if state then fa.enable() else fa.disable() end end
-        Notify("Combat", "Fast Attack: " .. (state and "Enabled" or "Disabled"))
-    end)
-
-    AddToggle(quickCard, "Dragon Gun M1", "Rapid fire M1 gun shots", false, function(state)
-        _G.DarlingX_DragonM1Enabled = state
-        local dg = M.getDragonGun()
-        local ew = M.getExtraWidgets()
-        if dg then dg.SetEnabled(state) end
-        if ew then
-            ew.SetDragonM1WidgetVisible(state)
-            ew.UpdateDragonM1Visual(state)
-        end
-        Notify("Combat", "Dragon Gun M1: " .. (state and "Enabled" or "Disabled"))
-    end)
-
-    AddToggle(quickCard, "Camlock", "Lock camera onto enemy", false, function(state)
-        local cl = M.getCamlock()
-        if cl then cl.SetEnabled(state) end
-        Notify("Combat", "Camlock: " .. (state and "Locked" or "Unlocked"))
-    end)
-
-    AddToggle(quickCard, "Sanguine Boost", "Forward velocity boost", false, function(state)
-        _G.DarlingX_SanguineBoost = state
-        local sb = M.getSanguineBoost()
-        local ew = M.getExtraWidgets()
-        if sb then sb.SetEnabled(state) end
-        if ew then ew.SetSanguineWidgetVisible(state) end
-        Notify("Combat", "Sanguine Boost: " .. (state and "Active" or "Inactive"))
-    end)
-
-    AddToggle(quickCard, "Super Jump", "High jump leap", false, function(state)
-        local mm = M.getMoveMod()
-        if mm then mm.SetSuperJump(state) end
-        Notify("Movement", "Super Jump: " .. (state and "Enabled" or "Disabled"))
-    end)
-
-    AddToggle(quickCard, "Custom WalkSpeed", "Speed up player movement", false, function(state)
-        local mm = M.getMoveMod()
-        if mm then mm.SetWalkSpeed(state) end
-        Notify("Movement", "WalkSpeed: " .. (state and "Enabled" or "Disabled"))
-    end)
-
-    AddToggle(quickCard, "FFlags 1 (FPS Booster)", "120 FPS cap, smooth plastic textures, removes atmosphere fog, hides debris", false, function(state)
-        SetFFlags1(state)
-    end)
-
-    AddButton(quickCard, "Apply Fast FFlags", function()
-        ApplyFastFFlags()
-    end)
-
-    -- Atmosphere Wallpaper Card (Quick Atmosphere Switcher on Home)
-    local wpHomeCard = CreateCard(HomePage, "Wallpaper")
-
-    local wpHomeStatus = Instance.new("TextLabel", wpHomeCard)
-    wpHomeStatus.Size = UDim2.new(1, 0, 0, 18)
-    wpHomeStatus.BackgroundTransparency = 1
-    wpHomeStatus.Text = string.format("Active: [%02d/%02d] %s", currentBgIdx, #WALLPAPERS, WALLPAPERS[currentBgIdx].name)
-    wpHomeStatus.Font = Enum.Font.GothamBold
-    wpHomeStatus.TextSize = 9
-    wpHomeStatus.TextColor3 = CurrentAccent
-    wpHomeStatus.TextXAlignment = Enum.TextXAlignment.Left
-    RegisterThemeText(wpHomeStatus)
-
-    local wpNamesListHome = {}
-    for i, wp in ipairs(WALLPAPERS) do
-        table.insert(wpNamesListHome, string.format("[%02d] %s", i, wp.name))
+    local pList = HomePage:FindFirstChildOfClass("UIListLayout")
+    if pList then
+        pList.Padding = UDim.new(0, 8)
+        pList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     end
 
-    local wpHomeChoice = AddChoice(wpHomeCard, "Direct Wallpaper", wpNamesListHome, currentBgIdx, function(val, idx)
-        SetWallpaper(idx)
-    end)
+    local function createWhiteCard(name, height, layoutOrder, bgFilename, fallbackId)
+        local frame = Instance.new("Frame", HomePage)
+        frame.Name = name
+        frame.Size = UDim2.new(1, -6, 0, height)
+        frame.LayoutOrder = layoutOrder
+        frame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+        frame.BackgroundTransparency = 0.12
+        frame.BorderSizePixel = 0
+        frame.ClipsDescendants = true
+        Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
-    -- Navigation row: Previous, Shuffle, Next
-    local navRowHome = Instance.new("Frame", wpHomeCard)
-    navRowHome.Size = UDim2.new(1, 0, 0, 28)
-    navRowHome.BackgroundTransparency = 1
+        local cStroke = Instance.new("UIStroke", frame)
+        cStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        cStroke.Color = Color3.fromRGB(255, 255, 255)
+        cStroke.Thickness = 0.8
+        cStroke.Transparency = 0.88
+        RegisterThemeStroke(cStroke)
 
-    local nLayoutHome = Instance.new("UIGridLayout", navRowHome)
-    nLayoutHome.CellSize = UDim2.new(0.333, -5, 1, 0)
-    nLayoutHome.CellPadding = UDim.new(0, 7, 0, 0)
+        local bg = Instance.new("ImageLabel", frame)
+        bg.Name = "Bg"
+        bg.Size = UDim2.new(1, 0, 1, 0)
+        bg.BackgroundTransparency = 1
+        bg.BorderSizePixel = 0
+        bg.ScaleType = Enum.ScaleType.Stretch
+        Instance.new("UICorner", bg).CornerRadius = UDim.new(0, 10)
+        ResolveAndBindAsset(bgFilename, fallbackId, bg)
 
-    local function makeHomeNavBtn(txt, callback)
-        local btn = Instance.new("TextButton", navRowHome)
-        btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        btn.BackgroundTransparency = 0.92
-        btn.Text = ""
-        btn.AutoButtonColor = false
-        btn.Active = true
-        btn.Selectable = true
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-        local bStr = Instance.new("UIStroke", btn)
-        bStr.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-        bStr.Color = Color3.fromRGB(255, 255, 255)
-        bStr.Thickness = 0.8
-        bStr.Transparency = 0.85
-        RegisterThemeStroke(bStr)
-
-        local btnLbl = Instance.new("TextLabel", btn)
-        btnLbl.Size = UDim2.new(1, 0, 1, 0)
-        btnLbl.BackgroundTransparency = 1
-        btnLbl.Font = Enum.Font.GothamBold
-        btnLbl.Text = txt
-        btnLbl.TextSize = 8.5
-        btnLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-        RegisterTranslatable(btnLbl, txt)
-
-        ConnectButton(btn, callback)
-        return btn
+        return frame, bg
     end
 
-    makeHomeNavBtn("Previous (‹)", function()
-        local prevIdx = currentBgIdx - 1
-        if prevIdx < 1 then prevIdx = #WALLPAPERS end
-        SetWallpaper(prevIdx)
-    end)
+    ----------------------------------------------------------------------------
+    -- 1. CARD 1: TOP PROFILE & BRAND CARD (header_profile_panel_white.png, 96h)
+    ----------------------------------------------------------------------------
+    local card1, bg1 = createWhiteCard("TopBrandCard", 96, 1, "header_profile_panel_white.png", "rbxassetid://109687263098821")
 
-    makeHomeNavBtn("Random (Shuffle)", function()
-        local randIdx = math.random(1, #WALLPAPERS)
-        SetWallpaper(randIdx)
-    end)
+    -- Discord Hitbox Button
+    local discordHitbox = Instance.new("TextButton", card1)
+    discordHitbox.Name = "DiscordHitbox"
+    discordHitbox.Size = UDim2.new(0, 22, 0, 22)
+    discordHitbox.Position = UDim2.new(0, 14, 0, 70)
+    discordHitbox.BackgroundTransparency = 1
+    discordHitbox.Text = ""
+    discordHitbox.Active = true
+    discordHitbox.ZIndex = 12
 
-    makeHomeNavBtn("Next (›)", function()
-        local nextIdx = currentBgIdx + 1
-        if nextIdx > #WALLPAPERS then nextIdx = 1 end
-        SetWallpaper(nextIdx)
-    end)
-
-    RegisterWallpaperListener(function(idx, wp)
-        if wpHomeStatus and wpHomeStatus.Parent then
-            wpHomeStatus.Text = string.format("Active: [%02d/%02d] %s", idx, #WALLPAPERS, wp.name)
-        end
-        if wpHomeChoice and wpHomeChoice.SetIndex then
-            wpHomeChoice.SetIndex(idx, false)
-        end
-    end)
-
-    -- In-Game Attributes Bento Grid Card
-    local statsCard = CreateCard(HomePage, "Game Stats")
-    local grid = Instance.new("Frame", statsCard)
-    grid.Size = UDim2.new(1, 0, 0, 84)
-    grid.BackgroundTransparency = 1
-    local gLayout = Instance.new("UIGridLayout", grid)
-    gLayout.CellSize = UDim2.new(0.333, -6, 0, 38)
-    gLayout.CellPadding = UDim.new(0, 8, 0, 8)
-
-    local function createStatPill(headerText, initialVal)
-        local frame = Instance.new("Frame", grid)
-        frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        frame.BackgroundTransparency = 0.92
-        Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
-        local fStr = Instance.new("UIStroke", frame)
-        fStr.Color = Color3.fromRGB(255, 255, 255)
-        fStr.Thickness = 0.8
-        fStr.Transparency = 0.88
-
-        local t = Instance.new("TextLabel", frame)
-        t.Size = UDim2.new(1, -8, 0, 12)
-        t.Position = UDim2.new(0, 4, 0, 4)
-        t.BackgroundTransparency = 1
-        t.Text = headerText
-        RegisterTranslatable(t, headerText)
-        t.Font = Enum.Font.Gotham
-        t.TextSize = 7.5
-        t.TextColor3 = Color3.fromRGB(180, 180, 190)
-        t.TextXAlignment = Enum.TextXAlignment.Center
-
-        local v = Instance.new("TextLabel", frame)
-        v.Size = UDim2.new(1, -8, 0, 18)
-        v.Position = UDim2.new(0, 4, 0, 16)
-        v.BackgroundTransparency = 1
-        v.Text = initialVal
-        v.Font = Enum.Font.GothamBold
-        v.TextSize = 9.5
-        v.TextColor3 = Color3.fromRGB(255, 255, 255)
-        v.TextXAlignment = Enum.TextXAlignment.Center
-
-        return v
-    end
-
-    local statLevel = createStatPill("LEVEL", "--")
-    local statBeli = createStatPill("BELI", "--")
-    local statBounty = createStatPill("BOUNTY", "--")
-    local statFruit = createStatPill("FRUIT", "--")
-    local statRace = createStatPill("RACE", "--")
-    local statTeam = createStatPill("FACTION", "--")
-
-    -- Performance & Network Telemetry Card
-    local netCard = CreateCard(HomePage, "System Info")
-    local nGrid = Instance.new("Frame", netCard)
-    nGrid.Size = UDim2.new(1, 0, 0, 36)
-    nGrid.BackgroundTransparency = 1
-    local ngLayout = Instance.new("UIGridLayout", nGrid)
-    ngLayout.CellSize = UDim2.new(0.25, -6, 0, 34)
-    ngLayout.CellPadding = UDim.new(0, 8, 0, 0)
-
-    local function createNetPill(headerText, initialVal)
-        local frame = Instance.new("Frame", nGrid)
-        frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        frame.BackgroundTransparency = 0.92
-        Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
-        local fStr = Instance.new("UIStroke", frame)
-        fStr.Color = Color3.fromRGB(255, 255, 255)
-        fStr.Thickness = 0.8
-        fStr.Transparency = 0.88
-
-        local t = Instance.new("TextLabel", frame)
-        t.Size = UDim2.new(1, 0, 0, 11)
-        t.Position = UDim2.new(0, 0, 0, 3)
-        t.BackgroundTransparency = 1
-        t.Text = headerText
-        RegisterTranslatable(t, headerText)
-        t.Font = Enum.Font.Gotham
-        t.TextSize = 7.5
-        t.TextColor3 = Color3.fromRGB(150, 145, 175)
-        t.TextXAlignment = Enum.TextXAlignment.Center
-
-        local v = Instance.new("TextLabel", frame)
-        v.Size = UDim2.new(1, 0, 0, 16)
-        v.Position = UDim2.new(0, 0, 0, 15)
-        v.BackgroundTransparency = 1
-        v.Text = initialVal
-        v.Font = Enum.Font.GothamBold
-        v.TextSize = 9
-        v.TextColor3 = CurrentAccent
-        v.TextXAlignment = Enum.TextXAlignment.Center
-        RegisterThemeText(v)
-
-        return v
-    end
-
-    local itemPing = createNetPill("PING", "0 ms")
-    local itemFps = createNetPill("FPS", "60")
-    local itemPlayers = createNetPill("PLAYERS", "0")
-    local itemUptime = createNetPill("UPTIME", "0s")
-
-    AddButton(netCard, "Copy Server JobId", function()
+    ConnectButton(discordHitbox, function()
         pcall(function()
             if setclipboard then
-                setclipboard(tostring(game.JobId))
-                Notify("Server", "Copied JobId to clipboard!")
+                setclipboard("https://discord.gg/besthub")
+            elseif toclipboard then
+                toclipboard("https://discord.gg/besthub")
             end
         end)
+        Notify("Monody", "Discord link copied to clipboard!", 2.0)
     end)
 
-    AddButton(netCard, "Rejoin Current Server", function()
-        RejoinServer()
+    -- TikTok Hitbox Button
+    local tiktokHitbox = Instance.new("TextButton", card1)
+    tiktokHitbox.Name = "TikTokHitbox"
+    tiktokHitbox.Size = UDim2.new(0, 22, 0, 22)
+    tiktokHitbox.Position = UDim2.new(0, 38, 0, 70)
+    tiktokHitbox.BackgroundTransparency = 1
+    tiktokHitbox.Text = ""
+    tiktokHitbox.Active = true
+    tiktokHitbox.ZIndex = 12
+
+    ConnectButton(tiktokHitbox, function()
+        pcall(function()
+            if setclipboard then
+                setclipboard("https://www.tiktok.com/@besthub")
+            elseif toclipboard then
+                toclipboard("https://www.tiktok.com/@besthub")
+            end
+        end)
+        Notify("Monody", "TikTok link copied to clipboard!", 2.0)
     end)
 
+    -- Key Time Display Label
+    local keyTimeLbl = Instance.new("TextLabel", card1)
+    keyTimeLbl.Name = "KeyTimeLabel"
+    keyTimeLbl.Size = UDim2.new(0, 120, 0, 16)
+    keyTimeLbl.Position = UDim2.new(1, -126, 0, 73)
+    keyTimeLbl.BackgroundTransparency = 1
+    keyTimeLbl.Font = Enum.Font.GothamMedium
+    keyTimeLbl.TextSize = 8.5
+    keyTimeLbl.TextColor3 = Color3.fromRGB(250, 250, 255)
+    keyTimeLbl.TextXAlignment = Enum.TextXAlignment.Right
+    keyTimeLbl.ZIndex = 12
 
-
-    -- Live Telemetry Thread
-    task.spawn(function()
-        local startTime = os.clock()
-        local fpsCount = 0
-        local lastFpsCheck = os.clock()
-        local fpsConn = nil
-        fpsConn = RunService.Heartbeat:Connect(function()
-            fpsCount = fpsCount + 1
-            if os.clock() - lastFpsCheck >= 1 then
-                if itemFps and itemFps.Parent then
-                    itemFps.Text = fpsCount .. " FPS"
+    local function updateKeyTime()
+        local remaining = "Key Time: 25 Hours Left"
+        pcall(function()
+            local exp = AX_KeyExpires or (_G.AX_USER and _G.AX_USER.KeyExpires) or (getgenv and getgenv().AX_KeyExpires)
+            if exp and tonumber(exp) then
+                local diff = tonumber(exp) - os.time()
+                if diff > 86400 * 365 then
+                    remaining = "Key: Lifetime Access"
+                elseif diff > 0 then
+                    local hrs = math.floor(diff / 3600)
+                    local mins = math.floor((diff % 3600) / 60)
+                    remaining = string.format("Key Time: %dh %dm Left", hrs, mins)
+                else
+                    remaining = "Key: Verified"
                 end
-                fpsCount = 0
-                lastFpsCheck = os.clock()
             end
         end)
+        keyTimeLbl.Text = remaining
+    end
+    updateKeyTime()
 
-        local statTick = 0
-        while IsScriptRunning do
-            pcall(function()
-                statTick = statTick + 1
-                -- Game Stats (throttled to every ~3 seconds)
-                if statTick >= 3 or statTick == 1 then
-                    statTick = 0
-                    local data = lp and (lp:FindFirstChild("Data") or lp:FindFirstChild("leaderstats"))
-                    if data then
-                        local lvl = data:FindFirstChild("Level")
-                        statLevel.Text = lvl and tostring(lvl.Value) or "--"
+    ----------------------------------------------------------------------------
+    -- 2. CARD 2: REAL LIVE STATS CARD (stats_panel_white.png, 106h)
+    ----------------------------------------------------------------------------
+    local card2, bg2 = createWhiteCard("CenterStatsCard", 106, 2, "stats_panel_white.png", "rbxassetid://109687263098821")
 
-                        local beli = data:FindFirstChild("Beli")
-                        statBeli.Text = beli and ("$" .. FormatNumber(beli.Value)) or "--"
+    local function createStatRow(name, initialText, yPos, xPos, width)
+        local lbl = Instance.new("TextLabel", card2)
+        lbl.Name = name
+        lbl.Size = UDim2.new(0, width, 0, 16)
+        lbl.Position = UDim2.new(0, xPos, 0, yPos)
+        lbl.BackgroundTransparency = 1
+        lbl.Font = Enum.Font.GothamMedium
+        lbl.Text = initialText
+        lbl.TextSize = 8.5
+        lbl.TextColor3 = Color3.fromRGB(245, 245, 250)
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+        lbl.TextTruncate = Enum.TextTruncate.AtEnd
+        lbl.ZIndex = 12
+        return lbl
+    end
 
-                        local bnty = data:FindFirstChild("Bounty") or data:FindFirstChild("Bounty/Honor")
-                        statBounty.Text = bnty and FormatNumber(bnty.Value) or "--"
+    -- Left 4 stats (Player, Game, Bounty, Level) aligned to icons at x=50
+    local statPlayer = createStatRow("StatPlayer", "- " .. (lp and lp.DisplayName or "Player"), 16, 50, 75)
+    local statGame   = createStatRow("StatGame", "- Blox Fruits", 38, 50, 75)
+    local statBounty = createStatRow("StatBounty", "- Bounty 4M", 60, 50, 75)
+    local statLevel  = createStatRow("StatLevel", "- Level 2800", 82, 50, 75)
 
-                        local df = data:FindFirstChild("DevilFruit")
-                        statFruit.Text = df and tostring(df.Value):gsub("-%w+", "") or "None"
+    -- Right 4 stats (Session, Ping, FPS, Server Clock) aligned to icons at x=246
+    local statSession = createStatRow("StatSession", "- 0:00", 16, 246, 58)
+    local statPing    = createStatRow("StatPing", "- 50ms", 38, 246, 58)
+    local statFps     = createStatRow("StatFps", "- 60Fps", 60, 246, 58)
+    local statClock   = createStatRow("StatClock", "- 00:00", 82, 246, 58)
 
-                        local race = data:FindFirstChild("Race")
-                        statRace.Text = race and tostring(race.Value) or "--"
-                    else
-                        if hum then
-                            statLevel.Text = "WS: " .. math.floor(hum.WalkSpeed)
-                            statBeli.Text = "JP: " .. math.floor(hum.JumpPower)
+    -- Real-time stats updater (throttled to 0.4s)
+    local scriptStart = tick()
+    local lastStatUpdate = 0
+    local smoothedFps = 60
+    local lastFrameTick = tick()
+
+    RunService.Heartbeat:Connect(function()
+        local now = tick()
+        local dt = now - lastFrameTick
+        lastFrameTick = now
+        if dt > 0 then
+            smoothedFps = math.floor(smoothedFps * 0.9 + (1 / dt) * 0.1)
+        end
+
+        if now - lastStatUpdate < 0.4 then return end
+        lastStatUpdate = now
+
+        -- Session stopwatch
+        local elapsed = math.floor(now - scriptStart)
+        local mins = math.floor(elapsed / 60)
+        local secs = elapsed % 60
+        statSession.Text = string.format("- %d:%02d", mins, secs)
+
+        -- Ping
+        local ping = 50
+        pcall(function()
+            local s = Stats:FindFirstChild("Network") and Stats.Network:FindFirstChild("ServerStatsItem")
+            local item = s and s:FindFirstChild("Data Ping")
+            if item then ping = math.floor(item:GetValue()) end
+        end)
+        if ping == 0 and lp then
+            pcall(function() ping = math.floor(lp:GetNetworkPing() * 1000) end)
+        end
+        statPing.Text = string.format("- %dms", ping)
+
+        -- FPS
+        statFps.Text = string.format("- %dFps", math.clamp(smoothedFps, 15, 240))
+
+        -- Clock
+        statClock.Text = "- " .. os.date("%H:%M")
+
+        -- Live Bounty & Level
+        pcall(function()
+            if lp then
+                local ls = lp:FindFirstChild("leaderstats")
+                if ls then
+                    local b = ls:FindFirstChild("Bounty/Honor") or ls:FindFirstChild("Bounty") or ls:FindFirstChild("Honor")
+                    if b then
+                        local v = tonumber(b.Value) or 0
+                        if v >= 1000000 then
+                            statBounty.Text = string.format("- Bounty %.1fM", v / 1000000)
+                        elseif v >= 1000 then
+                            statBounty.Text = string.format("- Bounty %.1fK", v / 1000)
+                        else
+                            statBounty.Text = "- Bounty " .. tostring(v)
                         end
                     end
-
-                    if lp and lp.Team then
-                        statTeam.Text = tostring(lp.Team.Name)
-                    end
                 end
-
-                -- Telemetry (updated every 1s)
-                local ping = 0
-                local statsService = game:GetService("Stats")
-                pcall(function()
-                    ping = math.floor(statsService.Network.ServerStatsItem["Data Ping"]:GetValue())
-                end)
-                if ping == 0 and lp then
-                    pcall(function() ping = math.floor(lp:GetNetworkPing() * 1000) end)
+                local data = lp:FindFirstChild("Data")
+                if data and data:FindFirstChild("Level") then
+                    statLevel.Text = "- Level " .. tostring(data.Level.Value)
                 end
-                itemPing.Text = ping .. " ms"
-                if ping < 100 then
-                    itemPing.TextColor3 = Color3.fromRGB(16, 215, 135)
-                elseif ping < 200 then
-                    itemPing.TextColor3 = Color3.fromRGB(245, 180, 20)
-                else
-                    itemPing.TextColor3 = Color3.fromRGB(245, 60, 60)
-                end
+            end
+        end)
+    end)
 
-                local elapsed = math.floor(os.clock() - startTime)
-                local mins = math.floor(elapsed / 60)
-                local secs = elapsed % 60
-                itemUptime.Text = mins .. "m " .. secs .. "s"
-                itemPlayers.Text = #Players:GetPlayers() .. "/" .. Players.MaxPlayers
-            end)
-            task.wait(1.0)
+    ----------------------------------------------------------------------------
+    -- 3. CARD 3: REAL INTERACTIVE MUSIC PLAYER (music_player_white.png, 60h)
+    ----------------------------------------------------------------------------
+    local card3, bg3 = createWhiteCard("BottomMusicCard", 60, 3, "music_player_white.png", "rbxassetid://109687263098821")
+
+    -- Dynamic Track Title label (overlay over track title area)
+    local trackTitleLbl = Instance.new("TextLabel", card3)
+    trackTitleLbl.Name = "TrackTitle"
+    trackTitleLbl.Size = UDim2.new(0, 110, 0, 13)
+    trackTitleLbl.Position = UDim2.new(0, 48, 0, 6)
+    trackTitleLbl.BackgroundTransparency = 1
+    trackTitleLbl.Font = Enum.Font.GothamBold
+    trackTitleLbl.Text = (MonodyMusic and MonodyMusic.CurrentTrackName) or "MONTAGEM BAILÃO (Phonk)"
+    trackTitleLbl.TextSize = 8.5
+    trackTitleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    trackTitleLbl.TextXAlignment = Enum.TextXAlignment.Left
+    trackTitleLbl.TextTruncate = Enum.TextTruncate.AtEnd
+    trackTitleLbl.ZIndex = 12
+
+    -- Dynamic Playback Time label (overlay over time area)
+    local timeLbl = Instance.new("TextLabel", card3)
+    timeLbl.Name = "TimeLabel"
+    timeLbl.Size = UDim2.new(0, 75, 0, 11)
+    timeLbl.Position = UDim2.new(0, 48, 0, 20)
+    timeLbl.BackgroundTransparency = 1
+    timeLbl.Font = Enum.Font.GothamMedium
+    timeLbl.Text = "00:00 / 02:25"
+    timeLbl.TextSize = 7.5
+    timeLbl.TextColor3 = Color3.fromRGB(200, 200, 215)
+    timeLbl.TextXAlignment = Enum.TextXAlignment.Left
+    timeLbl.ZIndex = 12
+
+    -- Interactive Progress Scrubber Track
+    local scrubTrack = Instance.new("Frame", card3)
+    scrubTrack.Name = "ScrubberTrack"
+    scrubTrack.Size = UDim2.new(0, 115, 0, 14)
+    scrubTrack.Position = UDim2.new(0, 22, 0, 40)
+    scrubTrack.BackgroundTransparency = 1
+    scrubTrack.ZIndex = 12
+
+    local scrubFill = Instance.new("Frame", scrubTrack)
+    scrubFill.Name = "Fill"
+    scrubFill.Size = UDim2.new(0, 0, 0, 2.5)
+    scrubFill.Position = UDim2.new(0, 0, 0.5, -1)
+    scrubFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    scrubFill.BorderSizePixel = 0
+    scrubFill.ZIndex = 13
+    Instance.new("UICorner", scrubFill).CornerRadius = UDim.new(1, 0)
+
+    local scrubThumb = Instance.new("Frame", scrubTrack)
+    scrubThumb.Name = "Thumb"
+    scrubThumb.Size = UDim2.new(0, 7, 0, 7)
+    scrubThumb.AnchorPoint = Vector2.new(0.5, 0.5)
+    scrubThumb.Position = UDim2.new(0, 0, 0.5, 0)
+    scrubThumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    scrubThumb.BorderSizePixel = 0
+    scrubThumb.ZIndex = 14
+    Instance.new("UICorner", scrubThumb).CornerRadius = UDim.new(1, 0)
+
+    local scrubbing = false
+    local function seekFromInput(input)
+        local absX = scrubTrack.AbsolutePosition.X
+        local absW = scrubTrack.AbsoluteSize.X
+        if absW > 0 then
+            local ratio = math.clamp((input.Position.X - absX) / absW, 0, 1)
+            scrubFill.Size = UDim2.new(ratio, 0, 0, 2.5)
+            scrubThumb.Position = UDim2.new(ratio, 0, 0.5, 0)
+            if MonodyMusic and MonodyMusic.Seek then
+                MonodyMusic.Seek(ratio)
+            end
         end
-        if fpsConn then
-            pcall(function() fpsConn:Disconnect() end)
-            fpsConn = nil
+    end
+
+    local scrubBtn = Instance.new("TextButton", scrubTrack)
+    scrubBtn.Name = "ScrubHitbox"
+    scrubBtn.Size = UDim2.new(1, 0, 1, 0)
+    scrubBtn.BackgroundTransparency = 1
+    scrubBtn.Text = ""
+    scrubBtn.Active = true
+    scrubBtn.ZIndex = 15
+
+    scrubBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            scrubbing = true
+            seekFromInput(input)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if scrubbing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            seekFromInput(input)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            scrubbing = false
+        end
+    end)
+
+    -- Dynamic Animated Equalizer Bars over top-right waveform
+    local eqContainer = Instance.new("Frame", card3)
+    eqContainer.Name = "EqContainer"
+    eqContainer.Size = UDim2.new(0, 105, 0, 12)
+    eqContainer.Position = UDim2.new(0, 168, 0, 8)
+    eqContainer.BackgroundTransparency = 1
+    eqContainer.ZIndex = 12
+
+    local eqLayout = Instance.new("UIListLayout", eqContainer)
+    eqLayout.FillDirection = Enum.FillDirection.Horizontal
+    eqLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    eqLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    eqLayout.Padding = UDim.new(0, 2)
+    eqLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local numEqBars = 18
+    local eqBars = {}
+    for i = 1, numEqBars do
+        local bar = Instance.new("Frame", eqContainer)
+        bar.Name = "EqBar_" .. i
+        bar.LayoutOrder = i
+        bar.Size = UDim2.new(0, 2.5, 0, 3)
+        bar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        bar.BorderSizePixel = 0
+        bar.ZIndex = 13
+        Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
+        table.insert(eqBars, bar)
+    end
+
+    -- Control Hitbox Buttons
+    -- 1. Play / Pause Button (centered on glowing circle)
+    local playBtn = Instance.new("TextButton", card3)
+    playBtn.Name = "PlayBtn"
+    playBtn.Size = UDim2.new(0, 26, 0, 26)
+    playBtn.Position = UDim2.new(0, 230, 0, 24)
+    playBtn.BackgroundTransparency = 1
+    playBtn.Text = ""
+    playBtn.Active = true
+    playBtn.ZIndex = 15
+
+    local playIconLbl = Instance.new("TextLabel", playBtn)
+    playIconLbl.Size = UDim2.new(1, 0, 1, 0)
+    playIconLbl.BackgroundTransparency = 1
+    playIconLbl.Font = Enum.Font.GothamBold
+    playIconLbl.Text = (MonodyMusic and MonodyMusic.IsPlaying) and "||" or "▶"
+    playIconLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    playIconLbl.TextSize = 10.5
+    playIconLbl.ZIndex = 16
+
+    ConnectButton(playBtn, function()
+        if MonodyMusic and MonodyMusic.TogglePlay then
+            local isPlaying = MonodyMusic.TogglePlay()
+            playIconLbl.Text = isPlaying and "||" or "▶"
+            trackTitleLbl.Text = (MonodyMusic.CurrentTrackName and #MonodyMusic.CurrentTrackName > 0) and MonodyMusic.CurrentTrackName or "MONTAGEM BAILÃO (Phonk)"
+            Notify("Monody Music", isPlaying and ("Playing: " .. trackTitleLbl.Text) or "Playback Paused", 1.2)
+        end
+    end)
+
+    -- 2. Previous Track Button
+    local prevBtn = Instance.new("TextButton", card3)
+    prevBtn.Name = "PrevBtn"
+    prevBtn.Size = UDim2.new(0, 18, 0, 18)
+    prevBtn.Position = UDim2.new(0, 204, 0, 28)
+    prevBtn.BackgroundTransparency = 1
+    prevBtn.Text = ""
+    prevBtn.Active = true
+    prevBtn.ZIndex = 15
+
+    ConnectButton(prevBtn, function()
+        if MonodyMusic and MonodyMusic.PrevTrack then
+            MonodyMusic.PrevTrack()
+            trackTitleLbl.Text = MonodyMusic.CurrentTrackName or "Track"
+            playIconLbl.Text = "||"
+            Notify("Monody Music", "Previous: " .. trackTitleLbl.Text, 1.2)
+        end
+    end)
+
+    -- 3. Next Track Button
+    local nextBtn = Instance.new("TextButton", card3)
+    nextBtn.Name = "NextBtn"
+    nextBtn.Size = UDim2.new(0, 18, 0, 18)
+    nextBtn.Position = UDim2.new(0, 264, 0, 28)
+    nextBtn.BackgroundTransparency = 1
+    nextBtn.Text = ""
+    nextBtn.Active = true
+    nextBtn.ZIndex = 15
+
+    ConnectButton(nextBtn, function()
+        if MonodyMusic and MonodyMusic.NextTrack then
+            MonodyMusic.NextTrack()
+            trackTitleLbl.Text = MonodyMusic.CurrentTrackName or "Track"
+            playIconLbl.Text = "||"
+            Notify("Monody Music", "Next: " .. trackTitleLbl.Text, 1.2)
+        end
+    end)
+
+    -- 4. Shuffle Button
+    local shuffleBtn = Instance.new("TextButton", card3)
+    shuffleBtn.Name = "ShuffleBtn"
+    shuffleBtn.Size = UDim2.new(0, 18, 0, 18)
+    shuffleBtn.Position = UDim2.new(0, 180, 0, 28)
+    shuffleBtn.BackgroundTransparency = 1
+    shuffleBtn.Text = ""
+    shuffleBtn.Active = true
+    shuffleBtn.ZIndex = 15
+
+    ConnectButton(shuffleBtn, function()
+        if MonodyMusic and MonodyMusic.ShuffleTrack then
+            MonodyMusic.ShuffleTrack()
+            trackTitleLbl.Text = MonodyMusic.CurrentTrackName or "Track"
+            playIconLbl.Text = "||"
+            Notify("Monody Music", "Shuffle: " .. trackTitleLbl.Text, 1.2)
+        end
+    end)
+
+    -- 5. Loop Button
+    local loopBtn = Instance.new("TextButton", card3)
+    loopBtn.Name = "LoopBtn"
+    loopBtn.Size = UDim2.new(0, 18, 0, 18)
+    loopBtn.Position = UDim2.new(0, 288, 0, 28)
+    loopBtn.BackgroundTransparency = 1
+    loopBtn.Text = ""
+    loopBtn.Active = true
+    loopBtn.ZIndex = 15
+
+    ConnectButton(loopBtn, function()
+        if MonodyMusic then
+            local nextLoop = not MonodyMusic.Looped
+            MonodyMusic.SetLooped(nextLoop)
+            Notify("Monody Music", nextLoop and "Loop Mode: ON" or "Loop Mode: OFF", 1.2)
+        end
+    end)
+
+    -- 6. Volume / Mute Hitbox over speaker icon
+    local muteBtn = Instance.new("TextButton", card3)
+    muteBtn.Name = "MuteBtn"
+    muteBtn.Size = UDim2.new(0, 16, 0, 16)
+    muteBtn.Position = UDim2.new(0, 6, 0, 38)
+    muteBtn.BackgroundTransparency = 1
+    muteBtn.Text = ""
+    muteBtn.Active = true
+    muteBtn.ZIndex = 15
+
+    local isMuted = false
+    ConnectButton(muteBtn, function()
+        if MonodyMusic then
+            isMuted = not isMuted
+            MonodyMusic.SetVolume(isMuted and 0 or 1.0)
+            Notify("Monody Music", isMuted and "Audio Muted" or "Audio Unmuted", 1.2)
+        end
+    end)
+
+    -- Real-time Music Card Syncer
+    local animStep = 0
+    RunService.Heartbeat:Connect(function()
+        if MonodyMusic then
+            if MonodyMusic.IsPlaying and not scrubbing then
+                local snd = MonodyMusic.Sound
+                if snd and snd.TimeLength and snd.TimeLength > 0 then
+                    local cur = snd.TimePosition
+                    local tot = snd.TimeLength
+                    local r = math.clamp(cur / tot, 0, 1)
+                    scrubFill.Size = UDim2.new(r, 0, 0, 2.5)
+                    scrubThumb.Position = UDim2.new(r, 0, 0.5, 0)
+
+                    local curM = math.floor(cur / 60)
+                    local curS = math.floor(cur % 60)
+                    local totM = math.floor(tot / 60)
+                    local totS = math.floor(tot % 60)
+                    timeLbl.Text = string.format("%02d:%02d / %02d:%02d", curM, curS, totM, totS)
+                end
+
+                animStep = animStep + 0.18
+                for idx, bar in ipairs(eqBars) do
+                    local h = math.clamp(2.5 + math.abs(math.sin(animStep + idx * 0.4)) * 9, 2, 12)
+                    bar.Size = UDim2.new(0, 2.5, 0, h)
+                end
+            elseif not MonodyMusic.IsPlaying then
+                for _, bar in ipairs(eqBars) do
+                    bar.Size = UDim2.new(0, 2.5, 0, 2.5)
+                end
+            end
         end
     end)
 end)
