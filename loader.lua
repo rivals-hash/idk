@@ -48,6 +48,16 @@ local function ResolveCustomAsset(relativePath, fallbackAssetId)
     return fallbackAssetId
 end
 
+local function GetUserThumbnailFallback()
+    local thumb = nil
+    pcall(function()
+        if lp and lp.UserId then
+            thumb = Players:GetUserThumbnailAsync(lp.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+        end
+    end)
+    return thumb or DEFAULT_LOGO_ID
+end
+
 -- Parent GUI selector
 local parentGui = nil
 pcall(function() if gethui then parentGui = gethui() end end)
@@ -129,9 +139,46 @@ aStroke.Transparency = 0.82
 local avatarImg = Instance.new("ImageLabel", avatarFrame)
 avatarImg.Size = UDim2.new(1, 0, 1, 0)
 avatarImg.BackgroundTransparency = 1
-avatarImg.Image = ResolveCustomAsset("assets/floating_avatar_white.png", DEFAULT_LOGO_ID)
 avatarImg.ScaleType = Enum.ScaleType.Crop
 Instance.new("UICorner", avatarImg).CornerRadius = UDim.new(1, 0)
+
+-- Immediate fallback to player avatar (guaranteed never blank)
+local initialAvatar = ResolveCustomAsset("assets/floating_avatar_white.png", nil)
+    or ResolveCustomAsset("Monody/cache/floating_avatar_white.png", nil)
+if initialAvatar then
+    avatarImg.Image = initialAvatar
+else
+    avatarImg.Image = GetUserThumbnailFallback()
+    -- Asynchronously download floating_avatar_white.png and bind immediately
+    task.spawn(function()
+        pcall(function()
+            if exMakeFolder then
+                pcall(exMakeFolder, "Monody")
+                pcall(exMakeFolder, "Monody/cache")
+            end
+            local cPath = "Monody/cache/floating_avatar_white.png"
+            local exists = false
+            if exIsFile then
+                local okCheck, res = pcall(exIsFile, cPath)
+                exists = okCheck and res
+            end
+            if not exists and exWriteFile then
+                local rawUrl = GITHUB_REPO_RAW .. "/assets/floating_avatar_white.png"
+                local body = SafeHttpGet(rawUrl)
+                if body and #body > 50 then
+                    pcall(exWriteFile, cPath, body)
+                    exists = true
+                end
+            end
+            if exists and exGetCustomAsset and avatarImg and avatarImg.Parent then
+                local okAsset, asset = pcall(exGetCustomAsset, cPath)
+                if okAsset and type(asset) == "string" and #asset > 0 then
+                    avatarImg.Image = asset
+                end
+            end
+        end)
+    end)
+end
 
 local titleLbl = Instance.new("TextLabel", header)
 titleLbl.Size = UDim2.new(0, 180, 0, 20)
@@ -394,9 +441,10 @@ task.spawn(function()
                 pcall(exMakeFolder, "Monody/cache")
             end
             local assetsToPreload = {
-                "header_profile_panel_white.png",
-                "stats_panel_white.png",
-                "floating_avatar_white.png"
+                "floating_avatar_white.png",
+                "header_avatar_white.png",
+                "stats_center_avatar_white.png",
+                "logo.jpg"
             }
             for _, fn in ipairs(assetsToPreload) do
                 local cPath = "Monody/cache/" .. fn
