@@ -1665,6 +1665,7 @@ Main = Instance.new("Frame", ScreenGui)
 Main.Name = "Monody_MainWindow"
 Main.Visible = false
 Main.Size = UDim2.new(0, 0, 0, 0)
+Main.AnchorPoint = Vector2.new(0.5, 0.5)
 Main.Position = UDim2.new(0.5, 0, 0.5, 0)
 Main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Main.BackgroundTransparency = 1
@@ -1677,15 +1678,35 @@ local MainScale = Instance.new("UIScale", Main)
 MainScale.Scale = 1
 local GlassFrames = {}
 
+_G.DarlingX.UserUIScale = 1.0
+_G.DarlingX.UserCustomScaleActive = false
+
 local function UpdateMobileScale()
+    if _G.DarlingX.UserCustomScaleActive then
+        MainScale.Scale = math.clamp(_G.DarlingX.UserUIScale, 0.5, 2.2)
+        return
+    end
     local viewport = camera and camera.ViewportSize or Vector2.new(1280, 720)
     local widthScale = (viewport.X - 24) / 440
     local heightScale = (viewport.Y - 24) / 300
-    MainScale.Scale = math.clamp(math.min(widthScale, heightScale), 0.65, 1)
+    MainScale.Scale = math.clamp(math.min(widthScale, heightScale), 0.65, 1.0)
 end
 UpdateMobileScale()
 if camera then
     trackConn(camera:GetPropertyChangedSignal("ViewportSize"):Connect(UpdateMobileScale))
+end
+
+_G.DarlingX.SetUIScale = function(scaleFactor)
+    local num = tonumber(scaleFactor) or 1.0
+    _G.DarlingX.UserUIScale = math.clamp(num, 0.5, 2.2)
+    _G.DarlingX.UserCustomScaleActive = true
+    MainScale.Scale = _G.DarlingX.UserUIScale
+end
+
+_G.DarlingX.ResetUIScale = function()
+    _G.DarlingX.UserCustomScaleActive = false
+    _G.DarlingX.UserUIScale = 1.0
+    UpdateMobileScale()
 end
 
 local MainStroke = Instance.new("UIStroke", Main)
@@ -2325,7 +2346,7 @@ maximizeUI = function()
     Main.Size = UDim2.new(0, 0, 0, 0)
     Main.Position = UDim2.new(0.5, 0, 0.5, 0)
     local openTween = TweenService:Create(Main, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0, 440, 0, 300), Position = UDim2.new(0.5, -220, 0.5, -150)
+        Size = UDim2.new(0, 440, 0, 300), Position = UDim2.new(0.5, 0, 0.5, 0)
     })
     openTween.Completed:Connect(function()
         opening = false
@@ -9794,7 +9815,73 @@ local okThemes, errThemes = pcall(function()
         RainbowSpeed = val / 10
     end)
 
-    -- 2. Custom Wallpaper Studio (Asset ID or URL)
+    -- 2. UI Scale & Size Studio (Agrandar / Ajustar Tamano UI)
+    local scaleCard = CreateCard(ThemesPage, "UI Scale & Size")
+
+    AddSlider(scaleCard, "UI Scale (%)", 60, 200, math.floor(MainScale.Scale * 100), 5, function(val)
+        _G.DarlingX.SetUIScale(val / 100)
+    end)
+
+    local scaleBtnRow = Instance.new("Frame", scaleCard)
+    scaleBtnRow.Name = "ScalePresetRow"
+    scaleBtnRow.Size = UDim2.new(1, 0, 0, 56)
+    scaleBtnRow.BackgroundTransparency = 1
+    scaleBtnRow.ZIndex = 11
+    local sbLayout = Instance.new("UIGridLayout", scaleBtnRow)
+    sbLayout.CellSize = UDim2.new(0.333, -5, 0, 25)
+    sbLayout.CellPadding = UDim2.new(0, 6, 0, 5)
+
+    local function makeScaleBtn(txt, scaleVal)
+        local btn = Instance.new("TextButton", scaleBtnRow)
+        btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        btn.BackgroundTransparency = 0.92
+        btn.Text = ""
+        btn.AutoButtonColor = false
+        btn.Active = true
+        btn.Selectable = true
+        btn.ZIndex = 12
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+        local s = Instance.new("UIStroke", btn)
+        s.Color = Color3.fromRGB(255, 255, 255)
+        s.Thickness = 0.8
+        s.Transparency = 0.85
+        RegisterThemeStroke(s)
+
+        local lbl = Instance.new("TextLabel", btn)
+        lbl.Size = UDim2.new(1, 0, 1, 0)
+        lbl.BackgroundTransparency = 1
+        lbl.Font = Enum.Font.GothamBold
+        lbl.Text = txt
+        lbl.TextSize = 8.5
+        lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+        lbl.ZIndex = 13
+        RegisterTranslatable(lbl, txt)
+
+        ConnectButton(btn, function()
+            if scaleVal == "reset" then
+                _G.DarlingX.ResetUIScale()
+                Notify("UI Scale", "Auto-Fit scale restored (" .. math.floor(MainScale.Scale * 100) .. "%)", 2.0)
+            else
+                _G.DarlingX.SetUIScale(scaleVal)
+                Notify("UI Scale", "UI scale set to " .. math.floor(scaleVal * 100) .. "%", 2.0)
+            end
+            if UI_SLIDERS["UI Scale (%)"] and UI_SLIDERS["UI Scale (%)"].set then
+                UI_SLIDERS["UI Scale (%)"].set(math.floor(MainScale.Scale * 100), false)
+            end
+        end)
+        return btn
+    end
+
+    makeScaleBtn("Compact 80%", 0.80)
+    makeScaleBtn("Normal 100%", 1.00)
+    makeScaleBtn("Medium 120%", 1.20)
+    makeScaleBtn("Large 140%", 1.40)
+    makeScaleBtn("Huge 160%", 1.60)
+    makeScaleBtn("Auto-Fit", "reset")
+
+    UpdateCardGeometry(scaleCard)
+
+    -- 3. Custom Wallpaper Studio (Asset ID or URL)
     local wpCustomCard = CreateCard(ThemesPage, "Custom Wallpaper")
 
     local customInput = AddInput(wpCustomCard, "Roblox Asset ID or Media URL", "e.g. 103674761222554 or rbxassetid://...", "", function(val)
@@ -10047,8 +10134,12 @@ local okThemes, errThemes = pcall(function()
         ApplyFont(val)
     end)
 
-    AddChoice(vfxCard, "Interface Scale", { "Compact (80%)", "Standard (100%)", "Large (120%)" }, 2, function(val, index)
-        MainScale.Scale = ({ 0.8, 1, 1.2 })[index]
+    AddChoice(vfxCard, "Quick Scale Mode", { "Compact (80%)", "Standard (100%)", "Large (120%)", "Huge (140%)", "Massive (160%)" }, 2, function(val, index)
+        local s = ({ 0.8, 1.0, 1.2, 1.4, 1.6 })[index]
+        _G.DarlingX.SetUIScale(s)
+        if UI_SLIDERS["UI Scale (%)"] and UI_SLIDERS["UI Scale (%)"].set then
+            UI_SLIDERS["UI Scale (%)"].set(math.floor(s * 100), false)
+        end
     end)
 
     -- 4. Aesthetic Presets Studio
