@@ -1364,6 +1364,23 @@ local uiOpened = false
 local function triggerUIOpen()
     if introCompleted and uiReadyToOpen and not uiOpened then
         uiOpened = true
+        pcall(function()
+            local oldLoader = (CoreGui and CoreGui:FindFirstChild("Monody_LoadingScreen"))
+                or (parentGui and parentGui:FindFirstChild("Monody_LoadingScreen"))
+                or (gethui and gethui():FindFirstChild("Monody_LoadingScreen"))
+                or (lp and lp:FindFirstChildOfClass("PlayerGui") and lp.PlayerGui:FindFirstChild("Monody_LoadingScreen"))
+            if oldLoader then
+                local m = oldLoader:FindFirstChild("Modal") or oldLoader:FindFirstChildWhichIsA("Frame")
+                if m then
+                    TweenService:Create(m, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+                        Size = UDim2.new(0, 0, 0, 0),
+                        BackgroundTransparency = 1
+                    }):Play()
+                    task.wait(0.3)
+                end
+                oldLoader:Destroy()
+            end
+        end)
         if maximizeUI then
             maximizeUI()
         elseif Main then
@@ -6323,7 +6340,7 @@ end
 
 local HomePage = RegisterTab("Home", "Home", "house")
 pcall(function()
-    HomePage.CanvasSize = UDim2.new(0, 0, 0, 286)
+    HomePage.CanvasSize = UDim2.new(0, 0, 0, 226)
     HomePage.ScrollBarThickness = 2
     HomePage.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
     HomePage.ScrollBarImageTransparency = 0.7
@@ -6414,8 +6431,8 @@ pcall(function()
     -- Key Time Display Label
     local keyTimeLbl = Instance.new("TextLabel", card1)
     keyTimeLbl.Name = "KeyTimeLabel"
-    keyTimeLbl.Size = UDim2.new(0, 120, 0, 16)
-    keyTimeLbl.Position = UDim2.new(1, -126, 0, 73)
+    keyTimeLbl.Size = UDim2.new(0, 140, 0, 16)
+    keyTimeLbl.Position = UDim2.new(1, -145, 0, 73)
     keyTimeLbl.BackgroundTransparency = 1
     keyTimeLbl.Font = Enum.Font.GothamMedium
     keyTimeLbl.TextSize = 8.5
@@ -6424,19 +6441,35 @@ pcall(function()
     keyTimeLbl.ZIndex = 12
 
     local function updateKeyTime()
-        local remaining = "Key Time: 25 Hours Left"
+        local remaining = "Key: Verified"
         pcall(function()
-            local exp = AX_KeyExpires or (_G.AX_USER and _G.AX_USER.KeyExpires) or (getgenv and getgenv().AX_KeyExpires)
-            if exp and tonumber(exp) then
-                local diff = tonumber(exp) - os.time()
-                if diff > 86400 * 365 then
+            local genv = (type(getgenv) == "function" and getgenv()) or _G or {}
+            local exp = genv.AX_KeyExpires or (genv.AX_USER and genv.AX_USER.ExpiresAt) or _G.AX_KeyExpires or (_G.AX_USER and _G.AX_USER.ExpiresAt) or (AX_KeyExpires)
+            if exp ~= nil then
+                local expNum = tonumber(exp)
+                if expNum == 0 then
                     remaining = "Key: Lifetime Access"
-                elseif diff > 0 then
-                    local hrs = math.floor(diff / 3600)
-                    local mins = math.floor((diff % 3600) / 60)
-                    remaining = string.format("Key Time: %dh %dm Left", hrs, mins)
-                else
-                    remaining = "Key: Verified"
+                elseif expNum and expNum > 0 then
+                    local diff = expNum - os.time()
+                    if diff > 86400 * 365 then
+                        remaining = "Key: Lifetime Access"
+                    elseif diff > 86400 then
+                        local days = math.floor(diff / 86400)
+                        local hrs = math.floor((diff % 86400) / 3600)
+                        local mins = math.floor((diff % 3600) / 60)
+                        remaining = string.format("Key: %dd %dh %dm Left", days, hrs, mins)
+                    elseif diff > 3600 then
+                        local hrs = math.floor(diff / 3600)
+                        local mins = math.floor((diff % 3600) / 60)
+                        local secs = math.floor(diff % 60)
+                        remaining = string.format("Key: %dh %dm %ds Left", hrs, mins, secs)
+                    elseif diff > 0 then
+                        local mins = math.floor(diff / 60)
+                        local secs = math.floor(diff % 60)
+                        remaining = string.format("Key: %dm %ds Left", mins, secs)
+                    else
+                        remaining = "Key: Expired"
+                    end
                 end
             end
         end)
@@ -6445,9 +6478,9 @@ pcall(function()
     updateKeyTime()
 
     ----------------------------------------------------------------------------
-    -- 2. CARD 2: REAL LIVE STATS CARD (stats_panel_white.png, 106h)
+    -- 2. CARD 2: REAL LIVE STATS CARD (stats_panel_white.png, 116h)
     ----------------------------------------------------------------------------
-    local card2, bg2 = createWhiteCard("CenterStatsCard", 106, 2, "stats_panel_white.png", "rbxassetid://109687263098821")
+    local card2, bg2 = createWhiteCard("CenterStatsCard", 116, 2, "stats_panel_white.png", "rbxassetid://109687263098821")
 
     local function createStatRow(name, initialText, yPos, xPos, width)
         local lbl = Instance.new("TextLabel", card2)
@@ -6466,16 +6499,16 @@ pcall(function()
     end
 
     -- Left 4 stats (Player, Game, Bounty, Level) aligned to icons at x=50
-    local statPlayer = createStatRow("StatPlayer", "- " .. (lp and lp.DisplayName or "Player"), 16, 50, 75)
-    local statGame   = createStatRow("StatGame", "- Blox Fruits", 38, 50, 75)
-    local statBounty = createStatRow("StatBounty", "- Bounty 4M", 60, 50, 75)
-    local statLevel  = createStatRow("StatLevel", "- Level 2800", 82, 50, 75)
+    local statPlayer = createStatRow("StatPlayer", "- " .. (lp and lp.DisplayName or "Player"), 18, 50, 75)
+    local statGame   = createStatRow("StatGame", "- Blox Fruits", 42, 50, 75)
+    local statBounty = createStatRow("StatBounty", "- Bounty 4M", 66, 50, 75)
+    local statLevel  = createStatRow("StatLevel", "- Level 2800", 90, 50, 75)
 
     -- Right 4 stats (Session, Ping, FPS, Server Clock) aligned to icons at x=246
-    local statSession = createStatRow("StatSession", "- 0:00", 16, 246, 58)
-    local statPing    = createStatRow("StatPing", "- 50ms", 38, 246, 58)
-    local statFps     = createStatRow("StatFps", "- 60Fps", 60, 246, 58)
-    local statClock   = createStatRow("StatClock", "- 00:00", 82, 246, 58)
+    local statSession = createStatRow("StatSession", "- 0:00", 18, 246, 58)
+    local statPing    = createStatRow("StatPing", "- 50ms", 42, 246, 58)
+    local statFps     = createStatRow("StatFps", "- 60Fps", 66, 246, 58)
+    local statClock   = createStatRow("StatClock", "- 00:00", 90, 246, 58)
 
     -- Real-time stats updater (throttled to 0.4s)
     local scriptStart = tick()
@@ -6493,6 +6526,9 @@ pcall(function()
 
         if now - lastStatUpdate < 0.4 then return end
         lastStatUpdate = now
+
+        -- Update Key Time live countdown
+        updateKeyTime()
 
         -- Session stopwatch
         local elapsed = math.floor(now - scriptStart)
@@ -6541,289 +6577,6 @@ pcall(function()
                 end
             end
         end)
-    end)
-
-    ----------------------------------------------------------------------------
-    -- 3. CARD 3: REAL INTERACTIVE MUSIC PLAYER (music_player_white.png, 60h)
-    ----------------------------------------------------------------------------
-    local card3, bg3 = createWhiteCard("BottomMusicCard", 60, 3, "music_player_white.png", "rbxassetid://109687263098821")
-
-    -- Dynamic Track Title label (overlay over track title area)
-    local trackTitleLbl = Instance.new("TextLabel", card3)
-    trackTitleLbl.Name = "TrackTitle"
-    trackTitleLbl.Size = UDim2.new(0, 110, 0, 13)
-    trackTitleLbl.Position = UDim2.new(0, 48, 0, 6)
-    trackTitleLbl.BackgroundTransparency = 1
-    trackTitleLbl.Font = Enum.Font.GothamBold
-    trackTitleLbl.Text = (MonodyMusic and MonodyMusic.CurrentTrackName) or "MONTAGEM BAILÃO (Phonk)"
-    trackTitleLbl.TextSize = 8.5
-    trackTitleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-    trackTitleLbl.TextXAlignment = Enum.TextXAlignment.Left
-    trackTitleLbl.TextTruncate = Enum.TextTruncate.AtEnd
-    trackTitleLbl.ZIndex = 12
-
-    -- Dynamic Playback Time label (overlay over time area)
-    local timeLbl = Instance.new("TextLabel", card3)
-    timeLbl.Name = "TimeLabel"
-    timeLbl.Size = UDim2.new(0, 75, 0, 11)
-    timeLbl.Position = UDim2.new(0, 48, 0, 20)
-    timeLbl.BackgroundTransparency = 1
-    timeLbl.Font = Enum.Font.GothamMedium
-    timeLbl.Text = "00:00 / 02:25"
-    timeLbl.TextSize = 7.5
-    timeLbl.TextColor3 = Color3.fromRGB(200, 200, 215)
-    timeLbl.TextXAlignment = Enum.TextXAlignment.Left
-    timeLbl.ZIndex = 12
-
-    -- Interactive Progress Scrubber Track
-    local scrubTrack = Instance.new("Frame", card3)
-    scrubTrack.Name = "ScrubberTrack"
-    scrubTrack.Size = UDim2.new(0, 115, 0, 14)
-    scrubTrack.Position = UDim2.new(0, 22, 0, 40)
-    scrubTrack.BackgroundTransparency = 1
-    scrubTrack.ZIndex = 12
-
-    local scrubFill = Instance.new("Frame", scrubTrack)
-    scrubFill.Name = "Fill"
-    scrubFill.Size = UDim2.new(0, 0, 0, 2.5)
-    scrubFill.Position = UDim2.new(0, 0, 0.5, -1)
-    scrubFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    scrubFill.BorderSizePixel = 0
-    scrubFill.ZIndex = 13
-    Instance.new("UICorner", scrubFill).CornerRadius = UDim.new(1, 0)
-
-    local scrubThumb = Instance.new("Frame", scrubTrack)
-    scrubThumb.Name = "Thumb"
-    scrubThumb.Size = UDim2.new(0, 7, 0, 7)
-    scrubThumb.AnchorPoint = Vector2.new(0.5, 0.5)
-    scrubThumb.Position = UDim2.new(0, 0, 0.5, 0)
-    scrubThumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    scrubThumb.BorderSizePixel = 0
-    scrubThumb.ZIndex = 14
-    Instance.new("UICorner", scrubThumb).CornerRadius = UDim.new(1, 0)
-
-    local scrubbing = false
-    local function seekFromInput(input)
-        local absX = scrubTrack.AbsolutePosition.X
-        local absW = scrubTrack.AbsoluteSize.X
-        if absW > 0 then
-            local ratio = math.clamp((input.Position.X - absX) / absW, 0, 1)
-            scrubFill.Size = UDim2.new(ratio, 0, 0, 2.5)
-            scrubThumb.Position = UDim2.new(ratio, 0, 0.5, 0)
-            if MonodyMusic and MonodyMusic.Seek then
-                MonodyMusic.Seek(ratio)
-            end
-        end
-    end
-
-    local scrubBtn = Instance.new("TextButton", scrubTrack)
-    scrubBtn.Name = "ScrubHitbox"
-    scrubBtn.Size = UDim2.new(1, 0, 1, 0)
-    scrubBtn.BackgroundTransparency = 1
-    scrubBtn.Text = ""
-    scrubBtn.Active = true
-    scrubBtn.ZIndex = 15
-
-    scrubBtn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            scrubbing = true
-            seekFromInput(input)
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if scrubbing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            seekFromInput(input)
-        end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            scrubbing = false
-        end
-    end)
-
-    -- Dynamic Animated Equalizer Bars over top-right waveform
-    local eqContainer = Instance.new("Frame", card3)
-    eqContainer.Name = "EqContainer"
-    eqContainer.Size = UDim2.new(0, 105, 0, 12)
-    eqContainer.Position = UDim2.new(0, 168, 0, 8)
-    eqContainer.BackgroundTransparency = 1
-    eqContainer.ZIndex = 12
-
-    local eqLayout = Instance.new("UIListLayout", eqContainer)
-    eqLayout.FillDirection = Enum.FillDirection.Horizontal
-    eqLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    eqLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-    eqLayout.Padding = UDim.new(0, 2)
-    eqLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-    local numEqBars = 18
-    local eqBars = {}
-    for i = 1, numEqBars do
-        local bar = Instance.new("Frame", eqContainer)
-        bar.Name = "EqBar_" .. i
-        bar.LayoutOrder = i
-        bar.Size = UDim2.new(0, 2.5, 0, 3)
-        bar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        bar.BorderSizePixel = 0
-        bar.ZIndex = 13
-        Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
-        table.insert(eqBars, bar)
-    end
-
-    -- Control Hitbox Buttons
-    -- 1. Play / Pause Button (centered on glowing circle)
-    local playBtn = Instance.new("TextButton", card3)
-    playBtn.Name = "PlayBtn"
-    playBtn.Size = UDim2.new(0, 26, 0, 26)
-    playBtn.Position = UDim2.new(0, 230, 0, 24)
-    playBtn.BackgroundTransparency = 1
-    playBtn.Text = ""
-    playBtn.Active = true
-    playBtn.ZIndex = 15
-
-    local playIconLbl = Instance.new("TextLabel", playBtn)
-    playIconLbl.Size = UDim2.new(1, 0, 1, 0)
-    playIconLbl.BackgroundTransparency = 1
-    playIconLbl.Font = Enum.Font.GothamBold
-    playIconLbl.Text = (MonodyMusic and MonodyMusic.IsPlaying) and "||" or "▶"
-    playIconLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-    playIconLbl.TextSize = 10.5
-    playIconLbl.ZIndex = 16
-
-    ConnectButton(playBtn, function()
-        if MonodyMusic and MonodyMusic.TogglePlay then
-            local isPlaying = MonodyMusic.TogglePlay()
-            playIconLbl.Text = isPlaying and "||" or "▶"
-            trackTitleLbl.Text = (MonodyMusic.CurrentTrackName and #MonodyMusic.CurrentTrackName > 0) and MonodyMusic.CurrentTrackName or "MONTAGEM BAILÃO (Phonk)"
-            Notify("Monody Music", isPlaying and ("Playing: " .. trackTitleLbl.Text) or "Playback Paused", 1.2)
-        end
-    end)
-
-    -- 2. Previous Track Button
-    local prevBtn = Instance.new("TextButton", card3)
-    prevBtn.Name = "PrevBtn"
-    prevBtn.Size = UDim2.new(0, 18, 0, 18)
-    prevBtn.Position = UDim2.new(0, 204, 0, 28)
-    prevBtn.BackgroundTransparency = 1
-    prevBtn.Text = ""
-    prevBtn.Active = true
-    prevBtn.ZIndex = 15
-
-    ConnectButton(prevBtn, function()
-        if MonodyMusic and MonodyMusic.PrevTrack then
-            MonodyMusic.PrevTrack()
-            trackTitleLbl.Text = MonodyMusic.CurrentTrackName or "Track"
-            playIconLbl.Text = "||"
-            Notify("Monody Music", "Previous: " .. trackTitleLbl.Text, 1.2)
-        end
-    end)
-
-    -- 3. Next Track Button
-    local nextBtn = Instance.new("TextButton", card3)
-    nextBtn.Name = "NextBtn"
-    nextBtn.Size = UDim2.new(0, 18, 0, 18)
-    nextBtn.Position = UDim2.new(0, 264, 0, 28)
-    nextBtn.BackgroundTransparency = 1
-    nextBtn.Text = ""
-    nextBtn.Active = true
-    nextBtn.ZIndex = 15
-
-    ConnectButton(nextBtn, function()
-        if MonodyMusic and MonodyMusic.NextTrack then
-            MonodyMusic.NextTrack()
-            trackTitleLbl.Text = MonodyMusic.CurrentTrackName or "Track"
-            playIconLbl.Text = "||"
-            Notify("Monody Music", "Next: " .. trackTitleLbl.Text, 1.2)
-        end
-    end)
-
-    -- 4. Shuffle Button
-    local shuffleBtn = Instance.new("TextButton", card3)
-    shuffleBtn.Name = "ShuffleBtn"
-    shuffleBtn.Size = UDim2.new(0, 18, 0, 18)
-    shuffleBtn.Position = UDim2.new(0, 180, 0, 28)
-    shuffleBtn.BackgroundTransparency = 1
-    shuffleBtn.Text = ""
-    shuffleBtn.Active = true
-    shuffleBtn.ZIndex = 15
-
-    ConnectButton(shuffleBtn, function()
-        if MonodyMusic and MonodyMusic.ShuffleTrack then
-            MonodyMusic.ShuffleTrack()
-            trackTitleLbl.Text = MonodyMusic.CurrentTrackName or "Track"
-            playIconLbl.Text = "||"
-            Notify("Monody Music", "Shuffle: " .. trackTitleLbl.Text, 1.2)
-        end
-    end)
-
-    -- 5. Loop Button
-    local loopBtn = Instance.new("TextButton", card3)
-    loopBtn.Name = "LoopBtn"
-    loopBtn.Size = UDim2.new(0, 18, 0, 18)
-    loopBtn.Position = UDim2.new(0, 288, 0, 28)
-    loopBtn.BackgroundTransparency = 1
-    loopBtn.Text = ""
-    loopBtn.Active = true
-    loopBtn.ZIndex = 15
-
-    ConnectButton(loopBtn, function()
-        if MonodyMusic then
-            local nextLoop = not MonodyMusic.Looped
-            MonodyMusic.SetLooped(nextLoop)
-            Notify("Monody Music", nextLoop and "Loop Mode: ON" or "Loop Mode: OFF", 1.2)
-        end
-    end)
-
-    -- 6. Volume / Mute Hitbox over speaker icon
-    local muteBtn = Instance.new("TextButton", card3)
-    muteBtn.Name = "MuteBtn"
-    muteBtn.Size = UDim2.new(0, 16, 0, 16)
-    muteBtn.Position = UDim2.new(0, 6, 0, 38)
-    muteBtn.BackgroundTransparency = 1
-    muteBtn.Text = ""
-    muteBtn.Active = true
-    muteBtn.ZIndex = 15
-
-    local isMuted = false
-    ConnectButton(muteBtn, function()
-        if MonodyMusic then
-            isMuted = not isMuted
-            MonodyMusic.SetVolume(isMuted and 0 or 1.0)
-            Notify("Monody Music", isMuted and "Audio Muted" or "Audio Unmuted", 1.2)
-        end
-    end)
-
-    -- Real-time Music Card Syncer
-    local animStep = 0
-    RunService.Heartbeat:Connect(function()
-        if MonodyMusic then
-            if MonodyMusic.IsPlaying and not scrubbing then
-                local snd = MonodyMusic.Sound
-                if snd and snd.TimeLength and snd.TimeLength > 0 then
-                    local cur = snd.TimePosition
-                    local tot = snd.TimeLength
-                    local r = math.clamp(cur / tot, 0, 1)
-                    scrubFill.Size = UDim2.new(r, 0, 0, 2.5)
-                    scrubThumb.Position = UDim2.new(r, 0, 0.5, 0)
-
-                    local curM = math.floor(cur / 60)
-                    local curS = math.floor(cur % 60)
-                    local totM = math.floor(tot / 60)
-                    local totS = math.floor(tot % 60)
-                    timeLbl.Text = string.format("%02d:%02d / %02d:%02d", curM, curS, totM, totS)
-                end
-
-                animStep = animStep + 0.18
-                for idx, bar in ipairs(eqBars) do
-                    local h = math.clamp(2.5 + math.abs(math.sin(animStep + idx * 0.4)) * 9, 2, 12)
-                    bar.Size = UDim2.new(0, 2.5, 0, h)
-                end
-            elseif not MonodyMusic.IsPlaying then
-                for _, bar in ipairs(eqBars) do
-                    bar.Size = UDim2.new(0, 2.5, 0, 2.5)
-                end
-            end
-        end
     end)
 end)
 
