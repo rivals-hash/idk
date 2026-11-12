@@ -404,15 +404,14 @@ function MikaModule.Spawn(opts)
     local bubbleRoot = new("Frame", {Name = "Burbuja", BackgroundTransparency = 1, Size = UDim2.fromOffset(180, 68), Position = UDim2.new(0.78, 0, 0.05, 0), Visible = false, ZIndex = z + 40}, actor)
     pet.Bubble = bubbleRoot
     local popScale = new("UIScale", {Scale = 1}, bubbleRoot)
-    local shadow = new("Frame", {Size = UDim2.new(1, 0, 1, 0), Position = UDim2.fromOffset(1, 3), BackgroundColor3 = Color3.fromRGB(10, 14, 22), BackgroundTransparency = 0.65, BorderSizePixel = 0, ZIndex = z + 40}, bubbleRoot)
-    corner(shadow, 12)
-    local tail = new("Frame", {Size = UDim2.fromOffset(12, 12), Position = UDim2.new(0, 14, 1, -7), Rotation = 45, BackgroundColor3 = Color3.fromRGB(18, 20, 28), BorderSizePixel = 0, ZIndex = z + 41}, bubbleRoot)
+    local shadow = new("Frame", {Size = UDim2.new(1, 0, 1, 0), Position = UDim2.fromOffset(0, 4), BackgroundColor3 = Color3.fromRGB(8, 6, 14), BackgroundTransparency = 0.72, BorderSizePixel = 0, ZIndex = z + 40}, bubbleRoot)
+    corner(shadow, 16)
+    local tail = new("Frame", {Size = UDim2.fromOffset(11, 11), Position = UDim2.new(0, 18, 1, -5), Rotation = 45, BackgroundColor3 = Color3.fromRGB(20, 18, 28), BorderSizePixel = 0, ZIndex = z + 41}, bubbleRoot)
     corner(tail, 3)
-    local bubbleBody = new("Frame", {Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(16, 18, 26), BackgroundTransparency = 0.05, BorderSizePixel = 0, ZIndex = z + 42}, bubbleRoot)
-    corner(bubbleBody, 12)
-    local bubbleStroke = new("UIStroke", {Color = pet.themeColor, Thickness = 1.0, Transparency = 0.3}, bubbleBody)
-    local nameLabel = text(bubbleBody, pet.name, 8.5, pet.themeColor, {Position = UDim2.fromOffset(10, 6), Size = UDim2.new(1, -20, 0, 12), Font = Enum.Font.GothamBold, ZIndex = z + 43})
-    local speech = text(bubbleBody, "", 10.5, Color3.fromRGB(240, 240, 245), {Position = UDim2.fromOffset(10, 20), Size = UDim2.new(1, -20, 1, -26), TextWrapped = true, TextYAlignment = Enum.TextYAlignment.Top, LineHeight = 1.15, MaxVisibleGraphemes = -1, ZIndex = z + 43})
+    local bubbleBody = new("Frame", {Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(20, 18, 28), BackgroundTransparency = 0.08, BorderSizePixel = 0, ZIndex = z + 42}, bubbleRoot)
+    corner(bubbleBody, 16)
+    local nameLabel = text(bubbleBody, "~ " .. pet.name .. " ~", 8.5, pet.themeColor, {Position = UDim2.fromOffset(12, 6), Size = UDim2.new(1, -24, 0, 12), Font = Enum.Font.GothamBold, ZIndex = z + 43})
+    local speech = text(bubbleBody, "", 10.0, Color3.fromRGB(250, 245, 255), {Position = UDim2.fromOffset(12, 20), Size = UDim2.new(1, -24, 1, -26), Font = Enum.Font.GothamMedium, TextWrapped = true, TextYAlignment = Enum.TextYAlignment.Top, LineHeight = 1.18, MaxVisibleGraphemes = -1, ZIndex = z + 43})
     local heart = text(actor, "<3", 18, pet.themeColor, {Position = UDim2.fromScale(0.02, 0.24), Size = UDim2.fromOffset(25, 25), Visible = false, ZIndex = z + 30})
     local sleepy = text(actor, "z Z", 15, Color3.fromRGB(180, 200, 255), {Position = UDim2.fromScale(0.79, 0.12), Size = UDim2.fromOffset(37, 25), Visible = false, ZIndex = z + 30})
 
@@ -463,7 +462,6 @@ function MikaModule.Spawn(opts)
         else
             sprite.ImageColor3 = Color3.fromRGB(255, 255, 255)
         end
-        bubbleStroke.Color = self.themeColor
         nameLabel.TextColor3 = self.themeColor
         heart.TextColor3 = self.themeColor
     end
@@ -495,7 +493,6 @@ function MikaModule.Spawn(opts)
         animate(bubbleBody, {BackgroundTransparency = 1}, 0.18)
         animate(tail, {BackgroundTransparency = 1}, 0.18)
         animate(shadow, {BackgroundTransparency = 1}, 0.18)
-        animate(bubbleStroke, {Transparency = 1}, 0.18)
         animate(nameLabel, {TextTransparency = 1}, 0.18)
         animate(speech, {TextTransparency = 1}, 0.18)
         animate(popScale, {Scale = 0.93}, 0.18)
@@ -526,7 +523,6 @@ function MikaModule.Spawn(opts)
         bubbleRoot.Visible = true
         bubbleBody.BackgroundTransparency = 1
         tail.BackgroundTransparency = 1
-        bubbleStroke.Transparency = 1
         shadow.BackgroundTransparency = 1
         nameLabel.TextTransparency = 1
         speech.TextTransparency = 1
@@ -536,7 +532,6 @@ function MikaModule.Spawn(opts)
         animate(bubbleBody, {BackgroundTransparency = 0.05}, 0.18)
         animate(tail, {BackgroundTransparency = 0.05}, 0.18)
         animate(shadow, {BackgroundTransparency = 0.65}, 0.18)
-        animate(bubbleStroke, {Transparency = 0.3}, 0.18)
         animate(nameLabel, {TextTransparency = 0}, 0.18)
         animate(speech, {TextTransparency = 0}, 0.18)
 

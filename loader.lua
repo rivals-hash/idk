@@ -1,7 +1,7 @@
 --[[
     ============================================================
     MONODY - OFFICIAL CLIENT KEY LOADER (AuroraX Protected)
-    Project: Monody (1b56de61f463fc8d4cd4d1dca6e26660)
+    Project: Monody (7c5669e64021da7e13601d7cc9913ee9)
     ============================================================
 ]]--
 
@@ -324,6 +324,7 @@ keyBox.Size = UDim2.new(1, -16, 1, 0)
 keyBox.Position = UDim2.new(0, 8, 0, 0)
 keyBox.BackgroundTransparency = 1
 keyBox.Font = Enum.Font.GothamMedium
+keyBox.Text = ""
 keyBox.PlaceholderText = "Paste your license key here..."
 keyBox.PlaceholderColor3 = Color3.fromRGB(140, 140, 160)
 keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -393,13 +394,13 @@ task.spawn(function()
     -- Step 1: Load AuroraX SDK
     setProgress(0.25, "Connecting to AuroraX...", "Fetching security verification SDK...")
     local okSdk, AuroraX = pcall(function()
-        return loadstring(game:HttpGet("https://dev.aurorax.site/api/sdk/1b56de61f463fc8d4cd4d1dca6e26660.lua", true))()
+        return loadstring(game:HttpGet("https://dev.aurorax.site/api/sdk/7c5669e64021da7e13601d7cc9913ee9.lua", true))()
     end)
 
     if not okSdk or not AuroraX then
         setProgress(0.35, "Fallback Loader...", "Loading direct AuroraX payload...")
         task.wait(0.3)
-        loadstring(game:HttpGet("https://api.aurorax.site/files/v5/loaders/1b56de61f463fc8d4cd4d1dca6e26660", true))()
+        loadstring(game:HttpGet("https://api.aurorax.site/files/v5/loaders/7c5669e64021da7e13601d7cc9913ee9", true))()
         return
     end
 
@@ -425,7 +426,7 @@ task.spawn(function()
     local function runFullBoot(validKey, info)
         local exp = (info and info.expires_at) or 0
         genv.AX_KeyExpires = exp
-        genv.AX_USER = { ExpiresAt = exp, Key = validKey, ScriptId = "1b56de61f463fc8d4cd4d1dca6e26660", ScriptName = "Monody" }
+        genv.AX_USER = { ExpiresAt = exp, Key = validKey, ScriptId = "7c5669e64021da7e13601d7cc9913ee9", ScriptName = "Monody" }
         _G.AX_KeyExpires = exp
         _G.AX_USER = genv.AX_USER
 
@@ -476,9 +477,23 @@ task.spawn(function()
         setProgress(1.0, "Ready!", "Welcome, " .. (lp and lp.DisplayName or "Player") .. "!")
         task.wait(0.35)
 
-        -- Execute Main Script
+        -- Execute Main Script (Protected + Direct Fallback)
         task.spawn(function()
-            AuroraX.LoadScript(validKey)
+            local launched = false
+            pcall(function()
+                if AuroraX and AuroraX.LoadScript then
+                    AuroraX.LoadScript(validKey)
+                    launched = true
+                end
+            end)
+            if not launched or not _G.DarlingX then
+                task.wait(1.0)
+                if not _G.DarlingX then
+                    pcall(function()
+                        loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/main.lua", true))()
+                    end)
+                end
+            end
         end)
 
         -- Smooth dismiss of loading screen after main opens
@@ -506,6 +521,7 @@ task.spawn(function()
 
     -- If no key or invalid, display the Key Input Form
     setProgress(0.30, "License Key Required", "Please enter your Monody key to continue.")
+    keyBox.Text = savedKey or ""
     task.wait(0.2)
     loadContainer.Visible = false
     keyContainer.Visible = true
@@ -513,7 +529,7 @@ task.spawn(function()
     getKeyBtn.MouseButton1Click:Connect(function()
         pcall(function()
             local setcb = setclipboard or toclipboard or (syn and syn.set_clipboard)
-            if setcb then setcb("https://dev.aurorax.site/getkey/1b56de61f463fc8d4cd4d1dca6e26660") end
+            if setcb then setcb("https://dev.aurorax.site/getkey/7c5669e64021da7e13601d7cc9913ee9") end
         end)
         keyFeedback.TextColor3 = Color3.fromRGB(160, 220, 255)
         keyFeedback.Text = "Key link copied to clipboard!"

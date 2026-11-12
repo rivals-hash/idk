@@ -679,7 +679,8 @@ local WINDUI_LUCIDE_FALLBACK = {
     Animations    = "rbxassetid://138635884129147",  -- Lucide: sparkles
     Config        = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
     Misc          = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
-    Ai            = "rbxassetid://80451686744860",   -- Lucide: bot (AI Assistant & Mika)
+    Ai            = "rbxassetid://138635884129147",  -- Lucide: sparkles
+    MonodyAI      = "rbxassetid://138635884129147",  -- Lucide: sparkles
     Settings      = "rbxassetid://86350350950064",   -- Lucide: palette
     Themes        = "rbxassetid://86350350950064",   -- Lucide: palette
 }
@@ -1050,11 +1051,11 @@ function InlineLoader.finish(callback)
 end
 
 -- ============================================================
--- AURORA X KEY SYSTEM ENGINE (Project: 1b56de61f463fc8d4cd4d1dca6e26660)
+-- AURORA X KEY SYSTEM ENGINE (Project: 7c5669e64021da7e13601d7cc9913ee9)
 -- ============================================================
 local function getAuroraX()
     local ok, sdk = pcall(function()
-        return loadstring(game:HttpGet("https://dev.aurorax.site/api/sdk/1b56de61f463fc8d4cd4d1dca6e26660.lua", true))()
+        return loadstring(game:HttpGet("https://dev.aurorax.site/api/sdk/7c5669e64021da7e13601d7cc9913ee9.lua", true))()
     end)
     if ok and sdk and type(sdk) == "table" then
         return sdk
@@ -1306,7 +1307,7 @@ local function showKeyModal(AuroraX, onSuccess)
                 AuroraX.CopyKeyLink()
             else
                 local setcb = setclipboard or toclipboard or set_clipboard
-                if setcb then setcb("https://dev.aurorax.site/getkey/1b56de61f463fc8d4cd4d1dca6e26660") end
+                if setcb then setcb("https://dev.aurorax.site/getkey/7c5669e64021da7e13601d7cc9913ee9") end
             end
         end)
         feedback.TextColor3 = Color3.fromRGB(130, 240, 170)
@@ -2485,14 +2486,14 @@ local TABS_MANIFEST = {
     { id = "Visuals",       name = "ESP",            icon = "eye" },
     { id = "PvP",           name = "PvP",            icon = "swords" },
     { id = "Soru",          name = "Soru",           icon = "zap" },
-    { id = "AutoBounty",    name = "AutoBounty",     icon = "skull" },
+    { id = "AutoBounty",    name = "Auto Bounty",    icon = "skull" },
     { id = "Dungeon",       name = "Dungeon",        icon = "flame" },
     { id = "Teleport",      name = "Teleport",       icon = "map-pin" },
     { id = "ControlPeople", name = "Control People", icon = "gamepad-2" },
     { id = "StealFruits",   name = "Steal Fruits",   icon = "apple" },
     { id = "HUD",           name = "HUD",            icon = "layout-dashboard" },
     { id = "Macro",         name = "Macro",          icon = "bot" },
-    { id = "MonodyAI",      name = "Monody AI",      icon = "bot" },
+    { id = "MonodyAI",      name = "Monody AI",      icon = "sparkles" },
     { id = "Skins",         name = "Skins",          icon = "gem" },
     { id = "Music",         name = "Music",          icon = "headphones" },
     { id = "Animations",    name = "Animations",     icon = "sparkles" },
@@ -6233,7 +6234,7 @@ end
 -- ============================================================
 do
     pcall(function()
-        local BountyPage = RegisterTab("AutoBounty", "AutoBounty", "skull")
+        local BountyPage = RegisterTab("AutoBounty", "Auto Bounty", "skull")
 
         -- SECTION 1: CORE AUTO BOUNTY CONTROL
         local bCard1 = CreateCard(BountyPage, "Auto Bounty Engine")
@@ -6624,11 +6625,11 @@ local okHome, errHome = pcall(function()
     Instance.new("UICorner", c2Overlay).CornerRadius = UDim.new(0, 8)
     RegisterThemeFill(c2Overlay)
 
-    local function createStatLabel(name, initialText, xOffset, yOffset, width)
+    local function createStatLabel(name, initialText, xRel, yOffset, widthRel)
         local lbl = Instance.new("TextLabel", card2)
         lbl.Name = name
-        lbl.Size = UDim2.new(0, width or 105, 0, 18)
-        lbl.Position = UDim2.new(0, xOffset, 0, yOffset)
+        lbl.Size = UDim2.new(widthRel or 0.28, 0, 0, 18)
+        lbl.Position = UDim2.new(xRel, 0, 0, yOffset)
         lbl.BackgroundTransparency = 1
         lbl.Font = monodyFont
         lbl.TextSize = 8.5
@@ -6641,17 +6642,30 @@ local okHome, errHome = pcall(function()
         return lbl
     end
 
-    -- Left 4 stats (User, Gamepad, Swords, Level - pixel-aligned beside artwork icons at x=53)
-    local statPlayer = createStatLabel("StatPlayer", lp and lp.DisplayName or "Player", 53, 7, 110)
-    local statGame   = createStatLabel("StatGame", "Blox Fruits", 53, 38, 110)
-    local statBounty = createStatLabel("StatBounty", "Bounty 4M", 53, 61, 110)
-    local statLevel  = createStatLabel("StatLevel", "Level 2800", 53, 86, 110)
+    -- Left 4 stats (User, Gamepad, Swords, Level - perfectly aligned next to artwork icons at x=19.5%)
+    local statPlayer = createStatLabel("StatPlayer", lp and (lp.DisplayName ~= "" and lp.DisplayName or lp.Name) or "Player", 0.195, 11, 0.28)
+    local statGame   = createStatLabel("StatGame", "Blox Fruits", 0.195, 35, 0.28)
+    local statBounty = createStatLabel("StatBounty", "Bounty 2.5M", 0.195, 59, 0.28)
+    local statLevel  = createStatLabel("StatLevel", "Level 2550", 0.195, 83, 0.28)
 
-    -- Right 4 stats (Session, Ping, FPS, Server Clock - pixel-aligned beside artwork icons at x=250)
-    local statSession = createStatLabel("StatSession", "0:00", 250, 7, 95)
-    local statPing    = createStatLabel("StatPing", "50ms", 250, 38, 95)
-    local statFps     = createStatLabel("StatFps", "60Fps", 250, 61, 95)
-    local statClock   = createStatLabel("StatClock", os.date("%H:%M"), 250, 86, 95)
+    -- Right 4 stats (Session, Ping, FPS, Server Clock - perfectly aligned next to artwork icons at x=79.5%)
+    local statSession = createStatLabel("StatSession", "0:00", 0.795, 11, 0.19)
+    local statPing    = createStatLabel("StatPing", "50ms", 0.795, 35, 0.19)
+    local statFps     = createStatLabel("StatFps", "60Fps", 0.795, 59, 0.19)
+    local statClock   = createStatLabel("StatClock", os.date("%H:%M"), 0.795, 83, 0.19)
+
+    -- Real Game Name detection
+    pcall(function()
+        local MarketService = game:GetService("MarketplaceService")
+        task.spawn(function()
+            local ok, info = pcall(function() return MarketService:GetProductInfo(game.PlaceId) end)
+            if ok and info and info.Name and #info.Name > 0 then
+                local clean = info.Name:gsub("%b[]", ""):gsub("%b()", ""):gsub("[^%w%s%-]", ""):gsub("^%s+", ""):gsub("%s+$", "")
+                if #clean > 16 then clean = clean:sub(1, 14) .. ".." end
+                statGame.Text = "- " .. clean
+            end
+        end)
+    end)
 
     ----------------------------------------------------------------------------
     -- 3. CARD 3: QUICK COMBAT & MOBILITY (Slide Down)
@@ -9835,7 +9849,7 @@ end
 -- 6.5 AI ASSISTANT & MIKA ANIME COMPANION TAB
 -- ============================================================
 do
-local AiPage = RegisterTab("MonodyAI", "Monody AI", "bot")
+local AiPage = RegisterTab("MonodyAI", "Monody AI", "sparkles")
 Pages["Ai"] = AiPage
 Pages["MonodyAI"] = AiPage
 local okAi, errAi = pcall(function()
