@@ -15,7 +15,13 @@ local lp = Players.LocalPlayer
 
 local APP_TITLE = "Monody"
 local APP_VERSION = "v1.4"
-local DEFAULT_LOGO_ID = "rbxassetid://109687263098821"
+local function GetPlayerThumbnail(size)
+    local s = size or 150
+    local uid = (lp and lp.UserId and lp.UserId > 0 and lp.UserId) or 1
+    return string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=%d&h=%d", uid, s, s)
+end
+
+local DEFAULT_LOGO_ID = GetPlayerThumbnail(150)
 local GITHUB_REPO_RAW = "https://raw.githubusercontent.com/rivals-hash/idk/main"
 
 local exIsFile = isfile or is_file
@@ -48,14 +54,73 @@ local function ResolveCustomAsset(relativePath, fallbackAssetId)
     return fallbackAssetId
 end
 
-local function GetUserThumbnailFallback()
-    local thumb = nil
-    pcall(function()
-        if lp and lp.UserId then
-            thumb = Players:GetUserThumbnailAsync(lp.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+local function EnsureCustomAsset(filename)
+    if not (exWriteFile and exGetCustomAsset) then return nil end
+    local candidatePaths = {
+        "Monody/cache/" .. filename,
+        filename,
+        "assets/" .. filename,
+        "Monody/" .. filename,
+        "DarlingX/" .. filename
+    }
+    for _, p in ipairs(candidatePaths) do
+        if exIsFile then
+            local okCheck, exists = pcall(exIsFile, p)
+            if okCheck and exists then
+                local okAsset, asset = pcall(exGetCustomAsset, p)
+                if okAsset and type(asset) == "string" and #asset > 0 then
+                    return asset
+                end
+            end
+        end
+    end
+
+    local body = SafeHttpGet(GITHUB_REPO_RAW .. "/assets/" .. filename)
+    if body and #body > 50 then
+        pcall(function()
+            if exMakeFolder then
+                pcall(exMakeFolder, "Monody")
+                pcall(exMakeFolder, "Monody/cache")
+            end
+            pcall(exWriteFile, "Monody/cache/" .. filename, body)
+            pcall(exWriteFile, filename, body)
+        end)
+        local okAsset, asset = pcall(exGetCustomAsset, "Monody/cache/" .. filename)
+        if okAsset and type(asset) == "string" and #asset > 0 then return asset end
+        local okAsset2, asset2 = pcall(exGetCustomAsset, filename)
+        if okAsset2 and type(asset2) == "string" and #asset2 > 0 then return asset2 end
+    end
+    return nil
+end
+
+local function BindPhoto(imgLabel, customFilename)
+    if not imgLabel then return end
+    -- Immediately set player avatar headshot (Roblox C++ engine, NEVER blank)
+    imgLabel.Image = GetPlayerThumbnail(150)
+
+    -- Check if custom anime photo is already cached
+    local fn = customFilename or "floating_avatar_white.png"
+    if exIsFile and exGetCustomAsset then
+        local quickPaths = { "Monody/cache/" .. fn, fn, "assets/" .. fn }
+        for _, p in ipairs(quickPaths) do
+            local okCheck, exists = pcall(exIsFile, p)
+            if okCheck and exists then
+                local okAsset, asset = pcall(exGetCustomAsset, p)
+                if okAsset and type(asset) == "string" and #asset > 0 then
+                    imgLabel.Image = asset
+                    return
+                end
+            end
+        end
+    end
+
+    -- Asynchronously download and bind custom anime photo
+    task.spawn(function()
+        local asset = EnsureCustomAsset(fn)
+        if asset and imgLabel and imgLabel.Parent then
+            imgLabel.Image = asset
         end
     end)
-    return thumb or DEFAULT_LOGO_ID
 end
 
 -- Parent GUI selector
@@ -126,15 +191,15 @@ header.Size = UDim2.new(1, 0, 0, 56)
 header.BackgroundTransparency = 1
 
 local avatarFrame = Instance.new("Frame", header)
-avatarFrame.Size = UDim2.new(0, 38, 0, 38)
-avatarFrame.Position = UDim2.new(0, 18, 0, 12)
+avatarFrame.Size = UDim2.new(0, 42, 0, 42)
+avatarFrame.Position = UDim2.new(0, 16, 0, 7)
 avatarFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 avatarFrame.BackgroundTransparency = 0.92
 Instance.new("UICorner", avatarFrame).CornerRadius = UDim.new(1, 0)
 local aStroke = Instance.new("UIStroke", avatarFrame)
 aStroke.Color = Color3.fromRGB(255, 255, 255)
 aStroke.Thickness = 1.0
-aStroke.Transparency = 0.82
+aStroke.Transparency = 0.75
 
 local avatarImg = Instance.new("ImageLabel", avatarFrame)
 avatarImg.Size = UDim2.new(1, 0, 1, 0)
@@ -142,47 +207,12 @@ avatarImg.BackgroundTransparency = 1
 avatarImg.ScaleType = Enum.ScaleType.Crop
 Instance.new("UICorner", avatarImg).CornerRadius = UDim.new(1, 0)
 
--- Immediate fallback to player avatar (guaranteed never blank)
-local initialAvatar = ResolveCustomAsset("assets/floating_avatar_white.png", nil)
-    or ResolveCustomAsset("Monody/cache/floating_avatar_white.png", nil)
-if initialAvatar then
-    avatarImg.Image = initialAvatar
-else
-    avatarImg.Image = GetUserThumbnailFallback()
-    -- Asynchronously download floating_avatar_white.png and bind immediately
-    task.spawn(function()
-        pcall(function()
-            if exMakeFolder then
-                pcall(exMakeFolder, "Monody")
-                pcall(exMakeFolder, "Monody/cache")
-            end
-            local cPath = "Monody/cache/floating_avatar_white.png"
-            local exists = false
-            if exIsFile then
-                local okCheck, res = pcall(exIsFile, cPath)
-                exists = okCheck and res
-            end
-            if not exists and exWriteFile then
-                local rawUrl = GITHUB_REPO_RAW .. "/assets/floating_avatar_white.png"
-                local body = SafeHttpGet(rawUrl)
-                if body and #body > 50 then
-                    pcall(exWriteFile, cPath, body)
-                    exists = true
-                end
-            end
-            if exists and exGetCustomAsset and avatarImg and avatarImg.Parent then
-                local okAsset, asset = pcall(exGetCustomAsset, cPath)
-                if okAsset and type(asset) == "string" and #asset > 0 then
-                    avatarImg.Image = asset
-                end
-            end
-        end)
-    end)
-end
+-- Guaranteed instant photo from frame 1 + async anime upgrade
+BindPhoto(avatarImg, "floating_avatar_white.png")
 
 local titleLbl = Instance.new("TextLabel", header)
 titleLbl.Size = UDim2.new(0, 180, 0, 20)
-titleLbl.Position = UDim2.new(0, 66, 0, 12)
+titleLbl.Position = UDim2.new(0, 68, 0, 10)
 titleLbl.BackgroundTransparency = 1
 titleLbl.Font = Enum.Font.GothamBold
 titleLbl.Text = APP_TITLE
@@ -192,7 +222,7 @@ titleLbl.TextXAlignment = Enum.TextXAlignment.Left
 
 local subTitleLbl = Instance.new("TextLabel", header)
 subTitleLbl.Size = UDim2.new(0, 200, 0, 14)
-subTitleLbl.Position = UDim2.new(0, 66, 0, 32)
+subTitleLbl.Position = UDim2.new(0, 68, 0, 30)
 subTitleLbl.BackgroundTransparency = 1
 subTitleLbl.Font = Enum.Font.GothamMedium
 subTitleLbl.Text = "PREMIUM EDITION • BLOX FRUITS"
@@ -319,9 +349,16 @@ kbStroke.Color = Color3.fromRGB(255, 255, 255)
 kbStroke.Thickness = 0.8
 kbStroke.Transparency = 0.85
 
+local keyIcon = Instance.new("ImageLabel", keyBoxFrame)
+keyIcon.Size = UDim2.new(0, 16, 0, 16)
+keyIcon.Position = UDim2.new(0, 10, 0.5, -8)
+keyIcon.BackgroundTransparency = 1
+keyIcon.Image = "rbxassetid://130551565616516"
+keyIcon.ImageColor3 = Color3.fromRGB(190, 190, 220)
+
 local keyBox = Instance.new("TextBox", keyBoxFrame)
-keyBox.Size = UDim2.new(1, -16, 1, 0)
-keyBox.Position = UDim2.new(0, 8, 0, 0)
+keyBox.Size = UDim2.new(1, -38, 1, 0)
+keyBox.Position = UDim2.new(0, 30, 0, 0)
 keyBox.BackgroundTransparency = 1
 keyBox.Font = Enum.Font.GothamMedium
 keyBox.Text = ""
@@ -465,6 +502,7 @@ task.spawn(function()
                     local body = SafeHttpGet(url)
                     if body and #body > 50 then
                         pcall(exWriteFile, cPath, body)
+                        pcall(exWriteFile, fn, body)
                     end
                 end
             end

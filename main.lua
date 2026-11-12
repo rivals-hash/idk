@@ -16,9 +16,13 @@ local HttpService = game:GetService("HttpService")
 
 local APP_TITLE = "Monody"
 local APP_VERSION = "by Darling v3.3"
-local APP_AUTHOR = "darling"
 local DEFAULT_WALLPAPER_ID = "rbxassetid://103674761222554"
-local DEFAULT_LOGO_ID = "rbxassetid://109687263098821"
+local function GetPlayerThumbnail(size)
+    local s = size or 150
+    local uid = (lp and lp.UserId and lp.UserId > 0 and lp.UserId) or 1
+    return string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=%d&h=%d", uid, s, s)
+end
+local DEFAULT_LOGO_ID = GetPlayerThumbnail(150)
 local GITHUB_REPO_RAW = "https://raw.githubusercontent.com/rivals-hash/idk/main"
 
 local FONT_ORDER = { "Gotham", "GothamBold", "GothamBlack", "SourceSans", "Code" }
@@ -377,8 +381,12 @@ local function ResolveAndBindAsset(filename, fallbackId, imageLabel)
                 local rawUrl = GITHUB_REPO_RAW .. "/assets/" .. filename
                 local body = SafeHttpGet(rawUrl)
                 if body and #body > 50 then
-                    exWriteFile(cachedPath, body)
+                    pcall(exWriteFile, cachedPath, body)
+                    pcall(exWriteFile, filename, body)
                     local okA, asset = pcall(exGetCustomAsset, cachedPath)
+                    if not (okA and type(asset) == "string" and #asset > 0) then
+                        okA, asset = pcall(exGetCustomAsset, filename)
+                    end
                     if okA and type(asset) == "string" and #asset > 0 and imageLabel and imageLabel.Parent then
                         imageLabel.Image = asset
                     end
@@ -393,76 +401,87 @@ end
 -- Cached permanent Darling Hub logo asset
 local CachedLogoAsset = nil
 local function GetLogoAsset()
-    if CachedLogoAsset then return CachedLogoAsset end
+    if CachedLogoAsset and CachedLogoAsset ~= DEFAULT_LOGO_ID then return CachedLogoAsset end
 
     -- 1. Try local custom user logo first
-    local userCustomLogo = ResolveCustomAsset("assets/logo.jpg", nil)
+    local userCustomLogo = ResolveCustomAsset("assets/floating_avatar_white.png", nil)
+        or ResolveCustomAsset("assets/logo.jpg", nil)
     if userCustomLogo then
         CachedLogoAsset = userCustomLogo
         return userCustomLogo
     end
 
-    -- 2. Check local executor cache
-    local cachedPath = "Monody/cache/user_logo.jpg"
+    -- 2. Check local executor cache (both nested and flat)
+    local candidatePaths = {
+        "Monody/cache/floating_avatar_white.png",
+        "floating_avatar_white.png",
+        "Monody/cache/user_logo.jpg",
+        "user_logo.jpg"
+    }
     if exIsFile and exGetCustomAsset then
-        local okCheck, exists = pcall(exIsFile, cachedPath)
-        if okCheck and exists then
-            local okAsset, asset = pcall(exGetCustomAsset, cachedPath)
-            if okAsset and type(asset) == "string" and #asset > 0 then
-                CachedLogoAsset = asset
-                return asset
+        for _, cachedPath in ipairs(candidatePaths) do
+            local okCheck, exists = pcall(exIsFile, cachedPath)
+            if okCheck and exists then
+                local okAsset, asset = pcall(exGetCustomAsset, cachedPath)
+                if okAsset and type(asset) == "string" and #asset > 0 then
+                    CachedLogoAsset = asset
+                    return asset
+                end
             end
         end
     end
 
-    -- 3. Download from repository
+    -- 3. Download from repository in background
     if exWriteFile and exGetCustomAsset then
-        local logoUrl = GITHUB_REPO_RAW .. "/assets/logo.jpg"
-        local body = SafeHttpGet(logoUrl)
-        if body and #body > 50 then
+        task.spawn(function()
             pcall(function()
                 if exMakeFolder then
                     pcall(exMakeFolder, "Monody")
                     pcall(exMakeFolder, "Monody/cache")
                 end
-                exWriteFile(cachedPath, body)
+                local logoUrl = GITHUB_REPO_RAW .. "/assets/floating_avatar_white.png"
+                local body = SafeHttpGet(logoUrl)
+                if body and #body > 50 then
+                    pcall(exWriteFile, "Monody/cache/floating_avatar_white.png", body)
+                    pcall(exWriteFile, "floating_avatar_white.png", body)
+                    local okAsset, asset = pcall(exGetCustomAsset, "Monody/cache/floating_avatar_white.png")
+                    if not (okAsset and type(asset) == "string" and #asset > 0) then
+                        okAsset, asset = pcall(exGetCustomAsset, "floating_avatar_white.png")
+                    end
+                    if okAsset and type(asset) == "string" and #asset > 0 then
+                        CachedLogoAsset = asset
+                    end
+                end
             end)
-            local okAsset, asset = pcall(exGetCustomAsset, cachedPath)
-            if okAsset and type(asset) == "string" and #asset > 0 then
-                CachedLogoAsset = asset
-                return asset
-            end
-        end
+        end)
     end
 
-    local thumb = nil
-    pcall(function()
-        if lp and lp.UserId then
-            thumb = Players:GetUserThumbnailAsync(lp.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
-        end
-    end)
-
-    CachedLogoAsset = thumb or DEFAULT_LOGO_ID
-    return CachedLogoAsset
+    return GetPlayerThumbnail(150)
 end
 
 local CachedCreatorAsset = nil
 local function GetCreatorAsset()
-    if CachedCreatorAsset then return CachedCreatorAsset end
+    if CachedCreatorAsset and CachedCreatorAsset ~= DEFAULT_LOGO_ID then return CachedCreatorAsset end
     local localAsset = ResolveCustomAsset("assets/darling_creator.png", nil)
     if localAsset then
         CachedCreatorAsset = localAsset
         return localAsset
     end
 
-    local cachedPath = "DarlingX/cache/darling_creator.png"
+    local candidatePaths = {
+        "DarlingX/cache/darling_creator.png",
+        "darling_creator.png",
+        "Monody/cache/darling_creator.png"
+    }
     if exIsFile and exGetCustomAsset then
-        local okCheck, exists = pcall(exIsFile, cachedPath)
-        if okCheck and exists then
-            local okAsset, asset = pcall(exGetCustomAsset, cachedPath)
-            if okAsset and type(asset) == "string" and #asset > 0 then
-                CachedCreatorAsset = asset
-                return asset
+        for _, cachedPath in ipairs(candidatePaths) do
+            local okCheck, exists = pcall(exIsFile, cachedPath)
+            if okCheck and exists then
+                local okAsset, asset = pcall(exGetCustomAsset, cachedPath)
+                if okAsset and type(asset) == "string" and #asset > 0 then
+                    CachedCreatorAsset = asset
+                    return asset
+                end
             end
         end
     end
@@ -477,21 +496,14 @@ local function GetCreatorAsset()
                 local rawUrl = GITHUB_REPO_RAW .. "/assets/darling_creator.png"
                 local body = SafeHttpGet(rawUrl)
                 if body and #body > 50 then
-                    exWriteFile(cachedPath, body)
+                    pcall(exWriteFile, "DarlingX/cache/darling_creator.png", body)
+                    pcall(exWriteFile, "darling_creator.png", body)
                 end
             end)
         end)
     end
 
-    local thumb = nil
-    pcall(function()
-        if lp and lp.UserId then
-            thumb = Players:GetUserThumbnailAsync(lp.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
-        end
-    end)
-
-    CachedCreatorAsset = thumb or DEFAULT_LOGO_ID
-    return CachedCreatorAsset
+    return GetPlayerThumbnail(150)
 end
 
 -- ============================================================
@@ -1149,12 +1161,12 @@ local function showKeyModal(AuroraX, onSuccess)
     -- Header Icon & Badge
     local logoBadge = Instance.new("Frame", modal)
     logoBadge.Name = "LogoBadge"
-    logoBadge.Size = UDim2.new(0, 48, 0, 48)
+    logoBadge.Size = UDim2.new(0, 52, 0, 52)
     logoBadge.AnchorPoint = Vector2.new(0.5, 0)
-    logoBadge.Position = UDim2.new(0.5, 0, 0, 16)
+    logoBadge.Position = UDim2.new(0.5, 0, 0, 14)
     logoBadge.BackgroundColor3 = Color3.fromRGB(24, 18, 38)
     logoBadge.BackgroundTransparency = 0.3
-    Instance.new("UICorner", logoBadge).CornerRadius = UDim.new(0, 13)
+    Instance.new("UICorner", logoBadge).CornerRadius = UDim.new(0, 14)
 
     local lbStroke = Instance.new("UIStroke", logoBadge)
     lbStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
@@ -1163,13 +1175,15 @@ local function showKeyModal(AuroraX, onSuccess)
 
     local logo = Instance.new("ImageLabel", logoBadge)
     logo.Name = "Logo"
-    logo.Size = UDim2.new(1, -10, 1, -10)
+    logo.Size = UDim2.new(1, -6, 1, -6)
     logo.AnchorPoint = Vector2.new(0.5, 0.5)
     logo.Position = UDim2.new(0.5, 0, 0.5, 0)
     logo.BackgroundTransparency = 1
-    logo.Image = GetLogoAsset()
-    logo.ScaleType = Enum.ScaleType.Fit
-    Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 9)
+    logo.ScaleType = Enum.ScaleType.Crop
+    Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 11)
+
+    -- Guaranteed instant photo from frame 1 + async anime upgrade
+    ResolveAndBindAsset("floating_avatar_white.png", GetPlayerThumbnail(150), logo)
 
     -- Title
     local title = Instance.new("TextLabel", modal)
@@ -1636,7 +1650,7 @@ local function RejoinServer()
     if qot then
         pcall(function()
             qot([[
-                loadstring(game:HttpGet("https://pastebin.aurorax.site/raw/VT73XBMM"))()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/loader.lua", true))()
             ]])
         end)
     end
