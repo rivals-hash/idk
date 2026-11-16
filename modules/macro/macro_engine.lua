@@ -548,6 +548,12 @@ function MacroEngine.ensureMobileButton(show)
             local startPos = nil
             local hasMoved = false
 
+            btn.MouseButton1Click:Connect(function()
+                if not hasMoved then
+                    MacroEngine.executeCombo()
+                end
+            end)
+
             btn.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     dragging = true

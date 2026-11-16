@@ -379,7 +379,7 @@ keyBox.Position = UDim2.new(0, 30, 0, 0)
 keyBox.BackgroundTransparency = 1
 keyBox.Font = Enum.Font.GothamMedium
 keyBox.Text = ""
-keyBox.PlaceholderText = "Introduce tu Key aquí..."
+keyBox.PlaceholderText = "Paste your license key here..."
 keyBox.PlaceholderColor3 = Color3.fromRGB(140, 140, 160)
 keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 keyBox.TextSize = 10.5
@@ -446,7 +446,7 @@ task.spawn(function()
     task.wait(0.2)
 
     -- Step 1: Load AuroraX SDK (Non-blocking & Safe)
-    setProgress(0.20, "Conectando a Seguridad...", "Obteniendo SDK de verificación...")
+    setProgress(0.20, "Connecting to Security...", "Fetching verification SDK...")
     local AuroraX = nil
     pcall(function()
         local sdkSource = SafeHttpGet("https://dev.aurorax.site/api/sdk/7c5669e64021da7e13601d7cc9913ee9.lua")
@@ -464,10 +464,10 @@ task.spawn(function()
     -- Safe Key Verification Function (SDK -> REST API -> Safe Pass Fallback)
     local function SafeCheckKey(key)
         if not key or type(key) ~= "string" or #key < 4 then
-            return false, { message = "Por favor ingresa una key válida (mínimo 4 caracteres)." }
+            return false, { message = "Please enter a valid key (min 4 characters)." }
         end
 
-        -- 1. Intentar verificación con AuroraX SDK oficial si está disponible
+        -- 1. Try official AuroraX SDK
         if AuroraX and type(AuroraX.CheckKey) == "function" then
             local ok, valid, info = pcall(AuroraX.CheckKey, key)
             if ok and valid ~= nil then
@@ -475,7 +475,7 @@ task.spawn(function()
             end
         end
 
-        -- 2. Intentar verificación directa con el API REST de AuroraX
+        -- 2. Try direct AuroraX REST API
         local verifyUrl = "https://dev.aurorax.site/api/verify/7c5669e64021da7e13601d7cc9913ee9?key=" .. tostring(key)
         local okHttp, res = pcall(function() return game:HttpGet(verifyUrl, true) end)
         if okHttp and type(res) == "string" and #res > 0 then
@@ -484,16 +484,15 @@ task.spawn(function()
                 if data.valid == true or data.success == true or data.status == "success" or data.ok == true then
                     return true, data
                 elseif data.valid == false or data.error == "invalid_key" or data.error == "expired" then
-                    return false, { message = data.message or "Key inválida o expirada en AuroraX." }
+                    return false, { message = data.message or "Invalid or expired key in AuroraX." }
                 end
             end
         end
 
-        -- 3. Modo de Resiliencia: Si los servidores de AuroraX están caídos o no responden,
-        -- no dejamos al usuario bloqueado y validamos localmente.
+        -- 3. Resilient Fallback: If servers are unreachable, allow key through
         return true, {
             expires_at = os.time() + 86400 * 30,
-            message = "Acceso Concedido (Modo Protegido)"
+            message = "Access Granted (Protected Mode)"
         }
     end
 
@@ -513,17 +512,17 @@ task.spawn(function()
     local candidate = (providedKey and #providedKey >= 4 and providedKey) or (savedKey and #savedKey >= 4 and savedKey) or nil
 
     local function formatRemaining(expNum)
-        if not expNum or expNum == 0 then return "Acceso Permanente" end
+        if not expNum or expNum == 0 then return "Lifetime Access" end
         local diff = expNum - os.time()
-        if diff > 86400 * 365 then return "Acceso Permanente" end
+        if diff > 86400 * 365 then return "Lifetime Access" end
         if diff > 86400 then
-            return string.format("%dd %dh restantes", math.floor(diff / 86400), math.floor((diff % 86400) / 3600))
+            return string.format("%dd %dh left", math.floor(diff / 86400), math.floor((diff % 86400) / 3600))
         elseif diff > 3600 then
-            return string.format("%dh %dm restantes", math.floor(diff / 3600), math.floor((diff % 3600) / 60))
+            return string.format("%dh %dm left", math.floor(diff / 3600), math.floor((diff % 3600) / 60))
         elseif diff > 0 then
-            return string.format("%dm restantes", math.floor(diff / 60))
+            return string.format("%dm left", math.floor(diff / 60))
         end
-        return "Expirada"
+        return "Expired"
     end
 
     local function runFullBoot(validKey, info)
@@ -533,7 +532,7 @@ task.spawn(function()
         _G.AX_KeyExpires = exp
         _G.AX_USER = genv.AX_USER
 
-        -- Guardar key localmente para inicio automático en futuras sesiones
+        -- Save key locally for auto-login
         pcall(function()
             if exWriteFile and validKey and #validKey >= 4 then
                 if exMakeFolder then pcall(exMakeFolder, "Monody") end
@@ -545,11 +544,11 @@ task.spawn(function()
         end)
 
         local keyRemainingText = formatRemaining(exp)
-        setProgress(0.50, "¡Licencia Verificada!", "Key Activa: " .. keyRemainingText)
+        setProgress(0.50, "License Verified!", "Active Key: " .. keyRemainingText)
         task.wait(0.25)
 
         -- Step 2: Preload White Assets to local cache
-        setProgress(0.70, "Cargando Recursos...", "Precargando interfaz anime...")
+        setProgress(0.70, "Preloading Resources...", "Caching anime visual assets...")
         pcall(function()
             if exMakeFolder then
                 pcall(exMakeFolder, "Monody")
@@ -586,10 +585,10 @@ task.spawn(function()
         end)
 
         -- Step 3: Launch Main Script
-        setProgress(0.90, "Iniciando Monody...", "Inyectando framework de combate...")
+        setProgress(0.90, "Launching Monody...", "Injecting combat framework...")
         task.wait(0.2)
 
-        setProgress(1.0, "¡Listo!", "¡Bienvenido, " .. (lp and (lp.DisplayName ~= "" and lp.DisplayName or lp.Name) or "Player") .. "!")
+        setProgress(1.0, "Ready!", "Welcome, " .. (lp and (lp.DisplayName ~= "" and lp.DisplayName or lp.Name) or "Player") .. "!")
         task.wait(0.3)
 
         -- Execute Main Script (Protected + Direct Fallback)
@@ -625,7 +624,7 @@ task.spawn(function()
 
     -- Check if existing key is valid
     if candidate then
-        setProgress(0.35, "Verificando Licencia...", "Validando clave de acceso...")
+        setProgress(0.35, "Verifying License...", "Checking saved license key...")
         local valid, info = SafeCheckKey(candidate)
         if valid then
             runFullBoot(candidate, info)
@@ -634,7 +633,7 @@ task.spawn(function()
     end
 
     -- If no valid key pre-authenticated, display the Key Input Form
-    setProgress(0.35, "Licencia Requerida", "Introduce tu key de Monody para continuar...")
+    setProgress(0.35, "License Key Required", "Please enter your Monody key to continue...")
     keyBox.Text = (savedKey and savedKey ~= "TextBox") and savedKey or ""
     task.wait(0.2)
     loadContainer.Visible = false
@@ -646,7 +645,7 @@ task.spawn(function()
             if setcb then setcb("https://dev.aurorax.site/getkey/7c5669e64021da7e13601d7cc9913ee9") end
         end)
         keyFeedback.TextColor3 = Color3.fromRGB(160, 220, 255)
-        keyFeedback.Text = "¡Enlace copiado al portapapeles!"
+        keyFeedback.Text = "Key link copied to clipboard!"
     end)
 
     discordBtn.MouseButton1Click:Connect(function()
@@ -655,7 +654,7 @@ task.spawn(function()
             if setcb then setcb("https://discord.gg/besthub") end
         end)
         keyFeedback.TextColor3 = Color3.fromRGB(160, 220, 255)
-        keyFeedback.Text = "¡Discord copiado al portapapeles!"
+        keyFeedback.Text = "Discord link copied to clipboard!"
     end)
 
     local isChecking = false
@@ -664,25 +663,25 @@ task.spawn(function()
         local entered = keyBox.Text:gsub("^%s+", ""):gsub("%s+$", "")
         if #entered < 4 then
             keyFeedback.TextColor3 = Color3.fromRGB(255, 120, 120)
-            keyFeedback.Text = "Introduce una key válida (mínimo 4 caracteres)."
+            keyFeedback.Text = "Please enter a valid key (min 4 characters)."
             return
         end
         isChecking = true
         keyFeedback.TextColor3 = Color3.fromRGB(255, 230, 140)
-        keyFeedback.Text = "Autenticando key..."
+        keyFeedback.Text = "Authenticating key..."
 
         task.spawn(function()
             local valid, info = SafeCheckKey(entered)
             if valid then
                 keyFeedback.TextColor3 = Color3.fromRGB(120, 255, 170)
-                keyFeedback.Text = "¡Key verificada con éxito! Iniciando..."
+                keyFeedback.Text = "Key verified! Starting Monody..."
                 task.wait(0.4)
                 keyContainer.Visible = false
                 loadContainer.Visible = true
                 runFullBoot(entered, info)
             else
                 keyFeedback.TextColor3 = Color3.fromRGB(255, 110, 110)
-                keyFeedback.Text = (info and info.message) or "Key inválida o expirada."
+                keyFeedback.Text = (info and info.message) or "Invalid or expired key."
                 isChecking = false
             end
         end)

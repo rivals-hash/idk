@@ -2529,7 +2529,7 @@ local TABS_MANIFEST = {
     { id = "Visuals",       name = "ESP",            icon = "eye" },
     { id = "PvP",           name = "PvP",            icon = "swords" },
     { id = "Soru",          name = "Soru",           icon = "zap" },
-    { id = "AutoBounty",    name = "Auto Bounty",    icon = "skull" },
+    { id = "StealFruits",   name = "Steal Fruit",    icon = "apple" },
     { id = "Dungeon",       name = "Dungeon",        icon = "flame" },
     { id = "Teleport",      name = "Teleport",       icon = "map-pin" },
     { id = "ControlPeople", name = "Control People", icon = "gamepad-2" },
@@ -2550,7 +2550,7 @@ local TAB_MIN_CANVAS = {
     Players = 600,
     PvP = 1450,
     Soru = 900,
-    AutoBounty = 750,
+    StealFruits = 600,
     Dungeon = 600,
     Teleport = 600,
     ControlPeople = 600,
@@ -4849,13 +4849,6 @@ local function BuildTabEntity(tabId, tabName, lucideName, orderIndex)
     tabLabel.Active = false
     tabLabel.ZIndex = 17
 
-    if tabId == "AutoBounty" then
-        dockBtn.Size = UDim2.new(1, -4, 0, 27)
-        btnStroke.Color = Color3.fromRGB(230, 90, 90)
-        btnStroke.Transparency = 0.78
-        iconImg.ImageColor3 = Color3.fromRGB(255, 140, 140)
-    end
-
     dockBtn.MouseEnter:Connect(function()
         if not (DockButtons[tabId] and DockButtons[tabId].isSelected) then
             TweenService:Create(dockBtn, TweenInfo.new(0.15), { BackgroundTransparency = 0.88 }):Play()
@@ -6205,28 +6198,161 @@ local function getClientTweaks()
 end
 task.spawn(function() pcall(getClientTweaks) end)
 
-local function SetFFlags1(state)
-    local ct = getClientTweaks()
-    if ct and ct.SetFFlags1 then
-        ct.SetFFlags1(state)
-    end
-end
+local SetFFlags1, ApplyFastFFlags, SetNoAnimations
+do
+    local directNoAnimConn = nil
+    local function ApplyPotatoFFlagsDirect(state)
+        local sff = (type(setfflag) == "function" and setfflag)
+            or (type(getgenv) == "function" and type(getgenv().setfflag) == "function" and getgenv().setfflag)
+            or (type(_G) == "table" and type(_G.setfflag) == "function" and _G.setfflag)
+            or (type(set_fflag) == "function" and set_fflag)
+            or (type(getgenv) == "function" and type(getgenv().set_fflag) == "function" and getgenv().set_fflag)
 
-local function ApplyFastFFlags()
-    if UI_TOGGLES["FFlags 1 (FPS Booster)"] then
-        UI_TOGGLES["FFlags 1 (FPS Booster)"].set(true, true)
-    else
-        local ct = getClientTweaks()
-        if ct and ct.ApplyFastFFlags then
-            ct.ApplyFastFFlags()
+        local setfps = (type(setfpscap) == "function" and setfpscap)
+            or (type(getgenv) == "function" and type(getgenv().setfpscap) == "function" and getgenv().setfpscap)
+
+        if setfps then pcall(setfps, state and 120 or 60) end
+
+        if sff then
+            pcall(function()
+                if state then
+                    sff("DFIntTaskSchedulerTargetFps", "120")
+                    sff("FIntRenderShadowIntensity", "0")
+                    sff("FFlagGlobalWindRendering", "False")
+                    sff("FIntFRMMinGrassDistance", "0")
+                    sff("FIntFRMMaxGrassDistance", "0")
+                    sff("TextureQualityOverrideEnabled", "True")
+                    sff("TextureQualityOverride", "0")
+                    sff("DebugTextureManagerSkipMips", "3")
+                    sff("DebugFRMQualityLevelOverride", "1")
+                    sff("DebugForceMSAASamples", "0")
+                    sff("FastGPULightCulling3", "True")
+                    sff("IncludePowerSaverMode", "True")
+                    sff("TerrainMaterialTable2022", "")
+                    sff("RenderUseTextureManager224", "False")
+                else
+                    sff("DFIntTaskSchedulerTargetFps", "60")
+                    sff("FIntRenderShadowIntensity", "100")
+                    sff("FFlagGlobalWindRendering", "True")
+                end
+            end)
+        end
+
+        pcall(function()
+            local Lighting = game:GetService("Lighting")
+            if state then
+                Lighting.GlobalShadows = false
+                Lighting.FogEnd = 9e9
+                Lighting.Brightness = 1
+                for _, v in ipairs(Lighting:GetDescendants()) do
+                    if v:IsA("PostProcessEffect") or v:IsA("Atmosphere") then
+                        v.Enabled = false
+                    end
+                end
+            else
+                Lighting.GlobalShadows = true
+                Lighting.FogEnd = 100000
+                Lighting.Brightness = 2
+                for _, v in ipairs(Lighting:GetDescendants()) do
+                    if v:IsA("PostProcessEffect") or v:IsA("Atmosphere") then
+                        v.Enabled = true
+                    end
+                end
+            end
+        end)
+
+        if state then
+            task.spawn(function()
+                local count = 0
+                for _, v in ipairs(Workspace:GetDescendants()) do
+                    pcall(function()
+                        local model = v:FindFirstAncestorOfClass("Model")
+                        if model and model:FindFirstChildOfClass("Humanoid") then return end
+                        if v:IsA("BasePart") then
+                            v.Material = Enum.Material.SmoothPlastic
+                            v.Reflectance = 0
+                            v.CastShadow = false
+                        elseif v:IsA("Decal") or v:IsA("Texture") then
+                            v.Transparency = 1
+                        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Beam") then
+                            v.Enabled = false
+                        end
+                    end)
+                    count = count + 1
+                    if count % 250 == 0 then
+                        task.wait()
+                    end
+                end
+            end)
         end
     end
-end
 
-local function SetNoAnimations(state)
-    local ct = getClientTweaks()
-    if ct and ct.SetNoAnimations then
-        ct.SetNoAnimations(state)
+    function SetFFlags1(state)
+        local ct = getClientTweaks()
+        if ct and ct.SetFFlags1 then
+            pcall(ct.SetFFlags1, state)
+        end
+        ApplyPotatoFFlagsDirect(state)
+        Notify("Performance", "Potato FFlags: " .. (state and "Enabled (120 FPS + Potato Mode)" or "Disabled"), 2.5)
+    end
+
+    function ApplyFastFFlags()
+        ApplyPotatoFFlagsDirect(true)
+        local ct = getClientTweaks()
+        if ct and ct.SetFFlags1 then
+            pcall(ct.SetFFlags1, true)
+        end
+        if UI_TOGGLES["FFlags 1 (FPS Booster)"] and UI_TOGGLES["FFlags 1 (FPS Booster)"].set then
+            pcall(function() UI_TOGGLES["FFlags 1 (FPS Booster)"].set(true, false) end)
+        end
+        Notify("Performance", "Potato FFlags Activated! 120 FPS + Low Graphics Applied.", 3.5)
+    end
+
+    local function SetNoAnimationsDirect(state)
+        if state then
+            if not directNoAnimConn then
+                local RunService = game:GetService("RunService")
+                local ATTACK_KEYWORDS = { "attack", "slash", "punch", "m1", "combo", "hit", "tool", "ability", "skill", "kamehameha", "bullet", "gun", "sword", "melee", "fruit" }
+                directNoAnimConn = RunService.Stepped:Connect(function()
+                    local char = lp and lp.Character
+                    if not char then return end
+                    local hum = char:FindFirstChildOfClass("Humanoid")
+                    if not hum then return end
+                    hum.AutoRotate = true
+                    local animator = hum:FindFirstChildOfClass("Animator")
+                    if not animator then return end
+                    for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                        local name = string.lower(track.Name)
+                        local isAttack = track.Priority == Enum.AnimationPriority.Action
+                        if not isAttack then
+                            for _, kw in ipairs(ATTACK_KEYWORDS) do
+                                if string.find(name, kw) then
+                                    isAttack = true
+                                    break
+                                end
+                            end
+                        end
+                        if not isAttack then
+                            pcall(function() track:Stop(0) end)
+                        end
+                    end
+                end)
+            end
+        else
+            if directNoAnimConn then
+                pcall(function() directNoAnimConn:Disconnect() end)
+                directNoAnimConn = nil
+            end
+        end
+    end
+
+    function SetNoAnimations(state)
+        local ct = getClientTweaks()
+        if ct and ct.SetNoAnimations then
+            pcall(ct.SetNoAnimations, state)
+        end
+        SetNoAnimationsDirect(state)
+        Notify("Performance", "No Animations: " .. (state and "Enabled (Fix Character Freezes)" or "Disabled"), 2.5)
     end
 end
 
@@ -6375,166 +6501,23 @@ end
 -- ============================================================
 
 -- ============================================================
--- AUTO BOUNTY TAB (DARLING HUB COMBAT ENGINE)
+-- STEAL FRUIT TAB (AWAITING LOGIC)
 -- ============================================================
 do
     pcall(function()
-        local BountyPage = RegisterTab("AutoBounty", "Auto Bounty", "skull")
-
-        -- SECTION 1: CORE AUTO BOUNTY CONTROL
-        local bCard1 = CreateCard(BountyPage, "Auto Bounty Engine")
-
-        local statusPara = Instance.new("TextLabel", bCard1)
-        statusPara.Size = UDim2.new(1, 0, 0, 20)
-        statusPara.BackgroundTransparency = 1
-        statusPara.Font = Enum.Font.GothamBold
-        statusPara.TextSize = 9.5
-        statusPara.TextColor3 = CurrentAccent
-        statusPara.TextXAlignment = Enum.TextXAlignment.Left
-        statusPara.Text = "Status: Idle | Targets: Monitoring"
-        statusPara.LayoutOrder = 1
-        RegisterThemeText(statusPara)
-        task.spawn(function()
-            local lastText = ""
-            while true do
-                task.wait(1.0)
-                pcall(function()
-                    local mod = M.cache["modules/combat/auto_bounty.lua"]
-                    if mod and mod.Enabled then
-                        local st = tostring(mod.Status or "Idle")
-                        local tgt = mod.CurrentTarget
-                        local tgtName = tgt and tgt.Name or "None"
-                        local newText = "Status: " .. st .. " | Target: " .. tgtName
-                        if newText ~= lastText then
-                            lastText = newText
-                            statusPara.Text = newText
-                        end
-                    end
-                end)
-            end
-        end)
-
-        AddToggle(bCard1, "Hunt Auto", "Autonomous target scanning, tween flight pathing, and skill bursts", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod and mod.toggle then
-                mod.toggle(v)
-            end
-            Notify("Auto Bounty", "Hunt Auto: " .. (v and "Enabled" or "Disabled"))
-        end)
-
-        AddToggle(bCard1, "Fast Hop Mode", "Ultra-fast server hopping with streamlined combat engine", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.AutoBountyMode = v end
-            _G.DarlingFastBountyMode = v
-            Notify("Auto Bounty", "Fast Hop Mode: " .. (v and "Enabled" or "Disabled"))
-        end)
-
-        AddChoice(bCard1, "Auto Join Team", {"Pirates", "Marines"}, 1, function(v)
-            local mod = M.getAutoBounty()
-            if mod then
-                mod.AutoTeam = v
-                if mod.joinTeam then mod.joinTeam(v) end
-            end
-        end)
-
-        AddButton(bCard1, "Skip Current Target", function()
-            local mod = M.getAutoBounty()
-            if mod and mod.skipCurrentTarget then
-                mod.skipCurrentTarget()
-                Notify("Auto Bounty", "Skipping current target...")
-            end
-        end)
-
-        -- SECTION 2: FLIGHT & TWEEN SPEEDS
-        local bCard2 = CreateCard(BountyPage, "Movement & Tween Settings")
-        AddSlider(bCard2, "Near Tween Speed (<=1000 studs)", 100, 500, 310, 10, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.NearTweenSpeed = v end
-        end)
-        AddSlider(bCard2, "Far Tween Speed (>1000 studs)", 100, 500, 200, 10, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.FarTweenSpeed = v end
-        end)
-        AddSlider(bCard2, "Combat Distance", 5, 40, 15, 1, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.StopDistance = v end
-        end)
-        AddToggle(bCard2, "Auto Soru", "Instantly Soru behind target during combat", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.AutoSoru = v end
-        end)
-
-        -- SECTION 3: COMBAT & WEAPON EXECUTION
-        local bCard3 = CreateCard(BountyPage, "Combat & Skill Rotations")
-        AddToggle(bCard3, "Auto Attack (FastAttack M1)", "Rapid automated weapon attacks", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.AutoAttack = v; mod.FastAttack = v end
-        end)
-        AddChoice(bCard3, "Fast Attack Speed", {"Slow (0.15s)", "Medium (0.10s)", "Fast (0.05s)", "Ultra (0.02s)"}, 2, function(v)
-            local mod = M.getAutoBounty()
-            if mod and mod.setAttackSpeed then mod.setAttackSpeed(v) end
-        end)
-        AddToggle(bCard3, "Auto Skills Rotation", "Casts equipped weapon and fruit special abilities", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.AutoSkills = v end
-        end)
-        AddToggle(bCard3, "Use Melee Weapons", "Allows fighting style attacks in rotation", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.UseMelee = v end
-        end)
-        AddToggle(bCard3, "Use Sword Weapons", "Allows sword attacks in rotation", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.UseSword = v end
-        end)
-        AddToggle(bCard3, "Use Fruit Skills", "Allows fruit attacks in rotation", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.UseFruit = v end
-        end)
-        AddToggle(bCard3, "Use Gun Weapons", "Allows gun attacks in rotation", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.UseGun = v end
-        end)
-        AddToggle(bCard3, "Auto Buso Haki", "Maintains active Armament Haki", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.AutoBuso = v end
-        end)
-        AddToggle(bCard3, "Auto Observation Haki (Ken)", "Maintains active Observation Haki", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.AutoKen = v end
-        end)
-        AddToggle(bCard3, "Auto Race V4", "Awakens Race V4 whenever gauge is full", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.AutoV4 = v end
-        end)
-
-        -- SECTION 4: SURVIVABILITY & SERVER HOP
-        local bCard4 = CreateCard(BountyPage, "Survivability & Server Hop")
-        AddToggle(bCard4, "Auto Flee Low HP", "Safely flees to high sky when health is critical", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.FleeLowHealth = v end
-        end)
-        AddSlider(bCard4, "Flee Health Threshold (%)", 10, 50, 25, 5, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.FleeThreshold = v end
-        end)
-        AddToggle(bCard4, "Skip SafeZone Players", "Ignores players protected by safezones", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.NoSafeZone = v end
-        end)
-        AddToggle(bCard4, "Ignore Marine Allies", "Do not attack allied players on same faction", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.NoMarineAlly = v end
-        end)
-        AddToggle(bCard4, "Auto Server Hop", "Hops to another server when no targets remain", false, function(v)
-            local mod = M.getAutoBounty()
-            if mod then mod.AutoHop = v end
-        end)
-        AddButton(bCard4, "Server Hop Now", function()
-            local mod = M.getAutoBounty()
-            if mod and mod.hopServer then
-                mod.hopServer()
-            end
-        end)
+        local StealPage = RegisterTab("StealFruits", "Steal Fruit", "apple")
+        local sCard = CreateCard(StealPage, "Steal Fruit Engine")
+        local infoLbl = Instance.new("TextLabel", sCard)
+        infoLbl.Size = UDim2.new(1, 0, 0, 24)
+        infoLbl.BackgroundTransparency = 1
+        infoLbl.Font = Enum.Font.GothamMedium
+        infoLbl.TextSize = 10
+        infoLbl.TextColor3 = Color3.fromRGB(180, 180, 200)
+        infoLbl.TextXAlignment = Enum.TextXAlignment.Left
+        infoLbl.Text = "Steal Fruit module ready. Awaiting custom logic."
+        infoLbl.LayoutOrder = 1
+        UpdateCardGeometry(sCard)
+        UpdatePageCanvas(StealPage)
     end)
 end
 
@@ -9931,14 +9914,16 @@ local okMisc, errMisc = pcall(function()
     AddButton(communityCard, "Copy Discord Invite Link", function()
         local discordUrl = "https://discord.gg/DyG2BSMfVg"
         local copied = false
-        if setclipboard then
-            pcall(setclipboard, discordUrl)
-            copied = true
-        elseif toclipboard then
-            pcall(toclipboard, discordUrl)
+        local setclip = (type(setclipboard) == "function" and setclipboard)
+            or (type(getgenv) == "function" and type(getgenv().setclipboard) == "function" and getgenv().setclipboard)
+            or (type(toclipboard) == "function" and toclipboard)
+            or (type(getgenv) == "function" and type(getgenv().toclipboard) == "function" and getgenv().toclipboard)
+            or (syn and syn.write_clipboard)
+        if setclip then
+            pcall(setclip, discordUrl)
             copied = true
         end
-        Notify("Discord", copied and "Link copied to clipboard!" or discordUrl)
+        Notify("Discord", copied and "Link copied to clipboard!" or discordUrl, 3)
     end)
 
     -- 3. Language & Localization
@@ -9959,7 +9944,7 @@ local okMisc, errMisc = pcall(function()
         SetNoAnimations(state)
     end)
 
-    AddButton(clientCard, "Apply Fast FFlags", function()
+    AddButton(clientCard, "Apply Fast FFlags (Potato Mode)", function()
         ApplyFastFFlags()
     end)
 
@@ -10079,7 +10064,7 @@ local okWaifu, errWaifu = pcall(function()
                 CombatReactions = _G.DarlingX.MikaCombatReactions,
                 FollowMouse = _G.DarlingX.MikaFollow,
                 AutoTalk = _G.DarlingX.MikaAutoTalk,
-                Language = _G.DarlingX.CurrentLanguage or "es"
+                Language = _G.DarlingX.CurrentLanguage or "en"
             })
         end
     end
@@ -10097,76 +10082,76 @@ local okWaifu, errWaifu = pcall(function()
     local waifuCard = CreateCard(WaifuPage, "Waifu AI Companion")
     waifuCard.LayoutOrder = 1
 
-    AddToggle(waifuCard, "Activar Waifu", "Invoca a tu compañera anime flotante con reacciones y gestos kawaii", false, function(state)
+    AddToggle(waifuCard, "Enable Waifu", "Summons your floating anime companion with kawaii reactions and expressions", false, function(state)
         _G.DarlingX.MikaActive = state
         if state then
             spawnMika()
-            Notify("Waifu AI", "¡Mika está lista para acompañarte!", 2.5)
+            Notify("Waifu AI", "Mika is ready to join you on your adventure! ♡", 2.5)
         else
             destroyMika()
-            Notify("Waifu AI", "Mika se fue a dormir una siesta. (⁠-⁠_⁠-⁠)⁠z⁠z⁠Z", 2.0)
+            Notify("Waifu AI", "Mika went to take a sweet nap. (⁠-⁠_⁠-⁠)⁠z⁠z⁠Z", 2.0)
         end
     end)
 
-    AddButton(waifuCard, "Hablar con Waifu", function()
+    AddButton(waifuCard, "Talk to Waifu", function()
         if _G.MikaCompanion and _G.MikaCompanion.RandomPhrase then
             _G.MikaCompanion:RandomPhrase()
         else
-            Notify("Waifu AI", "Activa a la Waifu primero para hablar con ella.", 2.5)
+            Notify("Waifu AI", "Enable Waifu first to talk to her.", 2.5)
         end
     end)
 
-    AddButton(waifuCard, "Bailar / Hacer Animación", function()
+    AddButton(waifuCard, "Dance Animation", function()
         if _G.MikaCompanion and _G.MikaCompanion.Express then
             _G.MikaCompanion:Express("dance", 6)
             if _G.MikaCompanion.Speak then
-                _G.MikaCompanion:Speak("¡Mira cómo bailo para ti! ♡ (⁠｡⁠♡⁠‿⁠♡⁠｡⁠)", "dance", 5)
+                _G.MikaCompanion:Speak("Look at me dance for you! ♡ (⁠｡⁠♡⁠‿⁠♡⁠｡⁠)", "dance", 5)
             end
         else
-            Notify("Waifu AI", "Activa a la Waifu primero.", 2.0)
+            Notify("Waifu AI", "Enable Waifu first.", 2.0)
         end
     end)
 
-    AddButton(waifuCard, "Dar Ánimos / Frase Kawaii", function()
+    AddButton(waifuCard, "Cheer Up / Kawaii Quote", function()
         if _G.MikaCompanion and _G.MikaCompanion.Express then
             _G.MikaCompanion:Express("love", 5)
             if _G.MikaCompanion.Speak then
-                _G.MikaCompanion:Speak("¡Tú puedes con todo! ¡Estoy muy orgullosa de ti! ♡", "love", 5)
+                _G.MikaCompanion:Speak("You can do anything! I believe in you! ♡", "love", 5)
             end
         else
-            Notify("Waifu AI", "Activa a la Waifu primero.", 2.0)
+            Notify("Waifu AI", "Enable Waifu first.", 2.0)
         end
     end)
 
-    AddButton(waifuCard, "Alerta de Peligro / Combate", function()
+    AddButton(waifuCard, "Combat / Danger Alert", function()
         if _G.MikaCompanion and _G.MikaCompanion.ReactToLowHp then
             _G.MikaCompanion:ReactToLowHp()
         else
-            Notify("Waifu AI", "Activa a la Waifu primero.", 2.0)
+            Notify("Waifu AI", "Enable Waifu first.", 2.0)
         end
     end)
 
-    -- CARD 2: AJUSTES DE WAIFU
-    local settingsCard = CreateCard(WaifuPage, "Ajustes de Waifu")
+    -- CARD 2: WAIFU SETTINGS
+    local settingsCard = CreateCard(WaifuPage, "Waifu Settings")
     settingsCard.LayoutOrder = 2
 
-    AddToggle(settingsCard, "Reacciones de Combate & Peligro", "La Waifu reacciona al eliminar enemigos, morir o baja salud", true, function(state)
+    AddToggle(settingsCard, "Combat & Danger Reactions", "Waifu reacts to enemy kills, low HP, and player death", true, function(state)
         _G.DarlingX.MikaCombatReactions = state
         if _G.MikaCompanion then _G.MikaCompanion.combatReactions = state end
-        Notify("Waifu AI", "Reacciones de Combate: " .. (state and "Activadas" or "Desactivadas"))
+        Notify("Waifu AI", "Combat Reactions: " .. (state and "Enabled" or "Disabled"))
     end)
 
-    AddToggle(settingsCard, "Seguir Cursor / Touch", "Los ojos y cabeza siguen el cursor del ratón o el dedo", true, function(state)
+    AddToggle(settingsCard, "Follow Cursor / Touch", "Companion eyes and head follow cursor or touch pointer", true, function(state)
         _G.DarlingX.MikaFollow = state
         if _G.MikaCompanion and _G.MikaCompanion.SetFollow then _G.MikaCompanion:SetFollow(state) end
     end)
 
-    AddToggle(settingsCard, "Pensamientos Automáticos", "Comentarios y ánimos ocasionales mientras juegas", true, function(state)
+    AddToggle(settingsCard, "Automatic Thoughts", "Occasional thoughts and cute comments while playing", true, function(state)
         _G.DarlingX.MikaAutoTalk = state
         if _G.MikaCompanion and _G.MikaCompanion.SetAutoTalk then _G.MikaCompanion:SetAutoTalk(state) end
     end)
 
-    AddToggle(settingsCard, "Color Adaptable al Tema", "Adapta los detalles al color del tema activo", true, function(state)
+    AddToggle(settingsCard, "Theme Color Reactive", "Adapts companion accent details to current UI theme", true, function(state)
         _G.DarlingX.MikaTintReactive = state
         if _G.MikaCompanion and _G.MikaCompanion.SetThemeColor then
             _G.MikaCompanion.tintReactive = state
@@ -10174,7 +10159,7 @@ local okWaifu, errWaifu = pcall(function()
         end
     end)
 
-    AddSlider(settingsCard, "Tamaño de Waifu", 55, 180, defaultCompanionSize, 5, function(val)
+    AddSlider(settingsCard, "Waifu Size", 55, 180, defaultCompanionSize, 5, function(val)
         _G.DarlingX.MikaSize = val
         if _G.MikaCompanion and _G.MikaCompanion.SetSize then
             _G.MikaCompanion:SetSize(val)
@@ -10203,65 +10188,79 @@ local okFFlags, errFFlags = pcall(function()
     FFlagsPage.ScrollBarThickness = 3
     FFlagsPage.CanvasSize = UDim2.new(0, 0, 0, 950)
 
-    -- Card 1: FFlags Editor Personalizado
-    local editorCard = CreateCard(FFlagsPage, "FFlags Editor Personalizado")
+    local function getSetFFlag()
+        return (type(setfflag) == "function" and setfflag)
+            or (type(getgenv) == "function" and type(getgenv().setfflag) == "function" and getgenv().setfflag)
+            or (type(_G) == "table" and type(_G.setfflag) == "function" and _G.setfflag)
+    end
+
+    -- Card 1: Custom FFlags Editor
+    local editorCard = CreateCard(FFlagsPage, "Custom FFlags Editor")
     editorCard.LayoutOrder = 1
     local customJsonInput = ""
-    local jsonInputObj = AddInput(editorCard, "Pegar FFlags JSON", "{\"FFlagExample\": \"false\"}", "{\"TextureQualityOverrideEnabled\":\"True\"}", function(v)
+    local jsonInputObj = AddInput(editorCard, "Paste FFlags JSON", "{\"FFlagExample\": \"false\"}", "{\"TextureQualityOverrideEnabled\":\"True\"}", function(v)
         customJsonInput = tostring(v or "")
     end)
 
     local function applyFlagsFromJson(jsonText)
-        if type(setfflag) ~= "function" then
-            Notify("FFlags", "Tu ejecutor no soporta la función setfflag.", 4)
-            return
-        end
+        local sff = getSetFFlag()
         local okDecode, flags = pcall(function() return HttpService:JSONDecode(jsonText) end)
         if not okDecode or type(flags) ~= "table" then
-            Notify("FFlags", "JSON inválido. Revisa la sintaxis.", 4)
+            Notify("FFlags", "Invalid JSON syntax. Please check formatting.", 4)
             return
         end
         local count, failed = 0, 0
-        for name, val in pairs(flags) do
-            local strVal = type(val) == "boolean" and (val and "true" or "false") or tostring(val)
-            local ok = pcall(setfflag, tostring(name), strVal)
-            if ok then count = count + 1 else failed = failed + 1 end
+        if sff then
+            for name, val in pairs(flags) do
+                local strVal = type(val) == "boolean" and (val and "true" or "false") or tostring(val)
+                local ok = pcall(sff, tostring(name), strVal)
+                if ok then count = count + 1 else failed = failed + 1 end
+            end
+            Notify("FFlags", string.format("FFlags: %d applied, %d failed.", count, failed), 3.5)
+        else
+            -- Client-side fallback optimization
+            pcall(function()
+                settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+                local ugs = UserSettings():GetService("UserGameSettings")
+                if ugs then ugs.SavedQualityLevel = Enum.SavedQualitySetting.QualityLevel1 end
+            end)
+            Notify("FFlags", "Executor lacks setfflag. Applied client graphics reduction.", 3.5)
         end
-        Notify("FFlags", string.format("FFlags aplicadas: %d aplicadas, %d fallidas", count, failed), 4)
     end
 
-    AddButton(editorCard, "Aplicar FFlags", function()
+    AddButton(editorCard, "Apply FFlags", function()
         local txt = (jsonInputObj and jsonInputObj.GetText and jsonInputObj.GetText()) or customJsonInput
         if txt and #txt > 5 then
             applyFlagsFromJson(txt)
         else
-            Notify("FFlags", "Pega o carga un objeto JSON de FFlags primero.", 3)
+            Notify("FFlags", "Paste or load a JSON FFlags snippet first.", 3)
         end
     end)
 
-    AddButton(editorCard, "Limpiar Editor", function()
+    AddButton(editorCard, "Clear Editor", function()
         if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText("") end
         customJsonInput = ""
-        Notify("FFlags", "Editor de FFlags limpiado.", 2)
+        Notify("FFlags", "FFlags editor cleared.", 2)
     end)
 
-    AddToggle(editorCard, "Auto Aplicar FFlags al Iniciar", "Guarda snapshot para aplicar automáticamente en el próximo arranque", false, function(state)
+    AddToggle(editorCard, "Auto Apply FFlags on Boot", "Saves snapshot to automatically apply on next game launch", false, function(state)
         _G.DarlingX_AutoFFlags = state
         if state then
             local txt = (jsonInputObj and jsonInputObj.GetText and jsonInputObj.GetText()) or customJsonInput
             if type(writefile) == "function" and txt and #txt > 5 then
                 pcall(writefile, "Monody_FFlagAutoApply.json", txt)
-                Notify("FFlags", "Snapshot guardado para auto-aplicar al iniciar.", 3)
+                Notify("FFlags", "Snapshot saved. Will auto-apply on next boot.", 3)
             end
         else
             if type(delfile) == "function" and type(isfile) == "function" and isfile("Monody_FFlagAutoApply.json") then
                 pcall(delfile, "Monody_FFlagAutoApply.json")
             end
+            Notify("FFlags", "Auto Apply on boot disabled.", 2)
         end
     end)
 
-    -- Card 2: Modo Patata (Potato FFlags & FPS Booster)
-    local potatoCard = CreateCard(FFlagsPage, "Modo Patata (Potato FFlags)")
+    -- Card 2: Potato Mode (Potato FFlags & FPS Booster)
+    local potatoCard = CreateCard(FFlagsPage, "Potato Mode (Potato FFlags)")
     potatoCard.LayoutOrder = 2
 
     local POTATO_JSON = [[{
@@ -10276,17 +10275,17 @@ local okFFlags, errFFlags = pcall(function()
   "RenderUseTextureManager224": "False"
 }]]
 
-    AddButton(potatoCard, "Cargar FFlags Potato en Editor", function()
+    AddButton(potatoCard, "Load Potato FFlags into Editor", function()
         if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(POTATO_JSON) end
         customJsonInput = POTATO_JSON
-        Notify("Potato FFlags", "Preset Potato cargado en el editor. Haz clic en Aplicar.", 3)
+        Notify("Potato FFlags", "Potato preset loaded into editor. Click Apply FFlags.", 3)
     end)
 
-    AddButton(potatoCard, "Aplicar FFlags Potato Instantáneo", function()
+    AddButton(potatoCard, "Apply Instant Potato FFlags", function()
         applyFlagsFromJson(POTATO_JSON)
     end)
 
-    AddButton(potatoCard, "Desactivar Sombras y Partículas", function()
+    AddButton(potatoCard, "Disable Shadows & Particles", function()
         pcall(function()
             local lighting = game:GetService("Lighting")
             lighting.GlobalShadows = false
@@ -10299,11 +10298,11 @@ local okFFlags, errFFlags = pcall(function()
                     v.Enabled = false
                 end
             end
-            Notify("Potato", "Sombras, partículas y niebla desactivadas.", 3)
+            Notify("Potato", "Shadows, particles, and fog disabled.", 3)
         end)
     end)
 
-    AddButton(potatoCard, "Modo Patata Completo (Darling Ultra Potato)", function()
+    AddButton(potatoCard, "Full Potato Mode (Ultra Potato)", function()
         applyFlagsFromJson(POTATO_JSON)
         pcall(function()
             local lighting = game:GetService("Lighting")
@@ -10322,12 +10321,12 @@ local okFFlags, errFFlags = pcall(function()
                     v.Enabled = false
                 end
             end
-            Notify("Darling Potato", "¡Modo Ultra Patata activado! Rendimiento máximo.", 4)
+            Notify("Potato", "Ultra Potato Mode activated! Maximum FPS gain.", 3.5)
         end)
     end)
 
     -- Card 3: Cokeboys Performance Presets
-    local cbCard = CreateCard(FFlagsPage, "Preset Cokeboys Optimizado")
+    local cbCard = CreateCard(FFlagsPage, "Cokeboys Performance Presets")
     cbCard.LayoutOrder = 3
 
     local COKEBOYS_PRESET = [[{
@@ -10383,19 +10382,19 @@ local okFFlags, errFFlags = pcall(function()
   "IncludePowerSaverMode": "True"
 }]]
 
-    AddButton(cbCard, "Cargar Preset Cokeboys en Editor", function()
+    AddButton(cbCard, "Load Cokeboys Preset into Editor", function()
         if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(COKEBOYS_PRESET) end
         customJsonInput = COKEBOYS_PRESET
-        Notify("Cokeboys FFlags", "Preset Cokeboys cargado. Haz clic en Aplicar FFlags.", 3)
+        Notify("Cokeboys FFlags", "Cokeboys preset loaded. Click Apply FFlags.", 3)
     end)
 
-    AddButton(cbCard, "Cargar Preset Android Seguro", function()
+    AddButton(cbCard, "Load Android Safe Preset", function()
         if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(ANDROID_SAFE) end
         customJsonInput = ANDROID_SAFE
-        Notify("Cokeboys FFlags", "Preset Android Seguro cargado en el editor.", 3)
+        Notify("Cokeboys FFlags", "Android Safe preset loaded into editor.", 3)
     end)
 
-    AddButton(cbCard, "Aplicar Preset Cokeboys Instantáneo", function()
+    AddButton(cbCard, "Apply Instant Cokeboys Preset", function()
         applyFlagsFromJson(COKEBOYS_PRESET)
     end)
 

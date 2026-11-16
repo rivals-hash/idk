@@ -30,10 +30,8 @@ end
 local function isCharacterPart(obj)
     local char = LocalPlayer and LocalPlayer.Character
     if char and obj:IsDescendantOf(char) then return true end
-    for _, p in ipairs(Players:GetPlayers()) do
-        local c = p.Character
-        if c and obj:IsDescendantOf(c) then return true end
-    end
+    local model = obj:FindFirstAncestorOfClass("Model")
+    if model and model:FindFirstChildOfClass("Humanoid") then return true end
     return false
 end
 
@@ -124,6 +122,15 @@ function ClientTweaks.SetFFlags1(state)
                 pcall(sff, "FIntFRMMinGrassDistance", "0")
                 pcall(sff, "FIntFRMMaxGrassDistance", "0")
                 pcall(sff, "FFlagDebugGraphicsDisableDirect3D11", "False")
+                pcall(sff, "TextureQualityOverrideEnabled", "True")
+                pcall(sff, "TextureQualityOverride", "0")
+                pcall(sff, "DebugTextureManagerSkipMips", "3")
+                pcall(sff, "DebugFRMQualityLevelOverride", "1")
+                pcall(sff, "DebugForceMSAASamples", "0")
+                pcall(sff, "FastGPULightCulling3", "True")
+                pcall(sff, "IncludePowerSaverMode", "True")
+                pcall(sff, "TerrainMaterialTable2022", "")
+                pcall(sff, "RenderUseTextureManager224", "False")
             end
         end)
 
@@ -151,10 +158,18 @@ function ClientTweaks.SetFFlags1(state)
 
         clearAtmosphere()
 
-        for _, v in ipairs(Workspace:GetDescendants()) do
-            optimizePart(v)
-            handleDebris(v)
-        end
+        task.spawn(function()
+            local count = 0
+            for _, v in ipairs(Workspace:GetDescendants()) do
+                if not ClientTweaks.FFlags1Enabled then break end
+                optimizePart(v)
+                handleDebris(v)
+                count = count + 1
+                if count % 250 == 0 then
+                    task.wait()
+                end
+            end
+        end)
 
         if not ClientTweaks.FFlagsAddedConn then
             ClientTweaks.FFlagsAddedConn = Workspace.DescendantAdded:Connect(function(v)

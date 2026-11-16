@@ -57,16 +57,18 @@ function MacroTabModule.Build(MacroPage, env)
         end
     end)
 
-    AddButton(ctrlCard, "Start Combo Sequence", function()
+    AddButton(ctrlCard, "Toggle Macro (One-Tap Start/Stop)", function()
         if macroMod then
-            macroMod.Enabled = true
-            macroMod.startMacro()
+            macroMod.executeCombo()
+            local isRunning = macroMod.Running
+            Notify("Macro", isRunning and "Macro: Active (Running combo...)" or "Macro: Deactivated (Stopped)")
         end
     end)
 
-    AddButton(ctrlCard, "Stop Combo Sequence", function()
+    AddButton(ctrlCard, "Stop Macro Immediately", function()
         if macroMod then
             macroMod.stopMacro()
+            Notify("Macro", "Macro: Deactivated (Stopped)")
         end
     end)
 
