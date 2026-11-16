@@ -689,6 +689,8 @@ local WINDUI_LUCIDE_FALLBACK = {
     Skins         = "rbxassetid://112904952151156",  -- Lucide: gem (Diamante místico / Skin changer)
     Music         = "rbxassetid://118833729589183",  -- Lucide: headphones (Audífonos gamer modernos)
     Animations    = "rbxassetid://138635884129147",  -- Lucide: sparkles
+    ScriptHub     = "rbxassetid://92483947987410",   -- Lucide: code
+    code          = "rbxassetid://92483947987410",   -- Lucide: code
     Config        = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
     Misc          = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
     Ai            = "rbxassetid://138635884129147",  -- Lucide: sparkles
@@ -1675,7 +1677,7 @@ end
 local function RejoinServer()
     Notify("Server", "Reconnecting to server...", 3, true)
 
-    local qot = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
+    local qot = (syn and syn.queue_on_teleport) or queue_on_teleport or (getgenv and getgenv().queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
     if qot then
         pcall(function()
             qot([[
@@ -1685,25 +1687,33 @@ local function RejoinServer()
     end
 
     local ts = game:GetService("TeleportService")
-    local pList = Players:GetPlayers()
-    local myJobId = tostring(game.JobId or "")
+    local placeId = game.PlaceId
+    local jobId = tostring(game.JobId or "")
 
     local failedConn
     failedConn = ts.TeleportInitFailed:Connect(function()
         if failedConn then pcall(function() failedConn:Disconnect() end) failedConn = nil end
-        pcall(function() ts:Teleport(game.PlaceId, lp) end)
+        pcall(function() ts:Teleport(placeId) end)
     end)
 
-    if #pList <= 1 or myJobId == "" then
-        pcall(function() ts:Teleport(game.PlaceId, lp) end)
-    else
-        local ok = pcall(function()
-            ts:TeleportToPlaceInstance(game.PlaceId, myJobId, lp)
+    local ok = false
+    if jobId ~= "" and #Players:GetPlayers() > 1 then
+        ok = pcall(function()
+            ts:TeleportToPlaceInstance(placeId, jobId)
         end)
-        if not ok then
-            pcall(function() ts:Teleport(game.PlaceId, lp) end)
-        end
     end
+
+    if not ok then
+        pcall(function()
+            ts:Teleport(placeId)
+        end)
+    end
+
+    task.delay(1.8, function()
+        pcall(function()
+            ts:Teleport(placeId)
+        end)
+    end)
 end
 
 -- Floating Open Button (Displays Monody White Floating Avatar)
@@ -2144,7 +2154,7 @@ do
             end
             if MonodyMusic.IsPlaying and snd.SoundId == source and snd.TimeLength == 0 and not snd.IsLoaded then
                 pcall(function()
-                    Notify("Music Player", "Notice: If inaudible, this ID may be privatized. Use 'Play Montagem Phonk' for local bypass!")
+                    Notify("Music Player", "Notice: If inaudible, this audio ID may be privatized by Roblox.")
                 end)
             end
         end)
@@ -2154,36 +2164,21 @@ do
 
     function MonodyMusic.PlayLocalBypass(url, filename, trackName)
         local exIsFile = isfile or is_file
-        local exWriteFile = writefile
         local exGetCustomAsset = getcustomasset
 
         task.spawn(function()
-            if type(exWriteFile) == "function" and type(exGetCustomAsset) == "function" then
-                local exists = false
-                if type(exIsFile) == "function" then
-                    local ok, e = pcall(function() return exIsFile(filename) end)
-                    exists = ok and e
-                end
-                if not exists then
-                    Notify("Music Player", "Downloading " .. (trackName or "audio") .. "...")
-                    local ok, data = pcall(function() return game:HttpGet(url) end)
-                    if ok and data and #data > 500 then
-                        pcall(exWriteFile, filename, data)
-                        exists = true
-                    end
-                end
-                if exists or (type(exIsFile) == "function" and exIsFile(filename)) then
-                    local okAsset, asset = pcall(exGetCustomAsset, filename)
+            local file = filename or "monody_phonk.mp3"
+            if type(exGetCustomAsset) == "function" and type(exIsFile) == "function" then
+                if exIsFile(file) then
+                    local okAsset, asset = pcall(exGetCustomAsset, file)
                     if okAsset and asset and #asset > 0 then
-                        MonodyMusic.Play(asset, trackName or "Local Track")
-                        Notify("Music Player", "Now playing: " .. (trackName or "Local Track"))
+                        MonodyMusic.Play(asset, trackName or "Montagem Phonk")
+                        Notify("Music Player", "Now playing: " .. (trackName or "Montagem Phonk"))
                         return
                     end
                 end
             end
-            -- Fallback to Blox Fruits native OST if getcustomasset is unsupported
-            MonodyMusic.Play("7025810761", trackName or "Blox Fruits Theme")
-            Notify("Music Player", "Playing Blox Fruits Theme (OST)")
+            MonodyMusic.Play("7025810761", trackName or "Montagem Phonk")
         end)
     end
 
@@ -2227,32 +2222,23 @@ do
     end
 
     local PLAYLIST = {
-        { title = "MONTAGEM BAILÃO (Phonk)", id = "7025810761", url = "https://raw.githubusercontent.com/rivals-hash/idk/main/assets/audio/phonk.mp3", file = "monody_phonk.mp3" },
-        { title = "Blox Fruits Theme", id = "7025810761" },
-        { title = "One Piece Overtaken", id = "6948625906" },
-        { title = "Spooky Theme", id = "9114223171" }
+        { title = "Montagem Phonk", id = "7025810761", file = "monody_phonk.mp3" }
     }
     local currentTrackIdx = 1
 
     function MonodyMusic.PlayTrack(idx)
         currentTrackIdx = math.clamp(idx, 1, #PLAYLIST)
         local t = PLAYLIST[currentTrackIdx]
-        if t.url and MonodyMusic.PlayLocalBypass then
-            MonodyMusic.PlayLocalBypass(t.url, t.file or "monody_phonk.mp3", t.title)
-        else
-            MonodyMusic.Play(t.id, t.title)
-        end
+        MonodyMusic.Play(t.id, t.title)
     end
 
     function MonodyMusic.NextTrack()
-        currentTrackIdx = currentTrackIdx + 1
-        if currentTrackIdx > #PLAYLIST then currentTrackIdx = 1 end
+        currentTrackIdx = 1
         MonodyMusic.PlayTrack(currentTrackIdx)
     end
 
     function MonodyMusic.PrevTrack()
-        currentTrackIdx = currentTrackIdx - 1
-        if currentTrackIdx < 1 then currentTrackIdx = #PLAYLIST end
+        currentTrackIdx = 1
         MonodyMusic.PlayTrack(currentTrackIdx)
     end
 
@@ -2540,6 +2526,7 @@ local TABS_MANIFEST = {
     { id = "Skins",         name = "Skins",          icon = "gem" },
     { id = "Music",         name = "Music",          icon = "headphones" },
     { id = "Animations",    name = "Animations",     icon = "sparkles" },
+    { id = "ScriptHub",     name = "Script Hub",     icon = "code" },
     { id = "Config",        name = "Config",         icon = "sliders-horizontal" },
     { id = "Themes",        name = "Themes",         icon = "palette" },
 }
@@ -2554,7 +2541,7 @@ local TAB_MIN_CANVAS = {
     Dungeon = 600,
     Teleport = 600,
     ControlPeople = 600,
-    FFlags = 950,
+    FFlags = 1350,
     HUD = 600,
     Macro = 1100,
     WaifuAI = 850,
@@ -2562,7 +2549,8 @@ local TAB_MIN_CANVAS = {
     Esp = 950,
     Skins = 600,
     Music = 700,
-    Animations = 600,
+    Animations = 750,
+    ScriptHub = 700,
     Config = 1050,
     Misc = 1050,
     Themes = 1500,
@@ -2758,6 +2746,22 @@ local TRANSLATIONS_DICT = {
         ["Pink"] = "Rosa",
         ["Magenta"] = "Magenta",
         ["Orange"] = "Naranja",
+
+        ["Sky Changer & Environment"] = "Cambiador de Cielo y Entorno",
+        ["Sky Changer"] = "Cambiador de Cielo",
+        ["Enable Custom Sky"] = "Activar Cielo Personalizado",
+        ["Replaces the sky with high resolution custom skybox (Sets time to 14:00 Day)"] = "Reemplaza el cielo por skybox HD (Fija hora a las 14:00 Dia)",
+        ["Skybox Preset"] = "Preset de Cielo",
+        ["Hide Dragon"] = "Ocultar Dragon",
+        ["Hides or displays dragon model and visual aura"] = "Oculta o muestra el modelo del dragon y su aura",
+        ["Hide Throne"] = "Ocultar Trono",
+        ["Hides or displays the king's throne model"] = "Oculta o muestra el modelo del trono del rey",
+        ["The Hollow Lantern"] = "La Linterna Hueca",
+        ["Transcendence Dragon"] = "Dragon de Trascendencia",
+        ["Script Hub"] = "Script Hub",
+        ["Ready for scripts. Provide your loadstrings to populate this hub!"] = "Listo para scripts. ¡Pasa tus loadstrings para agregarlos a este hub!",
+        ["Play Montagem Phonk"] = "Reproducir Montagem Phonk",
+        ["Montagem Phonk"] = "Montagem Phonk",
 
         ["Player Management"] = "Gestion de Jugadores",
         ["Search Player..."] = "Buscar Jugador...",
@@ -9592,8 +9596,8 @@ do
                     _G.MonodyMusic.Play(trimmed, "")
                     Notify("Music Player", "Playing audio: " .. trimmed)
                 else
-                    _G.MonodyMusic.Play("7025810761", "Blox Fruits Main Theme")
-                    Notify("Music Player", "Playing Blox Fruits Theme (7025810761)")
+                    _G.MonodyMusic.Play("7025810761", "Montagem Phonk")
+                    Notify("Music Player", "Playing Montagem Phonk")
                 end
             end
         end)
@@ -9619,37 +9623,12 @@ do
             end
         end)
 
-        -- Quick Guaranteed & Local Bypass Audio Tracks
-        AddButton(mCard1, "Play Montagem Phonk (Local Bypass)", function()
-            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("https://raw.githubusercontent.com/rivals-hash/idk/main/assets/audio/phonk.mp3") end
-            if _G.MonodyMusic and _G.MonodyMusic.PlayLocalBypass then
-                _G.MonodyMusic.PlayLocalBypass("https://raw.githubusercontent.com/rivals-hash/idk/main/assets/audio/phonk.mp3", "monody_phonk.mp3", "Montagem Phonk")
-            elseif _G.MonodyMusic then
-                _G.MonodyMusic.Play("7025810761", "Montagem Phonk")
-            end
-        end)
-
-        AddButton(mCard1, "Play Blox Fruits Theme (7025810761)", function()
+        -- Quick Guaranteed Audio Track
+        AddButton(mCard1, "Play Montagem Phonk", function()
             if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("7025810761") end
             if _G.MonodyMusic then
-                _G.MonodyMusic.Play("7025810761", "Blox Fruits Main Theme")
-                Notify("Music Player", "Now playing: Blox Fruits Theme")
-            end
-        end)
-
-        AddButton(mCard1, "Play One Piece Overtaken (6948625906)", function()
-            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("6948625906") end
-            if _G.MonodyMusic then
-                _G.MonodyMusic.Play("6948625906", "One Piece Overtaken")
-                Notify("Music Player", "Now playing: One Piece Overtaken")
-            end
-        end)
-
-        AddButton(mCard1, "Play Spooky Theme (9114223171)", function()
-            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("9114223171") end
-            if _G.MonodyMusic then
-                _G.MonodyMusic.Play("9114223171", "Spooky Theme")
-                Notify("Music Player", "Now playing: Spooky Theme")
+                _G.MonodyMusic.Play("7025810761", "Montagem Phonk")
+                Notify("Music Player", "Now playing: Montagem Phonk")
             end
         end)
 
@@ -9732,12 +9711,14 @@ do
         local aCard = CreateCard(AnimationsPage, "Darling Hub Cinematics")
 
         local CINEMATIC_NAMES = {
-            "Worldbreaker", "King's Throne", "The Aureate Sanctuary", "Admin Cinematic"
+            "Worldbreaker", "The Hollow Lantern", "The Aureate Sanctuary", "Transcendence Dragon", "King's Throne", "Admin Cinematic"
         }
         local CINEMATIC_MODULES = {
             ["Worldbreaker"] = "modules/special/worldbreaker.lua",
-            ["King's Throne"] = "modules/special/kings_throne.lua",
+            ["The Hollow Lantern"] = "modules/special/halloween_cinematic.lua",
             ["The Aureate Sanctuary"] = "modules/special/sanctuary_cinematic.lua",
+            ["Transcendence Dragon"] = "modules/special/transcendence_dragon.lua",
+            ["King's Throne"] = "modules/special/kings_throne.lua",
             ["Admin Cinematic"] = "modules/special/admin_cinematic.lua",
         }
 
@@ -9757,6 +9738,22 @@ do
                 end)
                 activeCinematicMod = nil
             end
+            pcall(function()
+                local d = RequireModule("modules/special/transcendence_dragon.lua")
+                if d and d.dismiss then d.dismiss() end
+            end)
+            pcall(function()
+                local t = RequireModule("modules/special/kings_throne.lua")
+                if t and t.dismiss then t.dismiss() end
+            end)
+            pcall(function()
+                local hl = RequireModule("modules/special/halloween_cinematic.lua")
+                if hl and hl.stop then hl.stop() end
+            end)
+            pcall(function()
+                local wb = RequireModule("modules/special/worldbreaker.lua")
+                if wb and wb.stop then wb.stop() end
+            end)
             pcall(function()
                 local char = lp.Character
                 local hum = char and char:FindFirstChildOfClass("Humanoid")
@@ -9796,9 +9793,17 @@ do
                         if cinematic.play then
                             cinematic.play(StopAllAnimations)
                         end
+                    elseif name == "The Hollow Lantern" then
+                        if cinematic.play then
+                            cinematic.play(StopAllAnimations)
+                        end
                     elseif name == "The Aureate Sanctuary" then
                         if cinematic.play then
                             cinematic.play(StopAllAnimations)
+                        end
+                    elseif name == "Transcendence Dragon" then
+                        if cinematic.play then
+                            cinematic.play()
                         end
                     end
                 end)
@@ -9814,6 +9819,44 @@ do
         end)
 
         AddButton(aCard, "Skip Cinematic", StopAllAnimations)
+
+        AddToggle(aCard, "Hide Dragon", "Hides or displays dragon model and visual aura", false, function(state)
+            local mod = RequireModule("modules/special/transcendence_dragon.lua")
+            if mod and mod.setHidden then mod.setHidden(state) end
+        end)
+
+        AddToggle(aCard, "Hide Throne", "Hides or displays the king's throne model", false, function(state)
+            local mod = RequireModule("modules/special/kings_throne.lua")
+            if mod and mod.setHidden then
+                mod.setHidden(state)
+            elseif mod and state and mod.dismiss then
+                mod.dismiss()
+            end
+        end)
+    end)
+end
+
+-- ============================================================
+-- 9. SCRIPT HUB TAB (AWAITING USER LOADSTRINGS)
+-- ============================================================
+do
+    pcall(function()
+        local ScriptHubPage = RegisterTab("ScriptHub", "Script Hub", "code")
+        local shCard = CreateCard(ScriptHubPage, "Script Hub")
+
+        local descLabel = Instance.new("TextLabel", shCard)
+        descLabel.Size = UDim2.new(1, 0, 0, 32)
+        descLabel.BackgroundTransparency = 1
+        descLabel.Text = "Ready for scripts. Provide your loadstrings to populate this hub!"
+        descLabel.TextColor3 = Color3.fromRGB(180, 175, 200)
+        descLabel.Font = Enum.Font.Gotham
+        descLabel.TextSize = 10
+        descLabel.TextWrapped = true
+        descLabel.TextXAlignment = Enum.TextXAlignment.Left
+        RegisterTranslatable(descLabel, "Ready for scripts. Provide your loadstrings to populate this hub!")
+
+        UpdateCardGeometry(shCard)
+        UpdatePageCanvas(ScriptHubPage)
     end)
 end
 
@@ -10398,9 +10441,36 @@ local okFFlags, errFFlags = pcall(function()
         applyFlagsFromJson(COKEBOYS_PRESET)
     end)
 
+    -- Card 4: Sky Changer (Darling Hub 13 Skies & Daylight Illumination)
+    local skyCard = CreateCard(FFlagsPage, "Sky Changer & Environment")
+    skyCard.LayoutOrder = 4
+
+    local skyMod = RequireModule("modules/visuals/sky_changer.lua")
+    local skyPresetNames = (skyMod and skyMod.PresetNames) or {
+        "Realistic", "Cloudy", "FPS Boost", "Mountains", "Midnight", "Galaxy",
+        "Purple Night", "Blue Space", "Flaming Sunset", "Winter", "Beach", "Red Night", "Nebula"
+    }
+    local currentSkyPreset = "Galaxy"
+
+    AddToggle(skyCard, "Enable Custom Sky", "Replaces the sky with high resolution custom skybox (Sets time to 14:00 Day)", false, function(state)
+        if skyMod and skyMod.SetEnabled then
+            skyMod.SetEnabled(state)
+        end
+        Notify("Sky Changer", state and ("Sky enabled (" .. currentSkyPreset .. ") • Daytime active") or "Custom sky disabled", 2.5)
+    end)
+
+    AddChoice(skyCard, "Skybox Preset", skyPresetNames, 6, function(val)
+        currentSkyPreset = val
+        if skyMod and skyMod.SetPreset then
+            skyMod.SetPreset(val)
+        end
+        Notify("Sky Changer", "Preset changed to " .. val, 2)
+    end)
+
     UpdateCardGeometry(editorCard)
     UpdateCardGeometry(potatoCard)
     UpdateCardGeometry(cbCard)
+    UpdateCardGeometry(skyCard)
     UpdatePageCanvas(FFlagsPage)
 end)
 if not okFFlags then
