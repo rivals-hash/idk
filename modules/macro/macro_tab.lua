@@ -70,11 +70,40 @@ function MacroTabModule.Build(MacroPage, env)
         end
     end)
 
-    -- 2. Combo Sequence (6 Blocks) - Clean Skill Selection (Zero Sliders)
+    AddButton(ctrlCard, "Teleport to Training Dummy", function()
+        pcall(function()
+            local char = game:GetService("Players").LocalPlayer.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                -- Search for training dummy in Workspace
+                local dummy = game:GetService("Workspace"):FindFirstChild("Training Dummy") or game:GetService("Workspace"):FindFirstChild("Dummy")
+                if not dummy then
+                    local enemies = game:GetService("Workspace"):FindFirstChild("Enemies")
+                    if enemies then
+                        for _, e in ipairs(enemies:GetChildren()) do
+                            if e.Name:lower():find("dummy") or e.Name:lower():find("trainer") then
+                                dummy = e
+                                break
+                            end
+                        end
+                    end
+                end
+                if dummy and dummy:FindFirstChild("HumanoidRootPart") then
+                    hrp.CFrame = dummy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 4)
+                    Notify("Macro", "Teleported to Training Dummy!")
+                else
+                    Notify("Macro", "Training Dummy not found in current area.")
+                end
+            end
+        end)
+    end)
+
+    -- 2. Combo Sequence (6 Blocks) - Clean Cokeboys Smart Cooldown Selection (Zero Artificial Sliders)
     local seqCard = CreateCard(MacroPage, "Combo Sequence (6 Blocks)")
     local weaponOpts = { "Melee", "Sword", "Fruit", "Gun" }
     local skillKeyOpts = { "Z", "X", "C", "V", "F" }
-    local modeOpts = { "Tap", "Hold" }
+    local modeOpts = { "Tap", "Hold", "Transform" }
+    local backupOpts = { "None", "Z", "X", "C", "V", "F" }
 
     for b = 1, 6 do
         local defEnabled = (b <= 3)
@@ -95,6 +124,13 @@ function MacroTabModule.Build(MacroPage, env)
 
         AddChoice(seqCard, "B" .. b .. " Mode", modeOpts, 1, function(val)
             if macroMod then macroMod.setSlot(b, nil, nil, nil, val) end
+        end)
+
+        AddChoice(seqCard, "B" .. b .. " Backup Skill", backupOpts, 1, function(val)
+            if macroMod and macroMod.Slots and macroMod.Slots[macroMod.ActiveSlot or 1] then
+                local blk = macroMod.Slots[macroMod.ActiveSlot or 1].Blocks[b]
+                if blk then blk.BackupSkill = (val ~= "None" and val or nil) end
+            end
         end)
     end
 

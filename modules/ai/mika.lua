@@ -400,19 +400,26 @@ function MikaModule.Spawn(opts)
         pet.CurrentFrame = frame
     end
 
-    -- Speech Bubble Structure
-    local bubbleRoot = new("Frame", {Name = "Burbuja", BackgroundTransparency = 1, Size = UDim2.fromOffset(180, 68), Position = UDim2.new(0.78, 0, 0.05, 0), Visible = false, ZIndex = z + 40}, actor)
+    -- Speech Bubble Structure (Kawaii Borderless Floating Cloud)
+    local bubbleRoot = new("Frame", {Name = "Burbuja", BackgroundTransparency = 1, Size = UDim2.fromOffset(190, 72), Position = UDim2.new(0.78, 0, 0.05, 0), Visible = false, ZIndex = z + 40}, actor)
     pet.Bubble = bubbleRoot
     local popScale = new("UIScale", {Scale = 1}, bubbleRoot)
-    local shadow = new("Frame", {Size = UDim2.new(1, 0, 1, 0), Position = UDim2.fromOffset(0, 4), BackgroundColor3 = Color3.fromRGB(8, 6, 14), BackgroundTransparency = 0.72, BorderSizePixel = 0, ZIndex = z + 40}, bubbleRoot)
-    corner(shadow, 16)
-    local tail = new("Frame", {Size = UDim2.fromOffset(11, 11), Position = UDim2.new(0, 18, 1, -5), Rotation = 45, BackgroundColor3 = Color3.fromRGB(20, 18, 28), BorderSizePixel = 0, ZIndex = z + 41}, bubbleRoot)
-    corner(tail, 3)
-    local bubbleBody = new("Frame", {Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(20, 18, 28), BackgroundTransparency = 0.08, BorderSizePixel = 0, ZIndex = z + 42}, bubbleRoot)
-    corner(bubbleBody, 16)
-    local nameLabel = text(bubbleBody, "~ " .. pet.name .. " ~", 8.5, pet.themeColor, {Position = UDim2.fromOffset(12, 6), Size = UDim2.new(1, -24, 0, 12), Font = Enum.Font.GothamBold, ZIndex = z + 43})
-    local speech = text(bubbleBody, "", 10.0, Color3.fromRGB(250, 245, 255), {Position = UDim2.fromOffset(12, 20), Size = UDim2.new(1, -24, 1, -26), Font = Enum.Font.GothamMedium, TextWrapped = true, TextYAlignment = Enum.TextYAlignment.Top, LineHeight = 1.18, MaxVisibleGraphemes = -1, ZIndex = z + 43})
-    local heart = text(actor, "<3", 18, pet.themeColor, {Position = UDim2.fromScale(0.02, 0.24), Size = UDim2.fromOffset(25, 25), Visible = false, ZIndex = z + 30})
+    local shadow = new("Frame", {Size = UDim2.new(1, 0, 1, 0), Position = UDim2.fromOffset(0, 4), BackgroundColor3 = Color3.fromRGB(15, 10, 25), BackgroundTransparency = 0.65, BorderSizePixel = 0, ZIndex = z + 40}, bubbleRoot)
+    corner(shadow, 22)
+    local tail = new("Frame", {Size = UDim2.fromOffset(12, 12), Position = UDim2.new(0, 22, 1, -6), Rotation = 45, BackgroundColor3 = Color3.fromRGB(28, 22, 40), BackgroundTransparency = 0.12, BorderSizePixel = 0, ZIndex = z + 41}, bubbleRoot)
+    corner(tail, 4)
+    local bubbleBody = new("Frame", {Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(28, 22, 40), BackgroundTransparency = 0.12, BorderSizePixel = 0, ZIndex = z + 42}, bubbleRoot)
+    corner(bubbleBody, 22)
+    local bubbleGrad = new("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(42, 28, 56)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 20, 38))
+        }),
+        Rotation = 45
+    }, bubbleBody)
+    local nameLabel = text(bubbleBody, "♡ " .. pet.name .. " ♡", 9.0, Color3.fromRGB(255, 140, 190), {Position = UDim2.fromOffset(14, 7), Size = UDim2.new(1, -28, 0, 13), Font = Enum.Font.GothamBold, ZIndex = z + 43})
+    local speech = text(bubbleBody, "", 10.5, Color3.fromRGB(255, 245, 252), {Position = UDim2.fromOffset(14, 22), Size = UDim2.new(1, -28, 1, -28), Font = Enum.Font.GothamMedium, TextWrapped = true, TextYAlignment = Enum.TextYAlignment.Top, LineHeight = 1.18, MaxVisibleGraphemes = -1, ZIndex = z + 43})
+    local heart = text(actor, "♡", 20, Color3.fromRGB(255, 130, 180), {Position = UDim2.fromScale(0.02, 0.24), Size = UDim2.fromOffset(25, 25), Visible = false, ZIndex = z + 30})
     local sleepy = text(actor, "z Z", 15, Color3.fromRGB(180, 200, 255), {Position = UDim2.fromScale(0.79, 0.12), Size = UDim2.fromOffset(37, 25), Visible = false, ZIndex = z + 30})
 
     local validEmotions = {idle = true, wave = true, happy = true, dance = true, think = true, sleep = true, angry = true, surprised = true, love = true}

@@ -1182,8 +1182,15 @@ local function showKeyModal(AuroraX, onSuccess)
     logo.ScaleType = Enum.ScaleType.Crop
     Instance.new("UICorner", logo).CornerRadius = UDim.new(0, 11)
 
-    -- Guaranteed instant photo from frame 1 + async anime upgrade
-    ResolveAndBindAsset("floating_avatar_white.png", GetPlayerThumbnail(150), logo)
+    -- Guaranteed instant photo from frame 1 + anime portrait
+    pcall(function()
+        local ea = RequireModule("modules/core/embedded_assets.lua")
+        if ea and ea.BindPortrait then
+            ea.BindPortrait(logo)
+        else
+            ResolveAndBindAsset("floating_avatar_white.png", GetPlayerThumbnail(150), logo)
+        end
+    end)
 
     -- Title
     local title = Instance.new("TextLabel", modal)
@@ -1233,8 +1240,9 @@ local function showKeyModal(AuroraX, onSuccess)
     keyBox.Position = UDim2.new(0, 32, 0, 0)
     keyBox.BackgroundTransparency = 1
     keyBox.Font = Enum.Font.GothamMedium
-    keyBox.Text = (AuroraX and AuroraX.GetSavedKey and AuroraX.GetSavedKey()) or ""
-    keyBox.PlaceholderText = "Paste your license key here..."
+    local saved = (AuroraX and AuroraX.GetSavedKey and AuroraX.GetSavedKey())
+    keyBox.Text = (saved and saved ~= "TextBox") and saved or ""
+    keyBox.PlaceholderText = "Introduce tu Key aquí..."
     keyBox.PlaceholderColor3 = Color3.fromRGB(130, 120, 150)
     keyBox.TextColor3 = Color3.fromRGB(245, 245, 255)
     keyBox.TextSize = 11.5
@@ -1381,6 +1389,15 @@ local function showKeyModal(AuroraX, onSuccess)
             end
 
             if valid then
+                pcall(function()
+                    if type(writefile) == "function" and entered and #entered >= 4 then
+                        if type(makefolder) == "function" then pcall(makefolder, "Monody") end
+                        pcall(writefile, "Monody/monody_key.txt", entered)
+                    end
+                    if AuroraX and type(AuroraX.SaveKey) == "function" then
+                        pcall(AuroraX.SaveKey, entered)
+                    end
+                end)
                 feedback.TextColor3 = Color3.fromRGB(100, 230, 150)
                 feedback.Text = "Key verified! Starting " .. APP_TITLE .. "..."
                 task.wait(0.5)
@@ -1478,11 +1495,23 @@ task.spawn(function()
     local AuroraX = getAuroraX()
     local providedKey = script_key or genv.script_key or genv.Key
     local savedKey = (AuroraX and AuroraX.GetSavedKey and AuroraX.GetSavedKey()) or ""
-    local candidate = (providedKey and #providedKey >= 6 and providedKey) or (savedKey and #savedKey >= 6 and savedKey) or nil
+    if (#savedKey < 4 or savedKey == "TextBox") and type(readfile) == "function" and type(isfile) == "function" then
+        pcall(function()
+            if isfile("Monody/monody_key.txt") then
+                savedKey = readfile("Monody/monody_key.txt") or ""
+            end
+        end)
+    end
+    local candidate = (providedKey and #providedKey >= 4 and providedKey) or (savedKey and #savedKey >= 4 and savedKey) or nil
 
-    if candidate and AuroraX and AuroraX.CheckKey then
-        local ok, info = AuroraX.CheckKey(candidate)
-        if ok then
+    if candidate then
+        if AuroraX and AuroraX.CheckKey then
+            local ok, info = AuroraX.CheckKey(candidate)
+            if ok then
+                startMonodyBoot()
+                return
+            end
+        else
             startMonodyBoot()
             return
         end
@@ -2504,10 +2533,10 @@ local TABS_MANIFEST = {
     { id = "Dungeon",       name = "Dungeon",        icon = "flame" },
     { id = "Teleport",      name = "Teleport",       icon = "map-pin" },
     { id = "ControlPeople", name = "Control People", icon = "gamepad-2" },
-    { id = "StealFruits",   name = "Steal Fruits",   icon = "apple" },
+    { id = "FFlags",        name = "FFlags",         icon = "sliders-horizontal" },
     { id = "HUD",           name = "HUD",            icon = "layout-dashboard" },
     { id = "Macro",         name = "Macro",          icon = "bot" },
-    { id = "MonodyAI",      name = "Monody AI",      icon = "sparkles" },
+    { id = "WaifuAI",       name = "Waifu AI",       icon = "sparkles" },
     { id = "Skins",         name = "Skins",          icon = "gem" },
     { id = "Music",         name = "Music",          icon = "headphones" },
     { id = "Animations",    name = "Animations",     icon = "sparkles" },
@@ -2519,24 +2548,23 @@ local TAB_MIN_CANVAS = {
     Home = 1450,
     Aimbot = 1450,
     Players = 600,
-    PvP = 1350,
+    PvP = 1450,
     Soru = 900,
-    AutoBounty = 600,
+    AutoBounty = 750,
     Dungeon = 600,
     Teleport = 600,
     ControlPeople = 600,
-    StealFruits = 600,
+    FFlags = 950,
     HUD = 600,
     Macro = 1100,
-    MonodyAI = 950,
+    WaifuAI = 850,
     Visuals = 950,
     Esp = 950,
     Skins = 600,
-    Music = 600,
+    Music = 700,
     Animations = 600,
     Config = 1050,
     Misc = 1050,
-    Ai = 1250,
     Themes = 1500,
     Settings = 1500,
 }
@@ -2672,7 +2700,65 @@ end
 -- MULTILINGUAL TRANSLATION ENGINE (DYNAMIC & INSTANT)
 -- ============================================================
 local TRANSLATIONS_DICT = {
+    -- Translation Tables
     ["Spanish"] = {
+        -- Monody New Additions & Cokeboys Features
+        ["Waifu AI"] = "Waifu AI",
+        ["Waifu AI Companion"] = "Companera Waifu AI",
+        ["Activar Waifu"] = "Activar Waifu",
+        ["Hablar con Waifu"] = "Hablar con Waifu",
+        ["Bailar / Hacer Animación"] = "Bailar / Hacer Animacion",
+        ["Dar Ánimos / Frase Kawaii"] = "Dar Animos (Kawaii)",
+        ["Alerta de Peligro / Combate"] = "Alerta de Peligro",
+        ["Ajustes de Waifu"] = "Ajustes de Waifu",
+        ["Reacciones de Combate & Peligro"] = "Reacciones de Combate y Peligro",
+        ["Seguir Cursor / Touch"] = "Seguir Cursor y Toque",
+        ["Pensamientos Automáticos"] = "Pensamientos Automaticos",
+        ["Color Adaptable al Tema"] = "Color Adaptable al Tema",
+        ["Tamaño de Waifu"] = "Tamano de Waifu",
+        ["FFlags"] = "FFlags",
+        ["FFlags Editor Personalizado"] = "Editor de FFlags Personalizado",
+        ["Pegar FFlags JSON"] = "Pegar FFlags JSON",
+        ["Aplicar FFlags"] = "Aplicar FFlags",
+        ["Limpiar Editor"] = "Limpiar Editor",
+        ["Auto Aplicar FFlags al Iniciar"] = "Auto-Aplicar FFlags al Iniciar",
+        ["Modo Patata (Potato FFlags)"] = "Modo Patata (Potato FFlags)",
+        ["Cargar FFlags Potato en Editor"] = "Cargar FFlags Patata",
+        ["Aplicar FFlags Potato Instantáneo"] = "Aplicar FFlags Patata al Instante",
+        ["Desactivar Sombras y Partículas"] = "Sin Sombras ni Particulas",
+        ["Modo Patata Completo (Darling Ultra Potato)"] = "Modo Ultra Patata (Full FPS)",
+        ["Preset Cokeboys Optimizado"] = "Preset Cokeboys Optimizado",
+        ["Cargar Preset Cokeboys en Editor"] = "Cargar Preset Cokeboys",
+        ["Cargar Preset Android Seguro"] = "Cargar Preset Android Seguro",
+        ["Aplicar Preset Cokeboys Instantáneo"] = "Aplicar Preset Cokeboys al Instante",
+        ["Hitbox Expander"] = "Expansor de Hitbox",
+        ["Hitbox Size"] = "Tamano de Hitbox",
+        ["Hitbox Visual Forcefield"] = "Efecto Visual Neon de Hitbox",
+        ["Static Camera"] = "Camara Estatica (Sin Movimiento)",
+        ["Mute Game Background Music"] = "Silenciar Musica del Juego",
+        ["Teleport to Training Dummy"] = "Teletransportarse a Dummy",
+        ["B1 Backup Skill"] = "B1 Habilidad Secundaria",
+        ["B2 Backup Skill"] = "B2 Habilidad Secundaria",
+        ["B3 Backup Skill"] = "B3 Habilidad Secundaria",
+        ["B4 Backup Skill"] = "B4 Habilidad Secundaria",
+        ["B5 Backup Skill"] = "B5 Habilidad Secundaria",
+        ["B6 Backup Skill"] = "B6 Habilidad Secundaria",
+        ["Tap"] = "Toque Rapido",
+        ["Hold"] = "Mantener Cargado",
+        ["Transform"] = "Transformacion",
+        ["Midnight"] = "Medianoche",
+        ["Black"] = "Negro",
+        ["White"] = "Blanco",
+        ["Gold"] = "Dorado",
+        ["Red"] = "Rojo",
+        ["Green"] = "Verde",
+        ["Blue"] = "Azul",
+        ["Cyan"] = "Cian",
+        ["Purple"] = "Morado",
+        ["Pink"] = "Rosa",
+        ["Magenta"] = "Magenta",
+        ["Orange"] = "Naranja",
+
         ["Player Management"] = "Gestion de Jugadores",
         ["Search Player..."] = "Buscar Jugador...",
         ["Refresh Player List"] = "Actualizar Lista",
@@ -4760,9 +4846,15 @@ local function BuildTabEntity(tabId, tabName, lucideName, orderIndex)
     tabLabel.TextSize = 9
     tabLabel.TextColor3 = Color3.fromRGB(180, 180, 190)
     tabLabel.TextXAlignment = Enum.TextXAlignment.Left
-    tabLabel.TextTruncate = Enum.TextTruncate.AtEnd
     tabLabel.Active = false
     tabLabel.ZIndex = 17
+
+    if tabId == "AutoBounty" then
+        dockBtn.Size = UDim2.new(1, -4, 0, 27)
+        btnStroke.Color = Color3.fromRGB(230, 90, 90)
+        btnStroke.Transparency = 0.78
+        iconImg.ImageColor3 = Color3.fromRGB(255, 140, 140)
+    end
 
     dockBtn.MouseEnter:Connect(function()
         if not (DockButtons[tabId] and DockButtons[tabId].isSelected) then
@@ -5571,13 +5663,26 @@ SaveConfigProfile = function(force)
         if cfg.Choices["Haki Color"] then cfg.HakiColor = cfg.Choices["Haki Color"].value end
         cfg.RainbowHaki = cfg.Toggles["Rainbow Haki"]
         cfg.TrailVFX = cfg.Toggles["Custom Trail VFX"]
-
         cfg.MusicVolume = cfg.Sliders["Volume"]
         cfg.MusicPitch = cfg.Sliders["Pitch / Speed"]
         cfg.MusicLoop = cfg.Toggles["Loop Track"]
         cfg.TopMusicBar = cfg.Toggles["Show Top Music Bar"]
         if cfg.Choices["Genre / Category"] then cfg.MusicGenre = cfg.Choices["Genre / Category"].value end
         if cfg.Choices["Track Preset"] then cfg.MusicTrack = cfg.Choices["Track Preset"].value end
+
+        -- New Features Persistence
+        cfg.HitboxExpander = cfg.Toggles["Hitbox Expander"]
+        cfg.HitboxSize = cfg.Sliders["Hitbox Size"]
+        cfg.HitboxVisual = cfg.Toggles["Hitbox Visual Forcefield"]
+        cfg.StaticCamera = cfg.Toggles["Static Camera"]
+        cfg.MuteGameBGM = cfg.Toggles["Mute Game Background Music"]
+        cfg.AutoFFlags = cfg.Toggles["Auto Aplicar FFlags al Iniciar"]
+        cfg.WaifuActive = cfg.Toggles["Activar Waifu"]
+        cfg.WaifuReactions = cfg.Toggles["Reacciones de Combate & Peligro"]
+        cfg.WaifuFollow = cfg.Toggles["Seguir Cursor / Touch"]
+        cfg.WaifuAutoTalk = cfg.Toggles["Pensamientos Automáticos"]
+        cfg.WaifuTintReactive = cfg.Toggles["Color Adaptable al Tema"]
+        cfg.WaifuSize = cfg.Sliders["Tamaño de Waifu"]
 
         cfg.HideAccessories = cfg.Toggles["Hide Accessories & Weapons"]
         if cfg.Choices["Select Animation"] then cfg.SelectedAnimation = cfg.Choices["Select Animation"].value end
@@ -5760,6 +5865,32 @@ LoadConfigProfile = function()
         end
         if cfg.HideAccessories ~= nil and UI_TOGGLES["Hide Accessories & Weapons"] then
             pcall(function() UI_TOGGLES["Hide Accessories & Weapons"].set(cfg.HideAccessories == true, true) end)
+        end
+
+        -- Restore New Features
+        if cfg.HitboxExpander ~= nil and UI_TOGGLES["Hitbox Expander"] then
+            pcall(function() UI_TOGGLES["Hitbox Expander"].set(cfg.HitboxExpander == true, true) end)
+        end
+        if cfg.HitboxSize ~= nil and UI_SLIDERS["Hitbox Size"] then
+            pcall(function() UI_SLIDERS["Hitbox Size"].set(tonumber(cfg.HitboxSize), true) end)
+        end
+        if cfg.HitboxVisual ~= nil and UI_TOGGLES["Hitbox Visual Forcefield"] then
+            pcall(function() UI_TOGGLES["Hitbox Visual Forcefield"].set(cfg.HitboxVisual == true, true) end)
+        end
+        if cfg.StaticCamera ~= nil and UI_TOGGLES["Static Camera"] then
+            pcall(function() UI_TOGGLES["Static Camera"].set(cfg.StaticCamera == true, true) end)
+        end
+        if cfg.MuteGameBGM ~= nil and UI_TOGGLES["Mute Game Background Music"] then
+            pcall(function() UI_TOGGLES["Mute Game Background Music"].set(cfg.MuteGameBGM == true, true) end)
+        end
+        if cfg.AutoFFlags ~= nil and UI_TOGGLES["Auto Aplicar FFlags al Iniciar"] then
+            pcall(function() UI_TOGGLES["Auto Aplicar FFlags al Iniciar"].set(cfg.AutoFFlags == true, true) end)
+        end
+        if cfg.WaifuActive ~= nil and UI_TOGGLES["Activar Waifu"] then
+            pcall(function() UI_TOGGLES["Activar Waifu"].set(cfg.WaifuActive == true, true) end)
+        end
+        if cfg.WaifuSize ~= nil and UI_SLIDERS["Tamaño de Waifu"] then
+            pcall(function() UI_SLIDERS["Tamaño de Waifu"].set(tonumber(cfg.WaifuSize), true) end)
         end
 
         -- 5. Restore Sliders
@@ -6416,15 +6547,6 @@ do
     end)
 end
 
--- ============================================================
--- STEAL FRUITS TAB (CLEAN EMPTY AS REQUESTED)
--- ============================================================
-do
-    pcall(function()
-        local FruitPage = RegisterTab("StealFruits", "Steal Fruits", "apple")
-    end)
-end
-
 do
 local HomePage = RegisterTab("Home", "Home", "house")
 local okHome, errHome = pcall(function()
@@ -6659,8 +6781,8 @@ local okHome, errHome = pcall(function()
     -- Left 4 stats (User, Gamepad, Swords, Level - perfectly aligned next to artwork icons at x=19.5%)
     local statPlayer = createStatLabel("StatPlayer", lp and (lp.DisplayName ~= "" and lp.DisplayName or lp.Name) or "Player", 0.195, 11, 0.28)
     local statGame   = createStatLabel("StatGame", "Blox Fruits", 0.195, 35, 0.28)
-    local statBounty = createStatLabel("StatBounty", "Bounty 2.5M", 0.195, 59, 0.28)
-    local statLevel  = createStatLabel("StatLevel", "Level 2550", 0.195, 83, 0.28)
+    local statBounty = createStatLabel("StatBounty", "- Cargando...", 0.195, 59, 0.28)
+    local statLevel  = createStatLabel("StatLevel", "- Cargando...", 0.195, 83, 0.28)
 
     -- Right 4 stats (Session, Ping, FPS, Server Clock - perfectly aligned next to artwork icons at x=79.5%)
     local statSession = createStatLabel("StatSession", "0:00", 0.795, 11, 0.19)
@@ -7577,6 +7699,27 @@ local okPvP, errPvP = pcall(function()
 
     AddSlider(techCard, "Camera FOV", 70, 120, 70, 5, function(val)
         local cl = M.getCamlock(); if cl then cl.SetCameraFOV(val) end
+    end)
+
+    local hitboxMod = RequireModule("modules/pvp/hitbox_expander.lua")
+    local staticCamMod = RequireModule("modules/pvp/static_cam.lua")
+
+    AddToggle(techCard, "Hitbox Expander", "Expand enemy hitboxes for guaranteed hits", false, function(state)
+        if hitboxMod then hitboxMod.SetEnabled(state) end
+        Notify("PvP", "Hitbox Expander: " .. (state and "Enabled" or "Disabled"))
+    end)
+
+    AddSlider(techCard, "Hitbox Size", 15, 45, 25, 5, function(val)
+        if hitboxMod then hitboxMod.SetSize(val) end
+    end)
+
+    AddToggle(techCard, "Hitbox Visual Forcefield", "Translucent pulse shader on expanded target", true, function(state)
+        if hitboxMod then hitboxMod.SetVisuals(state) end
+    end)
+
+    AddToggle(techCard, "Static Camera", "Eliminates camera shake, recoil, and bobbing during PvP", false, function(state)
+        if staticCamMod then staticCamMod.SetEnabled(state) end
+        Notify("PvP", "Static Camera: " .. (state and "Enabled" or "Disabled"))
     end)
 
     UserInputService.InputBegan:Connect(function(input, gpe)
@@ -9419,6 +9562,40 @@ do
         -- 2. Roblox Audio Player & Visualizer Controls
         local mCard1 = CreateCard(MusicPage, "Roblox Audio Player")
         local customIdInput = "7025810761"
+        local origBgmVols = {}
+        local bgmConn = nil
+        local function toggleMuteGameMusic(state)
+            _G.DarlingX_MuteGameMusic = state
+            if state then
+                local function silence(s)
+                    if s:IsA("Sound") and s.Name ~= "MonodyBGM" and not s:IsDescendantOf(ScreenGui) then
+                        if origBgmVols[s] == nil then origBgmVols[s] = s.Volume end
+                        s.Volume = 0
+                    end
+                end
+                for _, s in ipairs(game:GetService("SoundService"):GetDescendants()) do silence(s) end
+                for _, s in ipairs(Workspace:GetDescendants()) do if s:IsA("Sound") and s.Name ~= "MonodyBGM" then silence(s) end end
+                if not bgmConn then
+                    bgmConn = game:GetService("SoundService").DescendantAdded:Connect(function(s)
+                        if _G.DarlingX_MuteGameMusic and s:IsA("Sound") and s.Name ~= "MonodyBGM" then
+                            if origBgmVols[s] == nil then origBgmVols[s] = s.Volume end
+                            s.Volume = 0
+                        end
+                    end)
+                end
+            else
+                if bgmConn then bgmConn:Disconnect(); bgmConn = nil end
+                for s, vol in pairs(origBgmVols) do
+                    if s and s.Parent then pcall(function() s.Volume = vol end) end
+                end
+                table.clear(origBgmVols)
+            end
+        end
+
+        AddToggle(mCard1, "Mute Game Background Music", "Mute Roblox Blox Fruits background music while playing custom audio", false, function(state)
+            toggleMuteGameMusic(state)
+            Notify("Music Player", "Game BGM: " .. (state and "Muted" or "Restored"))
+        end)
 
         local soundInputObj = AddInput(mCard1, "Custom Sound ID", "Enter Roblox Asset ID (e.g. 7025810761)...", "7025810761", function(v)
             customIdInput = tostring(v or "")
@@ -9860,27 +10037,19 @@ end
 end
 
 -- ============================================================
--- 6.5 AI ASSISTANT & MIKA ANIME COMPANION TAB
+-- WAIFU AI ANIME COMPANION TAB
 -- ============================================================
 do
-local AiPage = RegisterTab("MonodyAI", "Monody AI", "sparkles")
-Pages["Ai"] = AiPage
-Pages["MonodyAI"] = AiPage
-local okAi, errAi = pcall(function()
-    AiPage.ScrollingEnabled = true
-    AiPage.Active = true
-    AiPage.Selectable = true
-    AiPage.ScrollBarThickness = 3
-    AiPage.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
-    AiPage.ScrollBarImageTransparency = 0.65
-    AiPage.ElasticBehavior = Enum.ElasticBehavior.Always
-    AiPage.CanvasSize = UDim2.new(0, 0, 0, 1350)
-
-    local pList = AiPage:FindFirstChildOfClass("UIListLayout")
-    if pList then
-        pList.Padding = UDim.new(0, 7)
-        pList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    end
+local WaifuPage = RegisterTab("WaifuAI", "Waifu AI", "sparkles")
+Pages["WaifuAI"] = WaifuPage
+Pages["Ai"] = WaifuPage
+Pages["MonodyAI"] = WaifuPage
+local okWaifu, errWaifu = pcall(function()
+    WaifuPage.ScrollingEnabled = true
+    WaifuPage.Active = true
+    WaifuPage.Selectable = true
+    WaifuPage.ScrollBarThickness = 3
+    WaifuPage.CanvasSize = UDim2.new(0, 0, 0, 850)
 
     local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
     local defaultCompanionSize = isMobile and 88 or 115
@@ -9890,12 +10059,6 @@ local okAi, errAi = pcall(function()
     _G.DarlingX.MikaFollow = (_G.DarlingX.MikaFollow ~= false)
     _G.DarlingX.MikaAutoTalk = (_G.DarlingX.MikaAutoTalk ~= false)
     _G.DarlingX.MikaTintReactive = (_G.DarlingX.MikaTintReactive ~= false)
-
-    ----------------------------------------------------------------------------
-    -- CARD 1: MIKA ANIME COMPANION
-    ----------------------------------------------------------------------------
-    local mikaCard = CreateCard(AiPage, "Mika Anime Companion")
-    mikaCard.LayoutOrder = 1
 
     local function getMikaModule()
         local m = M.get("modules/ai/mika.lua")
@@ -9916,7 +10079,7 @@ local okAi, errAi = pcall(function()
                 CombatReactions = _G.DarlingX.MikaCombatReactions,
                 FollowMouse = _G.DarlingX.MikaFollow,
                 AutoTalk = _G.DarlingX.MikaAutoTalk,
-                Language = _G.DarlingX.CurrentLanguage or "en"
+                Language = _G.DarlingX.CurrentLanguage or "es"
             })
         end
     end
@@ -9930,448 +10093,319 @@ local okAi, errAi = pcall(function()
         end
     end
 
-    AddToggle(mikaCard, "Summon Mika Companion", "Spawn floating anime companion with gestures & reactions", false, function(state)
+    -- CARD 1: WAIFU AI COMPANION
+    local waifuCard = CreateCard(WaifuPage, "Waifu AI Companion")
+    waifuCard.LayoutOrder = 1
+
+    AddToggle(waifuCard, "Activar Waifu", "Invoca a tu compañera anime flotante con reacciones y gestos kawaii", false, function(state)
         _G.DarlingX.MikaActive = state
         if state then
             spawnMika()
-            Notify("Mika AI", "Mika is now accompanying you!", 2.5)
+            Notify("Waifu AI", "¡Mika está lista para acompañarte!", 2.5)
         else
             destroyMika()
-            Notify("Mika AI", "Mika is taking a nap. Despawned.", 2.0)
+            Notify("Waifu AI", "Mika se fue a dormir una siesta. (⁠-⁠_⁠-⁠)⁠z⁠z⁠Z", 2.0)
         end
     end)
 
-    AddToggle(mikaCard, "Combat Reactions", "Companion reacts when you kill someone, die, or have low HP", true, function(state)
-        _G.DarlingX.MikaCombatReactions = state
-        if _G.MikaCompanion then _G.MikaCompanion.combatReactions = state end
-        Notify("Mika Voice", "Combat Reactions: " .. (state and "Enabled" or "Disabled"))
+    AddButton(waifuCard, "Hablar con Waifu", function()
+        if _G.MikaCompanion and _G.MikaCompanion.RandomPhrase then
+            _G.MikaCompanion:RandomPhrase()
+        else
+            Notify("Waifu AI", "Activa a la Waifu primero para hablar con ella.", 2.5)
+        end
     end)
 
-    AddToggle(mikaCard, "Cursor & Touch Tracking", "Eyes and head follow mouse cursor or touch pointer", true, function(state)
+    AddButton(waifuCard, "Bailar / Hacer Animación", function()
+        if _G.MikaCompanion and _G.MikaCompanion.Express then
+            _G.MikaCompanion:Express("dance", 6)
+            if _G.MikaCompanion.Speak then
+                _G.MikaCompanion:Speak("¡Mira cómo bailo para ti! ♡ (⁠｡⁠♡⁠‿⁠♡⁠｡⁠)", "dance", 5)
+            end
+        else
+            Notify("Waifu AI", "Activa a la Waifu primero.", 2.0)
+        end
+    end)
+
+    AddButton(waifuCard, "Dar Ánimos / Frase Kawaii", function()
+        if _G.MikaCompanion and _G.MikaCompanion.Express then
+            _G.MikaCompanion:Express("love", 5)
+            if _G.MikaCompanion.Speak then
+                _G.MikaCompanion:Speak("¡Tú puedes con todo! ¡Estoy muy orgullosa de ti! ♡", "love", 5)
+            end
+        else
+            Notify("Waifu AI", "Activa a la Waifu primero.", 2.0)
+        end
+    end)
+
+    AddButton(waifuCard, "Alerta de Peligro / Combate", function()
+        if _G.MikaCompanion and _G.MikaCompanion.ReactToLowHp then
+            _G.MikaCompanion:ReactToLowHp()
+        else
+            Notify("Waifu AI", "Activa a la Waifu primero.", 2.0)
+        end
+    end)
+
+    -- CARD 2: AJUSTES DE WAIFU
+    local settingsCard = CreateCard(WaifuPage, "Ajustes de Waifu")
+    settingsCard.LayoutOrder = 2
+
+    AddToggle(settingsCard, "Reacciones de Combate & Peligro", "La Waifu reacciona al eliminar enemigos, morir o baja salud", true, function(state)
+        _G.DarlingX.MikaCombatReactions = state
+        if _G.MikaCompanion then _G.MikaCompanion.combatReactions = state end
+        Notify("Waifu AI", "Reacciones de Combate: " .. (state and "Activadas" or "Desactivadas"))
+    end)
+
+    AddToggle(settingsCard, "Seguir Cursor / Touch", "Los ojos y cabeza siguen el cursor del ratón o el dedo", true, function(state)
         _G.DarlingX.MikaFollow = state
         if _G.MikaCompanion and _G.MikaCompanion.SetFollow then _G.MikaCompanion:SetFollow(state) end
     end)
 
-    AddToggle(mikaCard, "Ambient Auto-Talking", "Occasional thoughts and cute idle encouragement", true, function(state)
+    AddToggle(settingsCard, "Pensamientos Automáticos", "Comentarios y ánimos ocasionales mientras juegas", true, function(state)
         _G.DarlingX.MikaAutoTalk = state
         if _G.MikaCompanion and _G.MikaCompanion.SetAutoTalk then _G.MikaCompanion:SetAutoTalk(state) end
     end)
 
-    AddToggle(mikaCard, "Theme Reactive Color", "Adapts companion accents to active UI theme (White default)", true, function(state)
+    AddToggle(settingsCard, "Color Adaptable al Tema", "Adapta los detalles al color del tema activo", true, function(state)
         _G.DarlingX.MikaTintReactive = state
-        if _G.MikaCompanion then
+        if _G.MikaCompanion and _G.MikaCompanion.SetThemeColor then
             _G.MikaCompanion.tintReactive = state
             _G.MikaCompanion:SetThemeColor(CurrentAccent)
         end
     end)
 
-    AddSlider(mikaCard, "Companion Size", 55, 180, defaultCompanionSize, 5, function(val)
+    AddSlider(settingsCard, "Tamaño de Waifu", 55, 180, defaultCompanionSize, 5, function(val)
         _G.DarlingX.MikaSize = val
         if _G.MikaCompanion and _G.MikaCompanion.SetSize then
             _G.MikaCompanion:SetSize(val)
         end
     end)
 
-    ----------------------------------------------------------------------------
-    -- CARD 3: AI CODE GENERATOR & SCRIPT ENGINE (API Bridge)
-    ----------------------------------------------------------------------------
-    local codeCard = CreateCard(AiPage, "AI Code Generator & Script Engine")
-    codeCard.LayoutOrder = 2
+    UpdateCardGeometry(waifuCard)
+    UpdateCardGeometry(settingsCard)
+    UpdatePageCanvas(WaifuPage)
+end)
+if not okWaifu then
+    warn("[Monody] Failed to initialize WaifuPage: " .. tostring(errWaifu))
+end
+end
 
-    local currentProvider = "OpenAI (GPT-4o)"
-    local currentApiKey = ""
-    local currentPrompt = ""
+-- ============================================================
+-- FFLAGS TAB (COKEBOYS ENGINE & POTATO OPTIMIZATIONS)
+-- ============================================================
+do
+local FFlagsPage = RegisterTab("FFlags", "FFlags", "sliders-horizontal")
+Pages["FFlags"] = FFlagsPage
+local okFFlags, errFFlags = pcall(function()
+    FFlagsPage.ScrollingEnabled = true
+    FFlagsPage.Active = true
+    FFlagsPage.Selectable = true
+    FFlagsPage.ScrollBarThickness = 3
+    FFlagsPage.CanvasSize = UDim2.new(0, 0, 0, 950)
 
-    -- Load saved key if available
-    pcall(function()
-        if isfile and isfile("monody_ai_key.json") then
-            local data = readfile("monody_ai_key.json")
-            local parsed = HttpService:JSONDecode(data)
-            if parsed and parsed.key then currentApiKey = parsed.key end
-            if parsed and parsed.provider then currentProvider = parsed.provider end
-        end
+    -- Card 1: FFlags Editor Personalizado
+    local editorCard = CreateCard(FFlagsPage, "FFlags Editor Personalizado")
+    editorCard.LayoutOrder = 1
+    local customJsonInput = ""
+    local jsonInputObj = AddInput(editorCard, "Pegar FFlags JSON", "{\"FFlagExample\": \"false\"}", "{\"TextureQualityOverrideEnabled\":\"True\"}", function(v)
+        customJsonInput = tostring(v or "")
     end)
 
-    AddChoice(codeCard, "AI Provider", { "OpenAI (GPT-4o)", "Google Gemini", "Custom API" }, currentProvider == "Google Gemini" and 2 or 1, function(val)
-        currentProvider = val
-        Notify("AI Provider", "Provider set to " .. val)
-    end)
-
-    AddInput(codeCard, "API Key", "Paste OpenAI / Gemini Key here...", currentApiKey ~= "" and (currentApiKey:sub(1, 7) .. "..." .. currentApiKey:sub(-4)) or "", function(val)
-        if val and #val > 10 then
-            currentApiKey = val
-            pcall(function()
-                if writefile then
-                    writefile("monody_ai_key.json", HttpService:JSONEncode({key = currentApiKey, provider = currentProvider}))
-                end
-            end)
-            Notify("AI Key", "API key saved securely!", 2.0)
-        end
-    end)
-
-    AddInput(codeCard, "Prompt / Script Description", "e.g. Create an auto fruit collector script with tween...", "", function(val)
-        currentPrompt = val
-    end)
-
-    -- Code Display Box Container
-    local codeBoxContainer = Instance.new("Frame", codeCard)
-    codeBoxContainer.Name = "CodeBoxContainer"
-    codeBoxContainer.Size = UDim2.new(1, 0, 0, 110)
-    codeBoxContainer.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
-    codeBoxContainer.BackgroundTransparency = 0.3
-    codeBoxContainer.BorderSizePixel = 0
-    Instance.new("UICorner", codeBoxContainer).CornerRadius = UDim.new(0, 8)
-    local cbStroke = Instance.new("UIStroke", codeBoxContainer)
-    cbStroke.Color = CurrentAccent
-    cbStroke.Thickness = 0.8
-    cbStroke.Transparency = 0.82
-    RegisterThemeStroke(cbStroke)
-
-    local codeScroll = Instance.new("ScrollingFrame", codeBoxContainer)
-    codeScroll.Size = UDim2.new(1, -12, 1, -12)
-    codeScroll.Position = UDim2.new(0, 6, 0, 6)
-    codeScroll.BackgroundTransparency = 1
-    codeScroll.BorderSizePixel = 0
-    codeScroll.ScrollBarThickness = 2
-    codeScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
-    codeScroll.ScrollBarImageTransparency = 0.65
-    codeScroll.CanvasSize = UDim2.new(0, 0, 0, 300)
-
-    local codeLabel = Instance.new("TextLabel", codeScroll)
-    codeLabel.Size = UDim2.new(1, -4, 1, 0)
-    codeLabel.BackgroundTransparency = 1
-    codeLabel.Text = "-- [Monody AI Code Output]\n-- Enter prompt above and tap 'Generate Lua Script'\n-- Output will appear here syntax-ready!"
-    codeLabel.Font = Enum.Font.Code
-    codeLabel.TextSize = 8.5
-    codeLabel.TextColor3 = Color3.fromRGB(190, 225, 255)
-    codeLabel.TextXAlignment = Enum.TextXAlignment.Left
-    codeLabel.TextYAlignment = Enum.TextYAlignment.Top
-    codeLabel.TextWrapped = true
-
-    local function setDisplayedCode(code)
-        codeLabel.Text = code
-        local measured = TextService:GetTextSize(code, 8.5, Enum.Font.Code, Vector2.new(codeScroll.AbsoluteSize.X - 8, 5000))
-        codeScroll.CanvasSize = UDim2.new(0, 0, 0, math.max(120, measured.Y + 20))
-    end
-
-    AddButton(codeCard, "Generate Lua Script", function()
-        if not currentPrompt or currentPrompt:gsub("%s+", "") == "" then
-            Notify("AI Generator", "Please enter a prompt or script description first!", 2.5)
+    local function applyFlagsFromJson(jsonText)
+        if type(setfflag) ~= "function" then
+            Notify("FFlags", "Tu ejecutor no soporta la función setfflag.", 4)
             return
         end
+        local okDecode, flags = pcall(function() return HttpService:JSONDecode(jsonText) end)
+        if not okDecode or type(flags) ~= "table" then
+            Notify("FFlags", "JSON inválido. Revisa la sintaxis.", 4)
+            return
+        end
+        local count, failed = 0, 0
+        for name, val in pairs(flags) do
+            local strVal = type(val) == "boolean" and (val and "true" or "false") or tostring(val)
+            local ok = pcall(setfflag, tostring(name), strVal)
+            if ok then count = count + 1 else failed = failed + 1 end
+        end
+        Notify("FFlags", string.format("FFlags aplicadas: %d aplicadas, %d fallidas", count, failed), 4)
+    end
 
-        Notify("AI Generator", "Generating script with " .. currentProvider .. "...", 2.5)
-        setDisplayedCode("-- Contacting " .. currentProvider .. "...\n-- Generating requested Luau script...")
-
-        task.spawn(function()
-            local requestFn = (syn and syn.request) or (http and http.request) or http_request or request
-            if type(requestFn) ~= "function" then
-                local fallbackCode = "-- [Offline Fallback Script Generated]\n-- Prompt: " .. currentPrompt .. "\n\nlocal Players = game:GetService(\"Players\")\nlocal player = Players.LocalPlayer\nprint(\"[Monody AI] Executing generated action: " .. currentPrompt:gsub('"', '\\"') .. "\")\n"
-                setDisplayedCode(fallbackCode)
-                Notify("AI Generator", "HTTP request not supported by executor. Fallback template loaded!", 3.0)
-                return
-            end
-
-            local generated = nil
-            pcall(function()
-                if currentProvider:find("Gemini") then
-                    local url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" .. currentApiKey
-                    local payload = HttpService:JSONEncode({
-                        contents = {{
-                            parts = {{
-                                text = "You are a professional Roblox Luau script developer. Return ONLY valid, complete, runnable Roblox Luau code inside a ```lua codeblock for: " .. currentPrompt
-                            }}
-                        }}
-                    })
-                    local res = requestFn({
-                        Url = url,
-                        Method = "POST",
-                        Headers = { ["Content-Type"] = "application/json" },
-                        Body = payload
-                    })
-                    if res and res.Body then
-                        local json = HttpService:JSONDecode(res.Body)
-                        local txt = json.candidates[1].content.parts[1].text
-                        local code = txt:match("```lua%s*(.-)%s*```") or txt:match("```%s*(.-)%s*```") or txt
-                        generated = code
-                    end
-                else
-                    -- OpenAI / Compatible
-                    local url = "https://api.openai.com/v1/chat/completions"
-                    local payload = HttpService:JSONEncode({
-                        model = "gpt-4o-mini",
-                        messages = {
-                            { role = "system", content = "You are an expert Roblox Luau script writer. Output only pure executable Luau code without markdown if possible or inside ```lua block." },
-                            { role = "user", content = currentPrompt }
-                        },
-                        temperature = 0.3
-                    })
-                    local res = requestFn({
-                        Url = url,
-                        Method = "POST",
-                        Headers = {
-                            ["Content-Type"] = "application/json",
-                            ["Authorization"] = "Bearer " .. currentApiKey
-                        },
-                        Body = payload
-                    })
-                    if res and res.Body then
-                        local json = HttpService:JSONDecode(res.Body)
-                        local txt = json.choices[1].message.content
-                        local code = txt:match("```lua%s*(.-)%s*```") or txt:match("```%s*(.-)%s*```") or txt
-                        generated = code
-                    end
-                end
-            end)
-
-            if generated and #generated > 10 then
-                setDisplayedCode(generated)
-                Notify("AI Generator", "Script generated successfully!", 2.5)
-            else
-                local low = string.lower(currentPrompt or "")
-                local template = ""
-                if low:find("fruit") or low:find("fruta") then
-                    template = [[-- [Monody AI] Blox Fruits - Fruit Collector Engine
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local player = Players.LocalPlayer
-
-local function collectFruit(fruit)
-    local char = player.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    if not hrp or not fruit:IsA("Tool") then return end
-    local handle = fruit:FindFirstChild("Handle")
-    if not handle then return end
-
-    local dist = (handle.Position - hrp.Position).Magnitude
-    local info = TweenInfo.new(dist / 300, Enum.EasingStyle.Linear)
-    local tw = TweenService:Create(hrp, info, { CFrame = handle.CFrame })
-    tw:Play()
-    tw.Completed:Wait()
-    task.wait(0.2)
-    pcall(function()
-        firetouchinterest(hrp, handle, 0)
-        task.wait(0.1)
-        firetouchinterest(hrp, handle, 1)
+    AddButton(editorCard, "Aplicar FFlags", function()
+        local txt = (jsonInputObj and jsonInputObj.GetText and jsonInputObj.GetText()) or customJsonInput
+        if txt and #txt > 5 then
+            applyFlagsFromJson(txt)
+        else
+            Notify("FFlags", "Pega o carga un objeto JSON de FFlags primero.", 3)
+        end
     end)
-end
 
-print("[Monody AI] Fruit collector active. Scanning fruits...")
-for _, item in ipairs(workspace:GetChildren()) do
-    if item:IsA("Tool") and item:FindFirstChild("Handle") then
-        collectFruit(item)
-    end
-end
-workspace.ChildAdded:Connect(function(child)
-    if child:IsA("Tool") then
-        task.wait(0.5)
-        collectFruit(child)
-    end
-end)]]
-                elseif low:find("chest") or low:find("cofre") then
-                    template = [[-- [Monody AI] Blox Fruits - Auto Chest Collector
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local player = Players.LocalPlayer
+    AddButton(editorCard, "Limpiar Editor", function()
+        if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText("") end
+        customJsonInput = ""
+        Notify("FFlags", "Editor de FFlags limpiado.", 2)
+    end)
 
-local running = true
-task.spawn(function()
-    while running do
-        local char = player.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if not running then break end
-                if obj.Name:find("Chest") and (obj:IsA("Part") or (obj:IsA("Model") and obj.PrimaryPart)) then
-                    local target = obj:IsA("Part") and obj or obj.PrimaryPart
-                    local dist = (target.Position - hrp.Position).Magnitude
-                    if dist < 6000 then
-                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / 320, Enum.EasingStyle.Linear), {
-                            CFrame = target.CFrame + Vector3.new(0, 2, 0)
-                        })
-                        tw:Play()
-                        tw.Completed:Wait()
-                        task.wait(0.2)
-                    end
-                end
+    AddToggle(editorCard, "Auto Aplicar FFlags al Iniciar", "Guarda snapshot para aplicar automáticamente en el próximo arranque", false, function(state)
+        _G.DarlingX_AutoFFlags = state
+        if state then
+            local txt = (jsonInputObj and jsonInputObj.GetText and jsonInputObj.GetText()) or customJsonInput
+            if type(writefile) == "function" and txt and #txt > 5 then
+                pcall(writefile, "Monody_FFlagAutoApply.json", txt)
+                Notify("FFlags", "Snapshot guardado para auto-aplicar al iniciar.", 3)
+            end
+        else
+            if type(delfile) == "function" and type(isfile) == "function" and isfile("Monody_FFlagAutoApply.json") then
+                pcall(delfile, "Monody_FFlagAutoApply.json")
             end
         end
-        task.wait(1.5)
-    end
-end)
-print("[Monody AI] Auto Chest Farm active!")]]
-                elseif low:find("attack") or low:find("fast") or low:find("hit") or low:find("ataque") then
-                    template = [[-- [Monody AI] Blox Fruits - Fast Attack Burst
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
+    end)
 
-local function hitNearby()
-    local char = player.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    local tool = char and char:FindFirstChildOfClass("Tool")
-    if not hrp or not tool then return end
+    -- Card 2: Modo Patata (Potato FFlags & FPS Booster)
+    local potatoCard = CreateCard(FFlagsPage, "Modo Patata (Potato FFlags)")
+    potatoCard.LayoutOrder = 2
 
-    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("CombatSystem")
-        or game:GetService("ReplicatedStorage"):FindFirstChild("RigControllerEvent")
+    local POTATO_JSON = [[{
+  "TextureQualityOverrideEnabled": "True",
+  "TextureQualityOverride": "0",
+  "DebugTextureManagerSkipMips": "3",
+  "DebugFRMQualityLevelOverride": "1",
+  "DebugForceMSAASamples": "0",
+  "FastGPULightCulling3": "True",
+  "IncludePowerSaverMode": "True",
+  "TerrainMaterialTable2022": "",
+  "RenderUseTextureManager224": "False"
+}]]
 
-    if workspace:FindFirstChild("Enemies") then
-        for _, enemy in ipairs(workspace.Enemies:GetChildren()) do
-            local eHrp = enemy:FindFirstChild("HumanoidRootPart")
-            local hum = enemy:FindFirstChild("Humanoid")
-            if eHrp and hum and hum.Health > 0 then
-                local dist = (eHrp.Position - hrp.Position).Magnitude
-                if dist < 60 then
-                    pcall(function()
-                        if remote and remote:IsA("RemoteFunction") then
-                            remote:InvokeServer("Hit", eHrp)
-                        end
-                    end)
+    AddButton(potatoCard, "Cargar FFlags Potato en Editor", function()
+        if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(POTATO_JSON) end
+        customJsonInput = POTATO_JSON
+        Notify("Potato FFlags", "Preset Potato cargado en el editor. Haz clic en Aplicar.", 3)
+    end)
+
+    AddButton(potatoCard, "Aplicar FFlags Potato Instantáneo", function()
+        applyFlagsFromJson(POTATO_JSON)
+    end)
+
+    AddButton(potatoCard, "Desactivar Sombras y Partículas", function()
+        pcall(function()
+            local lighting = game:GetService("Lighting")
+            lighting.GlobalShadows = false
+            lighting.FogEnd = 9e9
+            for _, v in ipairs(lighting:GetChildren()) do
+                if v:IsA("PostProcessEffect") then v.Enabled = false end
+            end
+            for _, v in ipairs(Workspace:GetDescendants()) do
+                if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") then
+                    v.Enabled = false
                 end
             end
-        end
-    end
-end
-
-RunService.Heartbeat:Connect(hitNearby)
-print("[Monody AI] Fast Attack Burst active!")]]
-                elseif low:find("esp") or low:find("box") or low:find("chams") then
-                    template = [[-- [Monody AI] Universal Highlight & Player ESP
-local Players = game:GetService("Players")
-local lp = Players.LocalPlayer
-
-local function setupEsp(plr)
-    if plr == lp then return end
-    local function applyHighlight(char)
-        if not char then return end
-        local hl = char:FindFirstChild("MonodyHighlight") or Instance.new("Highlight")
-        hl.Name = "MonodyHighlight"
-        hl.FillColor = Color3.fromRGB(186, 115, 255)
-        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-        hl.FillTransparency = 0.5
-        hl.OutlineTransparency = 0
-        hl.Parent = char
-    end
-    if plr.Character then applyHighlight(plr.Character) end
-    plr.CharacterAdded:Connect(applyHighlight)
-end
-
-for _, p in ipairs(Players:GetPlayers()) do setupEsp(p) end
-Players.PlayerAdded:Connect(setupEsp)
-print("[Monody AI] Universal Highlight ESP active!")]]
-                elseif low:find("fly") or low:find("flight") or low:find("volar") or low:find("speed") then
-                    template = [[-- [Monody AI] Smooth Velocity Flight & Movement
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
-
-local flySpeed = 75
-RunService.RenderStepped:Connect(function()
-    local char = player.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    local hum = char and char:FindFirstChild("Humanoid")
-    if hrp and hum and hum.MoveDirection.Magnitude > 0 then
-        hrp.Velocity = hum.MoveDirection * flySpeed + Vector3.new(0, hrp.Velocity.Y, 0)
-    end
-end)
-print("[Monody AI] Smooth Velocity Movement active!")]]
-                else
-                    template = [[-- [Monody AI Code Output]
--- Generated for prompt: ]] .. currentPrompt .. [[
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local player = Players.LocalPlayer
-
-print("[Monody AI] Executing script logic for: " .. currentPrompt)
-task.spawn(function()
-    print("[Monody AI] Custom task ready.")
-end)
-]]
-                end
-
-                setDisplayedCode(template)
-                if currentApiKey and #currentApiKey > 10 then
-                    Notify("AI Generator", "Live API returned template. Code ready!", 3.0)
-                else
-                    Notify("AI Generator", "Working script template generated! (Enter API Key for live AI)", 3.0)
-                end
-            end
+            Notify("Potato", "Sombras, partículas y niebla desactivadas.", 3)
         end)
     end)
 
-    -- Code Actions Row (Copy & Execute)
-    local codeBtnRow = Instance.new("Frame", codeCard)
-    codeBtnRow.Name = "CodeActionRow"
-    codeBtnRow.Size = UDim2.new(1, 0, 0, 28)
-    codeBtnRow.BackgroundTransparency = 1
-    codeBtnRow.LayoutOrder = 20
-
-    local function makeCodeMiniPill(name, textLbl, posX, sizeX, cb)
-        local btn = Instance.new("TextButton", codeBtnRow)
-        btn.Name = name
-        btn.Size = sizeX
-        btn.Position = posX
-        btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        btn.BackgroundTransparency = 0.92
-        btn.Text = ""
-        btn.AutoButtonColor = false
-        btn.Active = true
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-        local bStr = Instance.new("UIStroke", btn)
-        bStr.Color = CurrentAccent
-        bStr.Thickness = 0.8
-        bStr.Transparency = 0.82
-        RegisterThemeStroke(bStr)
-
-        local t = Instance.new("TextLabel", btn)
-        t.Size = UDim2.new(1, 0, 1, 0)
-        t.BackgroundTransparency = 1
-        t.Text = textLbl
-        RegisterTranslatable(t, textLbl)
-        t.Font = Enum.Font.GothamMedium
-        t.TextSize = 8.5
-        t.TextColor3 = Color3.fromRGB(240, 240, 245)
-        ConnectButton(btn, cb)
-        return btn
-    end
-
-    makeCodeMiniPill("CopyCodeBtn", "Copy Code", UDim2.new(0, 0, 0, 0), UDim2.new(0.485, 0, 1, 0), function()
-        local code = codeLabel.Text
-        if code and #code > 0 then
-            pcall(function()
-                if setclipboard then setclipboard(code)
-                elseif toclipboard then toclipboard(code) end
-            end)
-            Notify("AI Code", "Code copied to clipboard!", 2.0)
-        end
-    end)
-
-    makeCodeMiniPill("ExecCodeBtn", "Execute (loadstring)", UDim2.new(0.515, 0, 0, 0), UDim2.new(0.485, 0, 1, 0), function()
-        local code = codeLabel.Text
-        if code and #code > 0 then
-            local fn, err = loadstring(code)
-            if fn then
-                local execOk, execErr = pcall(fn)
-                if execOk then
-                    Notify("AI Code", "Script executed successfully!", 2.5)
-                else
-                    Notify("AI Code Error", tostring(execErr):sub(1, 60), 3.5)
-                end
-            else
-                Notify("AI Syntax Error", tostring(err):sub(1, 60), 3.5)
+    AddButton(potatoCard, "Modo Patata Completo (Darling Ultra Potato)", function()
+        applyFlagsFromJson(POTATO_JSON)
+        pcall(function()
+            local lighting = game:GetService("Lighting")
+            lighting.GlobalShadows = false
+            lighting.FogEnd = 9e9
+            for _, v in ipairs(lighting:GetChildren()) do
+                if v:IsA("PostProcessEffect") then v.Enabled = false end
             end
-        end
+            for _, v in ipairs(Workspace:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.Material = Enum.Material.SmoothPlastic
+                    v.CastShadow = false
+                elseif v:IsA("Decal") or v:IsA("Texture") then
+                    v.Transparency = 1
+                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                    v.Enabled = false
+                end
+            end
+            Notify("Darling Potato", "¡Modo Ultra Patata activado! Rendimiento máximo.", 4)
+        end)
     end)
 
-    UpdateCardGeometry(mikaCard)
-    UpdateCardGeometry(presetsCard)
-    UpdateCardGeometry(codeCard)
-    UpdatePageCanvas(AiPage)
+    -- Card 3: Cokeboys Performance Presets
+    local cbCard = CreateCard(FFlagsPage, "Preset Cokeboys Optimizado")
+    cbCard.LayoutOrder = 3
+
+    local COKEBOYS_PRESET = [[{
+  "HandleAltEnterFullscreenManually": "False",
+  "TextureQualityOverrideEnabled": "True",
+  "DisableDPIScale": "True",
+  "CSGLevelOfDetailSwitchingDistanceL34": "0",
+  "CSGLevelOfDetailSwitchingDistanceL23": "0",
+  "CSGLevelOfDetailSwitchingDistanceL12": "0",
+  "CSGLevelOfDetailSwitchingDistance": "0",
+  "DebugFRMQualityLevelOverride": "1",
+  "TextureQualityOverride": "0",
+  "DebugTextureManagerSkipMips": "3",
+  "DebugGraphicsPreferD3D11": "True",
+  "DefaultMeshCacheSizeMB": "256",
+  "UITextureMaxRenderTextureSize": "1024",
+  "EnableQuickGameLaunch": "False",
+  "TextureCompositorActiveJobs": "0",
+  "ConnectionMTUSize": "1380",
+  "FontSizePadding": "1",
+  "HSRClusterSymmetryDistancePercent": "10000",
+  "BulletContactBreakOrthogonalThresholdActivatePercent": "2147483647",
+  "DebugForceMSAASamples": "0",
+  "FastGPULightCulling3": "True",
+  "RenderLocalLightUpdatesMin": "1",
+  "RenderLocalLightUpdatesMax": "1",
+  "RakNetResendRttMultiple": "1",
+  "TM2SkipMipsForUnstreamable2": "True",
+  "RaknetBandwidthPingSendEveryXSeconds": "1",
+  "Network": "7",
+  "IncludePowerSaverMode": "True",
+  "DebugForceFSMCPULightCulling": "True",
+  "MeshContentProviderForceCacheSize": "268435456",
+  "EnablePowerTraceModule": "True",
+  "GraphicsGLEnableHQShadersExclusion": "False",
+  "DoNotSkipMipsBasedOnSystemMemoryPS": "True",
+  "GraphicsGLEnableSuperHQShadersExclusion": "False",
+  "DebugPerfMode": "True",
+  "DebugPauseVoxelizer": "True",
+  "DebugEnableInterpolationVisualizer": "true",
+  "TerrainMaterialTable2022": "",
+  "RenderUseTextureManager224": "False",
+  "PerformanceControlTextureQualityBestUtility": "-1"
+}]]
+
+    local ANDROID_SAFE = [[{
+  "TextureQualityOverrideEnabled": "True",
+  "TextureQualityOverride": "0",
+  "DebugTextureManagerSkipMips": "3",
+  "DebugFRMQualityLevelOverride": "1",
+  "DebugForceMSAASamples": "0",
+  "FastGPULightCulling3": "True",
+  "IncludePowerSaverMode": "True"
+}]]
+
+    AddButton(cbCard, "Cargar Preset Cokeboys en Editor", function()
+        if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(COKEBOYS_PRESET) end
+        customJsonInput = COKEBOYS_PRESET
+        Notify("Cokeboys FFlags", "Preset Cokeboys cargado. Haz clic en Aplicar FFlags.", 3)
+    end)
+
+    AddButton(cbCard, "Cargar Preset Android Seguro", function()
+        if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(ANDROID_SAFE) end
+        customJsonInput = ANDROID_SAFE
+        Notify("Cokeboys FFlags", "Preset Android Seguro cargado en el editor.", 3)
+    end)
+
+    AddButton(cbCard, "Aplicar Preset Cokeboys Instantáneo", function()
+        applyFlagsFromJson(COKEBOYS_PRESET)
+    end)
+
+    UpdateCardGeometry(editorCard)
+    UpdateCardGeometry(potatoCard)
+    UpdateCardGeometry(cbCard)
+    UpdatePageCanvas(FFlagsPage)
 end)
-if not okAi then
-    warn("[Monody] Failed to initialize AiPage: " .. tostring(errAi))
+if not okFFlags then
+    warn("[Monody] Failed to initialize FFlagsPage: " .. tostring(errFFlags))
 end
 end
 

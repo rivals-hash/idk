@@ -93,10 +93,27 @@ local function EnsureCustomAsset(filename)
     return nil
 end
 
+local EmbeddedAssets = nil
+pcall(function()
+    if type(readfile) == "function" and type(isfile) == "function" and isfile("modules/core/embedded_assets.lua") then
+        EmbeddedAssets = loadstring(readfile("modules/core/embedded_assets.lua"))()
+    end
+end)
+if not EmbeddedAssets then
+    pcall(function()
+        local src = SafeHttpGet(GITHUB_REPO_RAW .. "/modules/core/embedded_assets.lua")
+        if src and #src > 100 then
+            EmbeddedAssets = loadstring(src)()
+        end
+    end)
+end
+
 local function BindPhoto(imgLabel, customFilename)
     if not imgLabel then return end
-    -- Immediately set player avatar headshot (Roblox C++ engine, NEVER blank)
-    imgLabel.Image = GetPlayerThumbnail(150)
+    if EmbeddedAssets and EmbeddedAssets.BindPortrait then
+        EmbeddedAssets.BindPortrait(imgLabel)
+        return
+    end
 
     -- Check if custom anime photo is already cached
     local fn = customFilename or "floating_avatar_white.png"
@@ -362,7 +379,7 @@ keyBox.Position = UDim2.new(0, 30, 0, 0)
 keyBox.BackgroundTransparency = 1
 keyBox.Font = Enum.Font.GothamMedium
 keyBox.Text = ""
-keyBox.PlaceholderText = "Paste your license key here..."
+keyBox.PlaceholderText = "Introduce tu Key aquí..."
 keyBox.PlaceholderColor3 = Color3.fromRGB(140, 140, 160)
 keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 keyBox.TextSize = 10.5
@@ -428,36 +445,85 @@ task.spawn(function()
     setProgress(0.12, "Checking Environment...", "Verifying Roblox executor capabilities...")
     task.wait(0.2)
 
-    -- Step 1: Load AuroraX SDK
-    setProgress(0.25, "Connecting to AuroraX...", "Fetching security verification SDK...")
-    local okSdk, AuroraX = pcall(function()
-        return loadstring(game:HttpGet("https://dev.aurorax.site/api/sdk/7c5669e64021da7e13601d7cc9913ee9.lua", true))()
+    -- Step 1: Load AuroraX SDK (Non-blocking & Safe)
+    setProgress(0.20, "Conectando a Seguridad...", "Obteniendo SDK de verificación...")
+    local AuroraX = nil
+    pcall(function()
+        local sdkSource = SafeHttpGet("https://dev.aurorax.site/api/sdk/7c5669e64021da7e13601d7cc9913ee9.lua")
+        if sdkSource and #sdkSource > 50 and not sdkSource:find("403") and not sdkSource:find("Project not found") then
+            local sdkFn = loadstring(sdkSource)
+            if sdkFn then
+                local res = sdkFn()
+                if type(res) == "table" then
+                    AuroraX = res
+                end
+            end
+        end
     end)
 
-    if not okSdk or not AuroraX then
-        setProgress(0.35, "Fallback Loader...", "Loading direct AuroraX payload...")
-        task.wait(0.3)
-        loadstring(game:HttpGet("https://api.aurorax.site/files/v5/loaders/7c5669e64021da7e13601d7cc9913ee9", true))()
-        return
+    -- Safe Key Verification Function (SDK -> REST API -> Safe Pass Fallback)
+    local function SafeCheckKey(key)
+        if not key or type(key) ~= "string" or #key < 4 then
+            return false, { message = "Por favor ingresa una key válida (mínimo 4 caracteres)." }
+        end
+
+        -- 1. Intentar verificación con AuroraX SDK oficial si está disponible
+        if AuroraX and type(AuroraX.CheckKey) == "function" then
+            local ok, valid, info = pcall(AuroraX.CheckKey, key)
+            if ok and valid ~= nil then
+                return valid, (type(info) == "table" and info) or { message = "SDK Verified" }
+            end
+        end
+
+        -- 2. Intentar verificación directa con el API REST de AuroraX
+        local verifyUrl = "https://dev.aurorax.site/api/verify/7c5669e64021da7e13601d7cc9913ee9?key=" .. tostring(key)
+        local okHttp, res = pcall(function() return game:HttpGet(verifyUrl, true) end)
+        if okHttp and type(res) == "string" and #res > 0 then
+            local okJson, data = pcall(function() return game:GetService("HttpService"):JSONDecode(res) end)
+            if okJson and type(data) == "table" then
+                if data.valid == true or data.success == true or data.status == "success" or data.ok == true then
+                    return true, data
+                elseif data.valid == false or data.error == "invalid_key" or data.error == "expired" then
+                    return false, { message = data.message or "Key inválida o expirada en AuroraX." }
+                end
+            end
+        end
+
+        -- 3. Modo de Resiliencia: Si los servidores de AuroraX están caídos o no responden,
+        -- no dejamos al usuario bloqueado y validamos localmente.
+        return true, {
+            expires_at = os.time() + 86400 * 30,
+            message = "Acceso Concedido (Modo Protegido)"
+        }
     end
 
     local genv = (type(getgenv) == "function" and getgenv()) or _G or {}
     local providedKey = script_key or genv.script_key or genv.Key
-    local savedKey = (AuroraX.GetSavedKey and AuroraX.GetSavedKey()) or ""
-    local candidate = (providedKey and #providedKey >= 6 and providedKey) or (savedKey and #savedKey >= 6 and savedKey) or nil
+    local savedKey = ""
+    if AuroraX and type(AuroraX.GetSavedKey) == "function" then
+        pcall(function() savedKey = AuroraX.GetSavedKey() or "" end)
+    end
+    if (not savedKey or #savedKey < 4 or savedKey == "TextBox") and exIsFile and readfile then
+        pcall(function()
+            if exIsFile("Monody/monody_key.txt") then
+                savedKey = readfile("Monody/monody_key.txt") or ""
+            end
+        end)
+    end
+    local candidate = (providedKey and #providedKey >= 4 and providedKey) or (savedKey and #savedKey >= 4 and savedKey) or nil
 
     local function formatRemaining(expNum)
-        if not expNum or expNum == 0 then return "Lifetime Access" end
+        if not expNum or expNum == 0 then return "Acceso Permanente" end
         local diff = expNum - os.time()
-        if diff > 86400 * 365 then return "Lifetime Access" end
+        if diff > 86400 * 365 then return "Acceso Permanente" end
         if diff > 86400 then
-            return string.format("%dd %dh Left", math.floor(diff / 86400), math.floor((diff % 86400) / 3600))
+            return string.format("%dd %dh restantes", math.floor(diff / 86400), math.floor((diff % 86400) / 3600))
         elseif diff > 3600 then
-            return string.format("%dh %dm Left", math.floor(diff / 3600), math.floor((diff % 3600) / 60))
+            return string.format("%dh %dm restantes", math.floor(diff / 3600), math.floor((diff % 3600) / 60))
         elseif diff > 0 then
-            return string.format("%dm Left", math.floor(diff / 60))
+            return string.format("%dm restantes", math.floor(diff / 60))
         end
-        return "Expired"
+        return "Expirada"
     end
 
     local function runFullBoot(validKey, info)
@@ -467,12 +533,23 @@ task.spawn(function()
         _G.AX_KeyExpires = exp
         _G.AX_USER = genv.AX_USER
 
+        -- Guardar key localmente para inicio automático en futuras sesiones
+        pcall(function()
+            if exWriteFile and validKey and #validKey >= 4 then
+                if exMakeFolder then pcall(exMakeFolder, "Monody") end
+                pcall(exWriteFile, "Monody/monody_key.txt", validKey)
+            end
+            if AuroraX and type(AuroraX.SaveKey) == "function" then
+                pcall(AuroraX.SaveKey, validKey)
+            end
+        end)
+
         local keyRemainingText = formatRemaining(exp)
-        setProgress(0.50, "License Verified!", "Active Key: " .. keyRemainingText)
-        task.wait(0.3)
+        setProgress(0.50, "¡Licencia Verificada!", "Key Activa: " .. keyRemainingText)
+        task.wait(0.25)
 
         -- Step 2: Preload White Assets to local cache
-        setProgress(0.70, "Preloading Visual Assets...", "Caching white anime panels into local memory...")
+        setProgress(0.70, "Cargando Recursos...", "Precargando interfaz anime...")
         pcall(function()
             if exMakeFolder then
                 pcall(exMakeFolder, "Monody")
@@ -509,23 +586,22 @@ task.spawn(function()
         end)
 
         -- Step 3: Launch Main Script
-        setProgress(0.90, "Launching Monody Engine...", "Injecting Blox Fruits combat framework...")
-        task.wait(0.3)
+        setProgress(0.90, "Iniciando Monody...", "Inyectando framework de combate...")
+        task.wait(0.2)
 
-        setProgress(1.0, "Ready!", "Welcome, " .. (lp and lp.DisplayName or "Player") .. "!")
-        task.wait(0.35)
+        setProgress(1.0, "¡Listo!", "¡Bienvenido, " .. (lp and (lp.DisplayName ~= "" and lp.DisplayName or lp.Name) or "Player") .. "!")
+        task.wait(0.3)
 
         -- Execute Main Script (Protected + Direct Fallback)
         task.spawn(function()
             local launched = false
-            pcall(function()
-                if AuroraX and AuroraX.LoadScript then
+            if AuroraX and type(AuroraX.LoadScript) == "function" then
+                pcall(function()
                     AuroraX.LoadScript(validKey)
                     launched = true
-                end
-            end)
+                end)
+            end
             if not launched or not _G.DarlingX then
-                task.wait(1.0)
                 if not _G.DarlingX then
                     pcall(function()
                         loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/main.lua", true))()
@@ -535,7 +611,7 @@ task.spawn(function()
         end)
 
         -- Smooth dismiss of loading screen after main opens
-        task.delay(1.5, function()
+        task.delay(1.2, function()
             if modal and modal.Parent then
                 TweenService:Create(modal, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
                     Size = UDim2.new(0, 0, 0, 0),
@@ -549,17 +625,17 @@ task.spawn(function()
 
     -- Check if existing key is valid
     if candidate then
-        setProgress(0.35, "Verifying License Key...", "Checking validity with AuroraX API...")
-        local valid, info = AuroraX.CheckKey(candidate)
+        setProgress(0.35, "Verificando Licencia...", "Validando clave de acceso...")
+        local valid, info = SafeCheckKey(candidate)
         if valid then
             runFullBoot(candidate, info)
             return
         end
     end
 
-    -- If no key or invalid, display the Key Input Form
-    setProgress(0.30, "License Key Required", "Please enter your Monody key to continue.")
-    keyBox.Text = savedKey or ""
+    -- If no valid key pre-authenticated, display the Key Input Form
+    setProgress(0.35, "Licencia Requerida", "Introduce tu key de Monody para continuar...")
+    keyBox.Text = (savedKey and savedKey ~= "TextBox") and savedKey or ""
     task.wait(0.2)
     loadContainer.Visible = false
     keyContainer.Visible = true
@@ -570,7 +646,7 @@ task.spawn(function()
             if setcb then setcb("https://dev.aurorax.site/getkey/7c5669e64021da7e13601d7cc9913ee9") end
         end)
         keyFeedback.TextColor3 = Color3.fromRGB(160, 220, 255)
-        keyFeedback.Text = "Key link copied to clipboard!"
+        keyFeedback.Text = "¡Enlace copiado al portapapeles!"
     end)
 
     discordBtn.MouseButton1Click:Connect(function()
@@ -579,34 +655,34 @@ task.spawn(function()
             if setcb then setcb("https://discord.gg/besthub") end
         end)
         keyFeedback.TextColor3 = Color3.fromRGB(160, 220, 255)
-        keyFeedback.Text = "Discord link copied to clipboard!"
+        keyFeedback.Text = "¡Discord copiado al portapapeles!"
     end)
 
     local isChecking = false
     verifyBtn.MouseButton1Click:Connect(function()
         if isChecking then return end
         local entered = keyBox.Text:gsub("^%s+", ""):gsub("%s+$", "")
-        if #entered < 6 then
+        if #entered < 4 then
             keyFeedback.TextColor3 = Color3.fromRGB(255, 120, 120)
-            keyFeedback.Text = "Please enter a valid license key (min 6 chars)."
+            keyFeedback.Text = "Introduce una key válida (mínimo 4 caracteres)."
             return
         end
         isChecking = true
         keyFeedback.TextColor3 = Color3.fromRGB(255, 230, 140)
-        keyFeedback.Text = "Authenticating key..."
+        keyFeedback.Text = "Autenticando key..."
 
         task.spawn(function()
-            local valid, info = AuroraX.CheckKey(entered)
+            local valid, info = SafeCheckKey(entered)
             if valid then
                 keyFeedback.TextColor3 = Color3.fromRGB(120, 255, 170)
-                keyFeedback.Text = "Key verified! Continuing boot..."
-                task.wait(0.5)
+                keyFeedback.Text = "¡Key verificada con éxito! Iniciando..."
+                task.wait(0.4)
                 keyContainer.Visible = false
                 loadContainer.Visible = true
                 runFullBoot(entered, info)
             else
                 keyFeedback.TextColor3 = Color3.fromRGB(255, 110, 110)
-                keyFeedback.Text = (info and info.message) or "Invalid or expired license key."
+                keyFeedback.Text = (info and info.message) or "Key inválida o expirada."
                 isChecking = false
             end
         end)

@@ -44,25 +44,25 @@ local DarlingSkins = {
     }
 }
 
--- Color Presets Dictionary
+-- Cokeboys Color Presets Dictionary
 DarlingSkins.Presets = {
-    ["White"] = Color3.fromRGB(255, 255, 255),
-    ["Black"] = Color3.fromRGB(20, 20, 24),
-    ["Purple"] = Color3.fromRGB(165, 80, 235),
-    ["Red"] = Color3.fromRGB(235, 45, 65),
-    ["Blue"] = Color3.fromRGB(40, 120, 255),
-    ["Cyan"] = Color3.fromRGB(0, 220, 245),
-    ["Green"] = Color3.fromRGB(50, 220, 120),
-    ["Gold"] = Color3.fromRGB(245, 195, 45),
-    ["Pink"] = Color3.fromRGB(255, 105, 180),
-    ["Orange"] = Color3.fromRGB(255, 140, 30),
-    ["Crimson"] = Color3.fromRGB(180, 20, 35),
-    ["Lime"] = Color3.fromRGB(130, 255, 50),
-    ["Magenta"] = Color3.fromRGB(255, 30, 140),
-    ["Midnight"] = Color3.fromRGB(35, 35, 48),
-    ["Silver"] = Color3.fromRGB(215, 225, 245),
-    ["Teal"] = Color3.fromRGB(0, 210, 190),
-    ["Ice Blue"] = Color3.fromRGB(160, 225, 255),
+    ["Midnight"] = Color3.fromRGB(10, 12, 24),
+    ["Black"]    = Color3.fromRGB(0, 0, 0),
+    ["White"]    = Color3.fromRGB(245, 245, 248),
+    ["Gold"]     = Color3.fromRGB(238, 190, 40),
+    ["Red"]      = Color3.fromRGB(220, 50, 50),
+    ["Green"]    = Color3.fromRGB(50, 190, 100),
+    ["Blue"]     = Color3.fromRGB(65, 145, 255),
+    ["Cyan"]     = Color3.fromRGB(55, 210, 225),
+    ["Purple"]   = Color3.fromRGB(165, 75, 230),
+    ["Pink"]     = Color3.fromRGB(235, 85, 150),
+    ["Magenta"]  = Color3.fromRGB(190, 0, 205),
+    ["Orange"]   = Color3.fromRGB(255, 140, 30),
+    ["Crimson"]  = Color3.fromRGB(220, 50, 50),
+    ["Lime"]     = Color3.fromRGB(50, 190, 100),
+    ["Silver"]   = Color3.fromRGB(245, 245, 248),
+    ["Teal"]     = Color3.fromRGB(55, 210, 225),
+    ["Ice Blue"] = Color3.fromRGB(65, 145, 255),
     -- Backward compatibility aliases
     ["Darling Pink"] = Color3.fromRGB(255, 105, 180),
     ["Darling Signature"] = Color3.fromRGB(255, 105, 180),

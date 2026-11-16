@@ -472,10 +472,14 @@ function Core.resolveAnyTarget()
         return nil, nil, nil
     end
 
-    -- Fallback for Tracers when neither master aimbot toggle is active yet:
-    local pPart, pPos, pChar = resolvePlayerTarget(lpHRP)
-    if pPart and pPos then return pPart, pPos, pChar end
-    return resolveNPCTarget(lpHRP)
+    -- Fallback for Tracers/FOV only when visual overlay is actually enabled
+    if (Core.Tracers and Core.Tracers.Visible) or (Core.FOV and Core.FOV.Visible) then
+        local pPart, pPos, pChar = resolvePlayerTarget(lpHRP)
+        if pPart and pPos then return pPart, pPos, pChar end
+        return resolveNPCTarget(lpHRP)
+    end
+
+    return nil, nil, nil
 end
 
 -- ============================================================================

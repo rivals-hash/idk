@@ -320,8 +320,9 @@ local function castSmartStep(block, token)
 
     local duration = 0.045
     if block.Mode == "Hold" then
-        duration = math.clamp(tonumber(block.Hold) or 0, 0, 10)
-        if duration == 0 then duration = 0.045 end
+        duration = math.clamp(tonumber(block.Hold) or 0.6, 0.1, 10)
+    elseif block.Mode == "Transform" then
+        duration = 0.45
     end
 
     local ok = pcall(function() VIM:SendKeyEvent(true, keyCode, false, game) end)
@@ -370,22 +371,37 @@ local function runBlock(idx, block, token)
     if not isRunning(token) then return false end
 
     local toolName = tool and tool.Name or ""
+    local activeSkill = block.Skill or "Z"
     local cd = nil
     if toolName ~= "" then
-        cd = waitForSmartCooldownReady(toolName, block.Skill, token, 1.5)
+        cd = waitForSmartCooldownReady(toolName, activeSkill, token, 1.2)
         if not isRunning(token) then return false end
+        -- Cokeboys backup skill failover
+        if cd and smartCooldownActive(cd) and block.BackupSkill and block.BackupSkill ~= "None" and block.BackupSkill ~= activeSkill then
+            local bcd = waitForSmartCooldownReady(toolName, block.BackupSkill, token, 0.4)
+            if bcd and not smartCooldownActive(bcd) then
+                activeSkill = block.BackupSkill
+                cd = bcd
+            end
+        end
         if cd and smartCooldownActive(cd) then return true end
     end
 
-    local ok = castSmartStep(block, token)
+    local stepBlock = {
+        Weapon = block.Weapon,
+        Skill = activeSkill,
+        Mode = block.Mode,
+        Hold = block.Hold
+    }
+    local ok = castSmartStep(stepBlock, token)
     if not ok then return isRunning(token) end
 
     if cd then
-        local done, _, started = waitForSmartCooldown(cd, token, 1.5, toolName, block.Skill)
+        local done, _, started = waitForSmartCooldown(cd, token, 1.5, toolName, activeSkill)
         if not done and not started and isRunning(token) then
             if not waitFor(0.035, token) then return false end
-            if not castSmartStep(block, token) then return isRunning(token) end
-            waitForSmartCooldown(cd, token, 1.5, toolName, block.Skill)
+            if not castSmartStep(stepBlock, token) then return isRunning(token) end
+            waitForSmartCooldown(cd, token, 1.5, toolName, activeSkill)
         end
     else
         task.wait()
