@@ -57,7 +57,7 @@ function MacroTabModule.Build(MacroPage, env)
         end
     end)
 
-    AddButton(ctrlCard, "Toggle Macro (One-Tap Start/Stop)", function()
+    AddButton(ctrlCard, "Toggle Macro", function()
         if macroMod then
             macroMod.executeCombo()
             local isRunning = macroMod.Running
@@ -65,43 +65,15 @@ function MacroTabModule.Build(MacroPage, env)
         end
     end)
 
-    AddButton(ctrlCard, "Stop Macro Immediately", function()
+    AddButton(ctrlCard, "Stop Macro", function()
         if macroMod then
             macroMod.stopMacro()
             Notify("Macro", "Macro: Deactivated (Stopped)")
         end
     end)
 
-    AddButton(ctrlCard, "Teleport to Training Dummy", function()
-        pcall(function()
-            local char = game:GetService("Players").LocalPlayer.Character
-            local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                -- Search for training dummy in Workspace
-                local dummy = game:GetService("Workspace"):FindFirstChild("Training Dummy") or game:GetService("Workspace"):FindFirstChild("Dummy")
-                if not dummy then
-                    local enemies = game:GetService("Workspace"):FindFirstChild("Enemies")
-                    if enemies then
-                        for _, e in ipairs(enemies:GetChildren()) do
-                            if e.Name:lower():find("dummy") or e.Name:lower():find("trainer") then
-                                dummy = e
-                                break
-                            end
-                        end
-                    end
-                end
-                if dummy and dummy:FindFirstChild("HumanoidRootPart") then
-                    hrp.CFrame = dummy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 4)
-                    Notify("Macro", "Teleported to Training Dummy!")
-                else
-                    Notify("Macro", "Training Dummy not found in current area.")
-                end
-            end
-        end)
-    end)
-
-    -- 2. Combo Sequence (6 Blocks) - Clean Cokeboys Smart Cooldown Selection (Zero Artificial Sliders)
-    local seqCard = CreateCard(MacroPage, "Combo Sequence (6 Blocks)")
+    -- 2. Combo Sequence (Smart Cooldown Selection)
+    local seqCard = CreateCard(MacroPage, "Combo Sequence")
     local weaponOpts = { "Melee", "Sword", "Fruit", "Gun" }
     local skillKeyOpts = { "Z", "X", "C", "V", "F" }
     local modeOpts = { "Tap", "Hold", "Transform" }

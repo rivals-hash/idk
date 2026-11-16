@@ -376,7 +376,7 @@ local function runBlock(idx, block, token)
     if toolName ~= "" then
         cd = waitForSmartCooldownReady(toolName, activeSkill, token, 1.2)
         if not isRunning(token) then return false end
-        -- Cokeboys backup skill failover
+        -- Automatic backup skill failover
         if cd and smartCooldownActive(cd) and block.BackupSkill and block.BackupSkill ~= "None" and block.BackupSkill ~= activeSkill then
             local bcd = waitForSmartCooldownReady(toolName, block.BackupSkill, token, 0.4)
             if bcd and not smartCooldownActive(bcd) then

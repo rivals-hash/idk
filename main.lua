@@ -2690,7 +2690,7 @@ end
 local TRANSLATIONS_DICT = {
     -- Translation Tables
     ["Spanish"] = {
-        -- Monody New Additions & Cokeboys Features
+        -- Monody New Additions & Performance Features
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Companera Waifu AI",
         ["Activar Waifu"] = "Activar Waifu",
@@ -2712,19 +2712,23 @@ local TRANSLATIONS_DICT = {
         ["Auto Aplicar FFlags al Iniciar"] = "Auto-Aplicar FFlags al Iniciar",
         ["Modo Patata (Potato FFlags)"] = "Modo Patata (Potato FFlags)",
         ["Cargar FFlags Potato en Editor"] = "Cargar FFlags Patata",
-        ["Aplicar FFlags Potato Instantáneo"] = "Aplicar FFlags Patata al Instante",
-        ["Desactivar Sombras y Partículas"] = "Sin Sombras ni Particulas",
-        ["Modo Patata Completo (Darling Ultra Potato)"] = "Modo Ultra Patata (Full FPS)",
-        ["Preset Cokeboys Optimizado"] = "Preset Cokeboys Optimizado",
-        ["Cargar Preset Cokeboys en Editor"] = "Cargar Preset Cokeboys",
-        ["Cargar Preset Android Seguro"] = "Cargar Preset Android Seguro",
-        ["Aplicar Preset Cokeboys Instantáneo"] = "Aplicar Preset Cokeboys al Instante",
+        ["Performance Presets"] = "Presets de Rendimiento",
+        ["Load Pro Preset"] = "Cargar Preset Pro",
+        ["Load Android Preset"] = "Cargar Preset Android",
+        ["Apply Pro Preset"] = "Aplicar Preset Pro",
+        ["Load Potato Preset"] = "Cargar Preset Patata",
+        ["Apply Potato FFlags"] = "Aplicar FFlags Patata",
+        ["Full Potato Mode"] = "Modo Patata Completo",
+        ["FFlags Editor"] = "Editor de FFlags",
+        ["Potato Mode"] = "Modo Patata",
+        ["Combo Sequence"] = "Secuencia de Combo",
+        ["Toggle Macro"] = "Activar Macro",
+        ["Stop Macro"] = "Detener Macro",
         ["Hitbox Expander"] = "Expansor de Hitbox",
         ["Hitbox Size"] = "Tamano de Hitbox",
         ["Hitbox Visual Forcefield"] = "Efecto Visual Neon de Hitbox",
         ["Static Camera"] = "Camara Estatica (Sin Movimiento)",
         ["Mute Game Background Music"] = "Silenciar Musica del Juego",
-        ["Teleport to Training Dummy"] = "Teletransportarse a Dummy",
         ["B1 Backup Skill"] = "B1 Habilidad Secundaria",
         ["B2 Backup Skill"] = "B2 Habilidad Secundaria",
         ["B3 Backup Skill"] = "B3 Habilidad Secundaria",
@@ -10219,7 +10223,7 @@ end
 end
 
 -- ============================================================
--- FFLAGS TAB (COKEBOYS ENGINE & POTATO OPTIMIZATIONS)
+-- FFLAGS TAB (PERFORMANCE & OPTIMIZATIONS)
 -- ============================================================
 do
 local FFlagsPage = RegisterTab("FFlags", "FFlags", "sliders-horizontal")
@@ -10237,8 +10241,8 @@ local okFFlags, errFFlags = pcall(function()
             or (type(_G) == "table" and type(_G.setfflag) == "function" and _G.setfflag)
     end
 
-    -- Card 1: Custom FFlags Editor
-    local editorCard = CreateCard(FFlagsPage, "Custom FFlags Editor")
+    -- Card 1: FFlags Editor
+    local editorCard = CreateCard(FFlagsPage, "FFlags Editor")
     editorCard.LayoutOrder = 1
     local customJsonInput = ""
     local jsonInputObj = AddInput(editorCard, "Paste FFlags JSON", "{\"FFlagExample\": \"false\"}", "{\"TextureQualityOverrideEnabled\":\"True\"}", function(v)
@@ -10302,8 +10306,8 @@ local okFFlags, errFFlags = pcall(function()
         end
     end)
 
-    -- Card 2: Potato Mode (Potato FFlags & FPS Booster)
-    local potatoCard = CreateCard(FFlagsPage, "Potato Mode (Potato FFlags)")
+    -- Card 2: Potato Mode
+    local potatoCard = CreateCard(FFlagsPage, "Potato Mode")
     potatoCard.LayoutOrder = 2
 
     local POTATO_JSON = [[{
@@ -10318,13 +10322,13 @@ local okFFlags, errFFlags = pcall(function()
   "RenderUseTextureManager224": "False"
 }]]
 
-    AddButton(potatoCard, "Load Potato FFlags into Editor", function()
+    AddButton(potatoCard, "Load Potato Preset", function()
         if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(POTATO_JSON) end
         customJsonInput = POTATO_JSON
-        Notify("Potato FFlags", "Potato preset loaded into editor. Click Apply FFlags.", 3)
+        Notify("Potato Mode", "Potato preset loaded into editor. Click Apply FFlags.", 3)
     end)
 
-    AddButton(potatoCard, "Apply Instant Potato FFlags", function()
+    AddButton(potatoCard, "Apply Potato FFlags", function()
         applyFlagsFromJson(POTATO_JSON)
     end)
 
@@ -10341,11 +10345,11 @@ local okFFlags, errFFlags = pcall(function()
                     v.Enabled = false
                 end
             end
-            Notify("Potato", "Shadows, particles, and fog disabled.", 3)
+            Notify("Potato Mode", "Shadows, particles, and fog disabled.", 3)
         end)
     end)
 
-    AddButton(potatoCard, "Full Potato Mode (Ultra Potato)", function()
+    AddButton(potatoCard, "Full Potato Mode", function()
         applyFlagsFromJson(POTATO_JSON)
         pcall(function()
             local lighting = game:GetService("Lighting")
@@ -10364,15 +10368,15 @@ local okFFlags, errFFlags = pcall(function()
                     v.Enabled = false
                 end
             end
-            Notify("Potato", "Ultra Potato Mode activated! Maximum FPS gain.", 3.5)
+            Notify("Potato Mode", "Full Potato Mode activated! Maximum FPS gain.", 3.5)
         end)
     end)
 
-    -- Card 3: Cokeboys Performance Presets
-    local cbCard = CreateCard(FFlagsPage, "Cokeboys Performance Presets")
+    -- Card 3: Performance Presets
+    local cbCard = CreateCard(FFlagsPage, "Performance Presets")
     cbCard.LayoutOrder = 3
 
-    local COKEBOYS_PRESET = [[{
+    local PRO_PRESET = [[{
   "HandleAltEnterFullscreenManually": "False",
   "TextureQualityOverrideEnabled": "True",
   "DisableDPIScale": "True",
@@ -10425,24 +10429,24 @@ local okFFlags, errFFlags = pcall(function()
   "IncludePowerSaverMode": "True"
 }]]
 
-    AddButton(cbCard, "Load Cokeboys Preset into Editor", function()
-        if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(COKEBOYS_PRESET) end
-        customJsonInput = COKEBOYS_PRESET
-        Notify("Cokeboys FFlags", "Cokeboys preset loaded. Click Apply FFlags.", 3)
+    AddButton(cbCard, "Load Pro Preset into Editor", function()
+        if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(PRO_PRESET) end
+        customJsonInput = PRO_PRESET
+        Notify("Performance", "Pro preset loaded into editor. Click Apply FFlags.", 3)
     end)
 
-    AddButton(cbCard, "Load Android Safe Preset", function()
+    AddButton(cbCard, "Load Android Preset into Editor", function()
         if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(ANDROID_SAFE) end
         customJsonInput = ANDROID_SAFE
-        Notify("Cokeboys FFlags", "Android Safe preset loaded into editor.", 3)
+        Notify("Performance", "Android preset loaded into editor.", 3)
     end)
 
-    AddButton(cbCard, "Apply Instant Cokeboys Preset", function()
-        applyFlagsFromJson(COKEBOYS_PRESET)
+    AddButton(cbCard, "Apply Pro Preset", function()
+        applyFlagsFromJson(PRO_PRESET)
     end)
 
     -- Card 4: Sky Changer (Darling Hub 13 Skies & Daylight Illumination)
-    local skyCard = CreateCard(FFlagsPage, "Sky Changer & Environment")
+    local skyCard = CreateCard(FFlagsPage, "Sky Changer")
     skyCard.LayoutOrder = 4
 
     local skyMod = RequireModule("modules/visuals/sky_changer.lua")

@@ -44,7 +44,7 @@ local DarlingSkins = {
     }
 }
 
--- Cokeboys Color Presets Dictionary
+-- Color Presets Dictionary
 DarlingSkins.Presets = {
     ["Midnight"] = Color3.fromRGB(10, 12, 24),
     ["Black"]    = Color3.fromRGB(0, 0, 0),
