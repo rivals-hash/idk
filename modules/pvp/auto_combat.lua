@@ -18,17 +18,33 @@ local AutoCombat = {
     CombatThread = nil,
 }
 
+local function hasBusoActive(char)
+    if not char then return false end
+    if char:GetAttribute("HasBuso") == true or char:GetAttribute("Buso") == true or char:GetAttribute("Aura") == true then
+        return true
+    end
+    if char:FindFirstChild("HasBuso") or char:FindFirstChild("Buso") or char:FindFirstChild("Aura") then
+        return true
+    end
+    for _, part in ipairs(char:GetChildren()) do
+        if part:IsA("BasePart") and (part:FindFirstChild("Buso") or part:FindFirstChild("Aura")) then
+            return true
+        end
+    end
+    return false
+end
+
 local function checkLoopGating()
     local needLoop = AutoCombat.AutoBusoEnabled or AutoCombat.AutoV3Enabled or AutoCombat.AutoV4Enabled
 
     if needLoop and not AutoCombat.CombatThread then
         AutoCombat.CombatThread = task.spawn(function()
             while AutoCombat.AutoBusoEnabled or AutoCombat.AutoV3Enabled or AutoCombat.AutoV4Enabled do
-                -- 1. Auto Buso Haki
+                -- 1. Auto Buso Haki (only activate if not already active to avoid toggling off)
                 if AutoCombat.AutoBusoEnabled then
                     pcall(function()
                         local char = LocalPlayer and LocalPlayer.Character
-                        if char and not char:FindFirstChild("HasBuso") then
+                        if char and not hasBusoActive(char) then
                             local remotes = ReplicatedStorage:FindFirstChild("Remotes")
                             local commF = remotes and (remotes:FindFirstChild("CommF_") or remotes:FindFirstChild("CommF"))
                             if commF then
@@ -41,10 +57,13 @@ local function checkLoopGating()
                 -- 2. Auto Race V3
                 if AutoCombat.AutoV3Enabled then
                     pcall(function()
-                        local remotes = ReplicatedStorage:FindFirstChild("Remotes")
-                        local commE = remotes and remotes:FindFirstChild("CommE")
-                        if commE then
-                            commE:FireServer("ActivateAbility")
+                        local char = LocalPlayer and LocalPlayer.Character
+                        if char and not char:GetAttribute("V3Active") and not char:GetAttribute("AbilityActive") then
+                            local remotes = ReplicatedStorage:FindFirstChild("Remotes")
+                            local commE = remotes and remotes:FindFirstChild("CommE")
+                            if commE then
+                                commE:FireServer("ActivateAbility")
+                            end
                         end
                     end)
                 end

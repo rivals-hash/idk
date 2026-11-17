@@ -303,19 +303,59 @@ local function waitForSmartCooldown(cd, token, timeout, toolName, skill)
     return false, "playback was stopped", started
 end
 
+local activeKeyName = nil
+
+local function triggerMobileSkillButton(skillName, isDown)
+    pcall(function()
+        local pg = LocalPlayer and LocalPlayer:FindFirstChildOfClass("PlayerGui")
+        local mainGui = pg and pg:FindFirstChild("Main")
+        local skills = mainGui and mainGui:FindFirstChild("Skills")
+        local btn = skills and (skills:FindFirstChild(skillName) or skills:FindFirstChild(tostring(skillName):upper()))
+        if btn then
+            if isDown then
+                if type(firesignal) == "function" then
+                    if btn:FindFirstChild("Activated") then firesignal(btn.Activated) end
+                    firesignal(btn.MouseButton1Down)
+                    firesignal(btn.MouseButton1Click)
+                elseif type(getconnections) == "function" then
+                    for _, conn in ipairs(getconnections(btn.MouseButton1Click) or {}) do
+                        pcall(conn.Fire, conn)
+                    end
+                end
+            else
+                if type(firesignal) == "function" then
+                    firesignal(btn.MouseButton1Up)
+                end
+            end
+        end
+    end)
+end
+
 local function releaseActiveKey()
-    if activeKey and VIM then
+    if activeKey then
         local k = activeKey
-        pcall(function() VIM:SendKeyEvent(false, k, false, game) end)
+        local skillName = activeKeyName or "Z"
+        if VIM then
+            pcall(function() VIM:SendKeyEvent(false, k, false, game) end)
+        end
+        if type(keyrelease) == "function" then
+            pcall(function() keyrelease(k.Value) end)
+        end
+        if type(key_release) == "function" then
+            pcall(function() key_release(k.Value) end)
+        end
+        triggerMobileSkillButton(skillName, false)
     end
     activeKey = nil
+    activeKeyName = nil
 end
 
 local function castSmartStep(block, token)
     if not isRunning(token) then return false, "playback stopped" end
-    local keyCode = Enum.KeyCode[block.Skill or "Z"]
-    if not keyCode or not VIM then
-        return false, "ability input unavailable [" .. tostring(block.Skill) .. "]"
+    local skillName = block.Skill or "Z"
+    local keyCode = Enum.KeyCode[skillName]
+    if not keyCode then
+        return false, "invalid skill key [" .. tostring(skillName) .. "]"
     end
 
     local duration = 0.045
@@ -325,10 +365,23 @@ local function castSmartStep(block, token)
         duration = 0.45
     end
 
-    local ok = pcall(function() VIM:SendKeyEvent(true, keyCode, false, game) end)
-    if not ok then return false, "key event failed" end
+    local sent = false
+    if VIM then
+        local ok = pcall(function() VIM:SendKeyEvent(true, keyCode, false, game) end)
+        if ok then sent = true end
+    end
+    if not sent and type(keypress) == "function" then
+        local ok = pcall(function() keypress(keyCode.Value) end)
+        if ok then sent = true end
+    end
+    if not sent and type(key_press) == "function" then
+        local ok = pcall(function() key_press(keyCode.Value) end)
+        if ok then sent = true end
+    end
+    triggerMobileSkillButton(skillName, true)
 
     activeKey = keyCode
+    activeKeyName = skillName
     local alive = waitFor(duration, token)
     releaseActiveKey()
     return alive, alive and "" or "playback was stopped"
@@ -548,31 +601,23 @@ function MacroEngine.ensureMobileButton(show)
             local startPos = nil
             local hasMoved = false
 
-            btn.MouseButton1Click:Connect(function()
-                if not hasMoved then
-                    MacroEngine.executeCombo()
-                end
-            end)
-
             btn.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     dragging = true
                     hasMoved = false
                     dragStart = input.Position
                     startPos = frame.Position
+                end
+            end)
 
-                    input.Changed:Connect(function()
-                        if input.UserInputState == Enum.UserInputState.End then
-                            if dragging and not hasMoved then
-                                if MacroEngine.Running then
-                                    MacroEngine.stopMacro()
-                                else
-                                    MacroEngine.executeCombo()
-                                end
-                            end
-                            dragging = false
+            btn.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    if dragging then
+                        dragging = false
+                        if not hasMoved then
+                            MacroEngine.executeCombo()
                         end
-                    end)
+                    end
                 end
             end)
 

