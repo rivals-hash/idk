@@ -678,9 +678,8 @@ local WINDUI_LUCIDE_FALLBACK = {
     Dungeon       = "rbxassetid://98218034436456",   -- Lucide: flame
     Teleport      = "rbxassetid://84279202219901",   -- Lucide: map-pin
     ControlPeople = "rbxassetid://92483947987410",   -- Lucide: gamepad-2
-    StealFruits   = "rbxassetid://104349242902442",  -- Lucide: apple
-    apple         = "rbxassetid://104349242902442",
-    cherry        = "rbxassetid://104349242902442",
+    GodMode       = "rbxassetid://81872698913435",   -- Lucide: shield
+    shield        = "rbxassetid://81872698913435",
     HUD           = "rbxassetid://139929981863901",  -- Lucide: layout-dashboard
     Macro         = "rbxassetid://80451686744860",   -- Lucide: bot
     Visuals       = "rbxassetid://100033680381365",  -- Lucide: eye
@@ -2515,7 +2514,7 @@ local TABS_MANIFEST = {
     { id = "Visuals",       name = "ESP",            icon = "eye" },
     { id = "PvP",           name = "PvP",            icon = "swords" },
     { id = "Soru",          name = "Soru",           icon = "zap" },
-    { id = "StealFruits",   name = "Steal Fruit",    icon = "apple" },
+    { id = "GodMode",       name = "God Mode",       icon = "shield" },
     { id = "Dungeon",       name = "Dungeon",        icon = "flame" },
     { id = "Teleport",      name = "Teleport",       icon = "map-pin" },
     { id = "ControlPeople", name = "Control People", icon = "gamepad-2" },
@@ -2537,7 +2536,7 @@ local TAB_MIN_CANVAS = {
     Players = 600,
     PvP = 1450,
     Soru = 900,
-    StealFruits = 600,
+    GodMode = 850,
     Dungeon = 600,
     Teleport = 600,
     ControlPeople = 600,
@@ -2750,6 +2749,19 @@ local TRANSLATIONS_DICT = {
         ["Pink"] = "Rosa",
         ["Magenta"] = "Magenta",
         ["Orange"] = "Naranja",
+        ["God Mode"] = "Modo Dios",
+        ["God Mode Engine"] = "Motor de Modo Dios",
+        ["Boat Desync (Anti-Player)"] = "Desync de Barco (Anti-Jugadores)",
+        ["Physics Desync (Global)"] = "Desync de Fisicas (Global)",
+        ["Safe Zone Desync"] = "Desync de Zona Segura",
+        ["Anti-Stun & Combo Breaker"] = "Anti-Stun y Rompe Combos",
+        ["Desync Offset"] = "Distancia de Desync",
+        ["Prioritize Own Boat"] = "Priorizar Mi Barco",
+        ["Disable All God Modes"] = "Desactivar Todos los Modos Dios",
+        ["Desynchronizes character position via boat relative CFrame so other players miss"] = "Desincroniza la posicion del personaje via barco para que los ataques de otros jugadores fallen",
+        ["Desynchronizes physics simulation from local rendering"] = "Desincroniza la simulacion de fisicas del renderizado local",
+        ["Projects coordinates into safe zone sphere to gain safe zone status"] = "Proyecta coordenadas a la zona segura para obtener proteccion de zona segura",
+        ["Instantly cancels stun flags, unlocks walkspeed and prevents ragdoll locks"] = "Cancela instantaneamente stuns, desbloquea velocidad y evita bloqueos",
 
         ["Sky Changer & Environment"] = "Cambiador de Cielo y Entorno",
         ["Sky Changer"] = "Cambiador de Cielo",
@@ -6509,23 +6521,104 @@ end
 -- ============================================================
 
 -- ============================================================
--- STEAL FRUIT TAB (AWAITING LOGIC)
+-- GOD MODE TAB (BLOODLINES & REVERSED CLIENT ENGINES)
 -- ============================================================
 do
     pcall(function()
-        local StealPage = RegisterTab("StealFruits", "Steal Fruit", "apple")
-        local sCard = CreateCard(StealPage, "Steal Fruit Engine")
-        local infoLbl = Instance.new("TextLabel", sCard)
-        infoLbl.Size = UDim2.new(1, 0, 0, 24)
-        infoLbl.BackgroundTransparency = 1
-        infoLbl.Font = Enum.Font.GothamMedium
-        infoLbl.TextSize = 10
-        infoLbl.TextColor3 = Color3.fromRGB(180, 180, 200)
-        infoLbl.TextXAlignment = Enum.TextXAlignment.Left
-        infoLbl.Text = "Steal Fruit module ready. Awaiting custom logic."
-        infoLbl.LayoutOrder = 1
+        local GodPage = RegisterTab("GodMode", "God Mode", "shield")
+        Pages["GodMode"] = GodPage
+        GodPage.ScrollingEnabled = true
+        GodPage.Active = true
+        GodPage.Selectable = true
+        GodPage.ScrollBarThickness = 3
+        GodPage.CanvasSize = UDim2.new(0, 0, 0, 850)
+
+        local godMod = RequireModule("modules/combat/god_mode.lua")
+
+        -- Card 1: Invulnerability & Desync Methods
+        local gCard = CreateCard(GodPage, "God Mode Engine")
+        gCard.LayoutOrder = 1
+
+        local boatToggle = AddToggle(gCard, "Boat Desync (Anti-Player)", "Desynchronizes character position via boat relative CFrame so other players miss", false, function(state)
+            if godMod and godMod.SetMethod then
+                godMod.SetMethod("BoatDesync", state)
+            end
+            pcall(SaveConfigProfile)
+        end)
+
+        local physToggle = AddToggle(gCard, "Physics Desync (Global)", "Desynchronizes physics simulation from local rendering", false, function(state)
+            if godMod and godMod.SetMethod then
+                godMod.SetMethod("PhysicsDesync", state)
+            end
+            pcall(SaveConfigProfile)
+        end)
+
+        local szToggle = AddToggle(gCard, "Safe Zone Desync", "Projects coordinates into safe zone sphere to gain safe zone status", false, function(state)
+            if godMod and godMod.SetMethod then
+                godMod.SetMethod("SafeZoneDesync", state)
+            end
+            pcall(SaveConfigProfile)
+        end)
+
+        local stunToggle = AddToggle(gCard, "Anti-Stun & Combo Breaker", "Instantly cancels stun flags, unlocks walkspeed and prevents ragdoll locks", false, function(state)
+            if godMod and godMod.SetMethod then
+                godMod.SetMethod("AntiStun", state)
+            end
+            pcall(SaveConfigProfile)
+        end)
+
+        -- Card 2: Settings & Emergency Controls
+        local sCard = CreateCard(GodPage, "Settings")
+        sCard.LayoutOrder = 2
+
+        AddSlider(sCard, "Desync Offset", 100, 5000, 2000, 50, function(val)
+            if godMod and godMod.SetOffset then
+                godMod.SetOffset(val)
+            end
+            pcall(SaveConfigProfile)
+        end)
+
+        AddToggle(sCard, "Prioritize Own Boat", "Targets your spawned boat first before nearby public boats", true, function(state)
+            if godMod then
+                godMod.PrioritizeOwnBoat = state
+            end
+            pcall(SaveConfigProfile)
+        end)
+
+        AddButton(sCard, "Disable All God Modes", function()
+            if godMod and godMod.StopAll then
+                godMod.StopAll()
+            end
+            if boatToggle and boatToggle.set then boatToggle.set(false, false) end
+            if physToggle and physToggle.set then physToggle.set(false, false) end
+            if szToggle and szToggle.set then szToggle.set(false, false) end
+            if stunToggle and stunToggle.set then stunToggle.set(false, false) end
+            Notify("God Mode", "All God Mode methods deactivated.", 2.5)
+            pcall(SaveConfigProfile)
+        end)
+
+        -- Optional quick toggle hotkey (G) for Boat Desync
+        pcall(function()
+            local UserInputService = game:GetService("UserInputService")
+            UserInputService.InputBegan:Connect(function(input, gpe)
+                if gpe then return end
+                if input.KeyCode == Enum.KeyCode.G then
+                    if godMod then
+                        local newState = not godMod.BoatDesync
+                        if boatToggle and boatToggle.set then
+                            boatToggle.set(newState, true)
+                        else
+                            godMod.SetMethod("BoatDesync", newState)
+                        end
+                        Notify("God Mode", "Boat Desync: " .. (newState and "ENABLED" or "DISABLED"), 2)
+                    end
+                end
+            end)
+        end)
+
+        UpdateCardGeometry(gCard)
         UpdateCardGeometry(sCard)
-        UpdatePageCanvas(StealPage)
+        UpdatePageCanvas(GodPage)
     end)
 end
 
