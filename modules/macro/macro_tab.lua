@@ -22,6 +22,11 @@ function MacroTabModule.Build(MacroPage, env)
     AddToggle(ctrlCard, "Macro", "Enables keyboard trigger and loop execution", false, function(state)
         _G.DarlingX_Macro = state
         if macroMod then macroMod.toggle(state) end
+        local ew = rawget(_G, "DarlingX_ExtraWidgets")
+        if ew and ew.SetMacroWidgetVisible then
+            ew.SetMacroWidgetVisible(state)
+            ew.UpdateMacroVisual(false)
+        end
         Notify("Macro", "Macro: " .. (state and "Enabled" or "Disabled"))
     end)
 

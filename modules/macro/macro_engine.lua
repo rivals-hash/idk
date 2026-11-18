@@ -402,6 +402,7 @@ end
 
 function MacroEngine.stopMacro()
     MacroEngine.Running = false
+    _G.DarlingX_MacroRunning = false
     MacroEngine.RunToken = (MacroEngine.RunToken or 0) + 1
     releaseActiveKey()
 
@@ -410,6 +411,11 @@ function MacroEngine.stopMacro()
     end
     macroThread = nil
     setStatus("Idle")
+
+    local ew = rawget(_G, "DarlingX_ExtraWidgets")
+    if ew and ew.UpdateMacroVisual then
+        ew.UpdateMacroVisual(false)
+    end
 
     local b = macroBtn or mobileMacroBtn
     if b then
@@ -502,8 +508,14 @@ function MacroEngine.startMacro()
 
     MacroEngine.RunToken = (MacroEngine.RunToken or 0) + 1
     MacroEngine.Running = true
+    _G.DarlingX_MacroRunning = true
     local token = MacroEngine.RunToken
     setStatus("Running...")
+
+    local ew = rawget(_G, "DarlingX_ExtraWidgets")
+    if ew and ew.UpdateMacroVisual then
+        ew.UpdateMacroVisual(true)
+    end
 
     local b = macroBtn or mobileMacroBtn
     if b then
@@ -522,6 +534,10 @@ function MacroEngine.toggle(state)
     end
     if _G.DarlingX_SyncMacroUI then
         pcall(_G.DarlingX_SyncMacroUI, MacroEngine.Enabled)
+    end
+    local ew = rawget(_G, "DarlingX_ExtraWidgets")
+    if ew and ew.SetMacroWidgetVisible then
+        ew.SetMacroWidgetVisible(MacroEngine.Enabled)
     end
     return MacroEngine.Enabled
 end
@@ -553,92 +569,11 @@ function MacroEngine.setStatusCallback(cb)
     end
 end
 
-local macroGui = nil
-local macroBtn = nil
-
--- Draggable On-Screen One-Touch Action Widget
+-- Draggable On-Screen One-Touch Action Widget via Unified Glass System
 function MacroEngine.ensureMobileButton(show)
-    if show then
-        if not macroGui then
-            local parent = nil
-            pcall(function()
-                local gethui = (type(gethui) == "function" and gethui) or (getgenv and getgenv().gethui)
-                parent = (gethui and gethui()) or CoreGui or (LocalPlayer and LocalPlayer:FindFirstChildOfClass("PlayerGui"))
-            end)
-            macroGui = Instance.new("ScreenGui")
-            macroGui.Name = "DarlingMacroWidget"
-            macroGui.ResetOnSpawn = false
-            macroGui.DisplayOrder = 99999
-            macroGui.IgnoreGuiInset = true
-            pcall(function()
-                local syn = (type(syn) == "table" and syn) or (getgenv and getgenv().syn)
-                if syn and syn.protect_gui then syn.protect_gui(macroGui) end
-            end)
-            macroGui.Parent = parent
-
-            local frame = Instance.new("Frame", macroGui)
-            frame.Size = UDim2.new(0, 60, 0, 60)
-            frame.Position = UDim2.new(0.85, 0, 0.45, 0)
-            frame.BackgroundColor3 = Color3.fromRGB(15, 12, 22)
-            frame.BackgroundTransparency = 0.3
-            frame.Active = true
-
-            local corner = Instance.new("UICorner", frame)
-            corner.CornerRadius = UDim.new(0, 16)
-
-            local stroke = Instance.new("UIStroke", frame)
-            stroke.Color = Color3.fromRGB(168, 85, 247)
-            stroke.Thickness = 1.2
-            stroke.Transparency = 0.4
-
-            local btn = Instance.new("TextButton", frame)
-            btn.Size = UDim2.new(1, -6, 1, -6)
-            btn.Position = UDim2.new(0, 3, 0, 3)
-            btn.BackgroundTransparency = 1
-            btn.Text = "MACRO\nOFF"
-            btn.Font = Enum.Font.GothamBold
-            btn.TextSize = 10
-            btn.TextColor3 = Color3.fromRGB(220, 220, 220)
-            macroBtn = btn
-
-            local dragging = false
-            local dragStart = nil
-            local startPos = nil
-            local hasMoved = false
-
-            btn.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    dragging = true
-                    hasMoved = false
-                    dragStart = input.Position
-                    startPos = frame.Position
-                end
-            end)
-
-            btn.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    if dragging then
-                        dragging = false
-                        if not hasMoved then
-                            MacroEngine.executeCombo()
-                        end
-                    end
-                end
-            end)
-
-            UserInputService.InputChanged:Connect(function(input)
-                if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                    local delta = input.Position - dragStart
-                    if delta.Magnitude > 6 then hasMoved = true end
-                    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-                end
-            end)
-        end
-        macroGui.Enabled = true
-    else
-        if macroGui then
-            macroGui.Enabled = false
-        end
+    local ew = rawget(_G, "DarlingX_ExtraWidgets")
+    if ew and ew.SetMacroWidgetVisible then
+        ew.SetMacroWidgetVisible(show == true)
     end
 end
 
@@ -655,4 +590,5 @@ UserInputService.InputBegan:Connect(function(inp, gpe)
     end
 end)
 
+_G.DarlingX_MacroMod = MacroEngine
 return MacroEngine

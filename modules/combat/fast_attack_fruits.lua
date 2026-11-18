@@ -170,153 +170,32 @@ end
 if LocalPlayer.Character then hookCharacter(LocalPlayer.Character) end
 LocalPlayer.CharacterAdded:Connect(hookCharacter)
 
--- GUI FLOTANTE
-local GUI_NAME = "AuroraX_FastAttack_GUI"
-local function getGuiParent()
-    local ok, h = pcall(function() return gethui and gethui() end)
-    if ok and h then return h end
-    local ok2, c = pcall(function() return CoreGui end)
-    if ok2 and c then return c end
-    return LocalPlayer:WaitForChild("PlayerGui")
-end
-
-pcall(function()
-    local old = getGuiParent():FindFirstChild(GUI_NAME)
-    if old then old:Destroy() end
-end)
-
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = GUI_NAME
-ScreenGui.ResetOnSpawn = false
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.Enabled = false
-ScreenGui.Parent = getGuiParent()
-
-local Pill = Instance.new("TextButton")
-Pill.Name = "FastAttackPill"
-Pill.Size = UDim2.fromOffset(164, 38)
-Pill.Position = UDim2.new(0.5, -82, 0.16, 0)
-Pill.BackgroundColor3 = Color3.fromRGB(16, 12, 18)
-Pill.BorderSizePixel = 0
-Pill.AutoButtonColor = false
-Pill.Text = ""
-Pill.Active = true
-Pill.Parent = ScreenGui
-
-local PillCorner = Instance.new("UICorner", Pill)
-PillCorner.CornerRadius = UDim.new(0, 19)
-
-local PillStroke = Instance.new("UIStroke", Pill)
-PillStroke.Color = Color3.fromRGB(60, 220, 110)
-PillStroke.Thickness = 1.4
-
-local StatusDot = Instance.new("Frame", Pill)
-StatusDot.Name = "StatusDot"
-StatusDot.Size = UDim2.fromOffset(10, 10)
-StatusDot.Position = UDim2.fromOffset(14, 14)
-StatusDot.BackgroundColor3 = Color3.fromRGB(60, 220, 110)
-StatusDot.BorderSizePixel = 0
-local DotCorner = Instance.new("UICorner", StatusDot)
-DotCorner.CornerRadius = UDim.new(1, 0)
-
-local TitleLabel = Instance.new("TextLabel", Pill)
-TitleLabel.Name = "TitleLabel"
-TitleLabel.Position = UDim2.fromOffset(32, 5)
-TitleLabel.Size = UDim2.new(1, -34, 0, 16)
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.TextSize = 11
-TitleLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-TitleLabel.Text = "Fast Attack: ON"
-
-local SubLabel = Instance.new("TextLabel", Pill)
-SubLabel.Name = "SubLabel"
-SubLabel.Size = UDim2.new(1, -34, 0, 12)
-SubLabel.Position = UDim2.fromOffset(32, 21)
-SubLabel.BackgroundTransparency = 1
-SubLabel.Font = Enum.Font.GothamMedium
-SubLabel.TextSize = 8
-SubLabel.TextColor3 = Color3.fromRGB(150, 145, 155)
-SubLabel.TextXAlignment = Enum.TextXAlignment.Left
-SubLabel.Text = "Fruits Too • By Darling"
-
-local function updateButtonVisuals()
-    if Config.Enabled then
-        PillStroke.Color = Color3.fromRGB(60, 220, 110)
-        StatusDot.BackgroundColor3 = Color3.fromRGB(60, 220, 110)
-        TitleLabel.Text = "Fast Attack: ON"
-        TitleLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
-    else
-        PillStroke.Color = Color3.fromRGB(220, 60, 70)
-        StatusDot.BackgroundColor3 = Color3.fromRGB(220, 60, 70)
-        TitleLabel.Text = "Fast Attack: OFF"
-        TitleLabel.TextColor3 = Color3.fromRGB(180, 175, 185)
-    end
-end
-
-local function toggleFastAttack()
-    Config.Enabled = not Config.Enabled
-    _G.DarlingX_FruitFastAttack = Config.Enabled
-    updateButtonVisuals()
-    if _G.DarlingX_SyncFruitFastAttackUI then
-        pcall(_G.DarlingX_SyncFruitFastAttackUI, Config.Enabled)
-    end
-    pcall(function()
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Fruit Fast Attack",
-            Text = Config.Enabled and "Enabled (Fruits & Weapons active)" or "Disabled",
-            Duration = 2,
-        })
-    end)
-end
-
-do
-    local dragging, dragStart, startPos, moved = false, nil, nil, false
-    Pill.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging, moved = true, false
-            dragStart = input.Position
-            startPos = Pill.Position
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            if delta.Magnitude > 5 then moved = true end
-            Pill.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            if dragging then
-                dragging = false
-                if not moved then toggleFastAttack() end
-            end
-        end
-    end)
-end
-
-UserInputService.InputBegan:Connect(function(input, gpe)
-    if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
-        toggleFastAttack()
-    end
-end)
-
-updateButtonVisuals()
-
 local FruitFastAttack = {}
 
 function FruitFastAttack.enable()
     Config.Enabled = true
     _G.DarlingX_FruitFastAttack = true
-    updateButtonVisuals()
+    local ew = rawget(_G, "DarlingX_ExtraWidgets")
+    if ew and ew.SetFruitFastAttackWidgetVisible then
+        ew.SetFruitFastAttackWidgetVisible(true)
+        ew.UpdateFruitFastAttackVisual(true)
+    end
+    if _G.DarlingX_SyncFruitFastAttackUI then
+        pcall(_G.DarlingX_SyncFruitFastAttackUI, true)
+    end
 end
 
 function FruitFastAttack.disable()
     Config.Enabled = false
     _G.DarlingX_FruitFastAttack = false
-    updateButtonVisuals()
+    local ew = rawget(_G, "DarlingX_ExtraWidgets")
+    if ew and ew.SetFruitFastAttackWidgetVisible then
+        ew.SetFruitFastAttackWidgetVisible(false)
+        ew.UpdateFruitFastAttackVisual(false)
+    end
+    if _G.DarlingX_SyncFruitFastAttackUI then
+        pcall(_G.DarlingX_SyncFruitFastAttackUI, false)
+    end
 end
 
 function FruitFastAttack.toggle(state)
@@ -326,7 +205,14 @@ function FruitFastAttack.toggle(state)
         Config.Enabled = not Config.Enabled
     end
     _G.DarlingX_FruitFastAttack = Config.Enabled
-    updateButtonVisuals()
+    local ew = rawget(_G, "DarlingX_ExtraWidgets")
+    if ew and ew.SetFruitFastAttackWidgetVisible then
+        ew.SetFruitFastAttackWidgetVisible(Config.Enabled)
+        ew.UpdateFruitFastAttackVisual(Config.Enabled)
+    end
+    if _G.DarlingX_SyncFruitFastAttackUI then
+        pcall(_G.DarlingX_SyncFruitFastAttackUI, Config.Enabled)
+    end
     return Config.Enabled
 end
 
@@ -334,4 +220,12 @@ function FruitFastAttack.isEnabled()
     return Config.Enabled == true or _G.DarlingX_FruitFastAttack == true
 end
 
+-- Keybind listener (RightControl)
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
+        FruitFastAttack.toggle()
+    end
+end)
+
+_G.DarlingX_FruitFastAttackMod = FruitFastAttack
 return FruitFastAttack

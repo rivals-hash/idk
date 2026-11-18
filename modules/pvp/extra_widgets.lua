@@ -357,11 +357,87 @@ local function initSanguineUI()
     end)
 end
 
+-- 5. Fruit Fast Attack Widget
+local FruitFastAttackUI = nil
+local fruitFABtnRef = nil
+
+local function updateFruitFAVisual(state)
+    if not fruitFABtnRef then return end
+    local active = (state ~= nil) and state or (_G.DarlingX_FruitFastAttack == true)
+    if active then
+        fruitFABtnRef.BackgroundColor3 = Color3.fromRGB(0, 190, 90)
+        fruitFABtnRef.BackgroundTransparency = 0.2
+        fruitFABtnRef.Text = "FRUIT FA: ON"
+    else
+        fruitFABtnRef.BackgroundColor3 = Color3.fromRGB(36, 30, 50)
+        fruitFABtnRef.BackgroundTransparency = 0.5
+        fruitFABtnRef.Text = "FRUIT FA: OFF"
+    end
+end
+
+local function initFruitFastAttackUI()
+    if FruitFastAttackUI and FruitFastAttackUI.Parent then return end
+    local gui, container, btn = createGlassWidget("FruitFastAttackWidget", UDim2.new(0, 105, 0, 38), UDim2.new(0.85, 0, 0.26, 0))
+    FruitFastAttackUI = gui
+    fruitFABtnRef = btn
+    updateFruitFAVisual(_G.DarlingX_FruitFastAttack)
+
+    makeDraggable(container, btn, function()
+        _G.DarlingX_FruitFastAttack = not _G.DarlingX_FruitFastAttack
+        updateFruitFAVisual(_G.DarlingX_FruitFastAttack)
+        if _G.DarlingX_SyncFruitFastAttackUI then
+            pcall(_G.DarlingX_SyncFruitFastAttackUI, _G.DarlingX_FruitFastAttack)
+        end
+        local ffa = rawget(_G, "DarlingX_FruitFastAttackMod")
+        if ffa and ffa.toggle then
+            ffa.toggle(_G.DarlingX_FruitFastAttack)
+        end
+    end)
+end
+
+-- 6. Macro Widget
+local MacroWidgetUI = nil
+local macroWidgetBtnRef = nil
+
+local function updateMacroWidgetVisual(state)
+    if not macroWidgetBtnRef then return end
+    local isRunning = (state ~= nil) and state or (_G.DarlingX_MacroRunning == true)
+    if isRunning then
+        macroWidgetBtnRef.BackgroundColor3 = Color3.fromRGB(255, 75, 145)
+        macroWidgetBtnRef.BackgroundTransparency = 0.2
+        macroWidgetBtnRef.Text = "MACRO: ON"
+    else
+        macroWidgetBtnRef.BackgroundColor3 = Color3.fromRGB(36, 30, 50)
+        macroWidgetBtnRef.BackgroundTransparency = 0.5
+        macroWidgetBtnRef.Text = "MACRO: OFF"
+    end
+end
+
+local function initMacroUI()
+    if MacroWidgetUI and MacroWidgetUI.Parent then return end
+    local gui, container, btn = createGlassWidget("MacroWidget", UDim2.new(0, 96, 0, 38), UDim2.new(0.85, 0, 0.18, 0))
+    MacroWidgetUI = gui
+    macroWidgetBtnRef = btn
+    updateMacroWidgetVisual(false)
+
+    makeDraggable(container, btn, function()
+        local macroMod = rawget(_G, "DarlingX_MacroMod")
+        if macroMod and macroMod.executeCombo then
+            macroMod.executeCombo()
+            local running = (macroMod.Running == true)
+            _G.DarlingX_MacroRunning = running
+            updateMacroWidgetVisual(running)
+        end
+    end)
+end
+
 -- Initialize widgets lazily on startup
 initSuperJumpUI()
 initCamlockUI()
 initDragonM1UI()
 initSanguineUI()
+initFruitFastAttackUI()
+initMacroUI()
 
 local Widgets = {
     -- Super Jump
@@ -407,6 +483,28 @@ local Widgets = {
     end,
     UpdateSanguineVisual = updateSanguineVisual,
     DoSanguineBoost = triggerSanguineAction,
+
+    -- Fruit Fast Attack
+    SetFruitFastAttackWidgetVisible = function(state)
+        if not FruitFastAttackUI or not FruitFastAttackUI.Parent then initFruitFastAttackUI() end
+        if FruitFastAttackUI then
+            ensureParent(FruitFastAttackUI)
+            FruitFastAttackUI.Enabled = (state == true)
+            updateFruitFAVisual(state)
+        end
+    end,
+    UpdateFruitFastAttackVisual = updateFruitFAVisual,
+
+    -- Macro
+    SetMacroWidgetVisible = function(state)
+        if not MacroWidgetUI or not MacroWidgetUI.Parent then initMacroUI() end
+        if MacroWidgetUI then
+            ensureParent(MacroWidgetUI)
+            MacroWidgetUI.Enabled = (state == true)
+            updateMacroWidgetVisual(false)
+        end
+    end,
+    UpdateMacroVisual = updateMacroWidgetVisual,
 }
 
 _G.DarlingX_ExtraWidgets = Widgets
