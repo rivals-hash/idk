@@ -19,7 +19,8 @@ function MacroTabModule.Build(MacroPage, env)
     -- 1. Macro Controller Card
     local ctrlCard = CreateCard(MacroPage, "Macro Controller")
 
-    AddToggle(ctrlCard, "Macro Enabled", "Enables keyboard trigger and loop execution", false, function(state)
+    AddToggle(ctrlCard, "Macro", "Enables keyboard trigger and loop execution", false, function(state)
+        _G.DarlingX_Macro = state
         if macroMod then macroMod.toggle(state) end
         Notify("Macro", "Macro: " .. (state and "Enabled" or "Disabled"))
     end)

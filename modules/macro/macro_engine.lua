@@ -516,9 +516,14 @@ end
 
 function MacroEngine.toggle(state)
     MacroEngine.Enabled = (state == true)
+    _G.DarlingX_Macro = MacroEngine.Enabled
     if not MacroEngine.Enabled and MacroEngine.Running then
         MacroEngine.stopMacro()
     end
+    if _G.DarlingX_SyncMacroUI then
+        pcall(_G.DarlingX_SyncMacroUI, MacroEngine.Enabled)
+    end
+    return MacroEngine.Enabled
 end
 
 function MacroEngine.executeCombo()

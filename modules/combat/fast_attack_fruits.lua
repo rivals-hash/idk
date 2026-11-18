@@ -65,7 +65,8 @@ end
 
 local lastFastAttackTime = 0
 local function executeFastAttackBurst()
-    if not Config.Enabled then return end
+    local isEnabled = Config.Enabled or (_G.DarlingX_FruitFastAttack == true)
+    if not isEnabled then return end
     local now = tick()
     if now - lastFastAttackTime < Config.AttackDelay then return end
     lastFastAttackTime = now
@@ -140,7 +141,8 @@ end
 
 local lastHeartbeatTick = 0
 RunService.Heartbeat:Connect(function()
-    if not Config.Enabled then return end
+    local isEnabled = Config.Enabled or (_G.DarlingX_FruitFastAttack == true)
+    if not isEnabled then return end
     local now = tick()
     if now - lastHeartbeatTick < Config.AttackDelay then return end
     lastHeartbeatTick = now
@@ -150,7 +152,8 @@ end)
 local function hookTool(tool)
     if tool and tool:IsA("Tool") and tool.ToolTip ~= "Gun" then
         tool.Activated:Connect(function()
-            if Config.Enabled then executeFastAttackBurst() end
+            local isEnabled = Config.Enabled or (_G.DarlingX_FruitFastAttack == true)
+            if isEnabled then executeFastAttackBurst() end
         end)
     end
 end
@@ -186,6 +189,7 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = GUI_NAME
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Enabled = false
 ScreenGui.Parent = getGuiParent()
 
 local Pill = Instance.new("TextButton")
@@ -253,10 +257,14 @@ end
 
 local function toggleFastAttack()
     Config.Enabled = not Config.Enabled
+    _G.DarlingX_FruitFastAttack = Config.Enabled
     updateButtonVisuals()
+    if _G.DarlingX_SyncFruitFastAttackUI then
+        pcall(_G.DarlingX_SyncFruitFastAttackUI, Config.Enabled)
+    end
     pcall(function()
         game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Fast Attack (Fruits Too)",
+            Title = "Fruit Fast Attack",
             Text = Config.Enabled and "Enabled (Fruits & Weapons active)" or "Disabled",
             Duration = 2,
         })
@@ -296,4 +304,34 @@ UserInputService.InputBegan:Connect(function(input, gpe)
 end)
 
 updateButtonVisuals()
-print("[Aurora X] Fast Attack (Fruits Too) Loaded By Darling")
+
+local FruitFastAttack = {}
+
+function FruitFastAttack.enable()
+    Config.Enabled = true
+    _G.DarlingX_FruitFastAttack = true
+    updateButtonVisuals()
+end
+
+function FruitFastAttack.disable()
+    Config.Enabled = false
+    _G.DarlingX_FruitFastAttack = false
+    updateButtonVisuals()
+end
+
+function FruitFastAttack.toggle(state)
+    if state ~= nil then
+        Config.Enabled = (state == true)
+    else
+        Config.Enabled = not Config.Enabled
+    end
+    _G.DarlingX_FruitFastAttack = Config.Enabled
+    updateButtonVisuals()
+    return Config.Enabled
+end
+
+function FruitFastAttack.isEnabled()
+    return Config.Enabled == true or _G.DarlingX_FruitFastAttack == true
+end
+
+return FruitFastAttack
