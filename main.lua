@@ -2431,7 +2431,61 @@ end
 
 createHeaderBtn("-", -54, Color3.fromRGB(255, 255, 255), minimizeUI)
 createHeaderBtn("X", -28, Color3.fromRGB(255, 75, 75), fullCloseUI)
-ConnectButton(FloatingOpen, maximizeUI)
+
+-- FloatingOpen Dragging & Tap Support
+do
+    local fDragging = false
+    local fDragStart = nil
+    local fStartPos = nil
+    local fIsDrag = false
+    local fMoveConn = nil
+    local fEndConn = nil
+
+    local function cleanupFDrag()
+        if fMoveConn then fMoveConn:Disconnect(); fMoveConn = nil end
+        if fEndConn then fEndConn:Disconnect(); fEndConn = nil end
+        fDragging = false
+    end
+
+    FloatingOpen.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            fDragging = true
+            fIsDrag = false
+            fDragStart = input.Position
+            fStartPos = FloatingOpen.Position
+
+            cleanupFDrag()
+
+            fMoveConn = UserInputService.InputChanged:Connect(function(moveInput)
+                if fDragging and (moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch) then
+                    if fDragStart and fStartPos then
+                        local delta = moveInput.Position - fDragStart
+                        if delta.Magnitude > 6 then
+                            fIsDrag = true
+                            FloatingOpen.Position = UDim2.new(
+                                fStartPos.X.Scale,
+                                fStartPos.X.Offset + delta.X,
+                                fStartPos.Y.Scale,
+                                fStartPos.Y.Offset + delta.Y
+                            )
+                        end
+                    end
+                end
+            end)
+
+            fEndConn = UserInputService.InputEnded:Connect(function(endInput)
+                if endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
+                    if fDragging then
+                        cleanupFDrag()
+                        if not fIsDrag then
+                            maximizeUI()
+                        end
+                    end
+                end
+            end)
+        end
+    end)
+end
 
 -- Dragging Support
 local dragging, dragStart, startPos
@@ -2516,7 +2570,7 @@ local TABS_MANIFEST = {
     { id = "Home",          name = "Home",           icon = "house" },
     { id = "Aimbot",        name = "Aimbot",         icon = "crosshair" },
     { id = "Players",       name = "Players",        icon = "users" },
-    { id = "Visuals",       name = "ESP",            icon = "eye" },
+    { id = "Esp",           name = "ESP",            icon = "scan" },
     { id = "PvP",           name = "PvP",            icon = "swords" },
     { id = "Soru",          name = "Soru",           icon = "zap" },
     { id = "StealFruits",   name = "Steal Fruits",   icon = "apple" },
@@ -2528,7 +2582,7 @@ local TABS_MANIFEST = {
     { id = "WaifuAI",       name = "Waifu AI",       icon = "sparkles" },
     { id = "Skins",         name = "Skins",          icon = "gem" },
     { id = "Music",         name = "Music",          icon = "headphones" },
-    { id = "Animations",    name = "Animations",     icon = "sparkles" },
+    { id = "Visuals",       name = "Visuals",        icon = "sparkles" },
     { id = "ScriptHub",     name = "Script Hub",     icon = "code" },
     { id = "Config",        name = "Config",         icon = "sliders-horizontal" },
     { id = "Themes",        name = "Themes",         icon = "palette" },
@@ -2692,6 +2746,32 @@ end
 local TRANSLATIONS_DICT = {
     -- Translation Tables
     ["Spanish"] = {
+        -- Kit One Shot & Visuals / Kamui / Buddha Rainbow
+        ["Kit One Shot"] = "Kit One Shot",
+        ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Ataque remoto vacio 18k+ instantaneo con M1 (Activa Fast Attack Fruta)",
+        ["M1 Delay"] = "Velocidad M1",
+        ["Kit One Shot Floating Widget"] = "Widget Flotante Kit One Shot",
+        ["Movable on-screen toggle for Kit One Shot"] = "Boton flotante en pantalla para Kit One Shot",
+        ["Fruit Fast Attack Floating Widget"] = "Widget Flotante Fruit Fast Attack",
+        ["X-Ray Wall Vision"] = "Vision Rayos X de Paredes",
+        ["X-Ray Vision"] = "Vision Rayos X",
+        ["Makes map walls and objects transparent to spot players and chests easily"] = "Vuelve transparentes las paredes del mapa para ver jugadores y cofres",
+        ["Buddha Rainbow Circle"] = "Circulo Buddha Arcoiris",
+        ["Recolors your Buddha circle with animated rainbow gradient (Client-only)"] = "Colorea el circulo de Buddha con gradiente arcoiris animado (Solo tu cliente)",
+        ["Only My Buddha Circle"] = "Solo Mi Circulo de Buddha",
+        ["Only affects your own character instead of all nearby Buddha users"] = "Solo afecta a tu propio personaje y no a otros usuarios de Buddha",
+        ["Kamui Visuals & Teleport"] = "Efectos Visuales y Teletransporte Kamui",
+        ["Rip Kamui"] = "Rip Kamui",
+        ["Arena Kamui"] = "Arena Kamui",
+        ["Heaven Kamui"] = "Heaven Kamui",
+        ["Pakistan Kamui"] = "Pakistan Kamui",
+        ["Kamui"] = "Kamui",
+        ["Give Kamui Tools"] = "Obtener Herramientas Kamui",
+        ["Summon Dimensions"] = "Invocar Dimensiones",
+        ["Pocket Dimension"] = "Dimension de Bolsillo",
+        ["Rip Family Arena"] = "Arena de la Familia Rip",
+        ["Heaven Dimension"] = "Dimension Celestial",
+        ["Pakistan Dimension"] = "Dimension Pakistan",
         -- Monody New Additions & Performance Features
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Companera Waifu AI",
@@ -3297,6 +3377,75 @@ local TRANSLATIONS_DICT = {
         ["Roblox Audio Player"] = "Reproductor de Audio Roblox",
     },
     ["Portuguese"] = {
+        -- Kit One Shot & Visuals / Kamui / Buddha Rainbow
+        ["Kit One Shot"] = "Kit One Shot",
+        ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Ataque remoto de vácuo 18k+ instantâneo com M1 (Ativa Fruit Fast Attack)",
+        ["M1 Delay"] = "Velocidade M1",
+        ["Kit One Shot Floating Widget"] = "Widget Flutuante Kit One Shot",
+        ["Movable on-screen toggle for Kit One Shot"] = "Botão flutuante na tela para Kit One Shot",
+        ["Fruit Fast Attack Floating Widget"] = "Widget Flutuante Fruit Fast Attack",
+        ["X-Ray Wall Vision"] = "Visão Raio-X de Paredes",
+        ["X-Ray Vision"] = "Visão Raio-X",
+        ["Makes map walls and objects transparent to spot players and chests easily"] = "Torna paredes e objetos transparentes para avistar jogadores e baús",
+        ["Buddha Rainbow Circle"] = "Círculo Buddha Arco-íris",
+        ["Recolors your Buddha circle with animated rainbow gradient (Client-only)"] = "Colore o círculo do Buddha com gradiente arco-íris animado (Apenas cliente)",
+        ["Only My Buddha Circle"] = "Apenas Meu Círculo de Buddha",
+        ["Only affects your own character instead of all nearby Buddha users"] = "Afeta apenas seu próprio personagem e não outros usuários de Buddha",
+        ["Kamui Visuals & Teleport"] = "Efeitos Visuais e Teletransporte Kamui",
+        ["Rip Kamui"] = "Rip Kamui",
+        ["Arena Kamui"] = "Arena Kamui",
+        ["Heaven Kamui"] = "Heaven Kamui",
+        ["Pakistan Kamui"] = "Pakistan Kamui",
+        ["Kamui"] = "Kamui",
+        ["Give Kamui Tools"] = "Obter Ferramentas Kamui",
+        ["Summon Dimensions"] = "Invocar Dimensões",
+        ["Pocket Dimension"] = "Dimensão de Bolso",
+        ["Rip Family Arena"] = "Arena da Família Rip",
+        ["Heaven Dimension"] = "Dimensão Celestial",
+        ["Pakistan Dimension"] = "Dimensão Paquistão",
+        -- Performance / FFlags / Steal Fruits / Waifu
+        ["Waifu AI"] = "Waifu AI",
+        ["Waifu AI Companion"] = "Companheira Waifu AI",
+        ["Activar Waifu"] = "Ativar Waifu",
+        ["Hablar con Waifu"] = "Falar com Waifu",
+        ["Bailar / Hacer Animación"] = "Dançar / Fazer Animação",
+        ["Dar Ánimos / Frase Kawaii"] = "Dar Ânimo (Kawaii)",
+        ["Alerta de Peligro / Combate"] = "Alerta de Perigo",
+        ["Ajustes de Waifu"] = "Configurações de Waifu",
+        ["Reacciones de Combate & Peligro"] = "Reações de Combate e Perigo",
+        ["Seguir Cursor / Touch"] = "Seguir Cursor e Toque",
+        ["Pensamientos Automáticos"] = "Pensamentos Automáticos",
+        ["Color Adaptable al Tema"] = "Cor Adaptável ao Tema",
+        ["Tamaño de Waifu"] = "Tamanho de Waifu",
+        ["FFlags"] = "FFlags",
+        ["Steal Fruits"] = "Roubar Frutas",
+        ["Steal Fruits (Acracy Trade Engine)"] = "Roubar Frutas (Motor Acracy Trade)",
+        ["Discord Webhook"] = "Webhook do Discord",
+        ["Trade Partner Username"] = "Usuário Parceiro de Trade",
+        ["Execute Steal Fruits"] = "Executar Roubo de Frutas",
+        ["Copy Custom Loadstring"] = "Copiar Loadstring Personalizado",
+        ["Reset to Defaults"] = "Restaurar Padrões",
+        ["Configure Discord notification webhook and target trade recipient to transfer fruits automatically."] = "Configure o webhook do Discord e o usuário destinatário para transferir frutas automaticamente.",
+        ["Fruit Fast Attack"] = "Fruit Fast Attack",
+        ["Fast Attack supporting Devil Fruits (By Darling)"] = "Fast Attack com suporte a Frutas (Por Darling)",
+        ["Apply Ultimate Potato (120 FPS + Max Performance)"] = "Aplicar Ultimate Potato (120 FPS + Desempenho Máximo)",
+        ["Ultimate Performance (1-Tap Potato)"] = "Desempenho Máximo (Potato em 1 Toque)",
+        ["FFlags JSON Editor"] = "Editor JSON de FFlags",
+        ["Apply FFlags JSON"] = "Aplicar FFlags JSON",
+        ["One-tap master optimization: 120 FPS cap, low geometry, smooth plastic textures, shadow removal, and particle clearing."] = "Otimização mestre em 1 toque: limite de 120 FPS, baixa geometria, texturas lisas, sem sombras e remoção de partículas.",
+        ["FFlags Editor Personalizado"] = "Editor de FFlags Personalizado",
+        ["Pegar FFlags JSON"] = "Colar FFlags JSON",
+        ["Aplicar FFlags"] = "Aplicar FFlags",
+        ["Limpiar Editor"] = "Limpar Editor",
+        ["Auto Aplicar FFlags al Iniciar"] = "Auto-Aplicar FFlags ao Iniciar",
+        ["Modo Patata (Potato FFlags)"] = "Modo Batata (Potato FFlags)",
+        ["Cargar FFlags Potato en Editor"] = "Carregar FFlags Batata",
+        ["Performance Presets"] = "Predefinições de Desempenho",
+        ["Load Pro Preset"] = "Carregar Predefinição Pro",
+        ["Load Android Preset"] = "Carregar Predefinição Android",
+        ["Apply Pro Preset"] = "Aplicar Predefinição Pro",
+        ["Load Potato Preset"] = "Carregar Predefinição Batata",
+        ["FFlags Editor"] = "Editor de FFlags",
         ["Player Management"] = "Gerenciamento de Jogadores",
         ["Search Player..."] = "Pesquisar Jogador...",
         ["Refresh Player List"] = "Atualizar Lista",
@@ -3764,6 +3913,75 @@ local TRANSLATIONS_DICT = {
         ["Roblox Audio Player"] = "Reprodutor de Áudio Roblox",
     },
     ["French"] = {
+        -- Kit One Shot & Visuals / Kamui / Buddha Rainbow
+        ["Kit One Shot"] = "Kit One Shot",
+        ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Attaque distante 18k+ vide instantanée avec M1 (Active Fruit Fast Attack)",
+        ["M1 Delay"] = "Vitesse M1",
+        ["Kit One Shot Floating Widget"] = "Widget Flottant Kit One Shot",
+        ["Movable on-screen toggle for Kit One Shot"] = "Bouton flottant à l'écran pour Kit One Shot",
+        ["Fruit Fast Attack Floating Widget"] = "Widget Flottant Fruit Fast Attack",
+        ["X-Ray Wall Vision"] = "Vision Rayons X des Murs",
+        ["X-Ray Vision"] = "Vision Rayons X",
+        ["Makes map walls and objects transparent to spot players and chests easily"] = "Rend les murs et objets transparents pour repérer joueurs et coffres",
+        ["Buddha Rainbow Circle"] = "Cercle Buddha Arc-en-ciel",
+        ["Recolors your Buddha circle with animated rainbow gradient (Client-only)"] = "Colore le cercle Buddha avec dégradé arc-en-ciel animé (Client uniquement)",
+        ["Only My Buddha Circle"] = "Uniquement Mon Cercle Buddha",
+        ["Only affects your own character instead of all nearby Buddha users"] = "Affecte uniquement votre personnage et non les autres utilisateurs Buddha",
+        ["Kamui Visuals & Teleport"] = "Effets Visuels et Téléportation Kamui",
+        ["Rip Kamui"] = "Rip Kamui",
+        ["Arena Kamui"] = "Arena Kamui",
+        ["Heaven Kamui"] = "Heaven Kamui",
+        ["Pakistan Kamui"] = "Pakistan Kamui",
+        ["Kamui"] = "Kamui",
+        ["Give Kamui Tools"] = "Obtenir Outils Kamui",
+        ["Summon Dimensions"] = "Invoquer Dimensions",
+        ["Pocket Dimension"] = "Dimension de Poche",
+        ["Rip Family Arena"] = "Arène de la Famille Rip",
+        ["Heaven Dimension"] = "Dimension Céleste",
+        ["Pakistan Dimension"] = "Dimension Pakistan",
+        -- Waifu / FFlags / Steal Fruits / Performance
+        ["Waifu AI"] = "Waifu AI",
+        ["Waifu AI Companion"] = "Compagne Waifu AI",
+        ["Activar Waifu"] = "Activer Waifu",
+        ["Hablar con Waifu"] = "Parler avec Waifu",
+        ["Bailar / Hacer Animación"] = "Danser / Faire une Animation",
+        ["Dar Ánimos / Frase Kawaii"] = "Encouragements (Kawaii)",
+        ["Alerta de Peligro / Combate"] = "Alerte de Danger",
+        ["Ajustes de Waifu"] = "Paramètres de Waifu",
+        ["Reacciones de Combate & Peligro"] = "Réactions de Combat et Danger",
+        ["Seguir Cursor / Touch"] = "Suivre Curseur et Toucher",
+        ["Pensamientos Automáticos"] = "Pensées Automatiques",
+        ["Color Adaptable al Tema"] = "Couleur Adaptée au Thème",
+        ["Tamaño de Waifu"] = "Taille de Waifu",
+        ["FFlags"] = "FFlags",
+        ["Steal Fruits"] = "Voler Fruits",
+        ["Steal Fruits (Acracy Trade Engine)"] = "Voler Fruits (Moteur Acracy Trade)",
+        ["Discord Webhook"] = "Webhook Discord",
+        ["Trade Partner Username"] = "Nom d'utilisateur Partenaire d'Échange",
+        ["Execute Steal Fruits"] = "Exécuter Vol de Fruits",
+        ["Copy Custom Loadstring"] = "Copier Loadstring Personnalisé",
+        ["Reset to Defaults"] = "Réinitialiser par Défaut",
+        ["Configure Discord notification webhook and target trade recipient to transfer fruits automatically."] = "Configurez le webhook Discord et l'utilisateur cible pour transférer les fruits automatiquement.",
+        ["Fruit Fast Attack"] = "Fruit Fast Attack",
+        ["Fast Attack supporting Devil Fruits (By Darling)"] = "Fast Attack avec support des Fruits du Démon (Par Darling)",
+        ["Apply Ultimate Potato (120 FPS + Max Performance)"] = "Appliquer Ultimate Potato (120 FPS + Performance Max)",
+        ["Ultimate Performance (1-Tap Potato)"] = "Performance Ultime (Patate en 1 Clic)",
+        ["FFlags JSON Editor"] = "Éditeur JSON de FFlags",
+        ["Apply FFlags JSON"] = "Appliquer FFlags JSON",
+        ["One-tap master optimization: 120 FPS cap, low geometry, smooth plastic textures, shadow removal, and particle clearing."] = "Optimisation maître en 1 clic: limite à 120 FPS, géométrie basse, textures lisses, sans ombres et suppression des particules.",
+        ["FFlags Editor Personalizado"] = "Éditeur de FFlags Personnalisé",
+        ["Pegar FFlags JSON"] = "Coller FFlags JSON",
+        ["Aplicar FFlags"] = "Appliquer FFlags",
+        ["Limpiar Editor"] = "Effacer l'Éditeur",
+        ["Auto Aplicar FFlags al Iniciar"] = "Auto-Appliquer FFlags au Démarrage",
+        ["Modo Patata (Potato FFlags)"] = "Mode Patate (Potato FFlags)",
+        ["Cargar FFlags Potato en Editor"] = "Charger FFlags Patate",
+        ["Performance Presets"] = "Préréglages de Performance",
+        ["Load Pro Preset"] = "Charger Préréglage Pro",
+        ["Load Android Preset"] = "Charger Préréglage Android",
+        ["Apply Pro Preset"] = "Appliquer Préréglage Pro",
+        ["Load Potato Preset"] = "Charger Préréglage Patate",
+        ["FFlags Editor"] = "Éditeur de FFlags",
         ["Player Management"] = "Gestion des Joueurs",
         ["Search Player..."] = "Rechercher Joueur...",
         ["Refresh Player List"] = "Rafraichir la Liste",
@@ -4230,6 +4448,75 @@ local TRANSLATIONS_DICT = {
         ["Roblox Audio Player"] = "Lecteur Audio Roblox",
     },
     ["Vietnamese"] = {
+        -- Kit One Shot & Visuals / Kamui / Buddha Rainbow
+        ["Kit One Shot"] = "Kit One Shot",
+        ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Đòn đánh M1 hư vô từ xa 18k+ tức thì (Tự bật Fruit Fast Attack)",
+        ["M1 Delay"] = "Tốc độ M1",
+        ["Kit One Shot Floating Widget"] = "Nút Nổi Kit One Shot",
+        ["Movable on-screen toggle for Kit One Shot"] = "Nút nổi di chuyển trên màn hình cho Kit One Shot",
+        ["Fruit Fast Attack Floating Widget"] = "Nút Nổi Fruit Fast Attack",
+        ["X-Ray Wall Vision"] = "X-Ray Xuyên Tường",
+        ["X-Ray Vision"] = "Tầm Nhìn X-Ray",
+        ["Makes map walls and objects transparent to spot players and chests easily"] = "Làm trong suốt tường và vật thể để dễ thấy người chơi và rương",
+        ["Buddha Rainbow Circle"] = "Vòng Buddha Cầu Vồng",
+        ["Recolors your Buddha circle with animated rainbow gradient (Client-only)"] = "Đổi màu vòng Buddha hiệu ứng cầu vồng chuyển động (Chỉ máy bạn)",
+        ["Only My Buddha Circle"] = "Chỉ Vòng Buddha Của Tôi",
+        ["Only affects your own character instead of all nearby Buddha users"] = "Chỉ tác động lên bản thân thay vì mọi người chơi Buddha xung quanh",
+        ["Kamui Visuals & Teleport"] = "Hiệu Ứng Hình Ảnh & Dịch Chuyển Kamui",
+        ["Rip Kamui"] = "Rip Kamui",
+        ["Arena Kamui"] = "Arena Kamui",
+        ["Heaven Kamui"] = "Heaven Kamui",
+        ["Pakistan Kamui"] = "Pakistan Kamui",
+        ["Kamui"] = "Kamui",
+        ["Give Kamui Tools"] = "Nhận Vũ Khí Kamui",
+        ["Summon Dimensions"] = "Triệu Hồi Chiều Không Gian",
+        ["Pocket Dimension"] = "Không Gian Bỏ Túi",
+        ["Rip Family Arena"] = "Võ Đài Gia Tộc Rip",
+        ["Heaven Dimension"] = "Không Gian Thiên Đường",
+        ["Pakistan Dimension"] = "Không Gian Pakistan",
+        -- Waifu / FFlags / Steal Fruits / Performance
+        ["Waifu AI"] = "Waifu AI",
+        ["Waifu AI Companion"] = "Bạn Đồng Hành Waifu AI",
+        ["Activar Waifu"] = "Bật Waifu",
+        ["Hablar con Waifu"] = "Nói chuyện với Waifu",
+        ["Bailar / Hacer Animación"] = "Nhảy / Làm Động Tác",
+        ["Dar Ánimos / Frase Kawaii"] = "Động viên (Kawaii)",
+        ["Alerta de Peligro / Combate"] = "Cảnh Báo Nguy Hiểm",
+        ["Ajustes de Waifu"] = "Cài Đặt Waifu",
+        ["Reacciones de Combate & Peligro"] = "Phản Ứng Chiến Đấu & Nguy Hiểm",
+        ["Seguir Cursor / Touch"] = "Đi Theo Chuột / Chạm",
+        ["Pensamientos Automáticos"] = "Suy Nghĩ Tự Động",
+        ["Color Adaptable al Tema"] = "Màu Theo Giao Diện",
+        ["Tamaño de Waifu"] = "Kích Thước Waifu",
+        ["FFlags"] = "FFlags",
+        ["Steal Fruits"] = "Trộm Trái",
+        ["Steal Fruits (Acracy Trade Engine)"] = "Trộm Trái (Công Cụ Trade Acracy)",
+        ["Discord Webhook"] = "Webhook Discord",
+        ["Trade Partner Username"] = "Tên Người Nhận Trade",
+        ["Execute Steal Fruits"] = "Thực Hiện Trộm Trái",
+        ["Copy Custom Loadstring"] = "Sao Chép Loadstring Tùy Chỉnh",
+        ["Reset to Defaults"] = "Đặt Lại Mặc Định",
+        ["Configure Discord notification webhook and target trade recipient to transfer fruits automatically."] = "Cấu hình webhook Discord và người nhận để tự động chuyển trái ác quỷ.",
+        ["Fruit Fast Attack"] = "Fruit Fast Attack",
+        ["Fast Attack supporting Devil Fruits (By Darling)"] = "Fast Attack hỗ trợ Trái Ác Quỷ (Bởi Darling)",
+        ["Apply Ultimate Potato (120 FPS + Max Performance)"] = "Bật Siêu Potato (120 FPS + Tối Đa Hiệu Năng)",
+        ["Ultimate Performance (1-Tap Potato)"] = "Hiệu Năng Tối Đa (Potato 1 Chạm)",
+        ["FFlags JSON Editor"] = "Trình Chỉnh Sửa FFlags JSON",
+        ["Apply FFlags JSON"] = "Áp Dụng FFlags JSON",
+        ["One-tap master optimization: 120 FPS cap, low geometry, smooth plastic textures, shadow removal, and particle clearing."] = "Tối ưu hóa tổng thể 1 chạm: giới hạn 120 FPS, giảm chi tiết hình học, texture nhựa mịn, xóa bóng và dọn sạch hạt hiệu ứng.",
+        ["FFlags Editor Personalizado"] = "Trình Chỉnh Sửa FFlags Tùy Chỉnh",
+        ["Pegar FFlags JSON"] = "Dán FFlags JSON",
+        ["Aplicar FFlags"] = "Áp Dụng FFlags",
+        ["Limpiar Editor"] = "Xóa Trình Chỉnh Sửa",
+        ["Auto Aplicar FFlags al Iniciar"] = "Tự Động Áp Dụng FFlags Khi Khởi Động",
+        ["Modo Patata (Potato FFlags)"] = "Chế Độ Khoai Tây (Potato FFlags)",
+        ["Cargar FFlags Potato en Editor"] = "Tải FFlags Khoai Tây",
+        ["Performance Presets"] = "Cấu Hình Hiệu Năng Có Sẵn",
+        ["Load Pro Preset"] = "Tải Cấu Hình Pro",
+        ["Load Android Preset"] = "Tải Cấu Hình Android",
+        ["Apply Pro Preset"] = "Áp Dụng Cấu Hình Pro",
+        ["Load Potato Preset"] = "Tải Cấu Hình Khoai Tây",
+        ["FFlags Editor"] = "Trình Chỉnh Sửa FFlags",
         ["Player Management"] = "Quan ly Nguoi choi",
         ["Search Player..."] = "Tim kiem Nguoi choi...",
         ["Refresh Player List"] = "Lam moi danh sach",
@@ -4960,8 +5247,8 @@ end
 
 if Pages["Config"] then Pages["Misc"] = Pages["Config"] end
 if Pages["Themes"] then Pages["Settings"] = Pages["Themes"] end
-if Pages["Visuals"] then Pages["Esp"] = Pages["Visuals"] end
-if Pages["Esp"] then Pages["Visuals"] = Pages["Esp"] end
+if Pages["Visuals"] then Pages["Animations"] = Pages["Visuals"] end
+if Pages["Animations"] then Pages["Visuals"] = Pages["Animations"] end
 
 _G.DarlingX.Pages = Pages
 _G.DarlingX.SelectTab = SelectTabById
@@ -4970,7 +5257,7 @@ _G.DarlingX.SelectTab = SelectTabById
 local function RegisterTab(tabId, tabName, lucideName)
     if tabId == "Settings" then tabId = "Themes" end
     if tabId == "Misc" then tabId = "Config" end
-    if tabId == "Esp" then tabId = "Visuals" end
+    if tabId == "Animations" then tabId = "Visuals" end
     if Pages[tabId] then
         return Pages[tabId]
     end
@@ -5702,6 +5989,12 @@ SaveConfigProfile = function(force)
         cfg.MacroEnabled = cfg.Macro
         cfg.MacroLoop = cfg.Toggles["Loop Sequence"]
         cfg.MacroWidget = cfg.Toggles["Macro Floating Widget"]
+        cfg.KitOneShot = cfg.Toggles["Kit One Shot"]
+        cfg.KitOneShotWidget = cfg.Toggles["Kit One Shot Floating Widget"]
+        cfg.FruitFastAttackWidget = cfg.Toggles["Fruit Fast Attack Floating Widget"]
+        cfg.XRayVision = cfg.Toggles["X-Ray Vision"]
+        cfg.BuddhaRainbowCircle = cfg.Toggles["Buddha Rainbow Circle"]
+        cfg.OnlyMyBuddhaCircle = cfg.Toggles["Only My Buddha Circle"]
         
         -- Additional Features Sync
         cfg.StartAutoDungeon = cfg.Toggles["Start Auto Dungeon"]
@@ -5905,6 +6198,24 @@ LoadConfigProfile = function()
         if cfg.MacroWidget ~= nil and UI_TOGGLES["Macro Floating Widget"] then
             pcall(function() UI_TOGGLES["Macro Floating Widget"].set(cfg.MacroWidget == true, true) end)
         end
+        if cfg.KitOneShot ~= nil and UI_TOGGLES["Kit One Shot"] then
+            pcall(function() UI_TOGGLES["Kit One Shot"].set(cfg.KitOneShot == true, true) end)
+        end
+        if cfg.KitOneShotWidget ~= nil and UI_TOGGLES["Kit One Shot Floating Widget"] then
+            pcall(function() UI_TOGGLES["Kit One Shot Floating Widget"].set(cfg.KitOneShotWidget == true, true) end)
+        end
+        if cfg.FruitFastAttackWidget ~= nil and UI_TOGGLES["Fruit Fast Attack Floating Widget"] then
+            pcall(function() UI_TOGGLES["Fruit Fast Attack Floating Widget"].set(cfg.FruitFastAttackWidget == true, true) end)
+        end
+        if cfg.XRayVision ~= nil and UI_TOGGLES["X-Ray Vision"] then
+            pcall(function() UI_TOGGLES["X-Ray Vision"].set(cfg.XRayVision == true, true) end)
+        end
+        if cfg.BuddhaRainbowCircle ~= nil and UI_TOGGLES["Buddha Rainbow Circle"] then
+            pcall(function() UI_TOGGLES["Buddha Rainbow Circle"].set(cfg.BuddhaRainbowCircle == true, true) end)
+        end
+        if cfg.OnlyMyBuddhaCircle ~= nil and UI_TOGGLES["Only My Buddha Circle"] then
+            pcall(function() UI_TOGGLES["Only My Buddha Circle"].set(cfg.OnlyMyBuddhaCircle == true, true) end)
+        end
         if cfg.StartAutoDungeon ~= nil and UI_TOGGLES["Start Auto Dungeon"] then
             pcall(function() UI_TOGGLES["Start Auto Dungeon"].set(cfg.StartAutoDungeon == true, true) end)
         end
@@ -6038,6 +6349,12 @@ end
 local DEFAULT_TOGGLES = {
     ["Fast Attack"] = false,
     ["Fruit Fast Attack"] = false,
+    ["Fruit Fast Attack Floating Widget"] = false,
+    ["Kit One Shot"] = false,
+    ["Kit One Shot Floating Widget"] = false,
+    ["X-Ray Vision"] = false,
+    ["Buddha Rainbow Circle"] = false,
+    ["Only My Buddha Circle"] = true,
     ["Macro"] = false,
     ["FPS Booster"] = false,
     ["Auto Apply"] = false,
@@ -6597,9 +6914,13 @@ function M.getCamlock() return M.get("modules/pvp/camlock.lua") end
 function M.getMoveMod() return M.get("modules/mobility/movement_engine.lua") end
 function M.getAutoBounty() return M.get("modules/combat/auto_bounty.lua") end
 function M.getMika() return M.get("modules/ai/mika.lua") end
+function M.getKitOneShot() return M.get("modules/combat/kit_one_shot.lua") end
+function M.getKamuiVisuals() return M.get("modules/visuals/kamui_visuals.lua") end
+function M.getBuddhaRainbow() return M.get("modules/visuals/buddha_rainbow.lua") end
 
 _G.DarlingX_FruitFastAttack = false
 _G.DarlingX_Macro = false
+_G.DarlingX_KitOneShot = false
 
 _G.DarlingX_SyncFruitFastAttackUI = function(active)
     _G.DarlingX_FruitFastAttack = (active == true)
@@ -6615,6 +6936,25 @@ _G.DarlingX_SyncFruitFastAttackUI = function(active)
         end
         if ew.UpdateFruitFastAttackVisual then
             ew.UpdateFruitFastAttackVisual(active == true)
+        end
+    end
+end
+
+_G.DarlingX_SyncKitOneShotUI = function(active)
+    _G.DarlingX_KitOneShot = (active == true)
+    _G.FruitsM1Enable = (active == true)
+    if UI_TOGGLES and UI_TOGGLES["Kit One Shot"] and UI_TOGGLES["Kit One Shot"].set then
+        pcall(function()
+            UI_TOGGLES["Kit One Shot"].set(active == true, false)
+        end)
+    end
+    local ew = _G.DarlingX_ExtraWidgets or M.getExtraWidgets()
+    if ew then
+        if ew.SetKitOneShotWidgetVisible then
+            ew.SetKitOneShotWidgetVisible(active == true)
+        end
+        if ew.UpdateKitOneShotVisual then
+            ew.UpdateKitOneShotVisual(active == true)
         end
     end
 end
@@ -7885,7 +8225,31 @@ local okPvP, errPvP = pcall(function()
         Notify("PvP", "Dragon Gun M1: " .. (state and "Enabled" or "Disabled"))
     end)
 
-    -- 2. PvP Tech, Camlock & Universal Keybinds
+    -- 2. Kit One Shot (Fruits M1 One Shot / Kitsune Void)
+    local kitCard = CreateCard(PvPPage, "Kit One Shot")
+
+    AddToggle(kitCard, "Kit One Shot", "Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)", false, function(state)
+        local kos = M.getKitOneShot()
+        if kos then kos.toggle(state) end
+        Notify("PvP", "Kit One Shot: " .. (state and "Enabled" or "Disabled"))
+        pcall(SaveConfigProfile)
+    end)
+
+    AddChoice(kitCard, "M1 Delay", { "0.05s (Fast)", "0.10s", "0.15s (Def)", "0.25s", "0.50s" }, 3, function(choice)
+        local val = tonumber(string.match(choice, "[%d%.]+")) or 0.15
+        local kos = M.getKitOneShot()
+        if kos and kos.setDelay then kos.setDelay(val) end
+        Notify("PvP", "Kit One Shot Delay: " .. tostring(val) .. "s")
+    end)
+
+    AddToggle(kitCard, "Kit One Shot Floating Widget", "Movable on-screen toggle for Kit One Shot", false, function(state)
+        local ew = _G.DarlingX_ExtraWidgets or M.getExtraWidgets()
+        if ew and ew.SetKitOneShotWidgetVisible then
+            ew.SetKitOneShotWidgetVisible(state)
+        end
+    end)
+
+    -- 3. PvP Tech, Camlock & Universal Keybinds
     local techCard = CreateCard(PvPPage, "Combat Tech")
 
     AddToggle(techCard, "Camlock", "Lock camera onto enemy", false, function(state)
@@ -8092,7 +8456,7 @@ if not okSoru then
 end
 
 -- 6. ESP TAB (STRICTLY PVP COMBAT RADAR)
-local ESPPage = RegisterTab("Esp", "Visuals", "eye")
+local ESPPage = RegisterTab("Esp", "ESP", "scan")
 local okESP, errESP = pcall(function()
     local espMod = nil
     local function getEspMod()
@@ -8238,6 +8602,39 @@ local okESP, errESP = pcall(function()
 
     AddSlider(chamsCard, "ESP Text Font Size", 10, 22, 13, 1, function(val)
         if espMod then espMod.TextSize = val end
+    end)
+
+    -- 4. X-Ray Wall Vision (Quantum Onyx Engine)
+    local xrayCard = CreateCard(ESPPage, "X-Ray Wall Vision")
+    local xrayActive = false
+    local xrayConn = nil
+
+    local function applyXray(enabled)
+        xrayActive = enabled
+        for _, descendant in ipairs(Workspace:GetDescendants()) do
+            if descendant:IsA("BasePart") and not descendant.Parent:FindFirstChildOfClass("Humanoid") and not (descendant.Parent.Parent and descendant.Parent.Parent:FindFirstChildOfClass("Humanoid")) then
+                descendant.LocalTransparencyModifier = enabled and 0.7 or 0
+            end
+        end
+        if enabled and not xrayConn then
+            xrayConn = Workspace.DescendantAdded:Connect(function(descendant)
+                if xrayActive and descendant:IsA("BasePart") then
+                    task.wait()
+                    if not descendant.Parent:FindFirstChildOfClass("Humanoid") and not (descendant.Parent.Parent and descendant.Parent.Parent:FindFirstChildOfClass("Humanoid")) then
+                        descendant.LocalTransparencyModifier = 0.7
+                    end
+                end
+            end)
+        elseif not enabled and xrayConn then
+            xrayConn:Disconnect()
+            xrayConn = nil
+        end
+    end
+
+    AddToggle(xrayCard, "X-Ray Vision", "Makes map walls and objects transparent to spot players and chests easily", false, function(state)
+        applyXray(state)
+        Notify("ESP", "X-Ray Vision: " .. (state and "Enabled" or "Disabled"), 2.5)
+        pcall(SaveConfigProfile)
     end)
 end)
 if not okESP then
@@ -9912,12 +10309,16 @@ do
 end
 
 -- ============================================================
--- 8. ANIMATIONS TAB (ORIGINAL DARLING HUB CINEMATIC ENGINES)
+-- 8. VISUALS TAB (CINEMATICS, BUDDHA RAINBOW & KAMUI ENGINE)
 -- ============================================================
 do
     pcall(function()
-        local AnimationsPage = RegisterTab("Animations", "Animations", "sparkles")
-        local aCard = CreateCard(AnimationsPage, "Darling Hub Cinematics")
+        local VisualsPage = RegisterTab("Visuals", "Visuals", "sparkles")
+        Pages["Visuals"] = VisualsPage
+        Pages["Animations"] = VisualsPage
+
+        -- Card 1: Darling Hub Cinematics
+        local aCard = CreateCard(VisualsPage, "Darling Hub Cinematics")
 
         local CINEMATIC_NAMES = {
             "Worldbreaker", "The Hollow Lantern", "The Aureate Sanctuary", "Transcendence Dragon", "King's Throne", "Admin Cinematic"
@@ -9968,7 +10369,7 @@ do
                 local hum = char and char:FindFirstChildOfClass("Humanoid")
                 if hum then Workspace.CurrentCamera.CameraSubject = hum end
             end)
-            Notify("Animations", "Cinematic cutscene stopped.")
+            Notify("Visuals", "Cinematic cutscene stopped.")
         end
 
         local function PlayCinematic(name)
@@ -10040,6 +10441,70 @@ do
                 mod.setHidden(state)
             elseif mod and state and mod.dismiss then
                 mod.dismiss()
+            end
+        end)
+
+        -- Card 2: Buddha Rainbow Circle
+        local buddhaCard = CreateCard(VisualsPage, "Buddha Rainbow Circle")
+
+        AddToggle(buddhaCard, "Buddha Rainbow Circle", "Recolors your Buddha circle with animated rainbow gradient (Client-only)", false, function(state)
+            local br = M.getBuddhaRainbow()
+            if br then br.toggle(state) end
+            Notify("Visuals", "Buddha Rainbow Circle: " .. (state and "Enabled" or "Disabled"))
+            pcall(SaveConfigProfile)
+        end)
+
+        AddToggle(buddhaCard, "Only My Buddha Circle", "Only affects your own character instead of all nearby Buddha users", true, function(state)
+            local br = M.getBuddhaRainbow()
+            if br then br.OnlyMyCircle = state end
+        end)
+
+        -- Card 3: Kamui Visuals & Teleport
+        local kamuiCard = CreateCard(VisualsPage, "Kamui Visuals & Teleport")
+
+        AddButton(kamuiCard, "Rip Kamui", function()
+            local kv = M.getKamuiVisuals()
+            if kv then kv.PlayKamui("rip kamui") end
+            Notify("Visuals", "Rip Kamui executed!")
+        end)
+
+        AddButton(kamuiCard, "Arena Kamui", function()
+            local kv = M.getKamuiVisuals()
+            if kv then kv.PlayKamui("arena kamui") end
+            Notify("Visuals", "Arena Kamui executed!")
+        end)
+
+        AddButton(kamuiCard, "Heaven Kamui", function()
+            local kv = M.getKamuiVisuals()
+            if kv then kv.PlayKamui("heaven kamui") end
+            Notify("Visuals", "Heaven Kamui executed!")
+        end)
+
+        AddButton(kamuiCard, "Pakistan Kamui", function()
+            local kv = M.getKamuiVisuals()
+            if kv then kv.PlayKamui("pakistan kamui") end
+            Notify("Visuals", "Pakistan Kamui executed!")
+        end)
+
+        AddButton(kamuiCard, "Kamui", function()
+            local kv = M.getKamuiVisuals()
+            if kv then kv.PlayKamui("kamui") end
+            Notify("Visuals", "Kamui executed!")
+        end)
+
+        AddButton(kamuiCard, "Give Kamui Tools", function()
+            local kv = M.getKamuiVisuals()
+            if kv and kv.GiveAllKamuis then
+                kv.GiveAllKamuis()
+                Notify("Visuals", "All 5 Kamui Tools added to Backpack!")
+            end
+        end)
+
+        AddChoice(kamuiCard, "Summon Dimensions", { "Pocket Dimension", "Rip Family Arena", "Heaven Dimension", "Pakistan Dimension" }, 1, function(choice)
+            local kv = M.getKamuiVisuals()
+            if kv and kv.SummonDimension then
+                kv.SummonDimension(choice)
+                Notify("Visuals", "Summoned: " .. choice)
             end
         end)
     end)
@@ -10577,22 +11042,54 @@ local okFFlags, errFFlags = pcall(function()
     AddButton(masterCard, "Activar FFlags", function()
         applyFlagsFromJson(POTATO_JSON)
         pcall(function()
+            local terrain = Workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+                terrain.WaterTransparency = 0
+            end
+
             local lighting = game:GetService("Lighting")
             lighting.GlobalShadows = false
             lighting.FogEnd = 9e9
-            for _, v in ipairs(lighting:GetChildren()) do
-                if v:IsA("PostProcessEffect") then v.Enabled = false end
-            end
-            for _, v in ipairs(Workspace:GetDescendants()) do
-                if v:IsA("BasePart") then
-                    v.Material = Enum.Material.SmoothPlastic
-                    v.CastShadow = false
-                elseif v:IsA("Decal") or v:IsA("Texture") then
-                    v.Transparency = 1
-                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") then
-                    v.Enabled = false
+            pcall(function() settings().Rendering.QualityLevel = 1 end)
+
+            for _, descendant in ipairs(lighting:GetDescendants()) do
+                if descendant:IsA("BlurEffect") or descendant:IsA("SunRaysEffect") or descendant:IsA("ColorCorrectionEffect") or descendant:IsA("BloomEffect") or descendant:IsA("DepthOfFieldEffect") or descendant:IsA("PostProcessEffect") then
+                    descendant.Enabled = false
                 end
             end
+
+            for _, descendant in ipairs(game:GetDescendants()) do
+                if descendant:IsA("Part") or descendant:IsA("UnionOperation") or descendant:IsA("MeshPart") or descendant:IsA("CornerWedgePart") or descendant:IsA("TrussPart") then
+                    descendant.Material = Enum.Material.Plastic
+                    descendant.Reflectance = 0
+                    descendant.CastShadow = false
+                elseif descendant:IsA("Decal") or descendant:IsA("Texture") then
+                    descendant.Transparency = 1
+                elseif descendant:IsA("ParticleEmitter") or descendant:IsA("Trail") then
+                    descendant.Lifetime = NumberRange.new(0)
+                    descendant.Enabled = false
+                elseif descendant:IsA("Explosion") then
+                    descendant.BlastPressure = 1
+                    descendant.BlastRadius = 1
+                elseif descendant:IsA("ForceField") or descendant:IsA("Sparkles") or descendant:IsA("Smoke") or descendant:IsA("Fire") then
+                    pcall(function() descendant:Destroy() end)
+                end
+            end
+
+            -- Quantum Onyx Native Blox Fruits Fast Mode trigger
+            pcall(function()
+                local pGui = lp and (lp:FindFirstChildOfClass("PlayerGui") or lp:FindFirstChild("PlayerGui"))
+                local fastBtn = pGui and pGui:FindFirstChild("Main") and pGui.Main:FindFirstChild("SettingsMenu") and pGui.Main.SettingsMenu:FindFirstChild("Content") and pGui.Main.SettingsMenu.Content:FindFirstChild("ScrollingFrame") and pGui.Main.SettingsMenu.Content.ScrollingFrame:FindFirstChild("FastMode")
+                if fastBtn and fastBtn:FindFirstChild("FirstButton") and firesignal then
+                    firesignal(fastBtn.FirstButton.MouseButton1Click)
+                end
+            end)
+
+            -- Memory GC
+            pcall(function() collectgarbage("collect") end)
         end)
         pcall(SetFFlags1, true)
         pcall(SetNoAnimations, true)

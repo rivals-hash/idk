@@ -60,9 +60,16 @@ local function makeDraggable(targetFrame, dragHandle, onClick)
     local dragging = false
     local dragStart = nil
     local startPos = nil
-    local startTime = 0
     local isDrag = false
     local lastClickTick = 0
+    local moveConn = nil
+    local endConn = nil
+
+    local function cleanupDrag()
+        if moveConn then moveConn:Disconnect(); moveConn = nil end
+        if endConn then endConn:Disconnect(); endConn = nil end
+        dragging = false
+    end
 
     local function fireClick()
         local now = os.clock()
@@ -79,55 +86,34 @@ local function makeDraggable(targetFrame, dragHandle, onClick)
             isDrag = false
             dragStart = input.Position
             startPos = targetFrame.Position
-            startTime = os.clock()
-        end
-    end)
 
-    dragHandle.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            if dragStart and startPos then
-                local delta = input.Position - dragStart
-                if delta.Magnitude > 28 then
-                    isDrag = true
-                    targetFrame.Position = UDim2.new(
-                        startPos.X.Scale,
-                        startPos.X.Offset + delta.X,
-                        startPos.Y.Scale,
-                        startPos.Y.Offset + delta.Y
-                    )
-                end
-            end
-        end
-    end)
+            cleanupDrag()
 
-    dragHandle.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            if dragging then
-                dragging = false
-                local duration = os.clock() - startTime
-                local totalDist = dragStart and (input.Position - dragStart).Magnitude or 0
-                if not isDrag or totalDist < 25 or duration < 0.28 then
-                    fireClick()
-                end
-            end
-        end
-    end)
-
-    pcall(function()
-        if dragHandle:IsA("GuiButton") or dragHandle.Activated then
-            dragHandle.Activated:Connect(function()
-                if not isDrag then
-                    fireClick()
+            moveConn = UserInputService.InputChanged:Connect(function(moveInput)
+                if dragging and (moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch) then
+                    if dragStart and startPos then
+                        local delta = moveInput.Position - dragStart
+                        if delta.Magnitude > 6 then
+                            isDrag = true
+                            targetFrame.Position = UDim2.new(
+                                startPos.X.Scale,
+                                startPos.X.Offset + delta.X,
+                                startPos.Y.Scale,
+                                startPos.Y.Offset + delta.Y
+                            )
+                        end
+                    end
                 end
             end)
-        end
-    end)
 
-    pcall(function()
-        if dragHandle:IsA("GuiButton") then
-            dragHandle.MouseButton1Click:Connect(function()
-                if not isDrag then
-                    fireClick()
+            endConn = UserInputService.InputEnded:Connect(function(endInput)
+                if endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
+                    if dragging then
+                        cleanupDrag()
+                        if not isDrag then
+                            fireClick()
+                        end
+                    end
                 end
             end)
         end
@@ -431,6 +417,44 @@ local function initMacroUI()
     end)
 end
 
+-- 7. Kit One Shot Widget
+local KitOneShotUI = nil
+local kitOneShotBtnRef = nil
+
+local function updateKitOneShotVisual(state)
+    if not kitOneShotBtnRef then return end
+    local active = (state ~= nil) and state or (_G.DarlingX_KitOneShot == true or _G.FruitsM1Enable == true)
+    if active then
+        kitOneShotBtnRef.BackgroundColor3 = Color3.fromRGB(220, 20, 60)
+        kitOneShotBtnRef.BackgroundTransparency = 0.2
+        kitOneShotBtnRef.Text = "KIT 1-SHOT: ON"
+    else
+        kitOneShotBtnRef.BackgroundColor3 = Color3.fromRGB(36, 30, 50)
+        kitOneShotBtnRef.BackgroundTransparency = 0.5
+        kitOneShotBtnRef.Text = "KIT 1-SHOT: OFF"
+    end
+end
+
+local function initKitOneShotUI()
+    if KitOneShotUI and KitOneShotUI.Parent then return end
+    local gui, container, btn = createGlassWidget("KitOneShotWidget", UDim2.new(0, 115, 0, 38), UDim2.new(0.85, 0, 0.10, 0))
+    KitOneShotUI = gui
+    kitOneShotBtnRef = btn
+    updateKitOneShotVisual(false)
+
+    makeDraggable(container, btn, function()
+        local kosMod = rawget(_G, "DarlingX_KitOneShotMod")
+        local nextState = not (_G.DarlingX_KitOneShot == true or _G.FruitsM1Enable == true)
+        if kosMod and kosMod.toggle then
+            kosMod.toggle(nextState)
+        else
+            _G.DarlingX_KitOneShot = nextState
+            _G.FruitsM1Enable = nextState
+        end
+        updateKitOneShotVisual(nextState)
+    end)
+end
+
 -- Initialize widgets lazily on startup
 initSuperJumpUI()
 initCamlockUI()
@@ -438,6 +462,7 @@ initDragonM1UI()
 initSanguineUI()
 initFruitFastAttackUI()
 initMacroUI()
+initKitOneShotUI()
 
 local Widgets = {
     -- Super Jump
@@ -505,6 +530,17 @@ local Widgets = {
         end
     end,
     UpdateMacroVisual = updateMacroWidgetVisual,
+
+    -- Kit One Shot
+    SetKitOneShotWidgetVisible = function(state)
+        if not KitOneShotUI or not KitOneShotUI.Parent then initKitOneShotUI() end
+        if KitOneShotUI then
+            ensureParent(KitOneShotUI)
+            KitOneShotUI.Enabled = (state == true)
+            updateKitOneShotVisual(state)
+        end
+    end,
+    UpdateKitOneShotVisual = updateKitOneShotVisual,
 }
 
 _G.DarlingX_ExtraWidgets = Widgets
