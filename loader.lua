@@ -140,11 +140,30 @@ local function BindPhoto(imgLabel, customFilename)
     end)
 end
 
--- Parent GUI selector
-local parentGui = nil
-pcall(function() if gethui then parentGui = gethui() end end)
-if not parentGui then pcall(function() parentGui = CoreGui end) end
-if not parentGui and lp then pcall(function() parentGui = lp:WaitForChild("PlayerGui", 5) end) end
+-- Safe Parent GUI selector (gethui -> CoreGui check -> PlayerGui fallback)
+local function GetSafeGuiParent()
+    if gethui then
+        local ok, h = pcall(gethui)
+        if ok and h then return h end
+    end
+    local canCore = false
+    pcall(function()
+        local t = Instance.new("Folder")
+        t.Parent = CoreGui
+        t:Destroy()
+        canCore = true
+    end)
+    if canCore then return CoreGui end
+    local pg = lp and (lp:FindFirstChildOfClass("PlayerGui") or lp:FindFirstChild("PlayerGui"))
+    if pg then return pg end
+    if lp then
+        local ok, res = pcall(function() return lp:WaitForChild("PlayerGui", 3) end)
+        if ok and res then return res end
+    end
+    return CoreGui
+end
+
+local parentGui = GetSafeGuiParent()
 
 -- Remove any old loader if running
 pcall(function()
@@ -436,7 +455,16 @@ local function setProgress(pct, title, detail)
 end
 
 -- Show GUI
-gui.Parent = parentGui
+pcall(function() gui.Parent = parentGui end)
+if not gui.Parent then
+    pcall(function()
+        local pg = lp and (lp:FindFirstChildOfClass("PlayerGui") or lp:FindFirstChild("PlayerGui"))
+        if pg then gui.Parent = pg end
+    end)
+end
+if not gui.Parent and lp then
+    pcall(function() gui.Parent = lp:WaitForChild("PlayerGui", 3) end)
+end
 TweenService:Create(modal, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
     Size = UDim2.new(0, 390, 0, 190)
 }):Play()
@@ -607,7 +635,7 @@ task.spawn(function()
             if not launched or not _G.DarlingX then
                 if not _G.DarlingX then
                     pcall(function()
-                        loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/main.lua?t=" .. tostring(os.time()), true))()
+                        loadstring(game:HttpGet(GITHUB_REPO_RAW .. "/main.lua?t=" .. tostring(os.time()), true))()
                     end)
                 end
             end
