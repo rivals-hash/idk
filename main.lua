@@ -1324,11 +1324,11 @@ local function showKeyModal(AuroraX, onSuccess)
 
     getKeyBtn.MouseButton1Click:Connect(function()
         pcall(function()
-            if AuroraX and AuroraX.CopyKeyLink then
+            local setcb = setclipboard or toclipboard or set_clipboard or (syn and syn.set_clipboard)
+            if setcb then
+                setcb("https://link-center.net/9980602/9M9ldyI985zV")
+            elseif AuroraX and AuroraX.CopyKeyLink then
                 AuroraX.CopyKeyLink()
-            else
-                local setcb = setclipboard or toclipboard or set_clipboard
-                if setcb then setcb("https://dev.aurorax.site/getkey/7c5669e64021da7e13601d7cc9913ee9") end
             end
         end)
         feedback.TextColor3 = Color3.fromRGB(130, 240, 170)
