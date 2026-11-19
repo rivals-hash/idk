@@ -449,7 +449,7 @@ task.spawn(function()
     setProgress(0.20, "Connecting to Security...", "Fetching verification SDK...")
     local AuroraX = nil
     pcall(function()
-        local sdkSource = SafeHttpGet("https://dev.aurorax.site/api/sdk/7c5669e64021da7e13601d7cc9913ee9.lua")
+        local sdkSource = SafeHttpGet("https://dev.aurorax.site/api/sdk/76ad29f07a3a7dd36dda3fc181fb45a1.lua")
         if sdkSource and #sdkSource > 50 and not sdkSource:find("403") and not sdkSource:find("Project not found") then
             local sdkFn = loadstring(sdkSource)
             if sdkFn then
@@ -476,7 +476,7 @@ task.spawn(function()
         end
 
         -- 2. Try direct AuroraX REST API
-        local verifyUrl = "https://dev.aurorax.site/api/verify/7c5669e64021da7e13601d7cc9913ee9?key=" .. tostring(key)
+        local verifyUrl = "https://dev.aurorax.site/api/verify/76ad29f07a3a7dd36dda3fc181fb45a1?key=" .. tostring(key)
         local okHttp, res = pcall(function() return game:HttpGet(verifyUrl, true) end)
         if okHttp and type(res) == "string" and #res > 0 then
             local okJson, data = pcall(function() return game:GetService("HttpService"):JSONDecode(res) end)
@@ -532,7 +532,7 @@ task.spawn(function()
     local function runFullBoot(validKey, info)
         local exp = (info and info.expires_at) or 0
         genv.AX_KeyExpires = exp
-        genv.AX_USER = { ExpiresAt = exp, Key = validKey, ScriptId = "7c5669e64021da7e13601d7cc9913ee9", ScriptName = "Monody" }
+        genv.AX_USER = { ExpiresAt = exp, Key = validKey, ScriptId = "76ad29f07a3a7dd36dda3fc181fb45a1", ScriptName = "Monody" }
         _G.AX_KeyExpires = exp
         _G.AX_USER = genv.AX_USER
 

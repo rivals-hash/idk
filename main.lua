@@ -1062,11 +1062,11 @@ function InlineLoader.finish(callback)
 end
 
 -- ============================================================
--- AURORA X KEY SYSTEM ENGINE (Project: 7c5669e64021da7e13601d7cc9913ee9)
+-- AURORA X KEY SYSTEM ENGINE (Project: 76ad29f07a3a7dd36dda3fc181fb45a1)
 -- ============================================================
 local function getAuroraX()
     local ok, sdk = pcall(function()
-        return loadstring(game:HttpGet("https://dev.aurorax.site/api/sdk/7c5669e64021da7e13601d7cc9913ee9.lua", true))()
+        return loadstring(game:HttpGet("https://dev.aurorax.site/api/sdk/76ad29f07a3a7dd36dda3fc181fb45a1.lua", true))()
     end)
     if ok and sdk and type(sdk) == "table" then
         return sdk
