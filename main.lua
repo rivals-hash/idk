@@ -6319,6 +6319,7 @@ local DEFAULT_TOGGLES = {
     ["Fruit Fast Attack Floating Widget"] = false,
     ["Kit One Shot"] = false,
     ["Kit One Shot Floating Widget"] = false,
+    ["Saishi Sword One Shot"] = false,
     ["X-Ray Vision"] = false,
     ["Buddha Rainbow Circle"] = false,
     ["Only My Buddha Circle"] = true,
@@ -6885,6 +6886,7 @@ function M.getMoveMod() return M.get("modules/mobility/movement_engine.lua") end
 function M.getAutoBounty() return M.get("modules/combat/auto_bounty.lua") end
 function M.getMika() return M.get("modules/ai/mika.lua") end
 function M.getKitOneShot() return M.get("modules/combat/kit_one_shot.lua") end
+function M.getSaishiOneShot() return M.get("modules/combat/saishi_one_shot.lua") end
 function M.getBuddhaRainbow() return M.get("modules/visuals/buddha_rainbow.lua") end
 
 _G.DarlingX_FruitFastAttack = false
@@ -8142,11 +8144,18 @@ local okPvP, errPvP = pcall(function()
         Notify("PvP", "Auto V4: " .. (state and "Enabled" or "Disabled"))
     end)
 
-    AddToggle(combatCard, "Dragon Gun M1", "Rapid fire M1 gun shots", false, function(state)
+    AddToggle(combatCard, "Dragon Gun M1 [Ban Risk]", "Rapid fire M1 gun shots [Ban Risk]", false, function(state)
         _G.DarlingX_DragonM1Enabled = state
         local dg = M.getDragonGun(); if dg then dg.SetEnabled(state) end
         local ew = M.getExtraWidgets(); if ew then ew.SetDragonM1WidgetVisible(state); ew.UpdateDragonM1Visual(state) end
         Notify("PvP", "Dragon Gun M1: " .. (state and "Enabled" or "Disabled"))
+    end)
+
+    AddToggle(combatCard, "Saishi Sword One Shot", "Teleport combo with velocity reset (Mobile widget & Z/F keys)", false, function(state)
+        local s = M.getSaishiOneShot()
+        if s then s.SetEnabled(state) end
+        Notify("PvP", "Saishi One Shot: " .. (state and "Enabled" or "Disabled"))
+        pcall(SaveConfigProfile)
     end)
 
     -- 2. Kit One Shot (Fruits M1 One Shot / Kitsune Void)
