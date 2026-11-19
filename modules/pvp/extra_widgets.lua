@@ -85,6 +85,11 @@ local function makeDraggable(targetFrame, dragHandle, onClick)
             if moveConn then moveConn:Disconnect(); moveConn = nil end
             if endConn then endConn:Disconnect(); endConn = nil end
 
+            if (_G.DarlingX and _G.DarlingX.LockWidgets) == true then
+                fireClick()
+                return
+            end
+
             dragging = true
             isDrag = false
             dragStart = input.Position

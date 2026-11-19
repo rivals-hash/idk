@@ -174,7 +174,8 @@ function FloatingWidget.create(config)
     local startTime = 0
 
     table.insert(self.Connections, pill.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not FloatingWidget.Locked then
+        local isGloballyLocked = (_G.DarlingX and _G.DarlingX.LockWidgets) == true
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not FloatingWidget.Locked and not isGloballyLocked then
             dragging = true
             dragStart = input.Position
             startPos = pill.Position

@@ -689,6 +689,7 @@ local WINDUI_LUCIDE_FALLBACK = {
     ScriptHub     = "rbxassetid://92483947987410",   -- Lucide: code
     code          = "rbxassetid://92483947987410",   -- Lucide: code
     Config        = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
+    Keybinds      = "rbxassetid://130551565616516",  -- Lucide: keyboard
     Misc          = "rbxassetid://85538382643347",   -- Lucide: sliders-horizontal
     Ai            = "rbxassetid://138635884129147",  -- Lucide: sparkles
     MonodyAI      = "rbxassetid://138635884129147",  -- Lucide: sparkles
@@ -2627,6 +2628,7 @@ local TABS_MANIFEST = {
     { id = "Music",         name = "Music",          icon = "headphones" },
     { id = "Visuals",       name = "Visuals",        icon = "sparkles" },
     { id = "ScriptHub",     name = "Script Hub",     icon = "code" },
+    { id = "Keybinds",      name = "Keybinds",       icon = "keyboard" },
     { id = "Config",        name = "Config",         icon = "sliders-horizontal" },
     { id = "Themes",        name = "Themes",         icon = "palette" },
 }
@@ -2649,6 +2651,7 @@ local TAB_MIN_CANVAS = {
     Music = 700,
     Animations = 900,
     ScriptHub = 1850,
+    Keybinds = 900,
     Config = 1100,
     Misc = 1100,
     Themes = 650,
@@ -5089,6 +5092,9 @@ local UI_TOGGLES = {}
 local UI_SLIDERS = {}
 local UI_CHOICES = {}
 local UI_INPUTS = {}
+local UI_BINDABLES = {}
+_G.DarlingX_Bindables = UI_BINDABLES
+_G.UI_TOGGLES = UI_TOGGLES
 local ChoiceRefresherList = {}
 
 
@@ -5349,6 +5355,13 @@ local function AddButton(parentCard, btnText, callback)
         end)
         if callback then pcall(callback) end
     end)
+    if btnText and btnText ~= "" then
+        UI_BINDABLES[btnText] = {
+            name = btnText,
+            kind = "Button",
+            trigger = function() if callback then pcall(callback) end end,
+        }
+    end
     UpdateCardGeometry(parentCard)
     return btn
 end
@@ -5470,6 +5483,16 @@ local function AddToggle(parentCard, titleText, descText, defaultState, callback
         setState(nextVal, runCb)
     end)
     UI_TOGGLES[titleText].get = function() return state end
+
+    if titleText and titleText ~= "" then
+        UI_BINDABLES[titleText] = {
+            name = titleText,
+            kind = "Toggle",
+            get = function() return state end,
+            set = function(nextVal) UI_TOGGLES[titleText].set(nextVal, true) end,
+            toggle = function() UI_TOGGLES[titleText].set(not state, true) end,
+        }
+    end
 
     table.insert(ToggleControls, function(nextState)
         setState(nextState, true)
@@ -6325,6 +6348,7 @@ local DEFAULT_TOGGLES = {
     ["Kit One Shot Floating Widget"] = false,
     ["Saishi Sword One Shot"] = false,
     ["Combat Tracker"] = false,
+    ["Lock Widgets & Toggles"] = false,
     ["X-Ray Vision"] = false,
     ["Buddha Rainbow Circle"] = false,
     ["Only My Buddha Circle"] = true,
@@ -9714,6 +9738,12 @@ do
             end
         end)
 
+        AddToggle(hudCard1, "Lock Widgets & Toggles", "Bloquea el movimiento de toggles y widgets flotantes", false, function(v)
+            _G.DarlingX.LockWidgets = v
+            Notify("Widgets", "Bloqueo de widgets: " .. (v and "Activado" or "Desactivado"))
+            pcall(SaveConfigProfile)
+        end)
+
         local mod = getHUDMod()
         if mod then
             mod.OnModeChanged = function(active, reason)
@@ -10472,6 +10502,241 @@ do
 
         UpdatePageCanvas(ScriptHubPage)
     end)
+end
+
+-- ============================================================
+-- KEYBINDS TAB (PC KEYBINDS & LOCK TOGGLES)
+-- ============================================================
+do
+    local KeybindsPage = RegisterTab("Keybinds", "Keybinds", "keyboard")
+    Pages["Keybinds"] = KeybindsPage
+    local okKeybinds, errKeybinds = pcall(function()
+        local kbMod = RequireModule("modules/ui/keybinds_system.lua")
+        if kbMod and kbMod.Init then
+            pcall(kbMod.Init)
+        end
+
+        local cfgCard = CreateCard(KeybindsPage, "General")
+
+        AddToggle(cfgCard, "Lock Widgets & Toggles", "Bloquea el movimiento de toggles y widgets flotantes", false, function(v)
+            _G.DarlingX.LockWidgets = v
+            Notify("Widgets", "Bloqueo de widgets: " .. (v and "Activado" or "Desactivado"))
+            pcall(SaveConfigProfile)
+        end)
+
+        local activeCard = CreateCard(KeybindsPage, "Atajos Activos")
+
+        local function refreshKeybindsList()
+            for _, child in ipairs(activeCard:GetChildren()) do
+                if child.Name:sub(1, 4) == "KB__" or child.Name == "EmptyNotice" then
+                    child:Destroy()
+                end
+            end
+
+            local list = kbMod and kbMod.List or {}
+            if #list == 0 then
+                local emptyLbl = Instance.new("TextLabel", activeCard)
+                emptyLbl.Name = "EmptyNotice"
+                emptyLbl.Size = UDim2.new(1, 0, 0, 32)
+                emptyLbl.BackgroundTransparency = 1
+                emptyLbl.Text = "No hay atajos configurados. Haz clic en '+' para agregar uno."
+                emptyLbl.TextColor3 = Color3.fromRGB(150, 145, 170)
+                emptyLbl.Font = Enum.Font.Gotham
+                emptyLbl.TextSize = 9.5
+                emptyLbl.TextXAlignment = Enum.TextXAlignment.Left
+                RegisterTranslatable(emptyLbl, "No hay atajos configurados. Haz clic en '+' para agregar uno.")
+            else
+                for idx, item in ipairs(list) do
+                    local row = Instance.new("Frame", activeCard)
+                    row.Name = "KB__" .. tostring(idx)
+                    row.Size = UDim2.new(1, 0, 0, 32)
+                    row.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    row.BackgroundTransparency = 0.94
+                    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 8)
+                    local rStroke = Instance.new("UIStroke", row)
+                    rStroke.Color = Color3.fromRGB(255, 255, 255)
+                    rStroke.Thickness = 0.8
+                    rStroke.Transparency = 0.9
+
+                    local nameLbl = Instance.new("TextLabel", row)
+                    nameLbl.Size = UDim2.new(1, -160, 1, 0)
+                    nameLbl.Position = UDim2.new(0, 8, 0, 0)
+                    nameLbl.BackgroundTransparency = 1
+                    nameLbl.Text = item.target
+                    nameLbl.TextColor3 = Color3.fromRGB(240, 240, 245)
+                    nameLbl.Font = Enum.Font.GothamBold
+                    nameLbl.TextSize = 9.5
+                    nameLbl.TextXAlignment = Enum.TextXAlignment.Left
+
+                    -- Key Button (press to rebind)
+                    local keyBtn = Instance.new("TextButton", row)
+                    keyBtn.Size = UDim2.new(0, 48, 0, 22)
+                    keyBtn.Position = UDim2.new(1, -148, 0.5, -11)
+                    keyBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+                    keyBtn.BackgroundTransparency = 0.2
+                    keyBtn.Text = item.key
+                    keyBtn.TextColor3 = CurrentAccent
+                    keyBtn.Font = Enum.Font.Code
+                    keyBtn.TextSize = 10
+                    Instance.new("UICorner", keyBtn).CornerRadius = UDim.new(0, 6)
+
+                    local isListeningKey = false
+                    keyBtn.MouseButton1Click:Connect(function()
+                        if isListeningKey then return end
+                        isListeningKey = true
+                        keyBtn.Text = "..."
+                        keyBtn.TextColor3 = Color3.fromRGB(255, 200, 50)
+                        local conn
+                        conn = UserInputService.InputBegan:Connect(function(input, gp)
+                            if input.UserInputType == Enum.UserInputType.Keyboard then
+                                conn:Disconnect()
+                                isListeningKey = false
+                                local newKey = input.KeyCode.Name
+                                kbMod.SetKey(idx, newKey)
+                                keyBtn.Text = newKey
+                                keyBtn.TextColor3 = CurrentAccent
+                                Notify("Keybinds", item.target .. " asignado a " .. newKey)
+                            end
+                        end)
+                    end)
+
+                    -- Mode Button (Toggle / Hold)
+                    local modeBtn = Instance.new("TextButton", row)
+                    modeBtn.Size = UDim2.new(0, 56, 0, 22)
+                    modeBtn.Position = UDim2.new(1, -94, 0.5, -11)
+                    modeBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+                    modeBtn.BackgroundTransparency = 0.2
+                    modeBtn.Text = item.mode or "Toggle"
+                    modeBtn.TextColor3 = Color3.fromRGB(200, 200, 220)
+                    modeBtn.Font = Enum.Font.Gotham
+                    modeBtn.TextSize = 9
+                    Instance.new("UICorner", modeBtn).CornerRadius = UDim.new(0, 6)
+
+                    modeBtn.MouseButton1Click:Connect(function()
+                        local nextMode = (item.mode == "Toggle") and "Hold" or "Toggle"
+                        kbMod.SetMode(idx, nextMode)
+                        modeBtn.Text = nextMode
+                        Notify("Keybinds", "Modo cambiado a " .. nextMode)
+                    end)
+
+                    -- Delete Button [ X ]
+                    local delBtn = Instance.new("TextButton", row)
+                    delBtn.Size = UDim2.new(0, 24, 0, 22)
+                    delBtn.Position = UDim2.new(1, -32, 0.5, -11)
+                    delBtn.BackgroundColor3 = Color3.fromRGB(60, 25, 25)
+                    delBtn.BackgroundTransparency = 0.2
+                    delBtn.Text = "X"
+                    delBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+                    delBtn.Font = Enum.Font.GothamBold
+                    delBtn.TextSize = 10
+                    Instance.new("UICorner", delBtn).CornerRadius = UDim.new(0, 6)
+
+                    delBtn.MouseButton1Click:Connect(function()
+                        kbMod.RemoveKeybind(idx)
+                        refreshKeybindsList()
+                    end)
+                end
+            end
+            UpdateCardGeometry(activeCard)
+            UpdatePageCanvas(KeybindsPage)
+        end
+
+        if kbMod then
+            kbMod.OnChanged = refreshKeybindsList
+        end
+
+        AddButton(cfgCard, "+ Agregar Keybind", function()
+            local bindables = kbMod and kbMod.GetAllBindablesList() or {}
+            if #bindables == 0 then
+                Notify("Keybinds", "No hay botones o toggles disponibles para enlazar.")
+                return
+            end
+
+            local addCard = KeybindsPage:FindFirstChild("Card_AddKeybindSelector")
+            if addCard then
+                addCard:Destroy()
+                UpdatePageCanvas(KeybindsPage)
+                return
+            end
+
+            addCard = CreateCard(KeybindsPage, "Selecciona una funcion para enlazar")
+            addCard.Name = "Card_AddKeybindSelector"
+            addCard.LayoutOrder = 2
+
+            local desc = Instance.new("TextLabel", addCard)
+            desc.Size = UDim2.new(1, 0, 0, 24)
+            desc.BackgroundTransparency = 1
+            desc.Text = "Haz clic en una funcion y luego presiona la tecla deseada:"
+            desc.TextColor3 = Color3.fromRGB(180, 175, 200)
+            desc.Font = Enum.Font.Gotham
+            desc.TextSize = 9.5
+            desc.TextXAlignment = Enum.TextXAlignment.Left
+
+            local scroll = Instance.new("ScrollingFrame", addCard)
+            scroll.Size = UDim2.new(1, 0, 0, 180)
+            scroll.BackgroundTransparency = 0.95
+            scroll.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+            scroll.BorderSizePixel = 0
+            scroll.ScrollBarThickness = 3
+            Instance.new("UICorner", scroll).CornerRadius = UDim.new(0, 6)
+
+            local sList = Instance.new("UIListLayout", scroll)
+            sList.Padding = UDim.new(0, 4)
+            sList.SortOrder = Enum.SortOrder.LayoutOrder
+
+            local sPad = Instance.new("UIPadding", scroll)
+            sPad.PaddingTop = UDim.new(0, 4)
+            sPad.PaddingBottom = UDim.new(0, 4)
+            sPad.PaddingLeft = UDim.new(0, 4)
+            sPad.PaddingRight = UDim.new(0, 4)
+
+            for _, bName in ipairs(bindables) do
+                local bRow = Instance.new("TextButton", scroll)
+                bRow.Size = UDim2.new(1, 0, 0, 24)
+                bRow.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+                bRow.BackgroundTransparency = 0.3
+                bRow.Text = "  " .. bName
+                bRow.TextColor3 = Color3.fromRGB(220, 220, 230)
+                bRow.Font = Enum.Font.Gotham
+                bRow.TextSize = 9
+                bRow.TextXAlignment = Enum.TextXAlignment.Left
+                Instance.new("UICorner", bRow).CornerRadius = UDim.new(0, 4)
+
+                bRow.MouseButton1Click:Connect(function()
+                    bRow.Text = "  [ PRESIONA CUALQUIER TECLA... ]"
+                    bRow.TextColor3 = Color3.fromRGB(255, 200, 50)
+                    local pickConn
+                    pickConn = UserInputService.InputBegan:Connect(function(input, gp)
+                        if input.UserInputType == Enum.UserInputType.Keyboard then
+                            pickConn:Disconnect()
+                            local keyName = input.KeyCode.Name
+                            kbMod.AddKeybind(bName, keyName, "Toggle")
+                            Notify("Keybinds", bName .. " enlazado a [ " .. keyName .. " ]")
+                            if addCard and addCard.Parent then addCard:Destroy() end
+                            refreshKeybindsList()
+                        end
+                    end)
+                end)
+            end
+
+            scroll.CanvasSize = UDim2.new(0, 0, 0, #bindables * 28 + 10)
+            UpdateCardGeometry(addCard)
+            UpdatePageCanvas(KeybindsPage)
+        end)
+
+        AddButton(cfgCard, "Eliminar Todos los Atajos", function()
+            if kbMod then
+                kbMod.ClearAll()
+                Notify("Keybinds", "Todos los atajos fueron eliminados.")
+                refreshKeybindsList()
+            end
+        end)
+
+        refreshKeybindsList()
+    end)
+    if not okKeybinds then
+        warn("[Monody] Failed to initialize KeybindsPage: " .. tostring(errKeybinds))
+    end
 end
 
 -- 6. CONFIG TAB
