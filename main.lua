@@ -23,7 +23,7 @@ local function GetPlayerThumbnail(size)
     return string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=%d&h=%d", uid, s, s)
 end
 local DEFAULT_LOGO_ID = GetPlayerThumbnail(150)
-local GITHUB_REPO_RAW = "https://raw.githubusercontent.com/rivals-hash/idk/main"
+local GITHUB_REPO_RAW = "https://raw.githubusercontent.com/rivals-hash/test/main"
 
 local FONT_ORDER = { "Gotham", "GothamBold", "GothamBlack", "SourceSans", "Code" }
 local CurrentFontName = "Gotham"
