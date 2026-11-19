@@ -6324,6 +6324,7 @@ local DEFAULT_TOGGLES = {
     ["Kit One Shot"] = false,
     ["Kit One Shot Floating Widget"] = false,
     ["Saishi Sword One Shot"] = false,
+    ["Combat Tracker"] = false,
     ["X-Ray Vision"] = false,
     ["Buddha Rainbow Circle"] = false,
     ["Only My Buddha Circle"] = true,
@@ -6891,6 +6892,7 @@ function M.getAutoBounty() return M.get("modules/combat/auto_bounty.lua") end
 function M.getMika() return M.get("modules/ai/mika.lua") end
 function M.getKitOneShot() return M.get("modules/combat/kit_one_shot.lua") end
 function M.getSaishiOneShot() return M.get("modules/combat/saishi_one_shot.lua") end
+function M.getTracker() return M.get("modules/pvp/tracker.lua") end
 function M.getBuddhaRainbow() return M.get("modules/visuals/buddha_rainbow.lua") end
 
 _G.DarlingX_FruitFastAttack = false
@@ -8159,6 +8161,13 @@ local okPvP, errPvP = pcall(function()
         local s = M.getSaishiOneShot()
         if s then s.SetEnabled(state) end
         Notify("PvP", "Saishi One Shot: " .. (state and "Enabled" or "Disabled"))
+        pcall(SaveConfigProfile)
+    end)
+
+    AddToggle(combatCard, "Combat Tracker", "Lock behind target with floating button (Darling/Spooky)", false, function(state)
+        local t = M.getTracker()
+        if t then t.SetEnabled(state) end
+        Notify("PvP", "Combat Tracker: " .. (state and "Enabled" or "Disabled"))
         pcall(SaveConfigProfile)
     end)
 
