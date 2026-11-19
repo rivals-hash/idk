@@ -10840,12 +10840,15 @@ local okFFlags, errFFlags = pcall(function()
         end
         local count, failed = 0, 0
         if sff then
-            for name, val in pairs(flags) do
-                local strVal = type(val) == "boolean" and (val and "true" or "false") or tostring(val)
-                local ok = pcall(sff, tostring(name), strVal)
-                if ok then count = count + 1 else failed = failed + 1 end
-            end
-            Notify("FFlags", string.format("FFlags: %d applied, %d failed.", count, failed), 3.5)
+            task.spawn(function()
+                for name, val in pairs(flags) do
+                    local strVal = type(val) == "boolean" and (val and "true" or "false") or tostring(val)
+                    local ok = pcall(sff, tostring(name), strVal)
+                    if ok then count = count + 1 else failed = failed + 1 end
+                    task.wait(0.02)
+                end
+                Notify("FFlags", string.format("FFlags: %d applied, %d failed.", count, failed), 3.5)
+            end)
         else
             pcall(function()
                 settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
@@ -10885,59 +10888,70 @@ local okFFlags, errFFlags = pcall(function()
 
     AddButton(masterCard, "Activar FFlags", function()
         applyFlagsFromJson(POTATO_JSON)
-        pcall(function()
-            local terrain = Workspace:FindFirstChildOfClass("Terrain")
-            if terrain then
-                terrain.WaterWaveSize = 0
-                terrain.WaterWaveSpeed = 0
-                terrain.WaterReflectance = 0
-                terrain.WaterTransparency = 0
-            end
-
-            local lighting = game:GetService("Lighting")
-            lighting.GlobalShadows = false
-            lighting.FogEnd = 9e9
-            pcall(function() settings().Rendering.QualityLevel = 1 end)
-
-            for _, descendant in ipairs(lighting:GetDescendants()) do
-                if descendant:IsA("BlurEffect") or descendant:IsA("SunRaysEffect") or descendant:IsA("ColorCorrectionEffect") or descendant:IsA("BloomEffect") or descendant:IsA("DepthOfFieldEffect") or descendant:IsA("PostProcessEffect") then
-                    descendant.Enabled = false
-                end
-            end
-
-            for _, descendant in ipairs(game:GetDescendants()) do
-                if descendant:IsA("Part") or descendant:IsA("UnionOperation") or descendant:IsA("MeshPart") or descendant:IsA("CornerWedgePart") or descendant:IsA("TrussPart") then
-                    descendant.Material = Enum.Material.Plastic
-                    descendant.Reflectance = 0
-                    descendant.CastShadow = false
-                elseif descendant:IsA("Decal") or descendant:IsA("Texture") then
-                    descendant.Transparency = 1
-                elseif descendant:IsA("ParticleEmitter") or descendant:IsA("Trail") then
-                    descendant.Lifetime = NumberRange.new(0)
-                    descendant.Enabled = false
-                elseif descendant:IsA("Explosion") then
-                    descendant.BlastPressure = 1
-                    descendant.BlastRadius = 1
-                elseif descendant:IsA("ForceField") or descendant:IsA("Sparkles") or descendant:IsA("Smoke") or descendant:IsA("Fire") then
-                    pcall(function() descendant:Destroy() end)
-                end
-            end
-
-            -- Quantum Onyx Native Blox Fruits Fast Mode trigger
+        task.spawn(function()
             pcall(function()
-                local pGui = lp and (lp:FindFirstChildOfClass("PlayerGui") or lp:FindFirstChild("PlayerGui"))
-                local fastBtn = pGui and pGui:FindFirstChild("Main") and pGui.Main:FindFirstChild("SettingsMenu") and pGui.Main.SettingsMenu:FindFirstChild("Content") and pGui.Main.SettingsMenu.Content:FindFirstChild("ScrollingFrame") and pGui.Main.SettingsMenu.Content.ScrollingFrame:FindFirstChild("FastMode")
-                if fastBtn and fastBtn:FindFirstChild("FirstButton") and firesignal then
-                    firesignal(fastBtn.FirstButton.MouseButton1Click)
+                local terrain = Workspace:FindFirstChildOfClass("Terrain")
+                if terrain then
+                    terrain.WaterWaveSize = 0
+                    terrain.WaterWaveSpeed = 0
+                    terrain.WaterReflectance = 0
+                    terrain.WaterTransparency = 0
                 end
-            end)
 
-            -- Memory GC
-            pcall(function() collectgarbage("collect") end)
+                local lighting = game:GetService("Lighting")
+                lighting.GlobalShadows = false
+                lighting.FogEnd = 9e9
+                pcall(function() settings().Rendering.QualityLevel = 1 end)
+
+                for _, descendant in ipairs(lighting:GetDescendants()) do
+                    if descendant:IsA("BlurEffect") or descendant:IsA("SunRaysEffect") or descendant:IsA("ColorCorrectionEffect") or descendant:IsA("BloomEffect") or descendant:IsA("DepthOfFieldEffect") or descendant:IsA("PostProcessEffect") then
+                        descendant.Enabled = false
+                    end
+                end
+
+                local descendants = Workspace:GetDescendants()
+                local batchCount = 0
+                for i = 1, #descendants do
+                    local descendant = descendants[i]
+                    if descendant then
+                        if descendant:IsA("Part") or descendant:IsA("UnionOperation") or descendant:IsA("MeshPart") or descendant:IsA("CornerWedgePart") or descendant:IsA("TrussPart") then
+                            descendant.Material = Enum.Material.Plastic
+                            descendant.Reflectance = 0
+                            descendant.CastShadow = false
+                        elseif descendant:IsA("Decal") or descendant:IsA("Texture") then
+                            descendant.Transparency = 1
+                        elseif descendant:IsA("ParticleEmitter") or descendant:IsA("Trail") then
+                            descendant.Lifetime = NumberRange.new(0)
+                            descendant.Enabled = false
+                        elseif descendant:IsA("Explosion") then
+                            descendant.BlastPressure = 1
+                            descendant.BlastRadius = 1
+                        elseif descendant:IsA("ForceField") or descendant:IsA("Sparkles") or descendant:IsA("Smoke") or descendant:IsA("Fire") then
+                            pcall(function() descendant:Destroy() end)
+                        end
+                    end
+                    batchCount = batchCount + 1
+                    if batchCount >= 150 then
+                        batchCount = 0
+                        task.wait()
+                    end
+                end
+
+                -- Quantum Onyx Native Blox Fruits Fast Mode trigger
+                pcall(function()
+                    local pGui = lp and (lp:FindFirstChildOfClass("PlayerGui") or lp:FindFirstChild("PlayerGui"))
+                    local fastBtn = pGui and pGui:FindFirstChild("Main") and pGui.Main:FindFirstChild("SettingsMenu") and pGui.Main.SettingsMenu:FindFirstChild("Content") and pGui.Main.SettingsMenu.Content:FindFirstChild("ScrollingFrame") and pGui.Main.SettingsMenu.Content.ScrollingFrame:FindFirstChild("FastMode")
+                    if fastBtn and fastBtn:FindFirstChild("FirstButton") and firesignal then
+                        firesignal(fastBtn.FirstButton.MouseButton1Click)
+                    end
+                end)
+
+                pcall(function() collectgarbage("collect") end)
+            end)
+            pcall(SetFFlags1, true)
+            pcall(SetNoAnimations, true)
+            Notify("FFlags", "Optimizacion progresiva activada con exito!", 3)
         end)
-        pcall(SetFFlags1, true)
-        pcall(SetNoAnimations, true)
-        Notify("FFlags", "Todas las FFlags y 120 FPS activados!", 3)
     end)
 
     -- Card 2: Editor de FFlags Personalizadas
