@@ -99,11 +99,30 @@ local lp = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 local ScreenGui
 
--- Safe parent resolver (gethui / CoreGui / PlayerGui)
-local parentGui = nil
-pcall(function() if gethui then parentGui = gethui() end end)
-if not parentGui then pcall(function() parentGui = CoreGui end) end
-if not parentGui and lp then pcall(function() parentGui = lp:WaitForChild("PlayerGui", 5) end) end
+-- Safe parent resolver (gethui / CoreGui check / PlayerGui fallback)
+local function GetSafeGuiParent()
+    if gethui then
+        local ok, h = pcall(gethui)
+        if ok and h then return h end
+    end
+    local canCore = false
+    pcall(function()
+        local t = Instance.new("Folder")
+        t.Parent = CoreGui
+        t:Destroy()
+        canCore = true
+    end)
+    if canCore then return CoreGui end
+    local pg = lp and (lp:FindFirstChildOfClass("PlayerGui") or lp:FindFirstChild("PlayerGui"))
+    if pg then return pg end
+    if lp then
+        local ok, res = pcall(function() return lp:WaitForChild("PlayerGui", 3) end)
+        if ok and res then return res end
+    end
+    return CoreGui
+end
+
+local parentGui = GetSafeGuiParent()
 
 -- Clean up any prior DarlingX instances to avoid ghost overlay frames
 -- Restore native game HUD & remove any rogue UIScale on TouchGui/Mobile controls
@@ -995,7 +1014,13 @@ function InlineLoader.show(logoAsset)
     percent.TextSize = 12
     percent.Parent = card
 
-    gui.Parent = parent
+    pcall(function() gui.Parent = parent end)
+    if not gui.Parent then
+        pcall(function()
+            local pg = lp and (lp:FindFirstChildOfClass("PlayerGui") or lp:FindFirstChild("PlayerGui"))
+            if pg then gui.Parent = pg end
+        end)
+    end
 
     InlineLoader.ScreenGui = gui
     InlineLoader.FillBar = fill
@@ -1420,7 +1445,13 @@ local function showKeyModal(AuroraX, onSuccess)
         end)
     end)
 
-    gui.Parent = parent
+    pcall(function() gui.Parent = parent end)
+    if not gui.Parent then
+        pcall(function()
+            local pg = lp and (lp:FindFirstChildOfClass("PlayerGui") or lp:FindFirstChild("PlayerGui"))
+            if pg then gui.Parent = pg end
+        end)
+    end
 
     -- Smooth Spring Entrance Animation
     TweenService:Create(modal, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
@@ -1436,35 +1467,45 @@ local introCompleted = false
 local uiOpened = false
 
 local function triggerUIOpen()
-    if introCompleted and uiReadyToOpen and not uiOpened then
-        uiOpened = true
-        pcall(function()
-            local oldLoader = (CoreGui and CoreGui:FindFirstChild("Monody_LoadingScreen"))
-                or (parentGui and parentGui:FindFirstChild("Monody_LoadingScreen"))
-                or (gethui and gethui():FindFirstChild("Monody_LoadingScreen"))
-                or (lp and lp:FindFirstChildOfClass("PlayerGui") and lp.PlayerGui:FindFirstChild("Monody_LoadingScreen"))
-            if oldLoader then
-                local m = oldLoader:FindFirstChild("Modal") or oldLoader:FindFirstChildWhichIsA("Frame")
-                if m then
-                    TweenService:Create(m, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
-                        Size = UDim2.new(0, 0, 0, 0),
-                        BackgroundTransparency = 1
-                    }):Play()
-                    task.wait(0.3)
-                end
-                oldLoader:Destroy()
+    if uiOpened then return end
+    if not uiReadyToOpen then
+        task.spawn(function()
+            local waitTime = 0
+            while not uiReadyToOpen and waitTime < 10 do
+                task.wait(0.05)
+                waitTime = waitTime + 0.05
             end
+            if not uiOpened then triggerUIOpen() end
         end)
-        if maximizeUI then
-            maximizeUI()
-        elseif Main then
-            Main.Visible = true
-        end
-        if Notify then
-            Notify(APP_TITLE, "Version " .. APP_VERSION .. " loaded and ready.")
-        end
-        print("[" .. APP_TITLE .. "] Version " .. APP_VERSION .. " initialized successfully.")
+        return
     end
+    uiOpened = true
+    pcall(function()
+        local oldLoader = (CoreGui and CoreGui:FindFirstChild("Monody_LoadingScreen"))
+            or (parentGui and parentGui:FindFirstChild("Monody_LoadingScreen"))
+            or (gethui and gethui():FindFirstChild("Monody_LoadingScreen"))
+            or (lp and lp:FindFirstChildOfClass("PlayerGui") and lp.PlayerGui:FindFirstChild("Monody_LoadingScreen"))
+        if oldLoader then
+            local m = oldLoader:FindFirstChild("Modal") or oldLoader:FindFirstChildWhichIsA("Frame")
+            if m then
+                TweenService:Create(m, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+                    Size = UDim2.new(0, 0, 0, 0),
+                    BackgroundTransparency = 1
+                }):Play()
+                task.wait(0.3)
+            end
+            oldLoader:Destroy()
+        end
+    end)
+    if maximizeUI then
+        maximizeUI()
+    elseif Main then
+        Main.Visible = true
+    end
+    if Notify then
+        Notify(APP_TITLE, "Version " .. APP_VERSION .. " loaded and ready.")
+    end
+    print("[" .. APP_TITLE .. "] Version " .. APP_VERSION .. " initialized successfully.")
 end
 
 local function startMonodyBoot()
@@ -1473,10 +1514,10 @@ local function startMonodyBoot()
 
     task.spawn(function()
         local elapsed = 0
-        while not uiReadyToOpen and elapsed < 1.0 do
-            task.wait(0.04)
-            elapsed = elapsed + 0.04
-            InlineLoader.update(0.3 + math.min(elapsed / 1.0 * 0.7, 0.7), "Loading components...")
+        while not uiReadyToOpen and elapsed < 8.0 do
+            task.wait(0.05)
+            elapsed = elapsed + 0.05
+            InlineLoader.update(0.3 + math.min(elapsed / 8.0 * 0.7, 0.7), "Loading components...")
         end
 
         InlineLoader.update(1.0, "Ready")
@@ -1539,6 +1580,15 @@ pcall(function()
     if syn and syn.protect_gui then syn.protect_gui(ScreenGui) end
     ScreenGui.Parent = parentGui
 end)
+if not ScreenGui.Parent then
+    pcall(function()
+        local pg = lp and (lp:FindFirstChildOfClass("PlayerGui") or lp:FindFirstChild("PlayerGui"))
+        if pg then ScreenGui.Parent = pg end
+    end)
+end
+if not ScreenGui.Parent and lp then
+    pcall(function() ScreenGui.Parent = lp:WaitForChild("PlayerGui", 3) end)
+end
 
 -- Toast Notification Container
 -- Toast Notification Container (Strict Active=false so mobile controls like Buso/V3 are never blocked)
@@ -2805,6 +2855,9 @@ local TRANSLATIONS_DICT = {
         ["Recolors your Buddha circle with animated rainbow gradient (Client-only)"] = "Colorea el circulo de Buddha con gradiente arcoiris animado (Solo tu cliente)",
         ["Only My Buddha Circle"] = "Solo Mi Circulo de Buddha",
         ["Only affects your own character instead of all nearby Buddha users"] = "Solo afecta a tu propio personaje y no a otros usuarios de Buddha",
+        ["Delete Ghost Ship (Sea 2)"] = "Borrar Barco Fantasma (Mar 2)",
+        ["Delete Ghost Ship"] = "Borrar Barco Fantasma",
+        ["Removes interior walls and objects from Cursed Ship in Sea 2"] = "Elimina paredes interiores y objetos del Barco Maldito en Mar 2",
         -- Monody New Additions & Performance Features
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Companera Waifu AI",
@@ -3416,8 +3469,11 @@ local TRANSLATIONS_DICT = {
         ["Makes map walls and objects transparent to spot players and chests easily"] = "Torna paredes e objetos transparentes para avistar jogadores e baús",
         ["Buddha Rainbow Circle"] = "Círculo Buddha Arco-íris",
         ["Recolors your Buddha circle with animated rainbow gradient (Client-only)"] = "Colore o círculo do Buddha com gradiente arco-íris animado (Apenas cliente)",
-        ["Only My Buddha Circle"] = "Apenas Meu Círculo de Buddha",
-        ["Only affects your own character instead of all nearby Buddha users"] = "Afeta apenas seu próprio personagem e não outros usuários de Buddha",
+        ["Only My Buddha Circle"] = "Apenas Meu Circulo de Buddha",
+        ["Only affects your own character instead of all nearby Buddha users"] = "Afeta apenas seu proprio personagem e nao outros usuarios de Buddha",
+        ["Delete Ghost Ship (Sea 2)"] = "Deletar Navio Fantasma (Sea 2)",
+        ["Delete Ghost Ship"] = "Deletar Navio Fantasma",
+        ["Removes interior walls and objects from Cursed Ship in Sea 2"] = "Remove paredes interiores e objetos do Navio Fantasma no Sea 2",
         -- Performance / FFlags / Waifu
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Companheira Waifu AI",
@@ -6352,6 +6408,7 @@ local DEFAULT_TOGGLES = {
     ["X-Ray Vision"] = false,
     ["Buddha Rainbow Circle"] = false,
     ["Only My Buddha Circle"] = true,
+    ["Delete Ghost Ship"] = false,
     ["Macro"] = false,
     ["FPS Booster"] = false,
     ["Auto Apply"] = false,
@@ -8899,19 +8956,28 @@ do
         local TweenService = game:GetService("TweenService")
         local localPlayer = lp or Players.LocalPlayer
 
-        local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+        local character = localPlayer.Character
+        local humanoidRootPart = character and (character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("UpperTorso"))
 
         localPlayer.CharacterAdded:Connect(function(newCharacter)
             character = newCharacter
-            humanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
+            humanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart", 5)
         end)
 
-        local netFolder = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net")
-        local registerAttack = netFolder:WaitForChild("RE/RegisterAttack")
-        local registerHit = netFolder:WaitForChild("RE/RegisterHit")
+        local function ensureHRP()
+            if humanoidRootPart and humanoidRootPart.Parent then return humanoidRootPart end
+            local c = localPlayer.Character
+            humanoidRootPart = c and (c:FindFirstChild("HumanoidRootPart") or c:FindFirstChild("UpperTorso"))
+            return humanoidRootPart
+        end
+
+        local netFolder = ReplicatedStorage:FindFirstChild("Modules")
+        netFolder = netFolder and netFolder:FindFirstChild("Net")
+        local registerAttack = netFolder and netFolder:FindFirstChild("RE/RegisterAttack")
+        local registerHit = netFolder and netFolder:FindFirstChild("RE/RegisterHit")
         local enemiesFolder = Workspace:FindFirstChild("Enemies") or Workspace
-        local commF = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_")
+        local remotesFolder = ReplicatedStorage:FindFirstChild("Remotes")
+        local commF = remotesFolder and remotesFolder:FindFirstChild("CommF_")
 
         local BOSS_ROOMS = { [5] = true, [10] = true, [15] = true, [20] = true }
 
@@ -8930,10 +8996,11 @@ do
         end
 
         local function GetCurrentRoomNumber()
-            if not humanoidRootPart then return 0 end
+            local hrp = ensureHRP()
+            if not hrp then return 0 end
             local rooms = GetDungeonRooms()
             if #rooms == 0 then return 0 end
-            local myPos = humanoidRootPart.Position
+            local myPos = hrp.Position
             local currentRoomIdx = 1
             local minDist = math.huge
             for i, room in ipairs(rooms) do
@@ -8975,7 +9042,7 @@ do
             local sourceFolder = Workspace:FindFirstChild("Enemies") or enemiesFolder
             if not sourceFolder then return nil end
             local best, bestDist = nil, math.huge
-            local hrp = humanoidRootPart
+            local hrp = ensureHRP()
             if not hrp then return nil end
             for _, obj in ipairs(sourceFolder:GetChildren()) do
                 if obj:IsA("Model") and IsBossModel(obj) then
@@ -10401,6 +10468,18 @@ do
             local br = M.getBuddhaRainbow()
             if br then br.OnlyMyCircle = state end
         end)
+
+        -- Card 3: Delete Ghost Ship (Sea 2)
+        local ghostShipCard = CreateCard(VisualsPage, "Delete Ghost Ship (Sea 2)")
+
+        AddToggle(ghostShipCard, "Delete Ghost Ship", "Removes interior walls and objects from Cursed Ship in Sea 2", false, function(state)
+            local gs = RequireModule("modules/misc/ghost_ship.lua")
+            if gs and gs.SetEnabled then
+                gs.SetEnabled(state)
+            end
+            Notify("Ghost Ship", state and "Ghost Ship structures deleted." or "Ghost Ship deletion stopped.")
+            pcall(SaveConfigProfile)
+        end)
     end)
 end
 
@@ -11745,6 +11824,12 @@ end
 suspendSave = false
 
 uiReadyToOpen = true
-if introCompleted then
+if introCompleted or not InlineLoader.IsActive then
     triggerUIOpen()
 end
+
+task.delay(3, function()
+    if not uiOpened then
+        triggerUIOpen()
+    end
+end)
