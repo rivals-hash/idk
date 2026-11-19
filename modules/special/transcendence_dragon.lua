@@ -2372,7 +2372,11 @@ function Transcendence.setHidden(hidden)
                 for _, obj in ipairs(Transcendence.DragonFolder:GetDescendants()) do
                     if obj:IsA("BasePart") then
                         obj.Transparency = 1
-                    elseif obj:IsA("Light") or obj:IsA("ParticleEmitter") or obj:IsA("Beam") or obj:IsA("ProximityPrompt") then
+                    elseif obj:IsA("Light") or obj:IsA("ParticleEmitter") or obj:IsA("Beam") or obj:IsA("Trail") or obj:IsA("ProximityPrompt") or obj:IsA("Highlight") then
+                        obj.Enabled = false
+                    elseif obj:IsA("Decal") or obj:IsA("Texture") then
+                        obj.Transparency = 1
+                    elseif obj:IsA("BillboardGui") then
                         obj.Enabled = false
                     end
                 end
@@ -2389,10 +2393,14 @@ function Transcendence.setHidden(hidden)
                     if eData.part then eData.part.Transparency = 0.15 end
                 end
                 for _, obj in ipairs(Transcendence.DragonFolder:GetDescendants()) do
-                    if obj:IsA("Light") or obj:IsA("ParticleEmitter") or obj:IsA("Beam") then
+                    if obj:IsA("Light") or obj:IsA("ParticleEmitter") or obj:IsA("Beam") or obj:IsA("Trail") or obj:IsA("Highlight") then
                         obj.Enabled = true
                     elseif obj:IsA("ProximityPrompt") then
                         obj.Enabled = not Transcendence.IsRiding
+                    elseif obj:IsA("Decal") or obj:IsA("Texture") then
+                        obj.Transparency = 0
+                    elseif obj:IsA("BillboardGui") then
+                        obj.Enabled = true
                     end
                 end
             end)

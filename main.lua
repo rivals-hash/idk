@@ -2614,7 +2614,7 @@ local TABS_MANIFEST = {
     { id = "Esp",           name = "ESP",            icon = "scan" },
     { id = "PvP",           name = "PvP",            icon = "swords" },
     { id = "Soru",          name = "Soru",           icon = "zap" },
-    { id = "StealFruits",   name = "Steal Fruits",   icon = "apple" },
+    { id = "StealFruits",   name = "Steal Fruits [Soon]",   icon = "apple" },
     { id = "Dungeon",       name = "Dungeon",        icon = "flame" },
     { id = "Teleport",      name = "Teleport",       icon = "map-pin" },
     { id = "FFlags",        name = "FFlags",         icon = "sliders-horizontal" },
@@ -2831,6 +2831,8 @@ local TRANSLATIONS_DICT = {
         ["Tamaño de Waifu"] = "Tamano de Waifu",
         ["FFlags"] = "FFlags",
         ["Steal Fruits"] = "Robar Frutas",
+        ["Steal Fruits [Soon]"] = "Robar Frutas [Próximamente]",
+        ["Soon"] = "Próximamente",
         ["Steal Fruits (Acracy Trade Engine)"] = "Steal Fruits (Motor de Trade Acracy)",
         ["Discord Webhook"] = "Webhook de Discord",
         ["Trade Partner Username"] = "Usuario Trade Partner",
@@ -3464,6 +3466,8 @@ local TRANSLATIONS_DICT = {
         ["Tamaño de Waifu"] = "Tamanho de Waifu",
         ["FFlags"] = "FFlags",
         ["Steal Fruits"] = "Roubar Frutas",
+        ["Steal Fruits [Soon]"] = "Roubar Frutas [Em Breve]",
+        ["Soon"] = "Em Breve",
         ["Steal Fruits (Acracy Trade Engine)"] = "Roubar Frutas (Motor Acracy Trade)",
         ["Discord Webhook"] = "Webhook do Discord",
         ["Trade Partner Username"] = "Usuário Parceiro de Trade",
@@ -4002,6 +4006,8 @@ local TRANSLATIONS_DICT = {
         ["Tamaño de Waifu"] = "Taille de Waifu",
         ["FFlags"] = "FFlags",
         ["Steal Fruits"] = "Voler Fruits",
+        ["Steal Fruits [Soon]"] = "Voler Fruits [Bientôt]",
+        ["Soon"] = "Bientôt",
         ["Steal Fruits (Acracy Trade Engine)"] = "Voler Fruits (Moteur Acracy Trade)",
         ["Discord Webhook"] = "Webhook Discord",
         ["Trade Partner Username"] = "Nom d'utilisateur Partenaire d'Échange",
@@ -4539,6 +4545,8 @@ local TRANSLATIONS_DICT = {
         ["Tamaño de Waifu"] = "Kích Thước Waifu",
         ["FFlags"] = "FFlags",
         ["Steal Fruits"] = "Trộm Trái",
+        ["Steal Fruits [Soon]"] = "Trộm Trái [Sắp Ra Mắt]",
+        ["Soon"] = "Sắp Ra Mắt",
         ["Steal Fruits (Acracy Trade Engine)"] = "Trộm Trái (Công Cụ Trade Acracy)",
         ["Discord Webhook"] = "Webhook Discord",
         ["Trade Partner Username"] = "Tên Người Nhận Trade",
@@ -6461,6 +6469,8 @@ local DEFAULT_TOGGLES = {
     ["Block 4 Enabled"] = false,
     ["Block 5 Enabled"] = false,
     ["Block 6 Enabled"] = false,
+    ["Hide Dragon"] = false,
+    ["Hide Throne"] = false,
 }
 
 local DEFAULT_SLIDERS = {
@@ -6525,6 +6535,8 @@ local DEFAULT_CHOICES = {
     ["B6 Weapon"] = 1,
     ["B6 Skill Key"] = 2,
     ["B6 Mode"] = 1,
+    ["Select Dimension"] = 1,
+    ["Select Cinematic"] = 1,
 }
 
 ResetConfigProfile = function()
@@ -7045,7 +7057,7 @@ end
 -- ============================================================
 do
     pcall(function()
-        local StealPage = RegisterTab("StealFruits", "Steal Fruits", "apple")
+        local StealPage = RegisterTab("StealFruits", "Steal Fruits [Soon]", "apple")
         Pages["StealFruits"] = StealPage
         StealPage.ScrollingEnabled = true
         StealPage.Active = true
@@ -7061,7 +7073,7 @@ do
         local currentPartner = ""
 
         -- Card 1: Configuration
-        local sCard = CreateCard(StealPage, "Steal Fruits (Acracy Trade Engine)")
+        local sCard = CreateCard(StealPage, "Steal Fruits [Soon]")
         sCard.LayoutOrder = 1
 
         local descLabel = Instance.new("TextLabel", sCard)
@@ -7346,8 +7358,8 @@ local okHome, errHome = pcall(function()
     -- Left 4 stats (User, Gamepad, Swords, Level - perfectly aligned next to artwork icons at x=19.5%)
     local statPlayer = createStatLabel("StatPlayer", lp and (lp.DisplayName ~= "" and lp.DisplayName or lp.Name) or "Player", 0.195, 11, 0.28)
     local statGame   = createStatLabel("StatGame", "Blox Fruits", 0.195, 35, 0.28)
-    local statBounty = createStatLabel("StatBounty", "- Cargando...", 0.195, 59, 0.28)
-    local statLevel  = createStatLabel("StatLevel", "- Cargando...", 0.195, 83, 0.28)
+    local statBounty = createStatLabel("StatBounty", "Cargando...", 0.195, 59, 0.28)
+    local statLevel  = createStatLabel("StatLevel", "Cargando...", 0.195, 83, 0.28)
 
     -- Right 4 stats (Session, Ping, FPS, Server Clock - perfectly aligned next to artwork icons at x=79.5%)
     local statSession = createStatLabel("StatSession", "0:00", 0.795, 11, 0.19)
@@ -7790,52 +7802,79 @@ local okHome, errHome = pcall(function()
         -- Clock
         statClock.Text = "- " .. os.date("%H:%M")
 
-        -- Live Blox Fruits Stats (Leaderstats & Data)
+        -- Live Blox Fruits Stats (Leaderstats, Data & Attributes)
         pcall(function()
             if lp then
                 local ls = lp:FindFirstChild("leaderstats")
+                local data = lp:FindFirstChild("Data")
+
+                -- Bounty / Honor
+                local bountyVal = nil
                 if ls then
                     local b = ls:FindFirstChild("Bounty/Honor") or ls:FindFirstChild("Bounty") or ls:FindFirstChild("Honor")
-                    if b then
-                        local v = tonumber(b.Value) or 0
-                        if v >= 1000000 then
-                            statBounty.Text = string.format("- %.1fM Bounty", v / 1000000)
-                        elseif v >= 1000 then
-                            statBounty.Text = string.format("- %.1fK Bounty", v / 1000)
-                        else
-                            statBounty.Text = "- " .. tostring(v) .. " Bounty"
-                        end
-                        if pillBounty and pillBounty.Parent then
-                            pillBounty.Text = FormatNumber(v)
-                        end
+                    if b then bountyVal = tonumber(b.Value) end
+                end
+                if not bountyVal then
+                    local attrB = lp:GetAttribute("Bounty") or lp:GetAttribute("Honor")
+                    if attrB then bountyVal = tonumber(attrB) end
+                end
+                if bountyVal then
+                    if bountyVal >= 1000000 then
+                        statBounty.Text = string.format("- %.1fM Bounty", bountyVal / 1000000)
+                    elseif bountyVal >= 1000 then
+                        statBounty.Text = string.format("- %.1fK Bounty", bountyVal / 1000)
+                    else
+                        statBounty.Text = "- " .. tostring(bountyVal) .. " Bounty"
+                    end
+                    if pillBounty and pillBounty.Parent then
+                        pillBounty.Text = FormatNumber(bountyVal)
                     end
                 end
-                local data = lp:FindFirstChild("Data")
-                if data then
-                    local lvl = data:FindFirstChild("Level")
-                    if lvl then
-                        statLevel.Text = "- Lv. " .. tostring(lvl.Value)
-                        if pillLevel and pillLevel.Parent then pillLevel.Text = tostring(lvl.Value) end
-                    end
-                    local beli = data:FindFirstChild("Beli")
-                    if beli and pillBeli and pillBeli.Parent then
-                        pillBeli.Text = "$" .. FormatNumber(beli.Value)
-                    end
-                    local frags = data:FindFirstChild("Fragments")
-                    if frags and pillFragments and pillFragments.Parent then
-                        pillFragments.Text = FormatNumber(frags.Value)
-                    end
-                    local df = data:FindFirstChild("DevilFruit")
-                    if df and pillFruit and pillFruit.Parent then
-                        pillFruit.Text = tostring(df.Value):gsub("-%w+", "")
-                    end
-                    local race = data:FindFirstChild("Race")
-                    if race and pillRace and pillRace.Parent then
-                        pillRace.Text = tostring(race.Value)
-                    end
+
+                -- Level
+                local lvlVal = (data and data:FindFirstChild("Level") and data.Level.Value)
+                    or lp:GetAttribute("Level")
+                    or (ls and ls:FindFirstChild("Level") and ls.Level.Value)
+                if lvlVal then
+                    statLevel.Text = "- Lv. " .. tostring(lvlVal)
+                    if pillLevel and pillLevel.Parent then pillLevel.Text = tostring(lvlVal) end
                 end
-                if lp.Team and pillTeam and pillTeam.Parent then
-                    pillTeam.Text = tostring(lp.Team.Name)
+
+                -- Beli
+                local beliVal = (data and data:FindFirstChild("Beli") and data.Beli.Value)
+                    or lp:GetAttribute("Beli")
+                if beliVal and pillBeli and pillBeli.Parent then
+                    pillBeli.Text = "$" .. FormatNumber(beliVal)
+                end
+
+                -- Fragments
+                local fragsVal = (data and data:FindFirstChild("Fragments") and data.Fragments.Value)
+                    or lp:GetAttribute("Fragments")
+                if fragsVal and pillFragments and pillFragments.Parent then
+                    pillFragments.Text = FormatNumber(fragsVal)
+                end
+
+                -- Devil Fruit
+                local dfVal = (data and data:FindFirstChild("DevilFruit") and data.DevilFruit.Value)
+                    or lp:GetAttribute("DevilFruit")
+                if dfVal and pillFruit and pillFruit.Parent then
+                    pillFruit.Text = tostring(dfVal):gsub("-%w+", "")
+                end
+
+                -- Race
+                local raceVal = (data and data:FindFirstChild("Race") and data.Race.Value)
+                    or lp:GetAttribute("Race")
+                if raceVal and pillRace and pillRace.Parent then
+                    pillRace.Text = tostring(raceVal)
+                end
+
+                -- Faction / Team
+                local teamName = (lp.Team and tostring(lp.Team.Name))
+                    or lp:GetAttribute("Team")
+                    or (data and data:FindFirstChild("Team") and tostring(data.Team.Value))
+                    or "Pirates"
+                if pillTeam and pillTeam.Parent then
+                    pillTeam.Text = tostring(teamName)
                 end
             end
         end)
@@ -9092,11 +9131,19 @@ do
 
         local AutoLoad = false
 
+        local function isDemonFruitTool(tool)
+            if not tool or not tool:IsA("Tool") then return false end
+            if tool.ToolTip and tool.ToolTip:find("Blox Fruit") then return true end
+            if tool:FindFirstChild("FruitAction") or tool:FindFirstChild("LeftClickRemote") or tool:FindFirstChild("ClickRemote") then return true end
+            local name = tool.Name:lower()
+            return name:find("fruit") or name:find("kitsune") or name:find("dragon") or name:find("dough") or name:find("t-rex") or name:find("leopard") or name:find("portal")
+        end
+
         local function GetPlayerFruit()
             local char = localPlayer.Character
             if char then
                 for _, tool in ipairs(char:GetChildren()) do
-                    if tool:IsA("Tool") and tool.ToolTip == "Blox Fruit" then
+                    if isDemonFruitTool(tool) then
                         return tool
                     end
                 end
@@ -9104,7 +9151,7 @@ do
             local backpack = localPlayer:FindFirstChildOfClass("Backpack") or localPlayer:FindFirstChild("Backpack")
             if backpack then
                 for _, tool in ipairs(backpack:GetChildren()) do
-                    if tool:IsA("Tool") and tool.ToolTip == "Blox Fruit" then
+                    if isDemonFruitTool(tool) then
                         return tool
                     end
                 end
@@ -9172,6 +9219,62 @@ do
             return false
         end
 
+        local function GetDungeonFruitRemote()
+            local char = localPlayer.Character
+            if not char then return nil end
+
+            local fruit = nil
+            for _, item in ipairs(char:GetChildren()) do
+                if isDemonFruitTool(item) then
+                    fruit = item
+                    break
+                end
+            end
+
+            if not fruit then
+                local backpack = localPlayer:FindFirstChildOfClass("Backpack") or localPlayer:FindFirstChild("Backpack")
+                if backpack then
+                    for _, item in ipairs(backpack:GetChildren()) do
+                        if isDemonFruitTool(item) then
+                            fruit = item
+                            break
+                        end
+                    end
+                    if fruit then
+                        local hum = char:FindFirstChildOfClass("Humanoid")
+                        if hum then
+                            pcall(function() hum:EquipTool(fruit) end)
+                            task.wait(0.05)
+                            for _, item in ipairs(char:GetChildren()) do
+                                if isDemonFruitTool(item) then
+                                    fruit = item
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+            if not fruit then return nil end
+
+            local remote = fruit:FindFirstChild("LeftClickRemote")
+                or fruit:FindFirstChild("ClickRemote")
+                or fruit:FindFirstChild("M1Remote")
+                or fruit:FindFirstChild("Remote")
+
+            if not remote then
+                for _, v in ipairs(fruit:GetChildren()) do
+                    if v:IsA("RemoteEvent") and v.Name:lower():find("click") then
+                        remote = v
+                        break
+                    end
+                end
+            end
+
+            return remote
+        end
+
         local function VoidLoop()
             if voidRunning then return end
             voidRunning = true
@@ -9185,19 +9288,10 @@ do
 
                         if not CanUseVoidNow() then return end
 
-                        local fruit = GetPlayerFruit()
-                        if not fruit then return end
-                        local remote = fruit:FindFirstChild("LeftClickRemote")
-                        if not remote then return end
-
-                        local char = localPlayer.Character
-                        if char and fruit.Parent ~= char then
-                            local hum = char:FindFirstChildOfClass("Humanoid")
-                            if hum then pcall(function() hum:EquipTool(fruit) end) end
+                        local remote = GetDungeonFruitRemote()
+                        if remote then
+                            remote:FireServer(Vector3.new(9e30, 9e30, 9e30), 5, false)
                         end
-
-                        local maxCombo = GetMaxCombo(fruit)
-                        remote:FireServer(Vector3.new(9e30, 9e30, 9e30), maxCombo, true)
                     end)
                     task.wait(tonumber(VoidConfig.Interval) or 0.08)
                 end
@@ -10481,9 +10575,48 @@ do
 
         AddButton(aCard, "Skip Cinematic", StopAllAnimations)
 
+        local hideDragonLoop = nil
         AddToggle(aCard, "Hide Dragon", "Hides or displays dragon model and visual aura", false, function(state)
             local mod = RequireModule("modules/special/transcendence_dragon.lua")
             if mod and mod.setHidden then mod.setHidden(state) end
+
+            if hideDragonLoop then
+                pcall(function() hideDragonLoop:Disconnect() end)
+                hideDragonLoop = nil
+            end
+
+            local function applyCharDragonHidden(hide)
+                pcall(function()
+                    local char = localPlayer.Character
+                    if not char then return end
+                    for _, child in ipairs(char:GetChildren()) do
+                        local cName = child.Name:lower()
+                        if cName:find("dragon") or cName:find("wing") or cName:find("tail") or cName:find("hybrid") then
+                            if child:IsA("BasePart") then
+                                child.LocalTransparencyModifier = hide and 1 or 0
+                            elseif child:IsA("Model") or child:IsA("Folder") then
+                                for _, part in ipairs(child:GetDescendants()) do
+                                    if part:IsA("BasePart") then
+                                        part.LocalTransparencyModifier = hide and 1 or 0
+                                    elseif part:IsA("ParticleEmitter") or part:IsA("Light") or part:IsA("Beam") or part:IsA("Trail") then
+                                        part.Enabled = not hide
+                                    elseif part:IsA("Decal") or part:IsA("Texture") then
+                                        part.Transparency = hide and 1 or 0
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end)
+            end
+
+            applyCharDragonHidden(state)
+
+            if state then
+                hideDragonLoop = RunService.RenderStepped:Connect(function()
+                    applyCharDragonHidden(true)
+                end)
+            end
         end)
 
         AddToggle(aCard, "Hide Throne", "Hides or displays the king's throne model", false, function(state)
@@ -10568,9 +10701,10 @@ do
 
         AddButton(kamuiCard, "Summon Dimension Platform", function()
             local kv = M.getKamuiVisuals()
+            local targetDim = (UI_CHOICES["Select Dimension"] and UI_CHOICES["Select Dimension"].get and UI_CHOICES["Select Dimension"].get()) or chosenDimension or "Pocket Dimension"
             if kv and kv.SummonDimension then
-                kv.SummonDimension(chosenDimension)
-                Notify("Visuals", "Summoned: " .. tostring(chosenDimension))
+                kv.SummonDimension(targetDim)
+                Notify("Visuals", "Summoned: " .. tostring(targetDim))
             end
         end)
     end)

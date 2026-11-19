@@ -463,8 +463,8 @@ task.spawn(function()
 
     -- Safe Key Verification Function (SDK -> REST API -> Safe Pass Fallback)
     local function SafeCheckKey(key)
-        if not key or type(key) ~= "string" or #key < 4 then
-            return false, { message = "Please enter a valid key (min 4 characters)." }
+        if not key or type(key) ~= "string" or #key < 6 then
+            return false, { message = "Please enter a valid key (min 6 characters)." }
         end
 
         -- 1. Try official AuroraX SDK
@@ -489,11 +489,15 @@ task.spawn(function()
             end
         end
 
-        -- 3. Resilient Fallback: If servers are unreachable, allow key through
-        return true, {
-            expires_at = os.time() + 86400 * 30,
-            message = "Access Granted (Protected Mode)"
-        }
+        -- 3. Resilient Fallback: If servers are unreachable, validate key structure
+        if #key >= 6 then
+            return true, {
+                expires_at = os.time() + 86400 * 30,
+                message = "Access Granted (Protected Mode)"
+            }
+        else
+            return false, { message = "Invalid key length (min 6 characters)." }
+        end
     end
 
     local genv = (type(getgenv) == "function" and getgenv()) or _G or {}
@@ -642,10 +646,10 @@ task.spawn(function()
     getKeyBtn.MouseButton1Click:Connect(function()
         pcall(function()
             local setcb = setclipboard or toclipboard or (syn and syn.set_clipboard)
-            if setcb then setcb("https://dev.aurorax.site/getkey/7c5669e64021da7e13601d7cc9913ee9") end
+            if setcb then setcb("https://link-to.net/9980602/monody-key") end
         end)
         keyFeedback.TextColor3 = Color3.fromRGB(160, 220, 255)
-        keyFeedback.Text = "Key link copied to clipboard!"
+        keyFeedback.Text = "Linkvertise key link copied to clipboard!"
     end)
 
     discordBtn.MouseButton1Click:Connect(function()
@@ -661,9 +665,9 @@ task.spawn(function()
     verifyBtn.MouseButton1Click:Connect(function()
         if isChecking then return end
         local entered = keyBox.Text:gsub("^%s+", ""):gsub("%s+$", "")
-        if #entered < 4 then
+        if #entered < 6 then
             keyFeedback.TextColor3 = Color3.fromRGB(255, 120, 120)
-            keyFeedback.Text = "Please enter a valid key (min 4 characters)."
+            keyFeedback.Text = "Please enter a valid key (min 6 characters)."
             return
         end
         isChecking = true

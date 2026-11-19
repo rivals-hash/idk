@@ -37,37 +37,33 @@ local function getKamuiColors(name)
     end
 end
 
--- 1. Kamui Camera Swirl Animation (Blox Fruits Native or Smooth Swirl)
+-- 1. Kamui Camera Swirl Animation (Blox Fruits Native or Smooth FOV Pulse)
 local function playKamuiCameraEffect()
-    local ok, camFn = pcall(function()
-        local cont = ReplicatedStorage:FindFirstChild("Effect")
-            and ReplicatedStorage.Effect:FindFirstChild("Container")
-        local kCam = cont and cont:FindFirstChild("KamuiCam")
-        if kCam then return require(kCam) end
-    end)
-    if ok and type(camFn) == "function" then
-        pcall(camFn)
-        return
-    end
-
-    -- Smooth fallback camera swirl
-    pcall(function()
-        local camera = Workspace.CurrentCamera
-        if not camera then return end
-
-        local origFov = camera.FieldOfView
-        local tInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut)
-        TweenService:Create(camera, tInfo, { FieldOfView = math.clamp(origFov - 30, 15, 120) }):Play()
-
-        local t0 = tick()
-        while tick() - t0 < 0.35 do
-            RunService.RenderStepped:Wait()
-            local elapsed = tick() - t0
-            camera.CFrame = camera.CFrame * CFrame.Angles(0, 0, math.rad(18 * (elapsed * 60)))
+    task.spawn(function()
+        local ok, camFn = pcall(function()
+            local cont = ReplicatedStorage:FindFirstChild("Effect")
+                and ReplicatedStorage.Effect:FindFirstChild("Container")
+            local kCam = cont and cont:FindFirstChild("KamuiCam")
+            if kCam then return require(kCam) end
+        end)
+        if ok and type(camFn) == "function" then
+            pcall(camFn)
+            return
         end
 
-        local tOut = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        TweenService:Create(camera, tOut, { FieldOfView = origFov }):Play()
+        -- Safe client camera FOV pulsation without messing up orientation
+        pcall(function()
+            local camera = Workspace.CurrentCamera
+            if not camera then return end
+            local origFov = camera.FieldOfView
+            local tIn = TweenInfo.new(0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+            local tOut = TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+            local tw1 = TweenService:Create(camera, tIn, { FieldOfView = math.clamp(origFov - 25, 20, 120) })
+            tw1:Play()
+            tw1.Completed:Wait()
+            local tw2 = TweenService:Create(camera, tOut, { FieldOfView = origFov })
+            tw2:Play()
+        end)
     end)
 end
 
@@ -106,34 +102,43 @@ end
 -- 3. Universal Destination Finder (PC Mouse & Mobile Touch Screen)
 local function getTeleportTarget(mouse)
     local camera = Workspace.CurrentCamera
+    local char = LocalPlayer.Character
+    local hrp = char and (char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso"))
+    local myPos = hrp and hrp.Position or Vector3.new(0, 0, 0)
 
-    -- Check mouse ray hit on PC
-    if mouse and mouse.Hit and mouse.Hit.Position then
+    -- 1. Check mouse ray hit on PC ONLY if aiming at a real target/ground (not sky)
+    if mouse and mouse.Target and mouse.Hit and mouse.Hit.Position then
         local p = mouse.Hit.Position
-        if p.Magnitude > 1 and p.Magnitude < 20000 then
+        if (p - myPos).Magnitude <= 800 then
             return p
         end
     end
 
-    -- Raycast forward from camera center (Essential for Mobile touch screens)
+    -- 2. Raycast forward from camera center (Essential for Mobile touch screens)
     if camera then
         local ray = camera:ViewportPointToRay(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
         local raycastParams = RaycastParams.new()
         raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-        if LocalPlayer.Character then
-            raycastParams.FilterDescendantsInstances = { LocalPlayer.Character }
+        if char then
+            raycastParams.FilterDescendantsInstances = { char }
         end
-        local hit = Workspace:Raycast(ray.Origin, ray.Direction * 1500, raycastParams)
+        local hit = Workspace:Raycast(ray.Origin, ray.Direction * 600, raycastParams)
         if hit and hit.Position then
             return hit.Position
         end
     end
 
-    -- Fallback: 50 studs forward in LookVector
-    local char = LocalPlayer.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    -- 3. Safe Fallback: 35 studs forward in LookVector with ground snapping
     if hrp then
-        return hrp.Position + (hrp.CFrame.LookVector * 50)
+        local forwardPos = hrp.Position + (hrp.CFrame.LookVector * 35)
+        local downParams = RaycastParams.new()
+        downParams.FilterType = Enum.RaycastFilterType.Exclude
+        if char then downParams.FilterDescendantsInstances = { char } end
+        local groundHit = Workspace:Raycast(forwardPos + Vector3.new(0, 10, 0), Vector3.new(0, -60, 0), downParams)
+        if groundHit and groundHit.Position then
+            return groundHit.Position
+        end
+        return forwardPos
     end
     return nil
 end
@@ -141,7 +146,7 @@ end
 -- 4. Execute Full Kamui Warp (Origin Vortex + Camera + Teleport + Exit Vortex)
 function KamuiVisuals.Warp(name, targetPos)
     local char = LocalPlayer.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local hrp = char and (char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso"))
     if not hrp then return false end
 
     local c1, c2 = getKamuiColors(name)
@@ -159,10 +164,21 @@ function KamuiVisuals.Warp(name, targetPos)
     spawnKamuiVortex(origin, c1, c2)
     playKamuiCameraEffect()
 
+    -- Reset velocity to prevent flinging or sliding into void
+    pcall(function()
+        hrp.AssemblyLinearVelocity = Vector3.zero
+        hrp.AssemblyAngularVelocity = Vector3.zero
+    end)
+
     -- Teleport slightly above target surface
-    task.wait(0.12)
+    task.wait(0.08)
     local look = hrp.CFrame.LookVector
     hrp.CFrame = CFrame.new(dest + Vector3.new(0, 3.5, 0), dest + Vector3.new(0, 3.5, 0) + look)
+
+    pcall(function()
+        hrp.AssemblyLinearVelocity = Vector3.zero
+        hrp.AssemblyAngularVelocity = Vector3.zero
+    end)
 
     -- Destination exit vortex
     spawnKamuiVortex(dest + Vector3.new(0, 3.5, 0), c2, c1)
@@ -265,6 +281,39 @@ function KamuiVisuals.SummonDimension(dimName)
         floor.Color = pColor
         floor.CastShadow = false
 
+        -- Protective safety barrier perimeter
+        local barrierNorth = Instance.new("Part", model)
+        barrierNorth.Size = Vector3.new(160, 8, 2)
+        barrierNorth.Position = centerPos + Vector3.new(0, 4, 80)
+        barrierNorth.Anchored = true
+        barrierNorth.Transparency = 0.6
+        barrierNorth.Material = Enum.Material.Neon
+        barrierNorth.Color = pColor
+
+        local barrierSouth = Instance.new("Part", model)
+        barrierSouth.Size = Vector3.new(160, 8, 2)
+        barrierSouth.Position = centerPos + Vector3.new(0, 4, -80)
+        barrierSouth.Anchored = true
+        barrierSouth.Transparency = 0.6
+        barrierSouth.Material = Enum.Material.Neon
+        barrierSouth.Color = pColor
+
+        local barrierEast = Instance.new("Part", model)
+        barrierEast.Size = Vector3.new(2, 8, 160)
+        barrierEast.Position = centerPos + Vector3.new(80, 4, 0)
+        barrierEast.Anchored = true
+        barrierEast.Transparency = 0.6
+        barrierEast.Material = Enum.Material.Neon
+        barrierEast.Color = pColor
+
+        local barrierWest = Instance.new("Part", model)
+        barrierWest.Size = Vector3.new(2, 8, 160)
+        barrierWest.Position = centerPos + Vector3.new(-80, 4, 0)
+        barrierWest.Anchored = true
+        barrierWest.Transparency = 0.6
+        barrierWest.Material = Enum.Material.Neon
+        barrierWest.Color = pColor
+
         -- Decorative pillars
         for _, offset in ipairs({
             Vector3.new(70, 16, 70),
@@ -283,11 +332,15 @@ function KamuiVisuals.SummonDimension(dimName)
 
         model.Parent = Workspace
 
-        -- Teleport character to dimension
+        -- Teleport character safely to dimension platform
         local char = LocalPlayer.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local hrp = char and (char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso"))
         if hrp then
-            KamuiVisuals.Warp(dimName:lower(), centerPos + Vector3.new(0, 6, 0))
+            pcall(function()
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.AssemblyAngularVelocity = Vector3.zero
+            end)
+            KamuiVisuals.Warp(dimName:lower(), centerPos + Vector3.new(0, 5, 0))
         end
     end)
 end
