@@ -603,7 +603,7 @@ task.spawn(function()
             if not launched or not _G.DarlingX then
                 if not _G.DarlingX then
                     pcall(function()
-                        loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/main.lua", true))()
+                        loadstring(game:HttpGet("https://raw.githubusercontent.com/rivals-hash/idk/main/main.lua?t=" .. tostring(os.time()), true))()
                     end)
                 end
             end
