@@ -567,22 +567,18 @@ function Core.installHooks()
                     if tp and (tp.X == tp.X) then
                         local cam = Camera or Workspace.CurrentCamera
                         local cp = cam and cam.CFrame.Position or Vector3.zero
+                        local diff = tp - cp
+                        local dir = diff.Magnitude > 0.01 and diff.Unit or Vector3.new(0, 0, -1)
                         if key == "Hit" then
-                            return CFrame.new(tp)
+                            return CFrame.new(tp, tp + dir)
                         elseif key == "Target" then
                             return target
                         elseif key == "UnitRay" then
-                            local diff = tp - cp
-                            if diff.Magnitude > 0.01 then
-                                return Ray.new(cp, diff.Unit)
-                            end
+                            return Ray.new(cp, dir)
                         elseif key == "Origin" then
                             return CFrame.new(cp, tp)
                         elseif key == "Direction" then
-                            local diff = tp - cp
-                            if diff.Magnitude > 0.01 then
-                                return diff.Unit
-                            end
+                            return dir
                         end
                     end
                 end
@@ -613,22 +609,18 @@ function Core.installHooks()
                         if tp and (tp.X == tp.X) then
                             local cam = Camera or Workspace.CurrentCamera
                             local cp = cam and cam.CFrame.Position or Vector3.zero
+                            local diff = tp - cp
+                            local dir = diff.Magnitude > 0.01 and diff.Unit or Vector3.new(0, 0, -1)
                             if k == "Hit" then
-                                return CFrame.new(tp)
+                                return CFrame.new(tp, tp + dir)
                             elseif k == "Target" then
                                 return target
                             elseif k == "UnitRay" then
-                                local diff = tp - cp
-                                if diff.Magnitude > 0.01 then
-                                    return Ray.new(cp, diff.Unit)
-                                end
+                                return Ray.new(cp, dir)
                             elseif k == "Origin" then
                                 return CFrame.new(cp, tp)
                             elseif k == "Direction" then
-                                local diff = tp - cp
-                                if diff.Magnitude > 0.01 then
-                                    return diff.Unit
-                                end
+                                return dir
                             end
                         end
                     end
@@ -663,7 +655,11 @@ function Core.installHooks()
                         local isSword = (Core.CurrentToolCategory == "Sword") or (Core.CurrentTool and (string.find(Core.CurrentTool.Name, "Sword") or string.find(Core.CurrentTool.Name, "Buddy")))
                         local tp = (isSword and Core.CurrentTargetRawPosition) or (target and target.Position) or Core.CurrentTargetPosition or Core.CurrentTargetRawPosition
                         if tp then
-                            if key == "Hit" then return CFrame.new(tp) end
+                            local cam = Camera or Workspace.CurrentCamera
+                            local cp = cam and cam.CFrame.Position or Vector3.zero
+                            local diff = tp - cp
+                            local dir = diff.Magnitude > 0.01 and diff.Unit or Vector3.new(0, 0, -1)
+                            if key == "Hit" then return CFrame.new(tp, tp + dir) end
                             if key == "Target" then return target end
                         end
                     end
@@ -712,20 +708,20 @@ function Core.installHooks()
                 end
 
                 if not isBlacklisted and (Core.LockPlayer or Core.PlayerAimEnabled or Core.NPCAimEnabled) and Core.CurrentTargetPart then
+                    if Core.CurrentToolCategory == "Gun" then
+                        return oldNamecall(self, unpack(args))
+                    end
                     local isSword = (Core.CurrentToolCategory == "Sword") or (Core.CurrentTool and (string.find(Core.CurrentTool.Name, "Sword") or string.find(Core.CurrentTool.Name, "Buddy")))
                     local targetPos = (isSword and Core.CurrentTargetRawPosition) or Core.CurrentTargetPosition or Core.CurrentTargetRawPosition
                     if targetPos then
-                        if method == "FireServer" or method == "InvokeServer" then
-                            local sName = tostring(self)
-                            if sName == "RemoteEvent" or sName == "CommE" or sName == "RemoteFunction" or sName == "CommF_" then
-                                for i, v in ipairs(args) do
-                                    if typeof(v) == "Vector3" then
-                                        args[i] = targetPos
-                                    end
+                        local sName = tostring(self)
+                        if sName == "RemoteEvent" or sName == "CommE" or sName == "RemoteFunction" or sName == "CommF_" then
+                            if method == "FireServer" then
+                                if typeof(args[1]) == "Vector3" then
+                                    args[1] = targetPos
                                 end
-
-                                -- sword invokeserver redirection
-                                if method == "InvokeServer" and (type(args[1]) == "string" and table.find(SKILL_KEYS, args[1])) then
+                            elseif method == "InvokeServer" then
+                                if type(args[1]) == "string" and table.find(SKILL_KEYS, args[1]) then
                                     args[2] = targetPos
                                 end
                             end
@@ -765,20 +761,20 @@ function Core.installHooks()
                 end
 
                 if not isBlacklisted and (Core.LockPlayer or Core.PlayerAimEnabled or Core.NPCAimEnabled) and Core.CurrentTargetPart then
+                    if Core.CurrentToolCategory == "Gun" then
+                        return oldNamecall(self, unpack(args))
+                    end
                     local isSword = (Core.CurrentToolCategory == "Sword") or (Core.CurrentTool and (string.find(Core.CurrentTool.Name, "Sword") or string.find(Core.CurrentTool.Name, "Buddy")))
                     local targetPos = (isSword and Core.CurrentTargetRawPosition) or Core.CurrentTargetPosition or Core.CurrentTargetRawPosition
                     if targetPos then
-                        if method == "FireServer" or method == "InvokeServer" then
-                            local sName = tostring(self)
-                            if sName == "RemoteEvent" or sName == "CommE" or sName == "RemoteFunction" or sName == "CommF_" then
-                                for i, v in ipairs(args) do
-                                    if typeof(v) == "Vector3" then
-                                        args[i] = targetPos
-                                    end
+                        local sName = tostring(self)
+                        if sName == "RemoteEvent" or sName == "CommE" or sName == "RemoteFunction" or sName == "CommF_" then
+                            if method == "FireServer" then
+                                if typeof(args[1]) == "Vector3" then
+                                    args[1] = targetPos
                                 end
-
-                                -- sword invokeserver redirection
-                                if method == "InvokeServer" and (type(args[1]) == "string" and table.find(SKILL_KEYS, args[1])) then
+                            elseif method == "InvokeServer" then
+                                if type(args[1]) == "string" and table.find(SKILL_KEYS, args[1]) then
                                     args[2] = targetPos
                                 end
                             end
