@@ -82,12 +82,13 @@ local function makeDraggable(targetFrame, dragHandle, onClick)
 
     dragHandle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if moveConn then moveConn:Disconnect(); moveConn = nil end
+            if endConn then endConn:Disconnect(); endConn = nil end
+
             dragging = true
             isDrag = false
             dragStart = input.Position
             startPos = targetFrame.Position
-
-            cleanupDrag()
 
             moveConn = UserInputService.InputChanged:Connect(function(moveInput)
                 if dragging and (moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch) then
@@ -109,11 +110,22 @@ local function makeDraggable(targetFrame, dragHandle, onClick)
             endConn = UserInputService.InputEnded:Connect(function(endInput)
                 if endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
                     if dragging then
+                        local wasDrag = isDrag
                         cleanupDrag()
-                        if not isDrag then
+                        if not wasDrag then
                             fireClick()
                         end
                     end
+                end
+            end)
+        end
+    end)
+    -- Direct fallback tap for touch devices
+    pcall(function()
+        if dragHandle:IsA("GuiButton") then
+            dragHandle.Activated:Connect(function()
+                if not isDrag then
+                    fireClick()
                 end
             end)
         end

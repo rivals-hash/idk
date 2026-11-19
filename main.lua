@@ -2430,7 +2430,7 @@ local function fullCloseUI()
 end
 
 createHeaderBtn("-", -54, Color3.fromRGB(255, 255, 255), minimizeUI)
-createHeaderBtn("X", -28, Color3.fromRGB(255, 75, 75), fullCloseUI)
+createHeaderBtn("X", -28, Color3.fromRGB(255, 75, 75), minimizeUI)
 
 -- FloatingOpen Dragging & Tap Support
 do
@@ -2440,21 +2440,17 @@ do
     local fIsDrag = false
     local fMoveConn = nil
     local fEndConn = nil
-
-    local function cleanupFDrag()
-        if fMoveConn then fMoveConn:Disconnect(); fMoveConn = nil end
-        if fEndConn then fEndConn:Disconnect(); fEndConn = nil end
-        fDragging = false
-    end
+    local fLastTap = 0
 
     FloatingOpen.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if fMoveConn then fMoveConn:Disconnect(); fMoveConn = nil end
+            if fEndConn then fEndConn:Disconnect(); fEndConn = nil end
+
             fDragging = true
             fIsDrag = false
             fDragStart = input.Position
             fStartPos = FloatingOpen.Position
-
-            cleanupFDrag()
 
             fMoveConn = UserInputService.InputChanged:Connect(function(moveInput)
                 if fDragging and (moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch) then
@@ -2476,13 +2472,58 @@ do
             fEndConn = UserInputService.InputEnded:Connect(function(endInput)
                 if endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
                     if fDragging then
-                        cleanupFDrag()
-                        if not fIsDrag then
-                            maximizeUI()
+                        local wasDrag = fIsDrag
+                        if fMoveConn then fMoveConn:Disconnect(); fMoveConn = nil end
+                        if fEndConn then fEndConn:Disconnect(); fEndConn = nil end
+                        fDragging = false
+                        if not wasDrag then
+                            local now = os.clock()
+                            if now - fLastTap > 0.25 then
+                                fLastTap = now
+                                maximizeUI()
+                            end
                         end
                     end
                 end
             end)
+        end
+    end)
+
+    -- Universal tap fallbacks
+    pcall(function()
+        FloatingOpen.Activated:Connect(function()
+            if not fIsDrag then
+                local now = os.clock()
+                if now - fLastTap > 0.25 then
+                    fLastTap = now
+                    maximizeUI()
+                end
+            end
+        end)
+    end)
+    pcall(function()
+        FloatingOpen.MouseButton1Click:Connect(function()
+            if not fIsDrag then
+                local now = os.clock()
+                if now - fLastTap > 0.25 then
+                    fLastTap = now
+                    maximizeUI()
+                end
+            end
+        end)
+    end)
+
+    -- Keyboard shortcut (RightControl / LeftControl / Insert) to Toggle UI
+    UserInputService.InputBegan:Connect(function(input, gpe)
+        if gpe then return end
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            if input.KeyCode == Enum.KeyCode.RightControl or input.KeyCode == Enum.KeyCode.LeftControl or input.KeyCode == Enum.KeyCode.Insert then
+                if Main.Visible then
+                    minimizeUI()
+                else
+                    maximizeUI()
+                end
+            end
         end
     end)
 end
@@ -2768,6 +2809,8 @@ local TRANSLATIONS_DICT = {
         ["Kamui"] = "Kamui",
         ["Give Kamui Tools"] = "Obtener Herramientas Kamui",
         ["Summon Dimensions"] = "Invocar Dimensiones",
+        ["Select Dimension"] = "Seleccionar Dimension",
+        ["Summon Dimension Platform"] = "Invocar Plataforma de Dimension",
         ["Pocket Dimension"] = "Dimension de Bolsillo",
         ["Rip Family Arena"] = "Arena de la Familia Rip",
         ["Heaven Dimension"] = "Dimension Celestial",
@@ -3399,6 +3442,8 @@ local TRANSLATIONS_DICT = {
         ["Kamui"] = "Kamui",
         ["Give Kamui Tools"] = "Obter Ferramentas Kamui",
         ["Summon Dimensions"] = "Invocar Dimensões",
+        ["Select Dimension"] = "Selecionar Dimensão",
+        ["Summon Dimension Platform"] = "Invocar Plataforma de Dimensão",
         ["Pocket Dimension"] = "Dimensão de Bolso",
         ["Rip Family Arena"] = "Arena da Família Rip",
         ["Heaven Dimension"] = "Dimensão Celestial",
@@ -3935,6 +3980,8 @@ local TRANSLATIONS_DICT = {
         ["Kamui"] = "Kamui",
         ["Give Kamui Tools"] = "Obtenir Outils Kamui",
         ["Summon Dimensions"] = "Invoquer Dimensions",
+        ["Select Dimension"] = "Sélectionner Dimension",
+        ["Summon Dimension Platform"] = "Invoquer Plateforme de Dimension",
         ["Pocket Dimension"] = "Dimension de Poche",
         ["Rip Family Arena"] = "Arène de la Famille Rip",
         ["Heaven Dimension"] = "Dimension Céleste",
@@ -4470,6 +4517,8 @@ local TRANSLATIONS_DICT = {
         ["Kamui"] = "Kamui",
         ["Give Kamui Tools"] = "Nhận Vũ Khí Kamui",
         ["Summon Dimensions"] = "Triệu Hồi Chiều Không Gian",
+        ["Select Dimension"] = "Chọn Chiều Không Gian",
+        ["Summon Dimension Platform"] = "Triệu Hồi Nền Không Gian",
         ["Pocket Dimension"] = "Không Gian Bỏ Túi",
         ["Rip Family Arena"] = "Võ Đài Gia Tộc Rip",
         ["Heaven Dimension"] = "Không Gian Thiên Đường",
@@ -6324,7 +6373,9 @@ LoadConfigProfile = function()
                         target = entry
                     end
                     if target ~= nil then
-                        pcall(function() UI_CHOICES[key].set(target, true) end)
+                        -- Never execute action choices (like dimension teleportation) automatically on boot
+                        local runCb = (key ~= "Summon Dimensions" and key ~= "Select Dimension")
+                        pcall(function() UI_CHOICES[key].set(target, runCb) end)
                     end
                 end
             end
@@ -10464,32 +10515,42 @@ do
 
         AddButton(kamuiCard, "Rip Kamui", function()
             local kv = M.getKamuiVisuals()
-            if kv then kv.PlayKamui("rip kamui") end
-            Notify("Visuals", "Rip Kamui executed!")
+            if kv then
+                kv.EquipKamui("rip kamui", 1191)
+                Notify("Visuals", "Rip Kamui equipped & executed!")
+            end
         end)
 
         AddButton(kamuiCard, "Arena Kamui", function()
             local kv = M.getKamuiVisuals()
-            if kv then kv.PlayKamui("arena kamui") end
-            Notify("Visuals", "Arena Kamui executed!")
+            if kv then
+                kv.EquipKamui("arena kamui", 1235)
+                Notify("Visuals", "Arena Kamui equipped & executed!")
+            end
         end)
 
         AddButton(kamuiCard, "Heaven Kamui", function()
             local kv = M.getKamuiVisuals()
-            if kv then kv.PlayKamui("heaven kamui") end
-            Notify("Visuals", "Heaven Kamui executed!")
+            if kv then
+                kv.EquipKamui("heaven kamui", 1236)
+                Notify("Visuals", "Heaven Kamui equipped & executed!")
+            end
         end)
 
         AddButton(kamuiCard, "Pakistan Kamui", function()
             local kv = M.getKamuiVisuals()
-            if kv then kv.PlayKamui("pakistan kamui") end
-            Notify("Visuals", "Pakistan Kamui executed!")
+            if kv then
+                kv.EquipKamui("pakistan kamui", 1173)
+                Notify("Visuals", "Pakistan Kamui equipped & executed!")
+            end
         end)
 
         AddButton(kamuiCard, "Kamui", function()
             local kv = M.getKamuiVisuals()
-            if kv then kv.PlayKamui("kamui") end
-            Notify("Visuals", "Kamui executed!")
+            if kv then
+                kv.EquipKamui("kamui", 1173)
+                Notify("Visuals", "Kamui equipped & executed!")
+            end
         end)
 
         AddButton(kamuiCard, "Give Kamui Tools", function()
@@ -10500,11 +10561,16 @@ do
             end
         end)
 
-        AddChoice(kamuiCard, "Summon Dimensions", { "Pocket Dimension", "Rip Family Arena", "Heaven Dimension", "Pakistan Dimension" }, 1, function(choice)
+        local chosenDimension = "Pocket Dimension"
+        AddChoice(kamuiCard, "Select Dimension", { "Pocket Dimension", "Rip Family Arena", "Heaven Dimension", "Pakistan Dimension" }, 1, function(choice)
+            chosenDimension = choice
+        end)
+
+        AddButton(kamuiCard, "Summon Dimension Platform", function()
             local kv = M.getKamuiVisuals()
             if kv and kv.SummonDimension then
-                kv.SummonDimension(choice)
-                Notify("Visuals", "Summoned: " .. choice)
+                kv.SummonDimension(chosenDimension)
+                Notify("Visuals", "Summoned: " .. tostring(chosenDimension))
             end
         end)
     end)
