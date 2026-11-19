@@ -2858,6 +2858,20 @@ local TRANSLATIONS_DICT = {
         ["Delete Ghost Ship (Sea 2)"] = "Borrar Barco Fantasma (Mar 2)",
         ["Delete Ghost Ship"] = "Borrar Barco Fantasma",
         ["Removes interior walls and objects from Cursed Ship in Sea 2"] = "Elimina paredes interiores y objetos del Barco Maldito en Mar 2",
+        ["Lock Widgets & Toggles"] = "Bloquear Widgets y Controles",
+        ["Lock floating widgets and controls from moving"] = "Bloquea el movimiento de toggles y widgets flotantes",
+        ["Active Keybinds"] = "Atajos Activos",
+        ["No keybinds configured. Click '+' to add one."] = "No hay atajos configurados. Haz clic en '+' para agregar uno.",
+        ["+ Add Keybind"] = "+ Agregar Atajo",
+        ["Clear All Keybinds"] = "Eliminar Todos los Atajos",
+        ["Select a feature to bind"] = "Selecciona una funcion para enlazar",
+        ["Click a feature then press any key:"] = "Haz clic en una funcion y luego presiona la tecla deseada:",
+        ["PRESS ANY KEY..."] = "PRESIONA CUALQUIER TECLA...",
+        ["No buttons or toggles available to bind."] = "No hay botones o toggles disponibles para enlazar.",
+        ["bound to"] = "asignado a",
+        ["Mode changed to"] = "Modo cambiado a",
+        ["All keybinds were cleared."] = "Todos los atajos fueron eliminados.",
+        ["Widget lock:"] = "Bloqueo de widgets:",
         -- Monody New Additions & Performance Features
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Companera Waifu AI",
@@ -3474,6 +3488,20 @@ local TRANSLATIONS_DICT = {
         ["Delete Ghost Ship (Sea 2)"] = "Deletar Navio Fantasma (Sea 2)",
         ["Delete Ghost Ship"] = "Deletar Navio Fantasma",
         ["Removes interior walls and objects from Cursed Ship in Sea 2"] = "Remove paredes interiores e objetos do Navio Fantasma no Sea 2",
+        ["Lock Widgets & Toggles"] = "Bloquear Widgets e Controles",
+        ["Lock floating widgets and controls from moving"] = "Bloqueia o movimento de toggles e widgets flutuantes",
+        ["Active Keybinds"] = "Teclas de Atalho Ativas",
+        ["No keybinds configured. Click '+' to add one."] = "Nenhum atalho configurado. Clique em '+' para adicionar.",
+        ["+ Add Keybind"] = "+ Adicionar Atalho",
+        ["Clear All Keybinds"] = "Limpar Todos os Atalhos",
+        ["Select a feature to bind"] = "Selecione uma funcao para vincular",
+        ["Click a feature then press any key:"] = "Clique em uma funcao e pressione a tecla desejada:",
+        ["PRESS ANY KEY..."] = "PRESSIONE QUALQUER TECLA...",
+        ["No buttons or toggles available to bind."] = "Nao ha botoes ou toggles disponiveis para vincular.",
+        ["bound to"] = "vinculado a",
+        ["Mode changed to"] = "Modo alterado para",
+        ["All keybinds were cleared."] = "Todos os atalhos foram removidos.",
+        ["Widget lock:"] = "Bloqueio de widgets:",
         -- Performance / FFlags / Waifu
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Companheira Waifu AI",
@@ -3992,6 +4020,23 @@ local TRANSLATIONS_DICT = {
         ["Recolors your Buddha circle with animated rainbow gradient (Client-only)"] = "Colore le cercle Buddha avec dégradé arc-en-ciel animé (Client uniquement)",
         ["Only My Buddha Circle"] = "Uniquement Mon Cercle Buddha",
         ["Only affects your own character instead of all nearby Buddha users"] = "Affecte uniquement votre personnage et non les autres utilisateurs Buddha",
+        ["Delete Ghost Ship (Sea 2)"] = "Supprimer Vaisseau Fantome (Mer 2)",
+        ["Delete Ghost Ship"] = "Supprimer Vaisseau Fantome",
+        ["Removes interior walls and objects from Cursed Ship in Sea 2"] = "Supprime les murs interieurs et objets du Vaisseau Maudit en Mer 2",
+        ["Lock Widgets & Toggles"] = "Verrouiller Widgets et Controles",
+        ["Lock floating widgets and controls from moving"] = "Verrouille le deplacement des widgets et commandes",
+        ["Active Keybinds"] = "Raccourcis Actifs",
+        ["No keybinds configured. Click '+' to add one."] = "Aucun raccourci configure. Cliquez sur '+' pour en ajouter un.",
+        ["+ Add Keybind"] = "+ Ajouter un Raccourci",
+        ["Clear All Keybinds"] = "Effacer Tous les Raccourcis",
+        ["Select a feature to bind"] = "Selectionnez une fonction a lier",
+        ["Click a feature then press any key:"] = "Cliquez sur une fonction puis appuyez sur une touche:",
+        ["PRESS ANY KEY..."] = "APPUYEZ SUR UNE TOUCHE...",
+        ["No buttons or toggles available to bind."] = "Aucun bouton disponible pour la liaison.",
+        ["bound to"] = "lie a",
+        ["Mode changed to"] = "Mode change en",
+        ["All keybinds were cleared."] = "Tous les raccourcis ont ete supprimes.",
+        ["Widget lock:"] = "Verrouillage des widgets:",
         -- Waifu / FFlags / Performance
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Compagne Waifu AI",
@@ -4509,6 +4554,23 @@ local TRANSLATIONS_DICT = {
         ["Recolors your Buddha circle with animated rainbow gradient (Client-only)"] = "Đổi màu vòng Buddha hiệu ứng cầu vồng chuyển động (Chỉ máy bạn)",
         ["Only My Buddha Circle"] = "Chỉ Vòng Buddha Của Tôi",
         ["Only affects your own character instead of all nearby Buddha users"] = "Chỉ tác động lên bản thân thay vì mọi người chơi Buddha xung quanh",
+        ["Delete Ghost Ship (Sea 2)"] = "Xoa Tau Ma (Bien 2)",
+        ["Delete Ghost Ship"] = "Xoa Tau Ma",
+        ["Removes interior walls and objects from Cursed Ship in Sea 2"] = "Xoa tuong va vat the ben trong Tau Nguyen Rua o Bien 2",
+        ["Lock Widgets & Toggles"] = "Khoa Widget va Dieu khien",
+        ["Lock floating widgets and controls from moving"] = "Khoa khong cho di chuyen widget va nut bam",
+        ["Active Keybinds"] = "Phim Tat Hoat Dong",
+        ["No keybinds configured. Click '+' to add one."] = "Chua co phim tat nao. Bam '+' de them mot phim tat.",
+        ["+ Add Keybind"] = "+ Them Phim Tat",
+        ["Clear All Keybinds"] = "Xoa Tat Ca Phim Tat",
+        ["Select a feature to bind"] = "Chon mot tinh nang de gan phim",
+        ["Click a feature then press any key:"] = "Nhan vao mot tinh nang roi bam phim muon gan:",
+        ["PRESS ANY KEY..."] = "BAM PHIM BAT KY...",
+        ["No buttons or toggles available to bind."] = "Khong co nut hoac toggle nao de gan phim.",
+        ["bound to"] = "gan vao",
+        ["Mode changed to"] = "Che do doi thanh",
+        ["All keybinds were cleared."] = "Tat ca phim tat da duoc xoa.",
+        ["Widget lock:"] = "Khoa widget:",
         -- Waifu / FFlags / Performance
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Bạn Đồng Hành Waifu AI",
@@ -9805,9 +9867,12 @@ do
             end
         end)
 
-        AddToggle(hudCard1, "Lock Widgets & Toggles", "Bloquea el movimiento de toggles y widgets flotantes", false, function(v)
+        AddToggle(hudCard1, "Lock Widgets & Toggles", "Lock floating widgets and controls from moving", false, function(v)
             _G.DarlingX.LockWidgets = v
-            Notify("Widgets", "Bloqueo de widgets: " .. (v and "Activado" or "Desactivado"))
+            local langDict = TRANSLATIONS_DICT[CurrentLanguage]
+            local lockTxt = (CurrentLanguage ~= "English" and langDict and langDict["Widget lock:"]) or "Widget lock:"
+            local stateTxt = v and ((CurrentLanguage ~= "English" and langDict and langDict["Enabled"]) or "Enabled") or ((CurrentLanguage ~= "English" and langDict and langDict["Disabled"]) or "Disabled")
+            Notify("Widgets", lockTxt .. " " .. stateTxt)
             pcall(SaveConfigProfile)
         end)
 
@@ -10590,6 +10655,13 @@ do
     local KeybindsPage = RegisterTab("Keybinds", "Keybinds", "keyboard")
     Pages["Keybinds"] = KeybindsPage
     local okKeybinds, errKeybinds = pcall(function()
+        local function Translate(text)
+            if not text then return "" end
+            if CurrentLanguage == "English" then return text end
+            local langDict = TRANSLATIONS_DICT[CurrentLanguage]
+            return (langDict and langDict[text]) or text
+        end
+
         local kbMod = RequireModule("modules/ui/keybinds_system.lua")
         if kbMod and kbMod.Init then
             pcall(kbMod.Init)
@@ -10597,13 +10669,13 @@ do
 
         local cfgCard = CreateCard(KeybindsPage, "General")
 
-        AddToggle(cfgCard, "Lock Widgets & Toggles", "Bloquea el movimiento de toggles y widgets flotantes", false, function(v)
+        AddToggle(cfgCard, "Lock Widgets & Toggles", "Lock floating widgets and controls from moving", false, function(v)
             _G.DarlingX.LockWidgets = v
-            Notify("Widgets", "Bloqueo de widgets: " .. (v and "Activado" or "Desactivado"))
+            Notify("Widgets", Translate("Widget lock:") .. " " .. (v and Translate("Enabled") or Translate("Disabled")))
             pcall(SaveConfigProfile)
         end)
 
-        local activeCard = CreateCard(KeybindsPage, "Atajos Activos")
+        local activeCard = CreateCard(KeybindsPage, "Active Keybinds")
 
         local function refreshKeybindsList()
             for _, child in ipairs(activeCard:GetChildren()) do
@@ -10618,12 +10690,12 @@ do
                 emptyLbl.Name = "EmptyNotice"
                 emptyLbl.Size = UDim2.new(1, 0, 0, 32)
                 emptyLbl.BackgroundTransparency = 1
-                emptyLbl.Text = "No hay atajos configurados. Haz clic en '+' para agregar uno."
+                emptyLbl.Text = "No keybinds configured. Click '+' to add one."
                 emptyLbl.TextColor3 = Color3.fromRGB(150, 145, 170)
                 emptyLbl.Font = Enum.Font.Gotham
                 emptyLbl.TextSize = 9.5
                 emptyLbl.TextXAlignment = Enum.TextXAlignment.Left
-                RegisterTranslatable(emptyLbl, "No hay atajos configurados. Haz clic en '+' para agregar uno.")
+                RegisterTranslatable(emptyLbl, "No keybinds configured. Click '+' to add one.")
             else
                 for idx, item in ipairs(list) do
                     local row = Instance.new("Frame", activeCard)
@@ -10674,7 +10746,7 @@ do
                                 kbMod.SetKey(idx, newKey)
                                 keyBtn.Text = newKey
                                 keyBtn.TextColor3 = CurrentAccent
-                                Notify("Keybinds", item.target .. " asignado a " .. newKey)
+                                Notify("Keybinds", item.target .. " " .. Translate("bound to") .. " " .. newKey)
                             end
                         end)
                     end)
@@ -10695,7 +10767,7 @@ do
                         local nextMode = (item.mode == "Toggle") and "Hold" or "Toggle"
                         kbMod.SetMode(idx, nextMode)
                         modeBtn.Text = nextMode
-                        Notify("Keybinds", "Modo cambiado a " .. nextMode)
+                        Notify("Keybinds", Translate("Mode changed to") .. " " .. nextMode)
                     end)
 
                     -- Delete Button [ X ]
@@ -10724,10 +10796,10 @@ do
             kbMod.OnChanged = refreshKeybindsList
         end
 
-        AddButton(cfgCard, "+ Agregar Keybind", function()
+        AddButton(cfgCard, "+ Add Keybind", function()
             local bindables = kbMod and kbMod.GetAllBindablesList() or {}
             if #bindables == 0 then
-                Notify("Keybinds", "No hay botones o toggles disponibles para enlazar.")
+                Notify("Keybinds", Translate("No buttons or toggles available to bind."))
                 return
             end
 
@@ -10738,18 +10810,19 @@ do
                 return
             end
 
-            addCard = CreateCard(KeybindsPage, "Selecciona una funcion para enlazar")
+            addCard = CreateCard(KeybindsPage, "Select a feature to bind")
             addCard.Name = "Card_AddKeybindSelector"
             addCard.LayoutOrder = 2
 
             local desc = Instance.new("TextLabel", addCard)
             desc.Size = UDim2.new(1, 0, 0, 24)
             desc.BackgroundTransparency = 1
-            desc.Text = "Haz clic en una funcion y luego presiona la tecla deseada:"
+            desc.Text = "Click a feature then press any key:"
             desc.TextColor3 = Color3.fromRGB(180, 175, 200)
             desc.Font = Enum.Font.Gotham
             desc.TextSize = 9.5
             desc.TextXAlignment = Enum.TextXAlignment.Left
+            RegisterTranslatable(desc, "Click a feature then press any key:")
 
             local scroll = Instance.new("ScrollingFrame", addCard)
             scroll.Size = UDim2.new(1, 0, 0, 180)
@@ -10782,7 +10855,7 @@ do
                 Instance.new("UICorner", bRow).CornerRadius = UDim.new(0, 4)
 
                 bRow.MouseButton1Click:Connect(function()
-                    bRow.Text = "  [ PRESIONA CUALQUIER TECLA... ]"
+                    bRow.Text = "  [ " .. Translate("PRESS ANY KEY...") .. " ]"
                     bRow.TextColor3 = Color3.fromRGB(255, 200, 50)
                     local pickConn
                     pickConn = UserInputService.InputBegan:Connect(function(input, gp)
@@ -10790,7 +10863,7 @@ do
                             pickConn:Disconnect()
                             local keyName = input.KeyCode.Name
                             kbMod.AddKeybind(bName, keyName, "Toggle")
-                            Notify("Keybinds", bName .. " enlazado a [ " .. keyName .. " ]")
+                            Notify("Keybinds", bName .. " " .. Translate("bound to") .. " [ " .. keyName .. " ]")
                             if addCard and addCard.Parent then addCard:Destroy() end
                             refreshKeybindsList()
                         end
@@ -10803,10 +10876,10 @@ do
             UpdatePageCanvas(KeybindsPage)
         end)
 
-        AddButton(cfgCard, "Eliminar Todos los Atajos", function()
+        AddButton(cfgCard, "Clear All Keybinds", function()
             if kbMod then
                 kbMod.ClearAll()
-                Notify("Keybinds", "Todos los atajos fueron eliminados.")
+                Notify("Keybinds", Translate("All keybinds were cleared."))
                 refreshKeybindsList()
             end
         end)
