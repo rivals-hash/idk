@@ -15,7 +15,7 @@ local ContentProvider = game:GetService("ContentProvider")
 local HttpService = game:GetService("HttpService")
 
 local APP_TITLE = "Monody"
-local APP_VERSION = "by Darling v3.3"
+local APP_VERSION = "by Darling v3.5"
 local DEFAULT_WALLPAPER_ID = "rbxassetid://103674761222554"
 local function GetPlayerThumbnail(size)
     local s = size or 150
