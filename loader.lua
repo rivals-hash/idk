@@ -646,7 +646,7 @@ task.spawn(function()
     getKeyBtn.MouseButton1Click:Connect(function()
         pcall(function()
             local setcb = setclipboard or toclipboard or (syn and syn.set_clipboard)
-            if setcb then setcb("https://link-to.net/9980602/monody-key") end
+            if setcb then setcb("https://link-center.net/9980602/9M9ldyI985zV") end
         end)
         keyFeedback.TextColor3 = Color3.fromRGB(160, 220, 255)
         keyFeedback.Text = "Linkvertise key link copied to clipboard!"
