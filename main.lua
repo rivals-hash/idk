@@ -6354,6 +6354,8 @@ local DEFAULT_TOGGLES = {
     ["Anti-Lava Damage"] = false,
     ["No Animations"] = false,
     ["Infinite Soru"] = false,
+    ["Infinite Soru [Ban Risk]"] = false,
+    ["Dragon Gun M1 [Ban Risk]"] = false,
     ["Soru Aimbot"] = false,
     ["Auto Skill on Soru"] = false,
     ["Master ESP"] = false,
@@ -8344,9 +8346,9 @@ local okSoru, errSoru = pcall(function()
     task.spawn(function() pcall(getSoruMod) end)
 
     -- 1. Soru Flashstep Engine
-    local cdCard = CreateCard(SoruPage, "Infinite Soru")
+    local cdCard = CreateCard(SoruPage, "Infinite Soru [Ban Risk]")
 
-    AddToggle(cdCard, "Infinite Soru", "Remove flashstep cooldown", false, function(state)
+    AddToggle(cdCard, "Infinite Soru [Ban Risk]", "Remove flashstep cooldown [Ban Risk]", false, function(state)
         local sm = getSoruMod(); if sm and sm.setInfinite then sm.setInfinite(state) end
         Notify("Soru", "Infinite Soru: " .. (state and "Enabled" or "Disabled"))
     end)
@@ -10188,7 +10190,7 @@ do
         local aCard = CreateCard(VisualsPage, "Darling Hub Cinematics")
 
         local CINEMATIC_NAMES = {
-            "Worldbreaker", "The Hollow Lantern", "The Aureate Sanctuary", "Transcendence Dragon", "King's Throne", "Admin Cinematic"
+            "Worldbreaker", "The Hollow Lantern", "The Aureate Sanctuary", "Transcendence Dragon", "King's Throne", "Admin Cinematic", "Comeback"
         }
         local CINEMATIC_MODULES = {
             ["Worldbreaker"] = "modules/special/worldbreaker.lua",
@@ -10197,6 +10199,7 @@ do
             ["Transcendence Dragon"] = "modules/special/transcendence_dragon.lua",
             ["King's Throne"] = "modules/special/kings_throne.lua",
             ["Admin Cinematic"] = "modules/special/admin_cinematic.lua",
+            ["Comeback"] = "modules/special/comeback_cinematic.lua",
         }
 
         local selectedCinematic = "Worldbreaker"
@@ -10230,6 +10233,10 @@ do
             pcall(function()
                 local wb = RequireModule("modules/special/worldbreaker.lua")
                 if wb and wb.stop then wb.stop() end
+            end)
+            pcall(function()
+                local cb = RequireModule("modules/special/comeback_cinematic.lua")
+                if cb and cb.stop then cb.stop() end
             end)
             pcall(function()
                 local char = lp.Character
