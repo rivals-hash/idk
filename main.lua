@@ -7421,9 +7421,8 @@ local okHome, errHome = pcall(function()
         local ffa = M.getFruitFastAttack()
         if ffa then ffa.toggle(state) end
         local ew = _G.DarlingX_ExtraWidgets or M.getExtraWidgets()
-        if ew then
-            if ew.SetFruitFastAttackWidgetVisible then ew.SetFruitFastAttackWidgetVisible(state) end
-            if ew.UpdateFruitFastAttackVisual then ew.UpdateFruitFastAttackVisual(state) end
+        if ew and ew.UpdateFruitFastAttackVisual then
+            ew.UpdateFruitFastAttackVisual(state)
         end
         Notify("Combat", "Fruit Fast Attack: " .. (state and "Enabled" or "Disabled"))
     end)
@@ -8303,11 +8302,18 @@ local okPvP, errPvP = pcall(function()
         local ffa = M.getFruitFastAttack()
         if ffa then ffa.toggle(state) end
         local ew = _G.DarlingX_ExtraWidgets or M.getExtraWidgets()
-        if ew then
-            if ew.SetFruitFastAttackWidgetVisible then ew.SetFruitFastAttackWidgetVisible(state) end
-            if ew.UpdateFruitFastAttackVisual then ew.UpdateFruitFastAttackVisual(state) end
+        if ew and ew.UpdateFruitFastAttackVisual then
+            ew.UpdateFruitFastAttackVisual(state)
         end
         Notify("PvP", "Fruit Fast Attack: " .. (state and "Enabled" or "Disabled"))
+        pcall(SaveConfigProfile)
+    end)
+
+    AddToggle(combatCard, "Fruit Fast Attack Floating Widget", "Movable on-screen toggle for Fruit Fast Attack", false, function(state)
+        local ew = _G.DarlingX_ExtraWidgets or M.getExtraWidgets()
+        if ew and ew.SetFruitFastAttackWidgetVisible then
+            ew.SetFruitFastAttackWidgetVisible(state)
+        end
         pcall(SaveConfigProfile)
     end)
 

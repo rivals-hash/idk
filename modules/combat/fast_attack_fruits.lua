@@ -176,8 +176,7 @@ function FruitFastAttack.enable()
     Config.Enabled = true
     _G.DarlingX_FruitFastAttack = true
     local ew = rawget(_G, "DarlingX_ExtraWidgets")
-    if ew and ew.SetFruitFastAttackWidgetVisible then
-        ew.SetFruitFastAttackWidgetVisible(true)
+    if ew and ew.UpdateFruitFastAttackVisual then
         ew.UpdateFruitFastAttackVisual(true)
     end
     if _G.DarlingX_SyncFruitFastAttackUI then
@@ -189,8 +188,7 @@ function FruitFastAttack.disable()
     Config.Enabled = false
     _G.DarlingX_FruitFastAttack = false
     local ew = rawget(_G, "DarlingX_ExtraWidgets")
-    if ew and ew.SetFruitFastAttackWidgetVisible then
-        ew.SetFruitFastAttackWidgetVisible(false)
+    if ew and ew.UpdateFruitFastAttackVisual then
         ew.UpdateFruitFastAttackVisual(false)
     end
     if _G.DarlingX_SyncFruitFastAttackUI then
@@ -206,8 +204,7 @@ function FruitFastAttack.toggle(state)
     end
     _G.DarlingX_FruitFastAttack = Config.Enabled
     local ew = rawget(_G, "DarlingX_ExtraWidgets")
-    if ew and ew.SetFruitFastAttackWidgetVisible then
-        ew.SetFruitFastAttackWidgetVisible(Config.Enabled)
+    if ew and ew.UpdateFruitFastAttackVisual then
         ew.UpdateFruitFastAttackVisual(Config.Enabled)
     end
     if _G.DarlingX_SyncFruitFastAttackUI then

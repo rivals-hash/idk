@@ -532,7 +532,7 @@ local Widgets = {
         if FruitFastAttackUI then
             ensureParent(FruitFastAttackUI)
             FruitFastAttackUI.Enabled = (state == true)
-            updateFruitFAVisual(state)
+            updateFruitFAVisual(_G.DarlingX_FruitFastAttack == true)
         end
     end,
     UpdateFruitFastAttackVisual = updateFruitFAVisual,
@@ -554,7 +554,7 @@ local Widgets = {
         if KitOneShotUI then
             ensureParent(KitOneShotUI)
             KitOneShotUI.Enabled = (state == true)
-            updateKitOneShotVisual(state)
+            updateKitOneShotVisual(_G.DarlingX_KitOneShot == true or _G.FruitsM1Enable == true)
         end
     end,
     UpdateKitOneShotVisual = updateKitOneShotVisual,

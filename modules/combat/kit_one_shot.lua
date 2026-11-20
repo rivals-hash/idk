@@ -41,9 +41,11 @@ function KitOneShot.GetFruit()
         end
     end
     local backpack = LocalPlayer:FindFirstChild("Backpack")
-    if backpack then
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if backpack and hum then
         for _, tool in pairs(backpack:GetChildren()) do
             if tool:IsA("Tool") and (tool.ToolTip == "Blox Fruit" or tool:GetAttribute("WeaponType") == "Demon Fruit" or tool:FindFirstChild("LeftClickRemote")) then
+                pcall(function() hum:EquipTool(tool) end)
                 return tool
             end
         end
@@ -351,13 +353,8 @@ function KitOneShot.toggle(state)
     end
 
     local ew = rawget(_G, "DarlingX_ExtraWidgets")
-    if ew then
-        if ew.SetKitOneShotWidgetVisible then
-            ew.SetKitOneShotWidgetVisible(KitOneShot.Enabled)
-        end
-        if ew.UpdateKitOneShotVisual then
-            ew.UpdateKitOneShotVisual(KitOneShot.Enabled)
-        end
+    if ew and ew.UpdateKitOneShotVisual then
+        ew.UpdateKitOneShotVisual(KitOneShot.Enabled)
     end
 
     return KitOneShot.Enabled
