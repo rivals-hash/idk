@@ -15,10 +15,11 @@ function MikaModule.Destroy()
     if activeInstance and type(activeInstance.Destroy) == "function" then
         pcall(function() activeInstance:Destroy() end)
     end
-    activeInstance = nil
-    if _G.MikaCompanion == activeInstance then
-        _G.MikaCompanion = nil
+    if _G.MikaCompanion and type(_G.MikaCompanion.Destroy) == "function" then
+        pcall(function() _G.MikaCompanion:Destroy() end)
     end
+    activeInstance = nil
+    _G.MikaCompanion = nil
 end
 
 function MikaModule.Spawn(opts)
@@ -33,6 +34,22 @@ function MikaModule.Spawn(opts)
     local TextService = game:GetService("TextService")
     local player = Players.LocalPlayer
     if not player then return nil end
+
+    if opts.Parent then
+        pcall(function()
+            for _, child in ipairs(opts.Parent:GetChildren()) do
+                if child.Name == "MikaCompanion" then
+                    child:Destroy()
+                end
+            end
+        end)
+    end
+    if player:FindFirstChild("PlayerGui") then
+        pcall(function()
+            local oldGui = player.PlayerGui:FindFirstChild("MikaCompanionGui")
+            if oldGui then oldGui:Destroy() end
+        end)
+    end
 
     local isMobile = Input.TouchEnabled and not Input.KeyboardEnabled
     local defaultSize = isMobile and 88 or 115

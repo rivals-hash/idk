@@ -7542,9 +7542,9 @@ local okHome, errHome = pcall(function()
     -- Detect current Blox Fruits Sea
     local function getSeaName()
         local pid = game.PlaceId
-        if pid == 2753915549 then return "First Sea"
-        elseif pid == 4442242229 then return "Second Sea"
-        elseif pid == 7449423635 then return "Third Sea"
+        if pid == 2753915549 or pid == 85211729168715 then return "First Sea"
+        elseif pid == 4442242229 or pid == 4442272183 or pid == 79091703265657 then return "Second Sea"
+        elseif pid == 7449423635 or pid == 100117331123089 then return "Third Sea"
         end
         return "Sea"
     end
@@ -7850,8 +7850,8 @@ local okHome, errHome = pcall(function()
 
                 -- Level
                 local lvlVal = (data and data:FindFirstChild("Level") and data.Level.Value)
-                    or lp:GetAttribute("Level")
                     or (ls and ls:FindFirstChild("Level") and ls.Level.Value)
+                    or lp:GetAttribute("Level")
                 if lvlVal then
                     statLevel.Text = "- Lv. " .. tostring(lvlVal)
                     if pillLevel and pillLevel.Parent then pillLevel.Text = tostring(lvlVal) end
@@ -7859,6 +7859,7 @@ local okHome, errHome = pcall(function()
 
                 -- Beli
                 local beliVal = (data and data:FindFirstChild("Beli") and data.Beli.Value)
+                    or (ls and ls:FindFirstChild("Beli") and ls.Beli.Value)
                     or lp:GetAttribute("Beli")
                 if beliVal and pillBeli and pillBeli.Parent then
                     pillBeli.Text = "$" .. FormatNumber(beliVal)
@@ -7866,6 +7867,8 @@ local okHome, errHome = pcall(function()
 
                 -- Fragments
                 local fragsVal = (data and data:FindFirstChild("Fragments") and data.Fragments.Value)
+                    or (ls and ls:FindFirstChild("Fragments") and ls.Fragments.Value)
+                    or (ls and ls:FindFirstChild("Fragment") and ls.Fragment.Value)
                     or lp:GetAttribute("Fragments")
                 if fragsVal and pillFragments and pillFragments.Parent then
                     pillFragments.Text = FormatNumber(fragsVal)
@@ -7874,8 +7877,26 @@ local okHome, errHome = pcall(function()
                 -- Devil Fruit
                 local dfVal = (data and data:FindFirstChild("DevilFruit") and data.DevilFruit.Value)
                     or lp:GetAttribute("DevilFruit")
-                if dfVal and pillFruit and pillFruit.Parent then
-                    pillFruit.Text = tostring(dfVal):gsub("-%w+", "")
+                    or lp:GetAttribute("Fruit")
+                if (not dfVal or dfVal == "" or dfVal == "None") and lp.Character then
+                    for _, tool in ipairs(lp.Character:GetChildren()) do
+                        if tool:IsA("Tool") and (tool.ToolTip == "Blox Fruit" or tool:GetAttribute("WeaponType") == "Demon Fruit") then
+                            dfVal = tool.Name
+                            break
+                        end
+                    end
+                end
+                if (not dfVal or dfVal == "" or dfVal == "None") and lp:FindFirstChild("Backpack") then
+                    for _, tool in ipairs(lp.Backpack:GetChildren()) do
+                        if tool:IsA("Tool") and (tool.ToolTip == "Blox Fruit" or tool:GetAttribute("WeaponType") == "Demon Fruit") then
+                            dfVal = tool.Name
+                            break
+                        end
+                    end
+                end
+                if dfVal and dfVal ~= "" and dfVal ~= "None" and pillFruit and pillFruit.Parent then
+                    local cleanFruit = tostring(dfVal):gsub("%-.*", ""):gsub(" Fruit", "")
+                    pillFruit.Text = cleanFruit
                 end
 
                 -- Race
@@ -7892,6 +7913,10 @@ local okHome, errHome = pcall(function()
                     or "Pirates"
                 if pillTeam and pillTeam.Parent then
                     pillTeam.Text = tostring(teamName)
+                end
+
+                if pillSea and pillSea.Parent and getSeaName then
+                    pillSea.Text = getSeaName()
                 end
             end
         end)
@@ -11168,7 +11193,37 @@ local okWaifu, errWaifu = pcall(function()
         return m
     end
 
+    local function destroyMika()
+        if _G.MikaCompanion and type(_G.MikaCompanion.Destroy) == "function" then
+            pcall(function() _G.MikaCompanion:Destroy() end)
+        end
+        _G.MikaCompanion = nil
+
+        local mod = getMikaModule()
+        if mod and mod.Destroy then
+            pcall(function() mod.Destroy() end)
+        end
+
+        if ScreenGui then
+            pcall(function()
+                for _, child in ipairs(ScreenGui:GetChildren()) do
+                    if child.Name == "MikaCompanion" then
+                        child:Destroy()
+                    end
+                end
+            end)
+        end
+        local pGui = lp and lp:FindFirstChild("PlayerGui")
+        if pGui then
+            pcall(function()
+                local oldGui = pGui:FindFirstChild("MikaCompanionGui")
+                if oldGui then oldGui:Destroy() end
+            end)
+        end
+    end
+
     local function spawnMika()
+        destroyMika()
         local mod = getMikaModule()
         if mod and mod.Spawn then
             mod.Spawn({
@@ -11181,15 +11236,6 @@ local okWaifu, errWaifu = pcall(function()
                 AutoTalk = _G.DarlingX.MikaAutoTalk,
                 Language = _G.DarlingX.CurrentLanguage or "en"
             })
-        end
-    end
-
-    local function destroyMika()
-        local mod = getMikaModule()
-        if mod and mod.Destroy then
-            mod.Destroy()
-        elseif _G.MikaCompanion and _G.MikaCompanion.Destroy then
-            pcall(function() _G.MikaCompanion:Destroy() end)
         end
     end
 
