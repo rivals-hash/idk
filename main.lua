@@ -2872,6 +2872,10 @@ local TRANSLATIONS_DICT = {
         ["Mode changed to"] = "Modo cambiado a",
         ["All keybinds were cleared."] = "Todos los atajos fueron eliminados.",
         ["Widget lock:"] = "Bloqueo de widgets:",
+        ["Keybinds"] = "Atajos",
+        ["General"] = "General",
+        ["Enabled"] = "Activado",
+        ["Disabled"] = "Desactivado",
         -- Monody New Additions & Performance Features
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Companera Waifu AI",
@@ -3502,6 +3506,10 @@ local TRANSLATIONS_DICT = {
         ["Mode changed to"] = "Modo alterado para",
         ["All keybinds were cleared."] = "Todos os atalhos foram removidos.",
         ["Widget lock:"] = "Bloqueio de widgets:",
+        ["Keybinds"] = "Atalhos",
+        ["General"] = "Geral",
+        ["Enabled"] = "Ativado",
+        ["Disabled"] = "Desativado",
         -- Performance / FFlags / Waifu
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Companheira Waifu AI",
@@ -4037,6 +4045,10 @@ local TRANSLATIONS_DICT = {
         ["Mode changed to"] = "Mode change en",
         ["All keybinds were cleared."] = "Tous les raccourcis ont ete supprimes.",
         ["Widget lock:"] = "Verrouillage des widgets:",
+        ["Keybinds"] = "Raccourcis",
+        ["General"] = "General",
+        ["Enabled"] = "Active",
+        ["Disabled"] = "Desactive",
         -- Waifu / FFlags / Performance
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Compagne Waifu AI",
@@ -4571,6 +4583,10 @@ local TRANSLATIONS_DICT = {
         ["Mode changed to"] = "Che do doi thanh",
         ["All keybinds were cleared."] = "Tat ca phim tat da duoc xoa.",
         ["Widget lock:"] = "Khoa widget:",
+        ["Keybinds"] = "Phim tat",
+        ["General"] = "Chung",
+        ["Enabled"] = "Bat",
+        ["Disabled"] = "Tat",
         -- Waifu / FFlags / Performance
         ["Waifu AI"] = "Waifu AI",
         ["Waifu AI Companion"] = "Bạn Đồng Hành Waifu AI",
@@ -6106,6 +6122,8 @@ SaveConfigProfile = function(force)
         cfg.XRayVision = cfg.Toggles["X-Ray Vision"]
         cfg.BuddhaRainbowCircle = cfg.Toggles["Buddha Rainbow Circle"]
         cfg.OnlyMyBuddhaCircle = cfg.Toggles["Only My Buddha Circle"]
+        cfg.DeleteGhostShip = cfg.Toggles["Delete Ghost Ship"]
+        cfg.LockWidgets = (_G.DarlingX and _G.DarlingX.LockWidgets) or cfg.Toggles["Lock Widgets & Toggles"]
         
         -- Additional Features Sync
         cfg.StartAutoDungeon = cfg.Toggles["Start Auto Dungeon"]
@@ -6326,6 +6344,15 @@ LoadConfigProfile = function()
         end
         if cfg.OnlyMyBuddhaCircle ~= nil and UI_TOGGLES["Only My Buddha Circle"] then
             pcall(function() UI_TOGGLES["Only My Buddha Circle"].set(cfg.OnlyMyBuddhaCircle == true, true) end)
+        end
+        if cfg.DeleteGhostShip ~= nil and UI_TOGGLES["Delete Ghost Ship"] then
+            pcall(function() UI_TOGGLES["Delete Ghost Ship"].set(cfg.DeleteGhostShip == true, true) end)
+        end
+        if cfg.LockWidgets ~= nil then
+            _G.DarlingX.LockWidgets = (cfg.LockWidgets == true)
+            if UI_TOGGLES["Lock Widgets & Toggles"] then
+                pcall(function() UI_TOGGLES["Lock Widgets & Toggles"].set(cfg.LockWidgets == true, true) end)
+            end
         end
         if cfg.StartAutoDungeon ~= nil and UI_TOGGLES["Start Auto Dungeon"] then
             pcall(function() UI_TOGGLES["Start Auto Dungeon"].set(cfg.StartAutoDungeon == true, true) end)
