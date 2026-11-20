@@ -7,7 +7,7 @@ local ComebackCinematic = {
     ActiveSession = nil,
 }
 
-local function runAnimation(customConfig)
+local function runAnimation(customConfig, onComplete)
     --[[
       COMEBACK ADMIN CARMESI V5 — adaptacion directa de admin_cinematic / Celestial Sovereign.
       Conserva su invocacion, rayo, estrella facetada, salida del gigante y primeras camaras.
@@ -159,6 +159,11 @@ local function runAnimation(customConfig)
             if _G.DarlingSovereign==api then _G.DarlingSovereign=nil end
         end
         if reason and reason~="finished" and reason~="cancelled" then warn("[Sovereign] "..tostring(reason)) end
+        if onComplete then
+            local cb = onComplete
+            onComplete = nil
+            pcall(cb)
+        end
     end
     api.Stop=function() stop("cancelled") end
     local function part(name,color,size,parent,class)

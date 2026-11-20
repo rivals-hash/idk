@@ -10478,6 +10478,10 @@ do
                         if cinematic.play then
                             cinematic.play()
                         end
+                    elseif name == "Comeback" then
+                        if cinematic.play then
+                            cinematic.play(nil, StopAllAnimations)
+                        end
                     end
                 end)
             end)
