@@ -22,7 +22,7 @@ local function GetPlayerThumbnail(size)
 end
 
 local DEFAULT_LOGO_ID = GetPlayerThumbnail(150)
-local GITHUB_REPO_RAW = "https://raw.githubusercontent.com/rivals-hash/test/main"
+local GITHUB_REPO_RAW = "https://raw.githubusercontent.com/rivals-hash/idk/main"
 
 local exIsFile = isfile or is_file
 local exWriteFile = writefile or write_file
