@@ -12,19 +12,28 @@ local button = nil
 local keyConn = nil
 local debounce = false
 
-local function getRoot()
-    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    return char:WaitForChild("HumanoidRootPart", 5)
-end
-
 local function TeleportAbove()
-    local hrp = getRoot()
-    if not hrp then return end
-    local targetPos = hrp.Position + Vector3.new(9e909, 9e909, 9e909)
-    hrp.CFrame = CFrame.new(targetPos)
+    local char = LocalPlayer.Character
+    if not char then return end
+    local myRoot = char:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return end
+
+    local targetCFrame = myRoot.CFrame + Vector3.new(9e909, 9e909, 9e909)
+    pcall(function()
+        myRoot.CFrame = targetCFrame
+        myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    end)
 end
 
-function SaishiOneShot.Execute()
+local function ExecuteAction()
+    for i = 5, 20 do
+        TeleportAbove()
+        task.wait(0)
+    end
+end
+
+function SaishiOneShot.Execute(skipWait)
     if debounce then return end
     debounce = true
 
@@ -33,23 +42,20 @@ function SaishiOneShot.Execute()
         button.TextColor3 = Color3.fromRGB(255, 60, 60)
     end
 
-    for i = 5, 20 do
-        TeleportAbove()
-        task.wait(0)
-    end
+    task.spawn(function()
+        if not skipWait then
+            task.wait(0.6)
+        end
+        ExecuteAction()
 
-    local hrp = getRoot()
-    if hrp then
-        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-    end
-
-    task.wait(0.6)
-    if button then
-        button.Text = "SAISHI"
-        button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    end
-    debounce = false
+        task.delay(0.1, function()
+            if button then
+                button.Text = "SAISHI"
+                button.TextColor3 = Color3.fromRGB(255, 255, 255)
+            end
+            debounce = false
+        end)
+    end)
 end
 
 local function makeDraggable(targetFrame, dragHandle, onClick)
@@ -134,8 +140,8 @@ function SaishiOneShot.CreateUI()
 
     frame = Instance.new("Frame")
     frame.Name = "SaishiFrame"
-    frame.Size = UDim2.new(0, 130, 0, 42)
-    frame.Position = UDim2.new(0.5, -65, 0.82, 0)
+    frame.Size = UDim2.new(0, 56, 0, 56)
+    frame.Position = UDim2.new(0.85, -56, 0.65, 0)
     frame.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
     frame.BackgroundTransparency = 0.2
     frame.BorderSizePixel = 0
@@ -144,7 +150,7 @@ function SaishiOneShot.CreateUI()
     frame.Parent = screenGui
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 10)
+    corner.CornerRadius = UDim.new(1, 0)
     corner.Parent = frame
 
     local stroke = Instance.new("UIStroke")
@@ -159,7 +165,7 @@ function SaishiOneShot.CreateUI()
     button.BackgroundTransparency = 1
     button.Text = "SAISHI"
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 14
+    button.TextSize = 11
     button.Font = Enum.Font.GothamBold
     button.Active = true
     button.ZIndex = 51

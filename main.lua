@@ -6124,6 +6124,7 @@ SaveConfigProfile = function(force)
         cfg.OnlyMyBuddhaCircle = cfg.Toggles["Only My Buddha Circle"]
         cfg.DeleteGhostShip = cfg.Toggles["Delete Ghost Ship"]
         cfg.LockWidgets = (_G.DarlingX and _G.DarlingX.LockWidgets) or cfg.Toggles["Lock Widgets & Toggles"]
+        cfg.SaishiOneShot = cfg.Toggles["Saishi Sword One Shot"]
         
         -- Additional Features Sync
         cfg.StartAutoDungeon = cfg.Toggles["Start Auto Dungeon"]
@@ -6353,6 +6354,9 @@ LoadConfigProfile = function()
             if UI_TOGGLES["Lock Widgets & Toggles"] then
                 pcall(function() UI_TOGGLES["Lock Widgets & Toggles"].set(cfg.LockWidgets == true, true) end)
             end
+        end
+        if cfg.SaishiOneShot ~= nil and UI_TOGGLES["Saishi Sword One Shot"] then
+            pcall(function() UI_TOGGLES["Saishi Sword One Shot"].set(cfg.SaishiOneShot == true, true) end)
         end
         if cfg.StartAutoDungeon ~= nil and UI_TOGGLES["Start Auto Dungeon"] then
             pcall(function() UI_TOGGLES["Start Auto Dungeon"].set(cfg.StartAutoDungeon == true, true) end)
