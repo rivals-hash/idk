@@ -3341,6 +3341,12 @@ local TRANSLATIONS_DICT = {
         ["M1 Delay"] = "Velocidad M1",
         ["Kit One Shot Floating Widget"] = "Widget Flotante Kit One Shot",
         ["Movable on-screen toggle for Kit One Shot"] = "Boton flotante en pantalla para Kit One Shot",
+        ["Saishi Sword One Shot"] = "Saishi Sword One Shot",
+        ["Teleport combo with velocity reset (Mobile widget & Z/F keys)"] = "Combo de teletransporte con reinicio de velocidad (Widget movil y teclas Z/F)",
+        ["Silent Aim Player Lock"] = "Bloqueo de Jugador (Silent Aim)",
+        ["Lock onto targeted player without moving camera"] = "Fijar al jugador apuntado sin mover la camara",
+        ["Lock Current Target"] = "Bloquear Objetivo Actual",
+        ["Unlock Target"] = "Desbloquear Objetivo",
         ["Fruit Fast Attack Floating Widget"] = "Widget Flotante Fruit Fast Attack",
         ["X-Ray Wall Vision"] = "Vision Rayos X de Paredes",
         ["X-Ray Vision"] = "Vision Rayos X",
@@ -3975,6 +3981,12 @@ local TRANSLATIONS_DICT = {
         ["M1 Delay"] = "Velocidade M1",
         ["Kit One Shot Floating Widget"] = "Widget Flutuante Kit One Shot",
         ["Movable on-screen toggle for Kit One Shot"] = "Botão flutuante na tela para Kit One Shot",
+        ["Saishi Sword One Shot"] = "Saishi Sword One Shot",
+        ["Teleport combo with velocity reset (Mobile widget & Z/F keys)"] = "Combo de teletransporte com reset de velocidade (Widget movel e teclas Z/F)",
+        ["Silent Aim Player Lock"] = "Bloqueio de Jogador (Silent Aim)",
+        ["Lock onto targeted player without moving camera"] = "Travar no jogador mirado sem mover a camera",
+        ["Lock Current Target"] = "Bloquear Alvo Atual",
+        ["Unlock Target"] = "Desbloquear Alvo",
         ["Fruit Fast Attack Floating Widget"] = "Widget Flutuante Fruit Fast Attack",
         ["X-Ray Wall Vision"] = "Visão Raio-X de Paredes",
         ["X-Ray Vision"] = "Visão Raio-X",
@@ -4514,6 +4526,12 @@ local TRANSLATIONS_DICT = {
         ["M1 Delay"] = "Vitesse M1",
         ["Kit One Shot Floating Widget"] = "Widget Flottant Kit One Shot",
         ["Movable on-screen toggle for Kit One Shot"] = "Bouton flottant à l'écran pour Kit One Shot",
+        ["Saishi Sword One Shot"] = "Saishi Sword One Shot",
+        ["Teleport combo with velocity reset (Mobile widget & Z/F keys)"] = "Combo de teleportation avec reinitialisation de vitesse (Widget mobile et touches Z/F)",
+        ["Silent Aim Player Lock"] = "Verrouillage Joueur (Silent Aim)",
+        ["Lock onto targeted player without moving camera"] = "Verrouiller le joueur cible sans deplacer la camera",
+        ["Lock Current Target"] = "Verrouiller Cible Actuelle",
+        ["Unlock Target"] = "Deverrouiller Cible",
         ["Fruit Fast Attack Floating Widget"] = "Widget Flottant Fruit Fast Attack",
         ["X-Ray Wall Vision"] = "Vision Rayons X des Murs",
         ["X-Ray Vision"] = "Vision Rayons X",
@@ -5052,6 +5070,12 @@ local TRANSLATIONS_DICT = {
         ["M1 Delay"] = "Tốc độ M1",
         ["Kit One Shot Floating Widget"] = "Nút Nổi Kit One Shot",
         ["Movable on-screen toggle for Kit One Shot"] = "Nút nổi di chuyển trên màn hình cho Kit One Shot",
+        ["Saishi Sword One Shot"] = "Saishi Sword One Shot",
+        ["Teleport combo with velocity reset (Mobile widget & Z/F keys)"] = "Combo dich chuyen dat lai van toc (Widget di dong va phim Z/F)",
+        ["Silent Aim Player Lock"] = "Khoa Muc Tieu Nguoi Choi (Silent Aim)",
+        ["Lock onto targeted player without moving camera"] = "Khoa vao nguoi choi dang nham ma khong di chuyen camera",
+        ["Lock Current Target"] = "Khoa Muc Tieu Hien Tai",
+        ["Unlock Target"] = "Mo Khoa Muc Tieu",
         ["Fruit Fast Attack Floating Widget"] = "Nút Nổi Fruit Fast Attack",
         ["X-Ray Wall Vision"] = "X-Ray Xuyên Tường",
         ["X-Ray Vision"] = "Tầm Nhìn X-Ray",
@@ -6599,7 +6623,7 @@ SaveConfigProfile = function(force)
         cfg.WalkOnWater = cfg.Toggles["Walk on Water"]
         cfg.AntiLava = cfg.Toggles["Anti-Lava Damage"]
         cfg.DashLengthEnabled = cfg.Toggles["Custom Dash Length"]
-        cfg.FFlags1 = cfg.Toggles["FPS Booster"] or cfg.Toggles["FFlags 1 (FPS Booster)"]
+        cfg.FFlags1 = false
         cfg.Fly = cfg.Toggles["Fly"]
         cfg.FlySpeed = cfg.Sliders["Fly Speed"]
         cfg.ShowFPS = cfg.Toggles["Show FPS & Ping"]
@@ -6659,7 +6683,8 @@ SaveConfigProfile = function(force)
         cfg.HitboxVisual = cfg.Toggles["Hitbox Visual Forcefield"]
         cfg.StaticCamera = cfg.Toggles["Static Camera"]
         cfg.MuteGameBGM = cfg.Toggles["Mute Game Background Music"]
-        cfg.AutoFFlags = cfg.Toggles["Auto Aplicar FFlags al Iniciar"]
+        cfg.AutoFFlags = false
+        cfg.TargetLock = cfg.Toggles["Silent Aim Player Lock"] or cfg.Toggles["Player Lock"]
         cfg.WaifuActive = cfg.Toggles["Activar Waifu"]
         cfg.WaifuReactions = cfg.Toggles["Reacciones de Combate & Peligro"]
         cfg.WaifuFollow = cfg.Toggles["Seguir Cursor / Touch"]
@@ -6723,7 +6748,7 @@ LoadConfigProfile = function()
         local togglesSource = cfg.Toggles or cfg.Features
         if type(togglesSource) == "table" then
             for key, val in pairs(togglesSource) do
-                if UI_TOGGLES[key] then
+                if key ~= "FFlags 1 (FPS Booster)" and key ~= "FPS Booster" and key ~= "Auto Aplicar FFlags al Iniciar" and key ~= "Auto Apply" and UI_TOGGLES[key] then
                     pcall(function()
                         UI_TOGGLES[key].set(val == true, true)
                     end)
@@ -6777,14 +6802,12 @@ LoadConfigProfile = function()
         if cfg.DashLengthEnabled ~= nil and UI_TOGGLES["Custom Dash Length"] then
             pcall(function() UI_TOGGLES["Custom Dash Length"].set(cfg.DashLengthEnabled == true, true) end)
         end
-        if (cfg.FFlags1 ~= nil or cfg.FPSBooster ~= nil) then
-            local fpsVal = (cfg.FPSBooster ~= nil and cfg.FPSBooster == true) or (cfg.FFlags1 == true)
-            if UI_TOGGLES["FPS Booster"] then
-                pcall(function() UI_TOGGLES["FPS Booster"].set(fpsVal, true) end)
-            end
-            if UI_TOGGLES["FFlags 1 (FPS Booster)"] then
-                pcall(function() UI_TOGGLES["FFlags 1 (FPS Booster)"].set(fpsVal, true) end)
-            end
+        -- FFlags: NEVER auto-apply on startup to protect low-end mobile devices from crash loops
+        if UI_TOGGLES["FPS Booster"] then
+            pcall(function() UI_TOGGLES["FPS Booster"].set(false, false) end)
+        end
+        if UI_TOGGLES["FFlags 1 (FPS Booster)"] then
+            pcall(function() UI_TOGGLES["FFlags 1 (FPS Booster)"].set(false, false) end)
         end
         if (cfg.Macro ~= nil or cfg.MacroEnabled ~= nil) then
             local mVal = (cfg.Macro ~= nil and cfg.Macro == true) or (cfg.MacroEnabled == true)
@@ -6914,13 +6937,18 @@ LoadConfigProfile = function()
         if cfg.MuteGameBGM ~= nil and UI_TOGGLES["Mute Game Background Music"] then
             pcall(function() UI_TOGGLES["Mute Game Background Music"].set(cfg.MuteGameBGM == true, true) end)
         end
-        if (cfg.AutoFFlags ~= nil or cfg.AutoApply ~= nil) then
-            local aaVal = (cfg.AutoApply ~= nil and cfg.AutoApply == true) or (cfg.AutoFFlags == true)
-            if UI_TOGGLES["Auto Apply"] then
-                pcall(function() UI_TOGGLES["Auto Apply"].set(aaVal, true) end)
+        if UI_TOGGLES["Auto Apply"] then
+            pcall(function() UI_TOGGLES["Auto Apply"].set(false, false) end)
+        end
+        if UI_TOGGLES["Auto Aplicar FFlags al Iniciar"] then
+            pcall(function() UI_TOGGLES["Auto Aplicar FFlags al Iniciar"].set(false, false) end)
+        end
+        if cfg.TargetLock ~= nil then
+            if UI_TOGGLES["Silent Aim Player Lock"] then
+                pcall(function() UI_TOGGLES["Silent Aim Player Lock"].set(cfg.TargetLock == true, true) end)
             end
-            if UI_TOGGLES["Auto Aplicar FFlags al Iniciar"] then
-                pcall(function() UI_TOGGLES["Auto Aplicar FFlags al Iniciar"].set(aaVal, true) end)
+            if UI_TOGGLES["Player Lock"] then
+                pcall(function() UI_TOGGLES["Player Lock"].set(cfg.TargetLock == true, true) end)
             end
         end
         if cfg.WaifuActive ~= nil and UI_TOGGLES["Activar Waifu"] then
@@ -7008,6 +7036,7 @@ local DEFAULT_TOGGLES = {
     ["Custom WalkSpeed"] = false,
     ["FFlags 1 (FPS Booster)"] = false,
     ["Player Silent Aim"] = false,
+    ["Silent Aim Player Lock"] = false,
     ["NPC Silent Aim"] = false,
     ["Show FOV Circle"] = false,
     ["Enable Target Prediction"] = false,
@@ -7281,7 +7310,8 @@ do
 
         if setfps then pcall(setfps, state and 120 or 60) end
 
-        if sff then
+        local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+        if not isMobile and sff then
             pcall(function()
                 if state then
                     sff("DFIntTaskSchedulerTargetFps", "120")
@@ -7289,15 +7319,8 @@ do
                     sff("FFlagGlobalWindRendering", "False")
                     sff("FIntFRMMinGrassDistance", "0")
                     sff("FIntFRMMaxGrassDistance", "0")
-                    sff("TextureQualityOverrideEnabled", "True")
-                    sff("TextureQualityOverride", "0")
-                    sff("DebugTextureManagerSkipMips", "3")
-                    sff("DebugFRMQualityLevelOverride", "1")
-                    sff("DebugForceMSAASamples", "0")
                     sff("FastGPULightCulling3", "True")
                     sff("IncludePowerSaverMode", "True")
-                    sff("TerrainMaterialTable2022", "")
-                    sff("RenderUseTextureManager224", "False")
                 else
                     sff("DFIntTaskSchedulerTargetFps", "60")
                     sff("FIntRenderShadowIntensity", "100")
@@ -7383,7 +7406,7 @@ do
         if state then
             if not directNoAnimConn then
                 local RunService = game:GetService("RunService")
-                local ATTACK_KEYWORDS = { "attack", "slash", "punch", "m1", "combo", "hit", "tool", "ability", "skill", "kamehameha", "bullet", "gun", "sword", "melee", "fruit" }
+                local ATTACK_KEYWORDS = { "attack", "slash", "punch", "m1", "combo", "hit", "tool", "ability", "skill", "kamehameha", "bullet", "gun", "sword", "melee", "fruit", "dash", "airdash", "step", "dodge" }
                 directNoAnimConn = RunService.Stepped:Connect(function()
                     local char = lp and lp.Character
                     if not char then return end
@@ -8447,18 +8470,18 @@ local AimbotPage = RegisterTab("Aimbot", "Aimbot", "crosshair")
 local okAimbot, errAimbot = pcall(function()
     local function isPlayerAlly(player)
         if not player or player == lp then return false end
+        if not _G.DarlingX_IgnoreAllies then return false end
         local ok, ally = pcall(function()
             local main = lp and lp:FindFirstChild("PlayerGui") and lp.PlayerGui:FindFirstChild("Main")
             local frame = main and main:FindFirstChild("Allies")
                 and main.Allies:FindFirstChild("Container")
                 and main.Allies.Container:FindFirstChild("Allies")
                 and main.Allies.Container.Allies:FindFirstChild("ScrollingFrame")
-                and main.Allies.Container.Allies.ScrollingFrame:FindFirstChild("Frame")
+                and main.Allies.Container.Allies:FindFirstChild("Frame")
             if frame and frame:FindFirstChild(player.Name) then return true end
 
             local myTeam = lp and lp.Team
             local targetTeam = player.Team
-            if myTeam and targetTeam and myTeam == targetTeam then return true end
             if myTeam and targetTeam and myTeam.Name == "Marines" and targetTeam.Name == "Marines" then return true end
             return false
         end)
@@ -8538,6 +8561,9 @@ local okAimbot, errAimbot = pcall(function()
                 local origBlacklisted = core.isPlayerBlacklisted
                 core.isPlayerBlacklisted = function(player)
                     if not player then return false end
+                    if (core.PlayerLockEnabled or _G.DarlingX_TargetLock) and (core.LockedTargetPlayer == player or _G.DarlingX_LockedTarget == player) then
+                        return false
+                    end
                     if origBlacklisted and origBlacklisted(player) then return true end
 
                     if _G.DarlingX_IgnoreAllies and isPlayerAlly(player) then
@@ -8565,6 +8591,36 @@ local okAimbot, errAimbot = pcall(function()
             if state then mod.enable() else mod.disable() end
         end
         Notify("Aimbot", "Player Silent Aim: " .. (state and "Enabled" or "Disabled"))
+    end)
+
+    AddToggle(aimCard, "Silent Aim Player Lock", "Lock onto targeted player without moving camera", false, function(state)
+        _G.DarlingX_TargetLock = state
+        local core = RequireModule("modules/combat/aimbot_core.lua")
+        if core and core.SetPlayerLock then
+            local locked = core.SetPlayerLock(state)
+            if state and locked then
+                Notify("Aimbot", "Locked: " .. tostring(locked.DisplayName or locked.Name))
+            else
+                Notify("Aimbot", "Player Lock: " .. (state and "Enabled (Aiming)" or "Disabled (Free)"))
+            end
+        end
+    end)
+
+    AddButton(aimCard, "Lock Current Target", function()
+        local core = RequireModule("modules/combat/aimbot_core.lua")
+        if core and core.SetPlayerLock then
+            local isLocked = not (core.PlayerLockEnabled or _G.DarlingX_TargetLock)
+            if UI_TOGGLES["Silent Aim Player Lock"] then
+                UI_TOGGLES["Silent Aim Player Lock"].set(isLocked, true)
+            else
+                local locked = core.SetPlayerLock(isLocked)
+                if isLocked and locked then
+                    Notify("Aimbot", "Locked: " .. tostring(locked.DisplayName or locked.Name))
+                else
+                    Notify("Aimbot", "Player Lock: " .. (isLocked and "Enabled" or "Disabled"))
+                end
+            end
+        end
     end)
 
     AddToggle(aimCard, "NPC Silent Aim", "Redirect skills toward mobs and bosses", false, function(state)

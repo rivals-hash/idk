@@ -113,26 +113,21 @@ function ClientTweaks.SetFFlags1(state)
             if setfps then pcall(setfps, 120) end
         end)
 
-        pcall(function()
-            local sff = (type(setfflag) == "function" and setfflag) or getExecutorFunc("setfflag")
-            if sff then
-                pcall(sff, "DFIntTaskSchedulerTargetFps", "120")
-                pcall(sff, "FIntRenderShadowIntensity", "0")
-                pcall(sff, "FFlagGlobalWindRendering", "False")
-                pcall(sff, "FIntFRMMinGrassDistance", "0")
-                pcall(sff, "FIntFRMMaxGrassDistance", "0")
-                pcall(sff, "FFlagDebugGraphicsDisableDirect3D11", "False")
-                pcall(sff, "TextureQualityOverrideEnabled", "True")
-                pcall(sff, "TextureQualityOverride", "0")
-                pcall(sff, "DebugTextureManagerSkipMips", "3")
-                pcall(sff, "DebugFRMQualityLevelOverride", "1")
-                pcall(sff, "DebugForceMSAASamples", "0")
-                pcall(sff, "FastGPULightCulling3", "True")
-                pcall(sff, "IncludePowerSaverMode", "True")
-                pcall(sff, "TerrainMaterialTable2022", "")
-                pcall(sff, "RenderUseTextureManager224", "False")
-            end
-        end)
+        local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+        if not isMobile then
+            pcall(function()
+                local sff = (type(setfflag) == "function" and setfflag) or getExecutorFunc("setfflag")
+                if sff then
+                    pcall(sff, "DFIntTaskSchedulerTargetFps", "120")
+                    pcall(sff, "FIntRenderShadowIntensity", "0")
+                    pcall(sff, "FFlagGlobalWindRendering", "False")
+                    pcall(sff, "FIntFRMMinGrassDistance", "0")
+                    pcall(sff, "FIntFRMMaxGrassDistance", "0")
+                    pcall(sff, "FastGPULightCulling3", "True")
+                    pcall(sff, "IncludePowerSaverMode", "True")
+                end
+            end)
+        end
 
         pcall(function()
             settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
@@ -251,7 +246,7 @@ end
 -- ========================================================================
 -- 2. NO ANIMATIONS (FIX CHARACTER FREEZE & SIDEWAYS BUG)
 -- ========================================================================
-local ATTACK_KEYWORDS = { "attack", "slash", "punch", "m1", "combo", "hit", "tool", "ability", "skill", "kamehameha", "bullet", "gun", "sword", "melee", "fruit" }
+local ATTACK_KEYWORDS = { "attack", "slash", "punch", "m1", "combo", "hit", "tool", "ability", "skill", "kamehameha", "bullet", "gun", "sword", "melee", "fruit", "dash", "airdash", "step", "dodge" }
 
 local function isAttackAnim(track)
     local name = string.lower(track.Name)

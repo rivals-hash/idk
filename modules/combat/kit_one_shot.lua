@@ -249,8 +249,25 @@ local function startAttackLoop()
                         end
 
                         if not bestHRP and KitOneShot.AttackMobs then
+                            local charsFolder = Workspace:FindFirstChild("Characters")
+                            if charsFolder then
+                                for _, c in pairs(charsFolder:GetChildren()) do
+                                    if c ~= char and c:FindFirstChildOfClass("Humanoid") then
+                                        local tHRP = c:FindFirstChild("HumanoidRootPart")
+                                        local hum = c:FindFirstChildOfClass("Humanoid")
+                                        if tHRP and hum and hum.Health > 0 then
+                                            local dist = (tHRP.Position - myHRP.Position).Magnitude
+                                            if dist < bestDist then
+                                                bestHRP = tHRP
+                                                bestDist = dist
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+
                             local enemiesFolder = Workspace:FindFirstChild("Enemies")
-                            if enemiesFolder then
+                            if enemiesFolder and not bestHRP then
                                 for _, npc in pairs(enemiesFolder:GetChildren()) do
                                     local tHRP = npc:FindFirstChild("HumanoidRootPart")
                                     local hum = npc:FindFirstChild("Humanoid")
@@ -268,6 +285,9 @@ local function startAttackLoop()
                         if bestHRP then
                             local dir = ((bestHRP.Position - myHRP.Position) * Vector3.new(1, 0, 1)).Unit
                             local fireDir = (combo >= maxCombo) and KitOneShot.maxVec or dir
+
+                            -- Guaranteed Blox Fruits void remote blast
+                            pcall(function() remote:FireServer(KitOneShot.maxVec, 5, false) end)
 
                             if isTrex or isDragon or isBlade or isGas then
                                 pcall(function() remote:FireServer(fireDir, combo) end)

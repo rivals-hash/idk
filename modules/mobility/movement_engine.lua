@@ -68,10 +68,16 @@ local function checkSteppedGating()
 
             -- Custom WalkSpeed physics injection
             if MovementEngine.WalkSpeedEnabled and hum.MoveDirection.Magnitude > 0 then
-                local spd = MovementEngine.WalkSpeedValue or 150
-                hum.WalkSpeed = spd
-                local curY = hrp.AssemblyLinearVelocity.Y
-                hrp.AssemblyLinearVelocity = Vector3.new(hum.MoveDirection.X * spd, curY, hum.MoveDirection.Z * spd)
+                local isDashing = (char:GetAttribute("Dashing") == true)
+                    or (char:FindFirstChild("Dash") ~= nil)
+                    or (char:FindFirstChild("Dashing") ~= nil)
+                    or (hrp:FindFirstChild("Dash") ~= nil)
+                if not isDashing then
+                    local spd = MovementEngine.WalkSpeedValue or 150
+                    hum.WalkSpeed = spd
+                    local curY = hrp.AssemblyLinearVelocity.Y
+                    hrp.AssemblyLinearVelocity = Vector3.new(hum.MoveDirection.X * spd, curY, hum.MoveDirection.Z * spd)
+                end
             end
 
             -- Noclip wall collision bypass
@@ -152,8 +158,8 @@ function MovementEngine.SetDashLength(enabled, value)
         pcall(function()
             local char = LocalPlayer and LocalPlayer.Character
             if char then
-                char:SetAttribute("DashLength", 1)
-                char:SetAttribute("DashLengthAir", 1)
+                char:SetAttribute("DashLength", nil)
+                char:SetAttribute("DashLengthAir", nil)
             end
         end)
     end

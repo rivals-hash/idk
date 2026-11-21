@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
@@ -27,10 +28,12 @@ local function TeleportAbove()
 end
 
 local function ExecuteAction()
-    for i = 5, 20 do
-        TeleportAbove()
-        task.wait(0)
-    end
+    task.spawn(function()
+        for i = 5, 20 do
+            TeleportAbove()
+            task.wait(0)
+        end
+    end)
 end
 
 function SaishiOneShot.Execute(skipWait)
@@ -196,10 +199,14 @@ function SaishiOneShot.SetEnabled(state)
     if SaishiOneShot.Enabled then
         SaishiOneShot.CreateUI()
 
-        keyConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
-            if not gameProcessed and (input.KeyCode == Enum.KeyCode.Z or input.KeyCode == Enum.KeyCode.F) then
-                SaishiOneShot.Execute()
-            end
+        keyConn = RunService.Heartbeat:Connect(function()
+            if not SaishiOneShot.Enabled then return end
+            if debounce then return end
+            pcall(function()
+                if UserInputService:IsKeyDown(Enum.KeyCode.Z) or UserInputService:IsKeyDown(Enum.KeyCode.F) then
+                    SaishiOneShot.Execute()
+                end
+            end)
         end)
     else
         SaishiOneShot.RemoveUI()

@@ -165,6 +165,9 @@ end
 -- ============================================================================
 local function isSilentAimAlly(player)
     if not player then return false end
+    local ignoreAllies = (Core.IgnoreAllies == true) or (_G.DarlingX_IgnoreAllies == true)
+    if not ignoreAllies then return false end
+
     local main = LocalPlayer and LocalPlayer:FindFirstChild("PlayerGui") and LocalPlayer.PlayerGui:FindFirstChild("Main")
     local frame = main and main:FindFirstChild("Allies")
         and main.Allies:FindFirstChild("Container")
@@ -182,11 +185,13 @@ local function isEnemy(targetPlayer)
 
     local myTeam = LocalPlayer and LocalPlayer.Team
     local targetTeam = targetPlayer.Team
-    if Core.TeamCheck and myTeam and targetTeam and myTeam == targetTeam then
-        return false
-    end
-    if myTeam and targetTeam and myTeam.Name == "Marines" and targetTeam.Name == "Marines" then
-        return false
+    if Core.TeamCheck and myTeam and targetTeam then
+        if myTeam == targetTeam then
+            return false
+        end
+        if myTeam.Name == "Marines" and targetTeam.Name == "Marines" then
+            return false
+        end
     end
     return true
 end
@@ -278,6 +283,16 @@ local function resolvePlayerTarget(lpHRP)
     local fovRadius = Core.getFOVRadius()
     local priority = hubSettings.Priority or Core.TargetPriority or "Nearest"
     local myPos = lpHRP.Position
+
+    -- 0. Silent Aim Player Lock (Stays glued to one player without moving camera)
+    local targetLockActive = (Core.PlayerLockEnabled == true) or (_G.DarlingX_TargetLock == true)
+    if targetLockActive and Core.LockedTargetPlayer and Core.LockedTargetPlayer ~= LocalPlayer and Core.LockedTargetPlayer.Character and isAlive(Core.LockedTargetPlayer.Character) then
+        local part = getEntityPart(Core.LockedTargetPlayer.Character)
+        if part and (part.Position - myPos).Magnitude <= maxRange then
+            local predPos = Core.predictPosition(part)
+            return part, predPos, Core.LockedTargetPlayer.Character
+        end
+    end
 
     -- 1. Explicit selected player override (from Player List tab)
     if Core.SelectedPlayer and Core.SelectedPlayer ~= LocalPlayer and Core.SelectedPlayer.Character and isAlive(Core.SelectedPlayer.Character) then
@@ -557,13 +572,13 @@ function Core.installHooks()
                     return oldIndex(self, key)
                 end
                 local target = Core.CurrentTargetPart or _G.currentSilentAimTarget or _G.DarlingSilentAimTarget
-                if (Core.LockPlayer or Core.PlayerAimEnabled or Core.NPCAimEnabled or _G.G_SilentAimM1R or _G.G_SilentAimSkill) and target then
+                if (Core.PlayerLockEnabled or _G.DarlingX_TargetLock or Core.LockPlayer or Core.PlayerAimEnabled or Core.NPCAimEnabled or _G.G_SilentAimM1R or _G.G_SilentAimSkill) and target then
                     local activeKey = Core.CurrentSkillKey
                     if activeKey and Core.isKeyBlacklisted(Core.CurrentToolCategory, activeKey) then
                         return oldIndex(self, key)
                     end
                     local isSword = (Core.CurrentToolCategory == "Sword") or (Core.CurrentTool and (string.find(Core.CurrentTool.Name, "Sword") or string.find(Core.CurrentTool.Name, "Buddy")))
-                    local tp = (isSword and Core.CurrentTargetRawPosition) or (target and target.Position) or Core.CurrentTargetPosition or Core.CurrentTargetRawPosition
+                    local tp = (isSword and Core.CurrentTargetRawPosition) or Core.CurrentTargetPosition or (target and target.Position) or Core.CurrentTargetRawPosition
                     if tp and (tp.X == tp.X) then
                         local cam = Camera or Workspace.CurrentCamera
                         local cp = cam and cam.CFrame.Position or Vector3.zero
@@ -599,13 +614,13 @@ function Core.installHooks()
                         return oldIndex(t, k)
                     end
                     local target = Core.CurrentTargetPart or _G.currentSilentAimTarget or _G.DarlingSilentAimTarget
-                    if (Core.PlayerAimEnabled or Core.NPCAimEnabled or Core.LockPlayer or _G.G_SilentAimM1R or _G.G_SilentAimSkill) and target then
+                    if (Core.PlayerLockEnabled or _G.DarlingX_TargetLock or Core.PlayerAimEnabled or Core.NPCAimEnabled or Core.LockPlayer or _G.G_SilentAimM1R or _G.G_SilentAimSkill) and target then
                         local activeKey = Core.CurrentSkillKey
                         if activeKey and Core.isKeyBlacklisted(Core.CurrentToolCategory, activeKey) then
                             return oldIndex(t, k)
                         end
                         local isSword = (Core.CurrentToolCategory == "Sword") or (Core.CurrentTool and (string.find(Core.CurrentTool.Name, "Sword") or string.find(Core.CurrentTool.Name, "Buddy")))
-                        local tp = (isSword and Core.CurrentTargetRawPosition) or (target and target.Position) or Core.CurrentTargetPosition or Core.CurrentTargetRawPosition
+                        local tp = (isSword and Core.CurrentTargetRawPosition) or Core.CurrentTargetPosition or (target and target.Position) or Core.CurrentTargetRawPosition
                         if tp and (tp.X == tp.X) then
                             local cam = Camera or Workspace.CurrentCamera
                             local cp = cam and cam.CFrame.Position or Vector3.zero
@@ -817,7 +832,7 @@ local function updateTargetCycle()
     local char = LocalPlayer and LocalPlayer.Character
     local lpHRP = char and getHRP(char)
 
-    if not lpHRP or (not Core.LockPlayer and not Core.PlayerAimEnabled and not Core.NPCAimEnabled) then
+    if not lpHRP or (not Core.LockPlayer and not Core.PlayerLockEnabled and not _G.DarlingX_TargetLock and not Core.PlayerAimEnabled and not Core.NPCAimEnabled) then
         Core.CurrentTargetPart = nil
         Core.CurrentTargetRawPosition = nil
         Core.CurrentTargetPosition = nil
@@ -930,8 +945,38 @@ function Core.startLoop()
     Core.RenderConnection = RunService.RenderStepped:Connect(updateTargetCycle)
 end
 
+function Core.SetPlayerLock(state)
+    local enable = (state == true)
+    Core.PlayerLockEnabled = enable
+    _G.DarlingX_TargetLock = enable
+    if enable then
+        local targetPlayer = nil
+        if Core.CurrentTargetCharacter then
+            targetPlayer = Players:GetPlayerFromCharacter(Core.CurrentTargetCharacter)
+        end
+        if not targetPlayer then
+            local char = LocalPlayer and LocalPlayer.Character
+            local lpHRP = char and getHRP(char)
+            if lpHRP then
+                local bestPart, _, bestChar = resolvePlayerTarget(lpHRP)
+                if bestChar then
+                    targetPlayer = Players:GetPlayerFromCharacter(bestChar)
+                end
+            end
+        end
+        Core.LockedTargetPlayer = targetPlayer
+        _G.DarlingX_LockedTarget = targetPlayer
+        Core.startLoop()
+    else
+        Core.LockedTargetPlayer = nil
+        _G.DarlingX_LockedTarget = nil
+        Core.stopLoop()
+    end
+    return Core.LockedTargetPlayer
+end
+
 function Core.stopLoop()
-    if Core.PlayerAimEnabled or Core.NPCAimEnabled or Core.LockPlayer then return end
+    if Core.PlayerAimEnabled or Core.NPCAimEnabled or Core.LockPlayer or Core.PlayerLockEnabled or _G.DarlingX_TargetLock then return end
     if Core.RenderConnection then
         Core.RenderConnection:Disconnect()
         Core.RenderConnection = nil
