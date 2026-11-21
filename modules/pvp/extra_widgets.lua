@@ -472,6 +472,56 @@ local function initKitOneShotUI()
     end)
 end
 
+-- 8. Silent Aim Lock Widget
+local AimLockUI = nil
+local aimLockBtnRef = nil
+
+local function updateAimLockVisual(state)
+    if not aimLockBtnRef then return end
+    local active = (state ~= nil) and state or (_G.DarlingX_TargetLock == true)
+    if active then
+        aimLockBtnRef.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
+        aimLockBtnRef.BackgroundTransparency = 0.2
+        local target = rawget(_G, "DarlingX_LockedTarget")
+        local targetName = target and (target.DisplayName or target.Name)
+        if targetName and tostring(targetName) ~= "" then
+            local cleanName = tostring(targetName)
+            if #cleanName > 8 then
+                cleanName = cleanName:sub(1, 7) .. ".."
+            end
+            aimLockBtnRef.Text = "AIM: " .. cleanName
+        else
+            aimLockBtnRef.Text = "AIM: LOCKED"
+        end
+    else
+        aimLockBtnRef.BackgroundColor3 = Color3.fromRGB(36, 30, 50)
+        aimLockBtnRef.BackgroundTransparency = 0.5
+        aimLockBtnRef.Text = "AIM LOCK: OFF"
+    end
+end
+
+local function initAimLockUI()
+    if AimLockUI and AimLockUI.Parent then return end
+    local gui, container, btn = createGlassWidget("AimLockWidget", UDim2.new(0, 105, 0, 38), UDim2.new(0.85, 0, 0.44, 0))
+    AimLockUI = gui
+    aimLockBtnRef = btn
+    updateAimLockVisual(false)
+
+    makeDraggable(container, btn, function()
+        local isCurrentlyLocked = (_G.DarlingX_TargetLock == true)
+        local newState = not isCurrentlyLocked
+        _G.DarlingX_TargetLock = newState
+        local core = rawget(_G, "DarlingX_GetModule") and _G.DarlingX_GetModule("modules/combat/aimbot_core.lua")
+        if core and core.SetPlayerLock then
+            core.SetPlayerLock(newState)
+        end
+        updateAimLockVisual(newState)
+        if _G.DarlingX_SyncAimLockUI then
+            pcall(_G.DarlingX_SyncAimLockUI, newState)
+        end
+    end)
+end
+
 -- Initialize widgets lazily on startup
 initSuperJumpUI()
 initCamlockUI()
@@ -480,6 +530,7 @@ initSanguineUI()
 initFruitFastAttackUI()
 initMacroUI()
 initKitOneShotUI()
+initAimLockUI()
 
 local Widgets = {
     -- Super Jump
@@ -558,6 +609,17 @@ local Widgets = {
         end
     end,
     UpdateKitOneShotVisual = updateKitOneShotVisual,
+
+    -- Silent Aim Lock
+    SetAimLockWidgetVisible = function(state)
+        if not AimLockUI or not AimLockUI.Parent then initAimLockUI() end
+        if AimLockUI then
+            ensureParent(AimLockUI)
+            AimLockUI.Enabled = (state == true)
+            updateAimLockVisual(_G.DarlingX_TargetLock == true)
+        end
+    end,
+    UpdateAimLockVisual = updateAimLockVisual,
 }
 
 _G.DarlingX_ExtraWidgets = Widgets

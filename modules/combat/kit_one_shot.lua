@@ -354,13 +354,6 @@ function KitOneShot.toggle(state)
     _G.G_VoidFruitM1 = KitOneShot.Enabled
 
     if KitOneShot.Enabled then
-        local ffaMod = rawget(_G, "DarlingX_FruitFastAttackMod")
-        if ffaMod and ffaMod.toggle then
-            ffaMod.toggle(true)
-        end
-        if _G.DarlingX_SyncFruitFastAttackUI then
-            pcall(_G.DarlingX_SyncFruitFastAttackUI, true)
-        end
         startAttackLoop()
     else
         KitOneShot.LoopRunning = false

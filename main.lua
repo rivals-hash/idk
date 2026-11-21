@@ -15,7 +15,7 @@ local ContentProvider = game:GetService("ContentProvider")
 local HttpService = game:GetService("HttpService")
 
 local APP_TITLE = "Monody"
-local APP_VERSION = "by Darling v3.5"
+local APP_VERSION = "by Darling v4.0"
 local DEFAULT_WALLPAPER_ID = "rbxassetid://103674761222554"
 local function GetPlayerThumbnail(size)
     local s = size or 150
@@ -3337,12 +3337,16 @@ local TRANSLATIONS_DICT = {
     ["Spanish"] = {
         -- Kit One Shot & Visuals / Buddha Rainbow
         ["Kit One Shot"] = "Kit One Shot",
-        ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Ataque remoto vacio 18k+ instantaneo con M1 (Activa Fast Attack Fruta)",
+        ["Instant 18k+ Fruit M1 Void Remote attack"] = "Ataque remoto vacio 18k+ instantaneo con M1",
+        ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Ataque remoto vacio 18k+ instantaneo con M1",
         ["M1 Delay"] = "Velocidad M1",
         ["Kit One Shot Floating Widget"] = "Widget Flotante Kit One Shot",
         ["Movable on-screen toggle for Kit One Shot"] = "Boton flotante en pantalla para Kit One Shot",
         ["Saishi Sword One Shot"] = "Saishi Sword One Shot",
         ["Teleport combo with velocity reset (Mobile widget & Z/F keys)"] = "Combo de teletransporte con reinicio de velocidad (Widget movil y teclas Z/F)",
+        ["Silent Aim Lock"] = "Bloqueo Silent Aim",
+        ["Silent Aim Lock Floating Widget"] = "Widget Flotante Silent Aim Lock",
+        ["Movable on-screen toggle for Silent Aim Lock"] = "Boton flotante en pantalla para Silent Aim Lock",
         ["Silent Aim Player Lock"] = "Bloqueo de Jugador (Silent Aim)",
         ["Lock onto targeted player without moving camera"] = "Fijar al jugador apuntado sin mover la camara",
         ["Lock Current Target"] = "Bloquear Objetivo Actual",
@@ -3977,12 +3981,16 @@ local TRANSLATIONS_DICT = {
     ["Portuguese"] = {
         -- Kit One Shot & Visuals / Buddha Rainbow
         ["Kit One Shot"] = "Kit One Shot",
-        ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Ataque remoto de vácuo 18k+ instantâneo com M1 (Ativa Fruit Fast Attack)",
+        ["Instant 18k+ Fruit M1 Void Remote attack"] = "Ataque remoto de vácuo 18k+ instantâneo com M1",
+        ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Ataque remoto de vácuo 18k+ instantâneo com M1",
         ["M1 Delay"] = "Velocidade M1",
         ["Kit One Shot Floating Widget"] = "Widget Flutuante Kit One Shot",
         ["Movable on-screen toggle for Kit One Shot"] = "Botão flutuante na tela para Kit One Shot",
         ["Saishi Sword One Shot"] = "Saishi Sword One Shot",
         ["Teleport combo with velocity reset (Mobile widget & Z/F keys)"] = "Combo de teletransporte com reset de velocidade (Widget movel e teclas Z/F)",
+        ["Silent Aim Lock"] = "Bloqueio Silent Aim",
+        ["Silent Aim Lock Floating Widget"] = "Widget Flutuante Silent Aim Lock",
+        ["Movable on-screen toggle for Silent Aim Lock"] = "Botão flutuante na tela para Silent Aim Lock",
         ["Silent Aim Player Lock"] = "Bloqueio de Jogador (Silent Aim)",
         ["Lock onto targeted player without moving camera"] = "Travar no jogador mirado sem mover a camera",
         ["Lock Current Target"] = "Bloquear Alvo Atual",
@@ -4522,12 +4530,16 @@ local TRANSLATIONS_DICT = {
     ["French"] = {
         -- Kit One Shot & Visuals / Buddha Rainbow
         ["Kit One Shot"] = "Kit One Shot",
-        ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Attaque distante 18k+ vide instantanée avec M1 (Active Fruit Fast Attack)",
+        ["Instant 18k+ Fruit M1 Void Remote attack"] = "Attaque distante 18k+ vide instantanée avec M1",
+        ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Attaque distante 18k+ vide instantanée avec M1",
         ["M1 Delay"] = "Vitesse M1",
         ["Kit One Shot Floating Widget"] = "Widget Flottant Kit One Shot",
         ["Movable on-screen toggle for Kit One Shot"] = "Bouton flottant à l'écran pour Kit One Shot",
         ["Saishi Sword One Shot"] = "Saishi Sword One Shot",
         ["Teleport combo with velocity reset (Mobile widget & Z/F keys)"] = "Combo de teleportation avec reinitialisation de vitesse (Widget mobile et touches Z/F)",
+        ["Silent Aim Lock"] = "Verrouillage Silent Aim",
+        ["Silent Aim Lock Floating Widget"] = "Widget Flottant Silent Aim Lock",
+        ["Movable on-screen toggle for Silent Aim Lock"] = "Bouton flottant à l'écran pour Silent Aim Lock",
         ["Silent Aim Player Lock"] = "Verrouillage Joueur (Silent Aim)",
         ["Lock onto targeted player without moving camera"] = "Verrouiller le joueur cible sans deplacer la camera",
         ["Lock Current Target"] = "Verrouiller Cible Actuelle",
@@ -5066,12 +5078,16 @@ local TRANSLATIONS_DICT = {
     ["Vietnamese"] = {
         -- Kit One Shot & Visuals / Buddha Rainbow
         ["Kit One Shot"] = "Kit One Shot",
-        ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Đòn đánh M1 hư vô từ xa 18k+ tức thì (Tự bật Fruit Fast Attack)",
+        ["Instant 18k+ Fruit M1 Void Remote attack"] = "Đòn đánh M1 hư vô từ xa 18k+ tức thì",
+        ["Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)"] = "Đòn đánh M1 hư vô từ xa 18k+ tức thì",
         ["M1 Delay"] = "Tốc độ M1",
         ["Kit One Shot Floating Widget"] = "Nút Nổi Kit One Shot",
         ["Movable on-screen toggle for Kit One Shot"] = "Nút nổi di chuyển trên màn hình cho Kit One Shot",
         ["Saishi Sword One Shot"] = "Saishi Sword One Shot",
         ["Teleport combo with velocity reset (Mobile widget & Z/F keys)"] = "Combo dich chuyen dat lai van toc (Widget di dong va phim Z/F)",
+        ["Silent Aim Lock"] = "Khoá Mục Tiêu Silent Aim",
+        ["Silent Aim Lock Floating Widget"] = "Nút Nổi Silent Aim Lock",
+        ["Movable on-screen toggle for Silent Aim Lock"] = "Nút nổi di chuyển trên màn hình cho Silent Aim Lock",
         ["Silent Aim Player Lock"] = "Khoa Muc Tieu Nguoi Choi (Silent Aim)",
         ["Lock onto targeted player without moving camera"] = "Khoa vao nguoi choi dang nham ma khong di chuyen camera",
         ["Lock Current Target"] = "Khoa Muc Tieu Hien Tai",
@@ -6684,7 +6700,8 @@ SaveConfigProfile = function(force)
         cfg.StaticCamera = cfg.Toggles["Static Camera"]
         cfg.MuteGameBGM = cfg.Toggles["Mute Game Background Music"]
         cfg.AutoFFlags = false
-        cfg.TargetLock = cfg.Toggles["Silent Aim Player Lock"] or cfg.Toggles["Player Lock"]
+        cfg.TargetLock = cfg.Toggles["Silent Aim Lock"] or cfg.Toggles["Silent Aim Player Lock"] or cfg.Toggles["Player Lock"]
+        cfg.TargetLockWidget = cfg.Toggles["Silent Aim Lock Floating Widget"]
         cfg.WaifuActive = cfg.Toggles["Activar Waifu"]
         cfg.WaifuReactions = cfg.Toggles["Reacciones de Combate & Peligro"]
         cfg.WaifuFollow = cfg.Toggles["Seguir Cursor / Touch"]
@@ -6944,12 +6961,18 @@ LoadConfigProfile = function()
             pcall(function() UI_TOGGLES["Auto Aplicar FFlags al Iniciar"].set(false, false) end)
         end
         if cfg.TargetLock ~= nil then
+            if UI_TOGGLES["Silent Aim Lock"] then
+                pcall(function() UI_TOGGLES["Silent Aim Lock"].set(cfg.TargetLock == true, true) end)
+            end
             if UI_TOGGLES["Silent Aim Player Lock"] then
                 pcall(function() UI_TOGGLES["Silent Aim Player Lock"].set(cfg.TargetLock == true, true) end)
             end
             if UI_TOGGLES["Player Lock"] then
                 pcall(function() UI_TOGGLES["Player Lock"].set(cfg.TargetLock == true, true) end)
             end
+        end
+        if cfg.TargetLockWidget ~= nil and UI_TOGGLES["Silent Aim Lock Floating Widget"] then
+            pcall(function() UI_TOGGLES["Silent Aim Lock Floating Widget"].set(cfg.TargetLockWidget == true, true) end)
         end
         if cfg.WaifuActive ~= nil and UI_TOGGLES["Activar Waifu"] then
             pcall(function() UI_TOGGLES["Activar Waifu"].set(cfg.WaifuActive == true, true) end)
@@ -7036,6 +7059,8 @@ local DEFAULT_TOGGLES = {
     ["Custom WalkSpeed"] = false,
     ["FFlags 1 (FPS Booster)"] = false,
     ["Player Silent Aim"] = false,
+    ["Silent Aim Lock"] = false,
+    ["Silent Aim Lock Floating Widget"] = false,
     ["Silent Aim Player Lock"] = false,
     ["NPC Silent Aim"] = false,
     ["Show FOV Circle"] = false,
@@ -8593,7 +8618,16 @@ local okAimbot, errAimbot = pcall(function()
         Notify("Aimbot", "Player Silent Aim: " .. (state and "Enabled" or "Disabled"))
     end)
 
-    AddToggle(aimCard, "Silent Aim Player Lock", "Lock onto targeted player without moving camera", false, function(state)
+    _G.DarlingX_SyncAimLockUI = function(state)
+        if UI_TOGGLES["Silent Aim Lock"] and UI_TOGGLES["Silent Aim Lock"].set then
+            pcall(function() UI_TOGGLES["Silent Aim Lock"].set(state == true, false) end)
+        end
+        if UI_TOGGLES["Silent Aim Player Lock"] and UI_TOGGLES["Silent Aim Player Lock"].set then
+            pcall(function() UI_TOGGLES["Silent Aim Player Lock"].set(state == true, false) end)
+        end
+    end
+
+    AddToggle(aimCard, "Silent Aim Lock", "Lock onto targeted player without moving camera", false, function(state)
         _G.DarlingX_TargetLock = state
         local core = RequireModule("modules/combat/aimbot_core.lua")
         if core and core.SetPlayerLock then
@@ -8601,8 +8635,15 @@ local okAimbot, errAimbot = pcall(function()
             if state and locked then
                 Notify("Aimbot", "Locked: " .. tostring(locked.DisplayName or locked.Name))
             else
-                Notify("Aimbot", "Player Lock: " .. (state and "Enabled (Aiming)" or "Disabled (Free)"))
+                Notify("Aimbot", "Silent Aim Lock: " .. (state and "Enabled (Aiming)" or "Disabled (Free)"))
             end
+        end
+    end)
+
+    AddToggle(aimCard, "Silent Aim Lock Floating Widget", "Movable on-screen toggle for Silent Aim Lock", false, function(state)
+        local ew = _G.DarlingX_ExtraWidgets or (M and M.getExtraWidgets and M.getExtraWidgets())
+        if ew and ew.SetAimLockWidgetVisible then
+            ew.SetAimLockWidgetVisible(state)
         end
     end)
 
@@ -8610,14 +8651,16 @@ local okAimbot, errAimbot = pcall(function()
         local core = RequireModule("modules/combat/aimbot_core.lua")
         if core and core.SetPlayerLock then
             local isLocked = not (core.PlayerLockEnabled or _G.DarlingX_TargetLock)
-            if UI_TOGGLES["Silent Aim Player Lock"] then
+            if UI_TOGGLES["Silent Aim Lock"] then
+                UI_TOGGLES["Silent Aim Lock"].set(isLocked, true)
+            elseif UI_TOGGLES["Silent Aim Player Lock"] then
                 UI_TOGGLES["Silent Aim Player Lock"].set(isLocked, true)
             else
                 local locked = core.SetPlayerLock(isLocked)
                 if isLocked and locked then
                     Notify("Aimbot", "Locked: " .. tostring(locked.DisplayName or locked.Name))
                 else
-                    Notify("Aimbot", "Player Lock: " .. (isLocked and "Enabled" or "Disabled"))
+                    Notify("Aimbot", "Silent Aim Lock: " .. (isLocked and "Enabled" or "Disabled"))
                 end
             end
         end
@@ -8931,7 +8974,7 @@ local okPvP, errPvP = pcall(function()
     -- 2. Kit One Shot (Fruits M1 One Shot / Kitsune Void)
     local kitCard = CreateCard(PvPPage, "Kit One Shot")
 
-    AddToggle(kitCard, "Kit One Shot", "Instant 18k+ Fruit M1 Void Remote attack (Activates Fruit Fast Attack)", false, function(state)
+    AddToggle(kitCard, "Kit One Shot", "Instant 18k+ Fruit M1 Void Remote attack", false, function(state)
         local kos = M.getKitOneShot()
         if kos then kos.toggle(state) end
         Notify("PvP", "Kit One Shot: " .. (state and "Enabled" or "Disabled"))

@@ -972,6 +972,13 @@ function Core.SetPlayerLock(state)
         _G.DarlingX_LockedTarget = nil
         Core.stopLoop()
     end
+    local ew = rawget(_G, "DarlingX_ExtraWidgets")
+    if ew and ew.UpdateAimLockVisual then
+        ew.UpdateAimLockVisual(enable)
+    end
+    if _G.DarlingX_SyncAimLockUI then
+        pcall(_G.DarlingX_SyncAimLockUI, enable)
+    end
     return Core.LockedTargetPlayer
 end
 

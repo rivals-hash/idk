@@ -36,7 +36,8 @@ local function ExecuteAction()
     end)
 end
 
-function SaishiOneShot.Execute(skipWait)
+function SaishiOneShot.Execute()
+    if not SaishiOneShot.Enabled then return end
     if debounce then return end
     debounce = true
 
@@ -46,17 +47,15 @@ function SaishiOneShot.Execute(skipWait)
     end
 
     task.spawn(function()
-        if not skipWait then
-            task.wait(0.6)
-        end
+        task.wait(0.6)
         ExecuteAction()
 
         task.delay(0.1, function()
+            debounce = false
             if button then
                 button.Text = "SAISHI"
                 button.TextColor3 = Color3.fromRGB(255, 255, 255)
             end
-            debounce = false
         end)
     end)
 end
@@ -188,6 +187,14 @@ function SaishiOneShot.RemoveUI()
     end
 end
 
+local mobileConns = {}
+local function clearMobileConns()
+    for i = #mobileConns, 1, -1 do
+        pcall(function() if mobileConns[i] then mobileConns[i]:Disconnect() end end)
+        mobileConns[i] = nil
+    end
+end
+
 function SaishiOneShot.SetEnabled(state)
     SaishiOneShot.Enabled = state == true
 
@@ -195,6 +202,7 @@ function SaishiOneShot.SetEnabled(state)
         keyConn:Disconnect()
         keyConn = nil
     end
+    clearMobileConns()
 
     if SaishiOneShot.Enabled then
         SaishiOneShot.CreateUI()
@@ -207,6 +215,24 @@ function SaishiOneShot.SetEnabled(state)
                     SaishiOneShot.Execute()
                 end
             end)
+        end)
+
+        pcall(function()
+            local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
+            local main = playerGui and playerGui:FindFirstChild("Main")
+            local skills = main and main:FindFirstChild("Skills")
+            if skills then
+                for _, obj in pairs(skills:GetDescendants()) do
+                    if obj:IsA("GuiButton") and (obj.Name == "Z" or obj.Name == "F" or (obj:FindFirstChild("Title") and (obj.Title.Text == "Z" or obj.Title.Text == "F"))) then
+                        local c = obj.Activated:Connect(function()
+                            if SaishiOneShot.Enabled then
+                                SaishiOneShot.Execute()
+                            end
+                        end)
+                        table.insert(mobileConns, c)
+                    end
+                end
+            end
         end)
     else
         SaishiOneShot.RemoveUI()

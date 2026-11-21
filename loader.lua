@@ -14,7 +14,7 @@ local Workspace = game:GetService("Workspace")
 local lp = Players.LocalPlayer
 
 local APP_TITLE = "Monody"
-local APP_VERSION = "v3.5"
+local APP_VERSION = "v4.0"
 local function GetPlayerThumbnail(size)
     local s = size or 150
     local uid = (lp and lp.UserId and lp.UserId > 0 and lp.UserId) or 1
