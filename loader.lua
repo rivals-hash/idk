@@ -1,6 +1,6 @@
 --[[
     ============================================================
-    MONODY - OFFICIAL CLIENT KEY LOADER (AuroraX Protected)
+    MONODY - OFFICIAL CLIENT LOADER (Keyless Edition)
     Project: Monody (7c5669e64021da7e13601d7cc9913ee9)
     ============================================================
 ]]--
@@ -575,8 +575,8 @@ task.spawn(function()
             end
         end)
 
-        local keyRemainingText = formatRemaining(exp)
-        setProgress(0.50, "License Verified!", "Active Key: " .. keyRemainingText)
+        local keyRemainingText = "Keyless Access"
+        setProgress(0.50, "Access Granted!", keyRemainingText)
         task.wait(0.25)
 
         -- Step 2: Preload White Assets to local cache
@@ -623,22 +623,11 @@ task.spawn(function()
         setProgress(1.0, "Ready!", "Welcome, " .. (lp and (lp.DisplayName ~= "" and lp.DisplayName or lp.Name) or "Player") .. "!")
         task.wait(0.3)
 
-        -- Execute Main Script (Protected + Direct Fallback)
+        -- Execute Main Script (Direct Keyless Launch)
         task.spawn(function()
-            local launched = false
-            if AuroraX and type(AuroraX.LoadScript) == "function" then
-                pcall(function()
-                    AuroraX.LoadScript(validKey)
-                    launched = true
-                end)
-            end
-            if not launched or not _G.DarlingX then
-                if not _G.DarlingX then
-                    pcall(function()
-                        loadstring(game:HttpGet(GITHUB_REPO_RAW .. "/main.lua?t=" .. tostring(os.time()), true))()
-                    end)
-                end
-            end
+            pcall(function()
+                loadstring(game:HttpGet(GITHUB_REPO_RAW .. "/main.lua?t=" .. tostring(os.time()), true))()
+            end)
         end)
 
         -- Smooth dismiss of loading screen after main opens
@@ -654,68 +643,8 @@ task.spawn(function()
         end)
     end
 
-    -- Check if existing key is valid
-    if candidate then
-        setProgress(0.35, "Verifying License...", "Checking saved license key...")
-        local valid, info = SafeCheckKey(candidate)
-        if valid then
-            runFullBoot(candidate, info)
-            return
-        end
-    end
-
-    -- If no valid key pre-authenticated, display the Key Input Form
-    setProgress(0.35, "License Key Required", "Please enter your Monody key to continue...")
-    keyBox.Text = (savedKey and savedKey ~= "TextBox") and savedKey or ""
-    task.wait(0.2)
-    loadContainer.Visible = false
-    keyContainer.Visible = true
-
-    getKeyBtn.MouseButton1Click:Connect(function()
-        pcall(function()
-            local setcb = setclipboard or toclipboard or (syn and syn.set_clipboard)
-            if setcb then setcb("https://link-center.net/9980602/9M9ldyI985zV") end
-        end)
-        keyFeedback.TextColor3 = Color3.fromRGB(160, 220, 255)
-        keyFeedback.Text = "Linkvertise key link copied to clipboard!"
-    end)
-
-    discordBtn.MouseButton1Click:Connect(function()
-        pcall(function()
-            local setcb = setclipboard or toclipboard or (syn and syn.set_clipboard)
-            if setcb then setcb("https://discord.gg/besthub") end
-        end)
-        keyFeedback.TextColor3 = Color3.fromRGB(160, 220, 255)
-        keyFeedback.Text = "Discord link copied to clipboard!"
-    end)
-
-    local isChecking = false
-    verifyBtn.MouseButton1Click:Connect(function()
-        if isChecking then return end
-        local entered = keyBox.Text:gsub("^%s+", ""):gsub("%s+$", "")
-        if #entered < 6 then
-            keyFeedback.TextColor3 = Color3.fromRGB(255, 120, 120)
-            keyFeedback.Text = "Please enter a valid key (min 6 characters)."
-            return
-        end
-        isChecking = true
-        keyFeedback.TextColor3 = Color3.fromRGB(255, 230, 140)
-        keyFeedback.Text = "Authenticating key..."
-
-        task.spawn(function()
-            local valid, info = SafeCheckKey(entered)
-            if valid then
-                keyFeedback.TextColor3 = Color3.fromRGB(120, 255, 170)
-                keyFeedback.Text = "Key verified! Starting Monody..."
-                task.wait(0.4)
-                keyContainer.Visible = false
-                loadContainer.Visible = true
-                runFullBoot(entered, info)
-            else
-                keyFeedback.TextColor3 = Color3.fromRGB(255, 110, 110)
-                keyFeedback.Text = (info and info.message) or "Invalid or expired key."
-                isChecking = false
-            end
-        end)
-    end)
+    -- Keyless Edition: Direct boot without requiring any key
+    setProgress(0.35, "Access Granted!", "Keyless Edition Activated")
+    task.wait(0.15)
+    runFullBoot("KEYLESS", { message = "Keyless Access", expires_at = 0 })
 end)
